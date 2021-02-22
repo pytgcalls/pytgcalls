@@ -1,0 +1,31 @@
+{
+  "name": "tgcalls",
+  "version": "0.1.1",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "npm run prepare",
+    "test": "tsc --noEmit",
+    "prepare": "rm -rf lib/ && tsc",
+    "preversion": "npm run test",
+    "docs": "typedoc src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tgcallsjs/tgcalls.git"
+  },
+  "author": "Andrew Lane <contact@lungers.com>",
+  "license": "LGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/tgcallsjs/tgcalls/issues"
+  },
+  "homepage": "https://github.com/tgcallsjs/tgcalls#readme",
+  "devDependencies": {
+    "@types/node": "^14.14.21",
+    "typedoc": "^0.20.20",
+    "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "wrtc": "^0.4.7"
+  }
+}
