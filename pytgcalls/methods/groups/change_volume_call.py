@@ -9,6 +9,7 @@ class ChangeVolume(SpawnProcess):
 
     # noinspection PyProtectedMember
     def change_volume_call(self, chat_id: int, volume: int):
+        volume = int(volume) if isinstance(volume, str) else volume
         if self.pytgcalls._init_js_core and self.pytgcalls._app is not None:
             volume = 200 if volume > 200 else (0 if volume < 0 else volume)
             try:

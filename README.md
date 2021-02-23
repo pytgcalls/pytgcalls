@@ -12,6 +12,7 @@ npm install
 pip install python-socketio
 pip install Naked
 pip install aiohttp
+pip install asyncio
 ```
 
 # Command conversion
