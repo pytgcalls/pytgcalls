@@ -9,10 +9,7 @@ npm install
 npm run prepare
 cd pytgcalls
 npm install
-pip install python-socketio
-pip install Naked
-pip install aiohttp
-pip install asyncio
+pip install -r requirements.txt
 ```
 
 # Command conversion
