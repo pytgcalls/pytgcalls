@@ -32,17 +32,26 @@ const ApiSender = require('./api_sender');
                   }
             }else if(data['action'] === 'leave_call'){
                   if(list_connection[data['chat_id']]){
-                        let result = await list_connection[data['chat_id']].leave_group_call(data['chat_id']);
-                        if(result['result'] === 'OK'){
+                        if(data['type'] !== 'kicked_from_group') {
+                              let result = await list_connection[data['chat_id']].leave_group_call(data['chat_id']);
+                              if (result['result'] === 'OK') {
+                                    delete list_connection[data['chat_id']]
+                                    await apiSender.sendUpdate(port, {
+                                          result: 'LEAVED_VOICE_CHAT',
+                                          chat_id: data['chat_id']
+                                    })
+                              } else {
+                                    delete list_connection[data['chat_id']]
+                                    await apiSender.sendUpdate(port, {
+                                          result: 'LEAVED_VOICE_CHAT',
+                                          error: result['result'],
+                                          chat_id: data['chat_id']
+                                    })
+                              }
+                        }else{
                               delete list_connection[data['chat_id']]
                               await apiSender.sendUpdate(port, {
-                                    result: 'LEAVED_VOICE_CHAT',
-                                    chat_id: data['chat_id']
-                              })
-                        }else{
-                              await apiSender.sendUpdate(port, {
-                                    result: 'LEAVE_ERROR',
-                                    error: result['result'],
+                                    result: 'KICKED_FROM_GROUP',
                                     chat_id: data['chat_id']
                               })
                         }

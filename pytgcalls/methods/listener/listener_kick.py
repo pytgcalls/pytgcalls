@@ -14,7 +14,7 @@ class ListenerKick:
             if isinstance(update, UpdateGroupCallParticipants):
                 if isinstance(update.call, InputGroupCall):
                     if update.participants[0].user_id == my_id and update.participants[0].left and self.chat_id != 0:
-                        context.leave_group_call(self.chat_id)
+                        context.leave_group_call(self.chat_id, 'kicked_from_group')
                         self.chat_id = 0
             if isinstance(update, UpdateGroupCall):
                 if isinstance(update.call, GroupCallDiscarded):

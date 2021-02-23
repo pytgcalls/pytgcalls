@@ -8,7 +8,7 @@ class LeaveGroupCall(SpawnProcess):
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    def leave_group_call(self, chat_id: int):
+    def leave_group_call(self, chat_id: int, type_leave: str = 'requested'):
         if self.pytgcalls._init_js_core and self.pytgcalls._app is not None:
             self._spawn_process(
                 requests.post,
@@ -17,7 +17,8 @@ class LeaveGroupCall(SpawnProcess):
                     json.dumps({
                         'action': 'leave_call',
                         'chat_id': chat_id,
-                        'session_id': self.pytgcalls._session_id
+                        'session_id': self.pytgcalls._session_id,
+                        'type': type_leave
                     })
                 )
             )

@@ -4,10 +4,19 @@
 Here's how to install the PyTgCalls lib, the commands are given below:
 
 ``` bash
+cd pytgcalls
 npm install
 npm run prepare
 cd pytgcalls
 npm install
+pip install python-socketio
+pip install Naked
+pip install aiohttp
+```
+
+# Command conversion
+``` bash
+ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -acodec pcm_s16le -ar {BITRATE} {OUTPUT_FILE}
 ```
 
 ## Credits
