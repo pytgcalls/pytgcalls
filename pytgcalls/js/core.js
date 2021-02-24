@@ -3,6 +3,7 @@ const RTCConnection = require('./rtc_connection');
 const ApiSender = require('./api_sender');
 (async () => {
       const port = process.argv[2].split('=')[1];
+      const log_mode = process.argv[3].split('=')[1];
       let socket = io('ws://localhost:' + port);
       console.log('Starting on port: ' + port)
       socket.on('connect', async function() {
@@ -12,11 +13,14 @@ const ApiSender = require('./api_sender');
       let list_connection = [];
       await socket.on('request', async function(data) {
             data = JSON.parse(data);
-            //console.log(data);
+            if(log_mode){
+                  console.log('REQUEST: ', data);
+            }
             if(data['action'] === 'join_call'){
                   if(!list_connection[data['chat_id']]){
                         list_connection[data['chat_id']] = new RTCConnection(data['chat_id'], data['file_path'], port, data['bitrate']);
                         let result = await list_connection[data['chat_id']].join_voice_call();
+                         console.log('UPDATED_LIST_OF_CONNECTIONS: ', list_connection);
                         if(result){
                               await apiSender.sendUpdate(port, {
                                     result: 'JOINED_VOICE_CHAT',
@@ -41,6 +45,9 @@ const ApiSender = require('./api_sender');
                                           chat_id: data['chat_id']
                                     })
                               } else {
+                                    if(log_mode){
+                                          console.log('ERROR_INTERNAL: ', result);
+                                    }
                                     delete list_connection[data['chat_id']]
                                     await apiSender.sendUpdate(port, {
                                           result: 'LEAVED_VOICE_CHAT',

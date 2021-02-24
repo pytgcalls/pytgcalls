@@ -6,7 +6,7 @@ from .methods.listener import ListenerKick
 
 
 class PyTgCalls(Methods):
-    def __init__(self, port: int = 24859):
+    def __init__(self, port: int = 24859, log_mode: bool = False):
         self._app = None
         self._app_core = None
         self._sio = None
@@ -22,6 +22,7 @@ class PyTgCalls(Methods):
         self.is_running = False
         self._current_active_chats = []
         self._session_id = self._generate_session_id(20)
+        self._log_mode = log_mode
         super().__init__(self)
 
     def run(self, app: Client, before_start_callable: Callable = None):
@@ -43,7 +44,7 @@ class PyTgCalls(Methods):
                 self._run_js,
                 (
                     f'{__file__.replace("pytgcalls.py", "")}js/core.js',
-                    f'port={self._port}'
+                    f'port={self._port} log_mode={self._log_mode}'
                 )
             )
         except KeyboardInterrupt:
