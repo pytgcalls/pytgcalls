@@ -9,7 +9,7 @@ npm install && \
 npm run prepare && \
 cd pytgcalls/js && \
 npm install && \
-cd ../../../ && \
+cd ../../ && \
 pip install -r requirements.txt
 ```
 
