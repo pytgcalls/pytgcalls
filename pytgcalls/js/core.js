@@ -20,7 +20,9 @@ const ApiSender = require('./api_sender');
                   if(!list_connection[data['chat_id']]){
                         list_connection[data['chat_id']] = new RTCConnection(data['chat_id'], data['file_path'], port, data['bitrate']);
                         let result = await list_connection[data['chat_id']].join_voice_call();
-                         console.log('UPDATED_LIST_OF_CONNECTIONS: ', list_connection);
+                        if(log_mode){
+                              console.log('UPDATED_LIST_OF_CONNECTIONS: ', list_connection);
+                        }
                         if(result){
                               await apiSender.sendUpdate(port, {
                                     result: 'JOINED_VOICE_CHAT',
