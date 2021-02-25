@@ -31,7 +31,7 @@ Follow the steps below to install PyTgCalls without facing problems:
 7. Move the folder to `site-packages` for easier access:
    ```bash
    cd ../ && \
-   mv pytgcalls ~/.local/lib/python3.*/site-package
+   mv pytgcalls ~/.local/lib/python3.*/site-packages
    ```
 
 # Conversion command
