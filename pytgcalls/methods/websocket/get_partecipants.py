@@ -1,8 +1,9 @@
 import json
-from aiohttp.web_request import BaseRequest
+
 from aiohttp import web
-from pyrogram.raw.types.phone import GroupParticipants
+from aiohttp.web_request import BaseRequest
 from pyrogram.raw.functions.phone import GetGroupParticipants
+from pyrogram.raw.types.phone import GroupParticipants
 
 
 class GetPartecipants:
@@ -14,13 +15,17 @@ class GetPartecipants:
         params = await request.json()
         if isinstance(params, str):
             params = json.loads(params)
-        participants: GroupParticipants = (await self.pytgcalls._app.send(GetGroupParticipants(
-            call=(await self.pytgcalls._load_full_chat(params['chat_id'])).full_chat.call,
-            ids=[],
-            sources=[],
-            offset='',
-            limit=5000
-        )))
+        participants: GroupParticipants = (
+            await self.pytgcalls._app.send(
+                GetGroupParticipants(
+                    call=(await self.pytgcalls._load_full_chat(params['chat_id'])).full_chat.call,
+                    ids=[],
+                    sources=[],
+                    offset='',
+                    limit=5000,
+                ),
+            )
+        )
         return web.json_response([
             {'source': x.source, 'user_id': x.user_id}
             for x in participants.participants

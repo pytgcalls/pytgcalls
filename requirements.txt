@@ -1,6 +1,6 @@
-pyrogram
-tgcrypto
-python-socketio
-Naked
 aiohttp
 asyncio
+Naked
+pyrogram
+python-socketio
+tgcrypto

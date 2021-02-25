@@ -122,12 +122,12 @@ export class Stream extends EventEmitter {
 
         if (!this._finished && this._finishedLoading && this.cache.length < byteLength) {
             this.finish();
-            if(this.OnStreamEnd !== Function){
+            if (this.OnStreamEnd !== Function) {
                 this.OnStreamEnd();
             }
             this.emit('finish');
         }
 
-        setTimeout(() => this.processData(), this._finished || this._paused ? 500:10);
+        setTimeout(() => this.processData(), this._finished || this._paused ? 500 : 10);
     }
 }

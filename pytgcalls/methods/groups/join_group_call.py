@@ -1,6 +1,8 @@
 import json
 import os
+
 import requests
+
 from ..core import SpawnProcess
 
 
@@ -23,9 +25,9 @@ class JoinGroupCall(SpawnProcess):
                             'chat_id': chat_id,
                             'file_path': file_path,
                             'bitrate': bitrate,
-                            'session_id': self.pytgcalls._session_id
-                        })
-                    )
+                            'session_id': self.pytgcalls._session_id,
+                        }),
+                    ),
                 )
             except Exception:
                 raise Exception(f'Error internal: NOT_IN_GROUP')

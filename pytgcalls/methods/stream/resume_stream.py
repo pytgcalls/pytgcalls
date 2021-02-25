@@ -1,5 +1,7 @@
 import json
+
 import requests
+
 from ..core import SpawnProcess
 
 
@@ -17,9 +19,9 @@ class ResumeStream(SpawnProcess):
                     json.dumps({
                         'action': 'resume',
                         'chat_id': chat_id,
-                        'session_id': self.pytgcalls._session_id
-                    })
-                )
+                        'session_id': self.pytgcalls._session_id,
+                    }),
+                ),
             )
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'

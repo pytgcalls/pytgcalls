@@ -1,9 +1,11 @@
 import json
-from aiohttp.web_request import BaseRequest
+
 from aiohttp import web
-from pyrogram.raw.functions.phone import JoinGroupCall
-from pyrogram.raw.types import Updates, DataJSON
+from aiohttp.web_request import BaseRequest
 from pyrogram.errors import ChannelPrivate
+from pyrogram.raw.functions.phone import JoinGroupCall
+from pyrogram.raw.types import DataJSON
+from pyrogram.raw.types import Updates
 
 
 class JoinVoiceCall:
@@ -21,9 +23,9 @@ class JoinVoiceCall:
             'fingerprints': [{
                 'hash': params['hash'],
                 'setup': params['setup'],
-                'fingerprint': params['fingerprint']
+                'fingerprint': params['fingerprint'],
             }],
-            'ssrc': params['source']
+            'ssrc': params['source'],
         }
         chat_call = None
         # noinspection PyBroadException
@@ -37,26 +39,28 @@ class JoinVoiceCall:
                     JoinGroupCall(
                         call=chat_call,
                         params=DataJSON(data=json.dumps(request_call)),
-                        muted=False
-                    )
+                        muted=False,
+                    ),
                 )
-                transport = json.loads(result.updates[0].call.params.data)['transport']
+                transport = json.loads(result.updates[0].call.params.data)[
+                    'transport'
+                ]
                 result_json = {
                     'transport': {
                         'ufrag': transport['ufrag'],
                         'pwd': transport['pwd'],
                         'fingerprints': transport['fingerprints'],
                         'candidates': transport['candidates'],
-                    }
+                    },
                 }
             except Exception as e:
                 if 'GROUPCALL_FORBIDDEN' not in str(e):
                     print(e)
                 result_json = {
-                    'transport': None
+                    'transport': None,
                 }
         else:
             result_json = {
-                'transport': None
+                'transport': None,
             }
         return web.json_response(result_json)

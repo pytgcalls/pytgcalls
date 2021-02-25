@@ -1,6 +1,7 @@
 import json
-from aiohttp.web_request import BaseRequest
+
 from aiohttp import web
+from aiohttp.web_request import BaseRequest
 from pyrogram.raw.functions.phone import LeaveGroupCall
 
 
@@ -12,7 +13,7 @@ class LeaveVoiceCall:
     async def _leave_voice_call(self, request: BaseRequest):
         params = await request.json()
         result = {
-            'result': 'OK'
+            'result': 'OK',
         }
         if isinstance(params, str):
             params = json.loads(params)
@@ -23,12 +24,12 @@ class LeaveVoiceCall:
                 await self.pytgcalls._app.send(
                     LeaveGroupCall(
                         call=chat_call,
-                        source=0
-                    )
+                        source=0,
+                    ),
                 )
         except Exception as e:
             result = {
-                'result': str(e)
+                'result': str(e),
             }
             pass
         return web.json_response(result)

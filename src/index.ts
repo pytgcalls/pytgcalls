@@ -53,7 +53,9 @@ export class TGCalls<T> extends EventEmitter {
         if (!ufrag || !pwd || !hash || !fingerprint || !source) {
             return false;
         }
+
         this.#source_id = source;
+
         const { transport } = await this.joinVoiceCall({
             ufrag,
             pwd,
@@ -80,11 +82,14 @@ export class TGCalls<T> extends EventEmitter {
             type: 'answer',
             sdp: SdpBuilder.fromConference(conference, true),
         });
+
         return true;
     }
-    getSignSource(){
+
+    getSignSource() {
         return this.#source_id;
     }
+
     close() {
         this.#connection?.close();
         this.#connection = undefined;

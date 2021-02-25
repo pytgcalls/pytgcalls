@@ -1,8 +1,8 @@
 from .core import Core
 from .custom_api import CustomAPI
 from .groups import Groups
-from .stream import Stream
 from .handler import Handler
+from .stream import Stream
 from .websocket import WebSocket
 
 
@@ -12,6 +12,6 @@ class Methods(
     Groups,
     Stream,
     Handler,
-    WebSocket
+    WebSocket,
 ):
     pass

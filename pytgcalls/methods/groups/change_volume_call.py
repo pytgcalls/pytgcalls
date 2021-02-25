@@ -1,5 +1,7 @@
 import json
+
 import requests
+
 from ..core import SpawnProcess
 
 
@@ -20,9 +22,9 @@ class ChangeVolume(SpawnProcess):
                         json.dumps({
                             'chat_id': chat_id,
                             'volume': volume,
-                            'session_id': self.pytgcalls._session_id
-                        })
-                    )
+                            'session_id': self.pytgcalls._session_id,
+                        }),
+                    ),
                 )
             except Exception:
                 raise Exception(f'Error internal: NOT_IN_GROUP')

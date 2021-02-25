@@ -1,6 +1,7 @@
 from typing import Callable
 
 from pyrogram import Client
+
 from .methods import Methods
 from .methods.listener import ListenerKick
 
@@ -16,7 +17,7 @@ class PyTgCalls(Methods):
         self._on_event_update = {
             'EVENT_UPDATE_HANDLER': [],
             'STREAM_END_HANDLER': [],
-            'CUSTOM_API_HANDLER': []
+            'CUSTOM_API_HANDLER': [],
         }
         self._my_id = 0
         self.is_running = False
@@ -29,7 +30,7 @@ class PyTgCalls(Methods):
         self._app = app
         try:
             self._app.start()
-            self._my_id = self._app.get_me()['id'] # noqa
+            self._my_id = self._app.get_me()['id']  # noqa
             if before_start_callable is not None:
                 # noinspection PyBroadException
                 try:
@@ -44,8 +45,8 @@ class PyTgCalls(Methods):
                 self._run_js,
                 (
                     f'{__file__.replace("pytgcalls.py", "")}js/core.js',
-                    f'port={self._port} log_mode={self._log_mode}'
-                )
+                    f'port={self._port} log_mode={self._log_mode}',
+                ),
             )
         except KeyboardInterrupt:
             pass

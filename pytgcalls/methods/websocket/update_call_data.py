@@ -1,6 +1,7 @@
 import json
-from aiohttp.web_request import BaseRequest
+
 from aiohttp import web
+from aiohttp.web_request import BaseRequest
 
 
 class UpdateCallData:

@@ -1,7 +1,8 @@
 import asyncio
 import json
-from aiohttp.web_request import BaseRequest
+
 from aiohttp import web
+from aiohttp.web_request import BaseRequest
 from pyrogram.errors import ChannelPrivate
 from pyrogram.raw.functions.phone import EditGroupCallMember
 from pyrogram.raw.types import InputUser
@@ -14,7 +15,7 @@ class ChangeVolumeVoiceCall:
     # noinspection PyProtectedMember
     async def _change_volume_voice_call(self, request: BaseRequest):
         result_json = {
-            'result': 'ACCESS_DENIED'
+            'result': 'ACCESS_DENIED',
         }
         params = await request.json()
         if isinstance(params, str):
@@ -28,14 +29,14 @@ class ChangeVolumeVoiceCall:
                         call=chat_call,
                         user_id=InputUser(
                             user_id=self.pytgcalls.get_cache_id(),
-                            access_hash=0
+                            access_hash=0,
                         ),
                         muted=False,
-                        volume=params["volume"] * 100
-                    )
+                        volume=params['volume'] * 100,
+                    ),
                 )
                 result_json = {
-                    'result': 'OK'
+                    'result': 'OK',
                 }
             except Exception:
                 pass

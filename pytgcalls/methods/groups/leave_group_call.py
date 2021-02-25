@@ -1,5 +1,7 @@
 import json
+
 import requests
+
 from ..core import SpawnProcess
 
 
@@ -18,9 +20,9 @@ class LeaveGroupCall(SpawnProcess):
                         'action': 'leave_call',
                         'chat_id': chat_id,
                         'session_id': self.pytgcalls._session_id,
-                        'type': type_leave
-                    })
-                )
+                        'type': type_leave,
+                    }),
+                ),
             )
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'

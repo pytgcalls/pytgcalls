@@ -1,6 +1,9 @@
-from pyrogram.raw.types import UpdateChannel, UpdateGroupCallParticipants, InputGroupCall, \
-    UpdateGroupCall, GroupCallDiscarded
 from pyrogram import Client
+from pyrogram.raw.types import GroupCallDiscarded
+from pyrogram.raw.types import InputGroupCall
+from pyrogram.raw.types import UpdateChannel
+from pyrogram.raw.types import UpdateGroupCall
+from pyrogram.raw.types import UpdateGroupCallParticipants
 
 
 class ListenerKick:
@@ -14,7 +17,9 @@ class ListenerKick:
             if isinstance(update, UpdateGroupCallParticipants):
                 if isinstance(update.call, InputGroupCall):
                     if update.participants[0].user_id == my_id and update.participants[0].left and self.chat_id != 0:
-                        context.leave_group_call(self.chat_id, 'kicked_from_group')
+                        context.leave_group_call(
+                            self.chat_id, 'kicked_from_group',
+                        )
                         self.chat_id = 0
             if isinstance(update, UpdateGroupCall):
                 if isinstance(update.call, GroupCallDiscarded):

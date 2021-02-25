@@ -1,6 +1,8 @@
 import json
 import os
+
 import requests
+
 from ..core import SpawnProcess
 
 
@@ -19,9 +21,9 @@ class ChangeStream(SpawnProcess):
                         'action': 'change_stream',
                         'chat_id': chat_id,
                         'file_path': file_path,
-                        'session_id': self.pytgcalls._session_id
-                    })
-                )
+                        'session_id': self.pytgcalls._session_id,
+                    }),
+                ),
             )
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
