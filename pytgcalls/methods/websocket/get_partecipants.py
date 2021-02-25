@@ -18,7 +18,11 @@ class GetPartecipants:
         participants: GroupParticipants = (
             await self.pytgcalls._app.send(
                 GetGroupParticipants(
-                    call=(await self.pytgcalls._load_full_chat(params['chat_id'])).full_chat.call,
+                    call=(
+                        await self.pytgcalls._load_full_chat(
+                            params['chat_id'],
+                        )
+                    ).full_chat.call,
                     ids=[],
                     sources=[],
                     offset='',

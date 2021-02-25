@@ -13,7 +13,11 @@ class JoinGroupCall(SpawnProcess):
     # noinspection PyProtectedMember
     def join_group_call(self, chat_id: int, file_path: str, bitrate: int):
         bitrate = 48000 if bitrate > 48000 else bitrate
-        if self.pytgcalls._init_js_core and self.pytgcalls._app is not None and os.path.isfile(file_path):
+        if (
+            self.pytgcalls._init_js_core and
+            self.pytgcalls._app is not None and
+            os.path.isfile(file_path)
+        ):
             # noinspection PyBroadException
             try:
                 self._spawn_process(
@@ -30,7 +34,7 @@ class JoinGroupCall(SpawnProcess):
                     ),
                 )
             except Exception:
-                raise Exception(f'Error internal: NOT_IN_GROUP')
+                raise Exception('Error internal: NOT_IN_GROUP')
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
             if not self.pytgcalls._init_js_core:

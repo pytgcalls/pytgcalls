@@ -12,7 +12,11 @@ class ChangeStream(SpawnProcess):
 
     # noinspection PyProtectedMember
     def change_stream(self, chat_id: int, file_path: str):
-        if self.pytgcalls._init_js_core and self.pytgcalls._app is not None and os.path.isfile(file_path):
+        if (
+            self.pytgcalls._init_js_core and
+            self.pytgcalls._app is not None and
+            os.path.isfile(file_path)
+        ):
             self._spawn_process(
                 requests.post,
                 (

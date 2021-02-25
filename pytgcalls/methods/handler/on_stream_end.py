@@ -8,7 +8,7 @@ class OnStreamEnd:
         def decorator(func: Callable) -> Callable:
             if self is not None:
                 self._add_handler(
-                    method, {  # noqa
+                    method, {
                         'callable': func,
                     },
                 )

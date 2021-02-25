@@ -13,4 +13,5 @@ class CustomApiUpdate:
         params = await request.json()
         if isinstance(params, str):
             params = json.loads(params)
-        return web.json_response(await self.pytgcalls._on_event_update['CUSTOM_API_HANDLER'][0]['callable'](params))
+        handler = self.pytgcalls._on_event_update['CUSTOM_API_HANDLER'][0]
+        return web.json_response(await handler['callable'](params))

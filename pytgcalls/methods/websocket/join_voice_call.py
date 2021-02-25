@@ -2,7 +2,6 @@ import json
 
 from aiohttp import web
 from aiohttp.web_request import BaseRequest
-from pyrogram.errors import ChannelPrivate
 from pyrogram.raw.functions.phone import JoinGroupCall
 from pyrogram.raw.types import DataJSON
 from pyrogram.raw.types import Updates
@@ -30,7 +29,9 @@ class JoinVoiceCall:
         chat_call = None
         # noinspection PyBroadException
         try:
-            chat_call = (await self.pytgcalls._load_full_chat(params['chat_id'])).full_chat.call
+            chat_call = (
+                await self.pytgcalls._load_full_chat(params['chat_id'])
+            ).full_chat.call
         except Exception:
             pass
         if chat_call is not None:

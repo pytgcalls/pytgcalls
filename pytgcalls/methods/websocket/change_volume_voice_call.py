@@ -1,9 +1,7 @@
-import asyncio
 import json
 
 from aiohttp import web
 from aiohttp.web_request import BaseRequest
-from pyrogram.errors import ChannelPrivate
 from pyrogram.raw.functions.phone import EditGroupCallMember
 from pyrogram.raw.types import InputUser
 

@@ -11,12 +11,16 @@ class ListenerKick:
         self.chat_id = 0
 
         @app_tg.on_raw_update()
-        async def on_close(client, update, data1, data2):  # noqa
+        async def on_close(client, update, data1, data2):
             if isinstance(update, UpdateChannel):
                 self.chat_id = int(f'-100{update.channel_id}')
             if isinstance(update, UpdateGroupCallParticipants):
                 if isinstance(update.call, InputGroupCall):
-                    if update.participants[0].user_id == my_id and update.participants[0].left and self.chat_id != 0:
+                    if (
+                        update.participants[0].user_id == my_id and
+                        update.participants[0].left and
+                        self.chat_id != 0
+                    ):
                         context.leave_group_call(
                             self.chat_id, 'kicked_from_group',
                         )

@@ -27,7 +27,7 @@ class ChangeVolume(SpawnProcess):
                     ),
                 )
             except Exception:
-                raise Exception(f'Error internal: NOT_IN_GROUP')
+                raise Exception('Error internal: NOT_IN_GROUP')
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
             if not self.pytgcalls._init_js_core:

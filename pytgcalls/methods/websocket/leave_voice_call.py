@@ -18,7 +18,9 @@ class LeaveVoiceCall:
         if isinstance(params, str):
             params = json.loads(params)
         try:
-            chat_call = (await self.pytgcalls._load_full_chat(int(params['chat_id']))).full_chat.call
+            chat_call = (
+                await self.pytgcalls._load_full_chat(int(params['chat_id']))
+            ).full_chat.call
             if chat_call is not None:
                 # noinspection PyBroadException
                 await self.pytgcalls._app.send(

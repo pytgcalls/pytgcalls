@@ -30,7 +30,7 @@ class PyTgCalls(Methods):
         self._app = app
         try:
             self._app.start()
-            self._my_id = self._app.get_me()['id']  # noqa
+            self._my_id = self._app.get_me()['id']
             if before_start_callable is not None:
                 # noinspection PyBroadException
                 try:
