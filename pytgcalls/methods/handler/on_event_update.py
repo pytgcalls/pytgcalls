@@ -2,23 +2,19 @@ from typing import Callable
 
 
 class OnEventUpdate:
-    def on_event_update(self: '....pytgcalls.PytgCalls' = None) -> Callable:
+    def __init__(self, pytgcalls):
+        self.pytgcalls = pytgcalls
+
+    def on_event_update(self) -> Callable:
         method = 'EVENT_UPDATE_HANDLER'
 
+        # noinspection PyProtectedMember
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._add_handler(
+                self.pytgcalls._add_handler(
                     method, {
                         'callable': func,
                     },
                 )
-            else:
-                func.handler_pytgcalls = (
-                    {
-                        'callable': func,
-                    },
-                    method,
-                )
             return func
-
         return decorator

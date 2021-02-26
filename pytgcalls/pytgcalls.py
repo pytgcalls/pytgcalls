@@ -1,9 +1,7 @@
 from typing import Callable, List, Dict
-
 from pyrogram import Client
-
 from .methods import Methods
-from .methods.listener import ListenerKick
+from .methods.listener import Listener
 
 
 class PyTgCalls(Methods):
@@ -22,6 +20,7 @@ class PyTgCalls(Methods):
         self._my_id = 0
         self.is_running = False
         self._current_active_chats: List[int] = []
+        self._current_status_chats: Dict[str, bool] = {}
         self._session_id = self._generate_session_id(20)
         self._log_mode = log_mode
         super().__init__(self)
@@ -41,7 +40,7 @@ class PyTgCalls(Methods):
                                 return
                     except Exception:
                         pass
-                ListenerKick(self._app, self, self._my_id)
+                Listener(self._app, self, self._my_id)
                 self._spawn_process(
                     self._run_js,
                     (

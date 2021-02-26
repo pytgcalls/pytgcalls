@@ -1,1 +1,1 @@
-from .pytgcalls import PyTgCalls
+from .pytgcalls.pytgcalls import PyTgCalls
