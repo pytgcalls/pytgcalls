@@ -2,9 +2,7 @@ from typing import Callable
 
 
 class OnUpdateCustom:
-    def on_update_custom_api(
-            self: '....pytgcalls.PytgCalls' = None,
-    ) -> Callable:
+    def on_update_custom_api(self) -> Callable:
         method = 'CUSTOM_API_HANDLER'
 
         def decorator(func: Callable) -> Callable:
@@ -13,13 +11,6 @@ class OnUpdateCustom:
                     method, {
                         'callable': func,
                     },
-                )
-            else:
-                func.handler_pytgcalls = (
-                    {
-                        'callable': func,
-                    },
-                    method,
                 )
             return func
         return decorator

@@ -18,7 +18,10 @@ class ChangeVolume(SpawnProcess):
                 self._spawn_process(
                     requests.post,
                     (
-                        f'http://{self.pytgcalls._host}:{self.pytgcalls._port}/request_change_volume',
+                        f'http://'
+                        f'{self.pytgcalls._host}:'
+                        f'{self.pytgcalls._port}/'
+                        f'request_change_volume',
                         json.dumps({
                             'chat_id': chat_id,
                             'volume': volume,

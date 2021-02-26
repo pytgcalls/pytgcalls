@@ -2,7 +2,7 @@ from typing import Callable
 
 
 class OnStreamEnd:
-    def on_stream_end(self: '....pytgcalls.PytgCalls' = None) -> callable:
+    def on_stream_end(self) -> callable:
         method = 'STREAM_END_HANDLER'
 
         def decorator(func: Callable) -> Callable:
@@ -12,13 +12,5 @@ class OnStreamEnd:
                         'callable': func,
                     },
                 )
-            else:
-                func.handler_pytgcalls = (
-                    {
-                        'callable': func,
-                    },
-                    method,
-                )
             return func
-
         return decorator
