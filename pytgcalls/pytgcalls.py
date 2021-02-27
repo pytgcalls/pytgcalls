@@ -11,7 +11,11 @@ from pyrogram.raw.types import \
 
 
 class PyTgCalls(Methods):
-    def __init__(self, app: Client,  port: int = 24859, log_mode: bool = False):
+    def __init__(self,
+                 app: Client,
+                 port: int = 24859,
+                 log_mode: bool = False
+                 ):
         self._app = app
         self._app_core = None
         self._sio = None
@@ -35,17 +39,27 @@ class PyTgCalls(Methods):
     def run(self, before_start_callable: Callable = None):
         if self._app is not None:
             try:
+                # noinspection PyBroadException
                 @self._app.on_raw_update()
                 async def on_close(client, update, _, data2):
                     if isinstance(update, UpdateChannel):
                         chat_id = int(f'-100{update.channel_id}')
-                        if isinstance(data2[update.channel_id], ChannelForbidden):
+                        if isinstance(
+                                data2[update.channel_id],
+                                ChannelForbidden
+                        ):
                             self.leave_group_call(
                                 chat_id,
                                 'kicked_from_group'
                             )
-                    if isinstance(update, UpdateGroupCall):
-                        if isinstance(update.call, GroupCallDiscarded):
+                    if isinstance(
+                            update,
+                            UpdateGroupCall
+                    ):
+                        if isinstance(
+                                update.call,
+                                GroupCallDiscarded
+                        ):
                             self.leave_group_call(
                                 int(f'-100{update.chat_id}'),
                                 'closed_voice_chat'
@@ -54,16 +68,20 @@ class PyTgCalls(Methods):
                             update,
                             UpdateNewChannelMessage
                     ):
-                        if isinstance(
+                        try:
+                            if isinstance(
                                 update.message.action,
                                 MessageActionInviteToGroupCall
-                        ):
-                            for event in self._on_event_update[
-                                'GROUP_CALL_HANDLER'
-                            ]:
-                                event['callable'](
-                                    client, update.message
-                                )
+                            ):
+                                for event in self._on_event_update[
+                                    'GROUP_CALL_HANDLER'
+                                ]:
+                                    event['callable'](
+                                        client, update.message
+                                    )
+                        except Exception:
+                            pass
+
                 self._app.start()
                 self._my_id = self._app.get_me()['id']
                 if before_start_callable is not None:
