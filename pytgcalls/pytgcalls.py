@@ -1,12 +1,18 @@
 from typing import Callable, List, Dict
 from pyrogram import Client
 from .methods import Methods
-from .methods.listener import Listener
+from pyrogram.raw.types import \
+    GroupCallDiscarded, \
+    ChannelForbidden, \
+    UpdateChannel, \
+    UpdateGroupCall, \
+    UpdateNewChannelMessage, \
+    MessageActionInviteToGroupCall
 
 
 class PyTgCalls(Methods):
-    def __init__(self, port: int = 24859, log_mode: bool = False):
-        self._app = None
+    def __init__(self, app: Client,  port: int = 24859, log_mode: bool = False):
+        self._app = app
         self._app_core = None
         self._sio = None
         self._host = '127.0.0.1'
@@ -16,6 +22,7 @@ class PyTgCalls(Methods):
             'EVENT_UPDATE_HANDLER': [],
             'STREAM_END_HANDLER': [],
             'CUSTOM_API_HANDLER': [],
+            'GROUP_CALL_HANDLER': []
         }
         self._my_id = 0
         self.is_running = False
@@ -25,10 +32,38 @@ class PyTgCalls(Methods):
         self._log_mode = log_mode
         super().__init__(self)
 
-    def run(self, app: Client, before_start_callable: Callable = None):
-        if app is not None:
-            self._app = app
+    def run(self, before_start_callable: Callable = None):
+        if self._app is not None:
             try:
+                @self._app.on_raw_update()
+                async def on_close(client, update, _, data2):
+                    if isinstance(update, UpdateChannel):
+                        chat_id = int(f'-100{update.channel_id}')
+                        if isinstance(data2[update.channel_id], ChannelForbidden):
+                            self.leave_group_call(
+                                chat_id,
+                                'kicked_from_group'
+                            )
+                    if isinstance(update, UpdateGroupCall):
+                        if isinstance(update.call, GroupCallDiscarded):
+                            self.leave_group_call(
+                                int(f'-100{update.chat_id}'),
+                                'closed_voice_chat'
+                            )
+                    if isinstance(
+                            update,
+                            UpdateNewChannelMessage
+                    ):
+                        if isinstance(
+                                update.message.action,
+                                MessageActionInviteToGroupCall
+                        ):
+                            for event in self._on_event_update[
+                                'GROUP_CALL_HANDLER'
+                            ]:
+                                event['callable'](
+                                    client, update.message
+                                )
                 self._app.start()
                 self._my_id = self._app.get_me()['id']
                 if before_start_callable is not None:
@@ -40,7 +75,6 @@ class PyTgCalls(Methods):
                                 return
                     except Exception:
                         pass
-                Listener(self._app, self, self._my_id)
                 self._spawn_process(
                     self._run_js,
                     (

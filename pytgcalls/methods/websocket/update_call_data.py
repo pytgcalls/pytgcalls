@@ -14,12 +14,20 @@ class UpdateCallData:
         if isinstance(params, str):
             params = json.loads(params)
         if params['result'] == 'PAUSED_AUDIO_STREAM':
-            self.pytgcalls._current_status_chats[int(params['chat_id'])] = False
+            self.pytgcalls._current_status_chats[
+                int(params['chat_id'])
+            ] = False
         elif params['result'] == 'RESUMED_AUDIO_STREAM' or \
                 params['result'] == 'JOINED_VOICE_CHAT':
-            self.pytgcalls._current_status_chats[int(params['chat_id'])] = True
+            self.pytgcalls._current_status_chats[
+                int(params['chat_id'])
+            ] = True
         elif params['result'] == 'LEAVED_VOICE_CHAT':
-            del self.pytgcalls._current_status_chats[int(params['chat_id'])]
-        for event in self.pytgcalls._on_event_update['EVENT_UPDATE_HANDLER']:
+            del self.pytgcalls._current_status_chats[
+                int(params['chat_id'])
+            ]
+        for event in self.pytgcalls._on_event_update[
+            'EVENT_UPDATE_HANDLER'
+        ]:
             event['callable'](params)
         return web.Response(content_type='text/plain', text='OK')

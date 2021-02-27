@@ -5,7 +5,7 @@ class OnStreamEnd:
     def __init__(self, pytgcalls):
         self.pytgcalls = pytgcalls
 
-    def on_stream_end(self) -> callable:
+    def on_stream_end(self) -> Callable:
         method = 'STREAM_END_HANDLER'
 
         # noinspection PyProtectedMember
