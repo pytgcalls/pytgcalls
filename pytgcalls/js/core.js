@@ -4,9 +4,8 @@ const ApiSender = require('./api_sender');
 
 (async () => {
     const port = process.argv[2].split('=')[1];
-    const log_mode = process.argv[3].split('=')[1];
+    const log_mode = process.argv[3].split('=')[1] === 'True';
     let socket = io('ws://localhost:' + port);
-
     console.log('Starting on port: ' + port);
     socket.on('connect', async function () {
         console.log('\x1b[32m', 'Started NodeJS Core!', '\x1b[0m');
