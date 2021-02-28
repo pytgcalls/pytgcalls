@@ -1,6 +1,9 @@
+*.egg-info
 .env
 .env.test
 .idea
+__pycache__/
+dist/
 lib/
 node_modules/
 venv/
