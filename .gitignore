@@ -1,5 +1,6 @@
-node_modules/
-lib/
 .env
 .env.test
 .idea
+lib/
+node_modules/
+venv/

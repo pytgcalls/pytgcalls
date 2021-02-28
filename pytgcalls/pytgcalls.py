@@ -1,21 +1,25 @@
-from typing import Callable, List, Dict
+from typing import Callable
+from typing import Dict
+from typing import List
+
 from pyrogram import Client
+from pyrogram.raw.types import ChannelForbidden
+from pyrogram.raw.types import GroupCallDiscarded
+from pyrogram.raw.types import MessageActionInviteToGroupCall
+from pyrogram.raw.types import UpdateChannel
+from pyrogram.raw.types import UpdateGroupCall
+from pyrogram.raw.types import UpdateNewChannelMessage
+
 from .methods import Methods
-from pyrogram.raw.types import \
-    GroupCallDiscarded, \
-    ChannelForbidden, \
-    UpdateChannel, \
-    UpdateGroupCall, \
-    UpdateNewChannelMessage, \
-    MessageActionInviteToGroupCall
 
 
 class PyTgCalls(Methods):
-    def __init__(self,
-                 app: Client,
-                 port: int = 24859,
-                 log_mode: bool = False
-                 ):
+    def __init__(
+        self,
+        app: Client,
+        port: int = 24859,
+        log_mode: bool = False,
+    ):
         self._app = app
         self._app_core = None
         self._sio = None
@@ -26,7 +30,7 @@ class PyTgCalls(Methods):
             'EVENT_UPDATE_HANDLER': [],
             'STREAM_END_HANDLER': [],
             'CUSTOM_API_HANDLER': [],
-            'GROUP_CALL_HANDLER': []
+            'GROUP_CALL_HANDLER': [],
         }
         self._my_id = 0
         self.is_running = False
@@ -46,38 +50,38 @@ class PyTgCalls(Methods):
                         chat_id = int(f'-100{update.channel_id}')
                         if isinstance(
                                 data2[update.channel_id],
-                                ChannelForbidden
+                                ChannelForbidden,
                         ):
                             self.leave_group_call(
                                 chat_id,
-                                'kicked_from_group'
+                                'kicked_from_group',
                             )
                     if isinstance(
                             update,
-                            UpdateGroupCall
+                            UpdateGroupCall,
                     ):
                         if isinstance(
                                 update.call,
-                                GroupCallDiscarded
+                                GroupCallDiscarded,
                         ):
                             self.leave_group_call(
                                 int(f'-100{update.chat_id}'),
-                                'closed_voice_chat'
+                                'closed_voice_chat',
                             )
                     if isinstance(
                             update,
-                            UpdateNewChannelMessage
+                            UpdateNewChannelMessage,
                     ):
                         try:
                             if isinstance(
                                 update.message.action,
-                                MessageActionInviteToGroupCall
+                                MessageActionInviteToGroupCall,
                             ):
                                 for event in self._on_event_update[
                                     'GROUP_CALL_HANDLER'
                                 ]:
                                     event['callable'](
-                                        client, update.message
+                                        client, update.message,
                                     )
                         except Exception:
                             pass

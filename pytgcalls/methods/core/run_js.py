@@ -6,10 +6,11 @@ class RunJS:
         self.pytgcalls = pytgcalls
 
     # noinspection PyBroadException
-    def _run_js(self,
-                file_path: str = '',
-                arguments: str = ''
-                ):
+    def _run_js(
+        self,
+        file_path: str = '',
+        arguments: str = '',
+    ):
         try:
             execute_js(file_path, arguments)
         except KeyboardInterrupt:

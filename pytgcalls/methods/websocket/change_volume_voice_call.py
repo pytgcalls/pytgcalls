@@ -23,7 +23,7 @@ class ChangeVolumeVoiceCall:
             try:
                 chat_call = (
                     await self.pytgcalls._load_full_chat(
-                        params['chat_id']
+                        params['chat_id'],
                     )
                 ).full_chat.call
                 await self.pytgcalls._app.send(

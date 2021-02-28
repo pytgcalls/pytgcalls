@@ -46,22 +46,15 @@ class JoinVoiceCall:
                 transport = json.loads(result.updates[0].call.params.data)[
                     'transport'
                 ]
-                result_json = {
+                return web.json_response({
                     'transport': {
                         'ufrag': transport['ufrag'],
                         'pwd': transport['pwd'],
                         'fingerprints': transport['fingerprints'],
                         'candidates': transport['candidates'],
                     },
-                }
+                })
             except Exception as e:
                 if 'GROUPCALL_FORBIDDEN' not in str(e):
                     print(e)
-                result_json = {
-                    'transport': None,
-                }
-        else:
-            result_json = {
-                'transport': None,
-            }
-        return web.json_response(result_json)
+        return web.json_response({'transport': None})
