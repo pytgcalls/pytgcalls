@@ -24,7 +24,7 @@ class RunAsync:
                 f'{self.pytgcalls._port}/'
                 f'async_request',
                 json.dumps({
-                    'ID': id_request
+                    'ID': id_request,
                 }),
                 timeout,
             ),
