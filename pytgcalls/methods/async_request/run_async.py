@@ -10,7 +10,7 @@ class RunAsync:
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    def run_async(self, func: Callable, data: tuple, timeout: int = 30,):
+    def run_async(self, func: Callable, data: tuple):
         id_request = self.pytgcalls._generate_session_id(10)
         self.pytgcalls._async_processes[id_request] = {
             'CALLABLE': func,
@@ -26,6 +26,6 @@ class RunAsync:
                 json.dumps({
                     'ID': id_request,
                 }),
-                timeout,
-            ),
+                60,
+            )
         )
