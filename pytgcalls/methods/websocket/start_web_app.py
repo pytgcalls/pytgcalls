@@ -41,6 +41,9 @@ class StartWebApp:
         self.pytgcalls._app_core.router.add_post(
             '/request_change_volume', self.pytgcalls._change_volume_voice_call,
         )
+        self.pytgcalls._app_core.router.add_post(
+            '/async_request', self.pytgcalls._async_result,
+        )
         if len(self.pytgcalls._on_event_update['CUSTOM_API_HANDLER']) > 0:
             self.pytgcalls._app_core.router.add_post(
                 '/api', self.pytgcalls._custom_api_update,

@@ -1,7 +1,6 @@
 from typing import Callable
 from typing import Dict
 from typing import List
-
 from pyrogram import Client
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import GroupCallDiscarded
@@ -9,7 +8,6 @@ from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateNewChannelMessage
-
 from .methods import Methods
 
 
@@ -36,6 +34,7 @@ class PyTgCalls(Methods):
         self.is_running = False
         self._current_active_chats: List[int] = []
         self._current_status_chats: Dict[str, bool] = {}
+        self._async_processes: Dict[str, Dict] = {}
         self._session_id = self._generate_session_id(20)
         self._log_mode = log_mode
         super().__init__(self)
@@ -80,7 +79,7 @@ class PyTgCalls(Methods):
                                 for event in self._on_event_update[
                                     'GROUP_CALL_HANDLER'
                                 ]:
-                                    event['callable'](
+                                    await event['callable'](
                                         client, update.message,
                                     )
                         except Exception:

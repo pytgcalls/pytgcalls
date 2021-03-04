@@ -14,5 +14,8 @@ class EventFinish:
         if isinstance(params, str):
             params = json.loads(params)
         for event in self.pytgcalls._on_event_update['STREAM_END_HANDLER']:
-            event['callable'](params['chat_id'])
+            self.pytgcalls.run_async(
+                event['callable'],
+                (params['chat_id'], )
+            )
         return web.Response(content_type='text/plain', text='OK')
