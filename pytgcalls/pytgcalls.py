@@ -1,6 +1,7 @@
 from typing import Callable
 from typing import Dict
 from typing import List
+
 from pyrogram import Client
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import GroupCallDiscarded
@@ -8,6 +9,7 @@ from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateNewChannelMessage
+
 from .methods import Methods
 
 
