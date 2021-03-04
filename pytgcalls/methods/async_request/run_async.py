@@ -1,4 +1,5 @@
 import json
+
 import requests
 
 from typing import Callable
@@ -9,11 +10,11 @@ class RunAsync:
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    def run_async(self, func: Callable, data: tuple, timeout: int = 10):
+    def run_async(self, func: Callable, data: tuple, timeout: int = 30):
         id_request = self.pytgcalls._generate_session_id(10)
         self.pytgcalls._async_processes[id_request] = {
             'CALLABLE': func,
-            'TUPLE': data
+            'TUPLE': data,
         }
         self.pytgcalls._spawn_process(
             requests.post,
@@ -25,6 +26,6 @@ class RunAsync:
                 json.dumps({
                     'ID': id_request
                 }),
-                5
-            )
+                timeout,
+            ),
         )
