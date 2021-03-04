@@ -16,8 +16,12 @@ class AsyncResult:
         try:
             def_call = self.pytgcalls._async_processes[params['ID']]
             self.pytgcalls._async_processes[params['ID']] = {
-                'RESULT': await def_call['CALLABLE'](*def_call['TUPLE'],)
+                'RESULT': await def_call['CALLABLE'](*def_call['TUPLE']),
             }
         except Exception as e:
-            self.pytgcalls._async_processes[params['ID']] = {'RESULT': e}
-        return web.json_response({'result': 'OK'})
+            self.pytgcalls._async_processes[params['ID']] = {
+                'RESULT': e,
+            }
+        return web.json_response({
+            'result': 'OK',
+        })
