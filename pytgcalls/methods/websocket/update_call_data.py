@@ -23,9 +23,13 @@ class UpdateCallData:
                 int(params['chat_id'])
             ] = True
         elif params['result'] == 'LEAVED_VOICE_CHAT':
-            del self.pytgcalls._current_status_chats[
-                int(params['chat_id'])
-            ]
+            # noinspection PyBroadException
+            try:
+                del self.pytgcalls._current_status_chats[
+                    int(params['chat_id'])
+                ]
+            except Exception:
+                pass
         for event in self.pytgcalls._on_event_update[
             'EVENT_UPDATE_HANDLER'
         ]:

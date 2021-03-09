@@ -28,6 +28,7 @@ const ApiSender = require('./api_sender');
                     data['file_path'],
                     port,
                     data['bitrate'],
+                    log_mode
                 );
 
                 let result = await list_connection[data['chat_id']].join_voice_call();
