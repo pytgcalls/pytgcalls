@@ -27,7 +27,7 @@ class ActiveCalls:
         return len(self.active_calls)
 
     def _add_active_call(self, chat_id: int):
-        if not chat_id in self.active_calls:
+        if chat_id not in self.active_calls:
             self.pytgcalls._active_calls[chat_id] = 'playing'
 
     def _rm_active_call(self, chat_id: int):
