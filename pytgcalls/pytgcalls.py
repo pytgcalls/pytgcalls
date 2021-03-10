@@ -44,10 +44,6 @@ class PyTgCalls(Methods):
     def run(self, before_start_callable: Callable = None):
         if self._app is not None:
             try:
-                @self.on_stream_end()
-                def _on_stream_end(chat_id):
-                    self._rm_active_call(chat_id)
-
                 # noinspection PyBroadException
                 @self._app.on_raw_update()
                 async def on_close(client, update, _, data2):
