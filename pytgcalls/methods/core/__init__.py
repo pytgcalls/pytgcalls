@@ -1,6 +1,6 @@
 from .b_colors import BColors
 from .generate_session import GenerateSession
-from .get_active_voice_chat import GetActiveVoiceChat
+from .active_calls import ActiveCalls
 from .get_port_server import GetPortServer
 from .get_user_id import GetUserId
 from .run_js import RunJS
@@ -11,7 +11,7 @@ class Core(
     GenerateSession,
     GetUserId,
     GetPortServer,
-    GetActiveVoiceChat,
+    ActiveCalls,
     SpawnProcess,
     BColors,
     RunJS,
