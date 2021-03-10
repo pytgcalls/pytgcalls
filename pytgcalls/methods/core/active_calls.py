@@ -31,7 +31,7 @@ class ActiveCalls:
 
     def _add_active_call(self, chat_id: int):
         if not self._is_playing(chat_id):
-            self.pytgcalls._active_calls[chat_id] = "playing"
+            self.pytgcalls._active_calls[chat_id] = 'playing'
 
     def _rm_active_call(self, chat_id: int):
         if self._is_playing(chat_id):
