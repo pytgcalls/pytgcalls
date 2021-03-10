@@ -26,9 +26,6 @@ class ActiveCalls:
     def num_active_calls(self):
         return len(self.active_calls)
 
-    def _is_playing(self, chat_id: int):
-        return chat_id in self.active_calls
-
     def _add_active_call(self, chat_id: int):
         if not self._is_playing(chat_id):
             self.pytgcalls._active_calls[chat_id] = 'playing'
