@@ -4,7 +4,7 @@ class ActiveCalls:
 
     @property
     def calls(self):
-        return self._calls
+        return self.pytgcalls._calls
 
     @property
     def num_calls(self):
@@ -12,11 +12,11 @@ class ActiveCalls:
 
     def _add_call(self, chat_id: int):
         if chat_id not in self.calls:
-            self._calls.append(chat_id)
+            self.pytgcalls._calls.append(chat_id)
 
     def _rm_call(self, chat_id: int):
         if chat_id in self.calls:
-            self._calls.remove(chat_id)
+            self.pytgcalls._calls.remove(chat_id)
 
     @property
     def active_calls(self):
