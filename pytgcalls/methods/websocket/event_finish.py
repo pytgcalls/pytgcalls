@@ -15,7 +15,7 @@ class EventFinish:
             params = json.loads(params)
 
         chat_id = int(params['chat_id'])
-        self.pytgcalls._rm_active_call(chat_id)
+        self.pytgcalls._remove_active_call(chat_id)
 
         for event in self.pytgcalls._on_event_update['STREAM_END_HANDLER']:
             self.pytgcalls.run_async(

@@ -1,4 +1,3 @@
-from .active_calls import ActiveCalls
 from .b_colors import BColors
 from .generate_session import GenerateSession
 from .get_port_server import GetPortServer
@@ -8,7 +7,6 @@ from .spawn_process import SpawnProcess
 
 
 class Core(
-    ActiveCalls,
     GenerateSession,
     GetUserId,
     GetPortServer,

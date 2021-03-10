@@ -1,11 +1,11 @@
 from typing import Callable
 
 
-class OnEventUpdate:
+class OnRawUpdate:
     def __init__(self, pytgcalls):
         self.pytgcalls = pytgcalls
 
-    def on_event_update(self) -> Callable:
+    def on_raw_update(self) -> Callable:
         method = 'EVENT_UPDATE_HANDLER'
 
         # noinspection PyProtectedMember
