@@ -24,13 +24,9 @@ class ApiBackend:
                     'result': 'ACCESS_GRANTED',
                 }
                 if params['action'] == 'join_call':
-                    self.pytgcalls._current_active_chats.append(
-                        params['chat_id'],
-                    )
+                    self.pytgcalls._add_active_call[params['chat_id']]
                 elif params['action'] == 'leave_call':
-                    self.pytgcalls._current_active_chats.remove(
-                        params['chat_id'],
-                    )
+                    self.pytgcalls._rm_active_call[params['chat_id']]
         except Exception:
             pass
         return web.json_response(result_json)

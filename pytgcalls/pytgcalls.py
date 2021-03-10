@@ -34,8 +34,8 @@ class PyTgCalls(Methods):
         }
         self._my_id = 0
         self.is_running = False
-        self._current_active_chats: List[int] = []
-        self._current_status_chats: Dict[str, bool] = {}
+        self._calls: List[int] = []
+        self._active_calls: Dict[int, str] = {}
         self._async_processes: Dict[str, Dict] = {}
         self._session_id = self._generate_session_id(20)
         self._log_mode = log_mode
