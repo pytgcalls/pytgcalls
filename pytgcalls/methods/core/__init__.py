@@ -8,10 +8,10 @@ from .spawn_process import SpawnProcess
 
 
 class Core(
+    ActiveCalls,
     GenerateSession,
     GetUserId,
     GetPortServer,
-    ActiveCalls,
     SpawnProcess,
     BColors,
     RunJS,
