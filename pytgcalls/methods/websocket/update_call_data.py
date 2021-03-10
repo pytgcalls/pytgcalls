@@ -13,16 +13,19 @@ class UpdateCallData:
         params = await request.json()
         if isinstance(params, str):
             params = json.loads(params)
+
+        chat_id = int(params['chat_id'])
+
         if params['result'] == 'PAUSED_AUDIO_STREAM':
-            self.pytgcalls._set_status(params['chat_id'], 'paused')
+            self.pytgcalls._set_status(chat_id, 'paused')
         elif params['result'] == 'RESUMED_AUDIO_STREAM':
-            self.pytgcalls._set_status(params['chat_id'], 'playing')
+            self.pytgcalls._set_status(chat_id, 'playing')
         elif params['result'] == 'JOINED_VOICE_CHAT':
             self.pytgcalls._add_active_call(params['chat_id'])
-            self.pytgcalls._add_call(params['chat_id'])
+            self.pytgcalls._add_call(chat_id)
         elif params['result'] == 'LEAVED_VOICE_CHAT':
-            self.pytgcalls._rm_active_call(params['chat_id'])
-            self.pytgcalls._rm_call(params['chat_id'])
+            self.pytgcalls._rm_active_call(chat_id)
+            self.pytgcalls._rm_call(chat_id)
         for event in self.pytgcalls._on_event_update[
             'EVENT_UPDATE_HANDLER'
         ]:
