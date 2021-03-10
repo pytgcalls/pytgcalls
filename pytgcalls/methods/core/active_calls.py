@@ -27,7 +27,7 @@ class ActiveCalls:
 
     @property
     def active_calls(self):
-        return self._active_calls
+        return self.pytgcalls._active_calls
 
     @property
     def num_active_calls(self):
@@ -40,14 +40,14 @@ class ActiveCalls:
     @_chat_id_as_int
     def _add_active_call(self, chat_id: int):
         if not self._is_playing(chat_id):
-            self._active_calls[chat_id] = "playing"
+            self.pytgcalls._active_calls[chat_id] = "playing"
 
     @_chat_id_as_int
     def _rm_active_call(self, chat_id: int):
         if self._is_playing(chat_id):
-            del self._active_calls[chat_id]
+            del self.pytgcalls._active_calls[chat_id]
 
     @_chat_id_as_int
     def _set_status(self, chat_id: int, status: str):
         if self._is_playing(chat_id):
-            self._active_calls[chat_id] = status
+            self.pytgcalls._active_calls[chat_id] = status
