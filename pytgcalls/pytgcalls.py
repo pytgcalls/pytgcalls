@@ -31,11 +31,12 @@ class PyTgCalls(Methods):
             'STREAM_END_HANDLER': [],
             'CUSTOM_API_HANDLER': [],
             'GROUP_CALL_HANDLER': [],
+            'KICK_HANDLER': [],
         }
         self._my_id = 0
         self.is_running = False
-        self._current_active_chats: List[int] = []
-        self._current_status_chats: Dict[str, bool] = {}
+        self._calls: List[int] = []
+        self._active_calls: Dict[int, str] = {}
         self._async_processes: Dict[str, Dict] = {}
         self._session_id = self._generate_session_id(20)
         self._log_mode = log_mode
@@ -49,14 +50,21 @@ class PyTgCalls(Methods):
                 async def on_close(client, update, _, data2):
                     if isinstance(update, UpdateChannel):
                         chat_id = int(f'-100{update.channel_id}')
-                        if isinstance(
+                        if len(data2) > 0:
+                            if isinstance(
                                 data2[update.channel_id],
                                 ChannelForbidden,
-                        ):
-                            self.leave_group_call(
-                                chat_id,
-                                'kicked_from_group',
-                            )
+                            ):
+                                for event in self._on_event_update[
+                                    'KICK_HANDLER'
+                                ]:
+                                    await event['callable'](
+                                        chat_id,
+                                    )
+                                self.leave_group_call(
+                                    chat_id,
+                                    'kicked_from_group',
+                                )
                     if isinstance(
                             update,
                             UpdateGroupCall,

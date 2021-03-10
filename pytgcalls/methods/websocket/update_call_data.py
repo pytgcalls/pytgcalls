@@ -13,23 +13,21 @@ class UpdateCallData:
         params = await request.json()
         if isinstance(params, str):
             params = json.loads(params)
+
+        chat_id = int(params['chat_id'])
+
         if params['result'] == 'PAUSED_AUDIO_STREAM':
-            self.pytgcalls._current_status_chats[
-                int(params['chat_id'])
-            ] = False
-        elif params['result'] == 'RESUMED_AUDIO_STREAM' or \
-                params['result'] == 'JOINED_VOICE_CHAT':
-            self.pytgcalls._current_status_chats[
-                int(params['chat_id'])
-            ] = True
-        elif params['result'] == 'LEAVED_VOICE_CHAT':
-            # noinspection PyBroadException
-            try:
-                del self.pytgcalls._current_status_chats[
-                    int(params['chat_id'])
-                ]
-            except Exception:
-                pass
+            self.pytgcalls._set_status(chat_id, 'paused')
+        elif params['result'] == 'RESUMED_AUDIO_STREAM':
+            self.pytgcalls._set_status(chat_id, 'playing')
+        elif params['result'] == 'JOINED_VOICE_CHAT':
+            self.pytgcalls._add_active_call(params['chat_id'])
+            self.pytgcalls._add_call(chat_id)
+            self.pytgcalls._set_status(chat_id, 'playing')
+        elif params['result'] == 'LEAVED_VOICE_CHAT' or \
+                params['result'] == 'KICKED_FROM_GROUP':
+            self.pytgcalls._remove_active_call(chat_id)
+            self.pytgcalls._remove_call(chat_id)
         for event in self.pytgcalls._on_event_update[
             'EVENT_UPDATE_HANDLER'
         ]:
