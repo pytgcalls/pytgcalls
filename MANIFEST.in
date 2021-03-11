@@ -1,0 +1,3 @@
+graft pytgcalls/js
+graft ./lib
+prune **/node_modules
