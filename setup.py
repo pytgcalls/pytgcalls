@@ -7,7 +7,7 @@ from setuptools.command.install import install
 class PostInstall(install):
     def run(self):
         install.run(self)
-        subprocess.call('install.sh')
+        subprocess.run(['npm', 'install'], cwd='pytgcalls/js')
 
 
 setup(
