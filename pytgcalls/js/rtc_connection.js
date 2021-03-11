@@ -1,4 +1,4 @@
-const { TGCalls, Stream } = require('../../lib');
+const { TGCalls, Stream } = require('./lib');
 const fetch = require('node-fetch');
 const fs = require('fs');
 
