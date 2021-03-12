@@ -32,6 +32,7 @@ class PyTgCalls(Methods):
             'CUSTOM_API_HANDLER': [],
             'GROUP_CALL_HANDLER': [],
             'KICK_HANDLER': [],
+            'CLOSED_HANDLER': [],
         }
         self._my_id = 0
         self.is_running = False
@@ -73,8 +74,15 @@ class PyTgCalls(Methods):
                                 update.call,
                                 GroupCallDiscarded,
                         ):
+                            chat_id = int(f'-100{update.chat_id}')
+                            for event in self._on_event_update[
+                                'CLOSED_HANDLER'
+                            ]:
+                                await event['callable'](
+                                    chat_id,
+                                )
                             self.leave_group_call(
-                                int(f'-100{update.chat_id}'),
+                                chat_id,
                                 'closed_voice_chat',
                             )
                     if isinstance(

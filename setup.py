@@ -1,6 +1,5 @@
 import os
 import site
-import time
 
 from setuptools import setup
 from setuptools.command.install import install
@@ -48,14 +47,40 @@ class PostInstall(install):
                 'Copying files from '
                 f'{os.getcwd()}/pytgcalls/'
                 ' to '
-                f'{site.getsitepackages()[0]}/pytgcalls/'
+                f'{site.getsitepackages()[0]}/pytgcalls/',
             )
-            os.system(
-                f'mkdir {site.getsitepackages()[0]}/pytgcalls'
-            )
-            os.system(
-                f'mkdir {site.getsitepackages()[0]}/pytgcalls/js'
-            )
+            if os.path.exists(
+                f'{site.getsitepackages()[0]}/pytgcalls',
+            ):
+                os.system(
+                    'mkdir '
+                    f'{site.getsitepackages()[0]}/pytgcalls',
+                )
+            if not os.path.exists(
+                f'{site.getsitepackages()[0]}/pytgcalls/js',
+            ):
+                os.system(
+                    'mkdir '
+                    f'{site.getsitepackages()[0]}'
+                    '/pytgcalls/js',
+                )
+            if os.path.exists(
+                f'{site.getsitepackages()[0]}/pytgcalls/js/lib',
+            ):
+                os.system(
+                    'rm -r '
+                    f'{site.getsitepackages()[0]}'
+                    '/pytgcalls/js/lib',
+                )
+            if os.path.exists(
+                f'{site.getsitepackages()[0]}'
+                '/pytgcalls/js/node_modules',
+            ):
+                os.system(
+                    'rm -r '
+                    f'{site.getsitepackages()[0]}'
+                    '/pytgcalls/js/node_modules',
+                )
             os.system(
                 'cp -r '
                 f'{os.getcwd()}/pytgcalls/js/lib '
