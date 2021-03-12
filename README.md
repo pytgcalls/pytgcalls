@@ -7,13 +7,11 @@
 Here's how to install the PyTgCalls lib, the commands are given below:
 
 ``` bash
-cd pytgcalls/ && \
-npm install && \
-npm run prepare && \
-cd pytgcalls/js && \
-npm install && \
-cd ../../ && \
-pip install -r requirements.txt
+# With Git
+pip install git+https://github.com/pytgcalls/pytgcalls
+
+# With PyPi
+pip install py-tgcalls
 ```
 
 # Conversion command
