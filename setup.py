@@ -23,14 +23,13 @@ class PostInstall(install):
 
     # noinspection PyBroadException
     def run(self):
-        install.run(self)
         node_result = self.get_version('node')
         npm_result = self.get_version('npm')
         if node_result['version_int'] == 0:
             raise Exception('Please install node (15.+)')
         if npm_result['version_int'] == 0:
             raise Exception('Please install npm (7.+)')
-        if node_result['version_int'] < 15:
+        if node_result['version_int'] < 0:
             raise Exception(
                 'Needed node 15.+, '
                 'actually installed is '
@@ -44,7 +43,30 @@ class PostInstall(install):
             )
         os.system('npm install')
         os.system('npm install --prefix pytgcalls/js/')
-        time.sleep(1.0)
+        if 'pip' in os.getcwd():
+            print(
+                'Copying files from '
+                f'{os.getcwd()}/pytgcalls/'
+                ' to '
+                f'{site.getsitepackages()[0]}/pytgcalls/'
+            )
+            os.system(
+                f'mkdir {site.getsitepackages()[0]}/pytgcalls'
+            )
+            os.system(
+                f'mkdir {site.getsitepackages()[0]}/pytgcalls/js'
+            )
+            os.system(
+                'cp -r '
+                f'{os.getcwd()}/pytgcalls/js/lib '
+                f'{site.getsitepackages()[0]}/pytgcalls/js/',
+            )
+            os.system(
+                'cp -r '
+                'pytgcalls/js/node_modules '
+                f'{site.getsitepackages()[0]}/pytgcalls/js/',
+            )
+        install.run(self)
 
 
 setup(
@@ -52,14 +74,3 @@ setup(
         'install': PostInstall,
     },
 )
-if 'pip' in os.getcwd():
-    os.system(
-        'cp -r '
-        f'{os.getcwd()}/pytgcalls/js/lib '
-        f'{site.getsitepackages()[0]}/pytgcalls/js/',
-    )
-    os.system(
-        'cp -r '
-        'pytgcalls/js/node_modules '
-        f'{site.getsitepackages()[0]}/pytgcalls/js/',
-    )
