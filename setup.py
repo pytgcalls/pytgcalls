@@ -17,7 +17,7 @@ class PostInstall(install):
                 'version': '0',
             }
         return {
-            'version_int': int(result_cmd.replace('.', '')),
+            'version_int': int(result_cmd.split('.')[0]),
             'version': result_cmd,
         }
 
@@ -30,34 +30,21 @@ class PostInstall(install):
             raise Exception('Please install node (15.+)')
         if npm_result['version_int'] == 0:
             raise Exception('Please install npm (7.+)')
-        if node_result['version_int'] < 15000:
+        if node_result['version_int'] < 15:
             raise Exception(
                 'Needed node 15.+, '
                 'actually installed is '
                 f"{node_result['version']}",
             )
-        if npm_result['version_int'] < 700:
+        if npm_result['version_int'] < 7:
             raise Exception(
                 'Needed npm 7.+, '
                 'actually installed is '
                 f"{npm_result['version']}",
             )
         os.system('npm install')
-        is_pip = 'pip' in os.getcwd()
-        if is_pip:
-            os.system(
-                'cp -r '
-                f'{os.getcwd()}/pytgcalls/js/lib '
-                f'{site.getsitepackages()[0]}/pytgcalls/js/',
-            )
         os.system('npm install --prefix pytgcalls/js/')
-        time.sleep(0.5)
-        if is_pip:
-            os.system(
-                'cp -r '
-                'pytgcalls/js/node_modules '
-                f'{site.getsitepackages()[0]}/pytgcalls/js/',
-            )
+        time.sleep(1.0)
 
 
 setup(
@@ -65,3 +52,14 @@ setup(
         'install': PostInstall,
     },
 )
+if 'pip' in os.getcwd():
+    os.system(
+        'cp -r '
+        f'{os.getcwd()}/pytgcalls/js/lib '
+        f'{site.getsitepackages()[0]}/pytgcalls/js/',
+    )
+    os.system(
+        'cp -r '
+        'pytgcalls/js/node_modules '
+        f'{site.getsitepackages()[0]}/pytgcalls/js/',
+    )
