@@ -8,7 +8,7 @@ from setuptools.command.install import install
 
 class PostInstall(install):
     @staticmethod
-    def get_version(package_check) -> dict:
+    def get_version(package_check):
         result_cmd = os.popen(f'{package_check} -v').read()
         result_cmd = result_cmd.replace('v', '')
         if len(result_cmd) == 0:
