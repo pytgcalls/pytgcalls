@@ -10,6 +10,7 @@ export class Stream extends EventEmitter {
     private _stopped = false;
     private OnStreamEnd = Function;
     private _finishedLoading = false;
+    private last_buffering = 0;
 
     constructor(
         readable?: Readable,
@@ -39,6 +40,7 @@ export class Stream extends EventEmitter {
 
             readable.on('data', data => {
                 this.cache = Buffer.concat([this.cache, data]);
+                this.last_buffering = new Date().getTime();
             });
 
             readable.on('end', () => {
@@ -95,18 +97,19 @@ export class Stream extends EventEmitter {
     }
 
     private processData() {
+        const old_time=new Date().getTime()
         if (this._stopped) {
             return;
         }
 
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
 
-        if (!this._paused && !this._finished && (this.cache.length >= byteLength || this._finishedLoading)) {
+        const is_buffering = new Date().getTime() - this.last_buffering < 500;
+
+        if (!this._paused && !this._finished && (this.cache.length >= byteLength || this._finishedLoading) && !is_buffering) {
             const buffer = this.cache.slice(0, byteLength);
             const samples = new Int16Array(new Uint8Array(buffer).buffer);
-
             this.cache = this.cache.slice(byteLength);
-
             try {
                 this.audioSource.onData({
                     bitsPerSample: this.bitsPerSample,
@@ -127,7 +130,7 @@ export class Stream extends EventEmitter {
             }
             this.emit('finish');
         }
-
-        setTimeout(() => this.processData(), this._finished || this._paused ? 500 : 10);
+        let time_remove = new Date().getTime() - old_time
+        setTimeout(() => this.processData(), (this._finished || this._paused ? 500 : 10 || is_buffering) - time_remove);
     }
 }

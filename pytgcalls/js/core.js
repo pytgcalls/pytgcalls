@@ -28,6 +28,7 @@ const ApiSender = require('./api_sender');
                     data['file_path'],
                     port,
                     data['bitrate'],
+                    data['channels'],
                     log_mode
                 );
 

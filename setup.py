@@ -28,7 +28,7 @@ class PostInstall(install):
             raise Exception('Please install node (15.+)')
         if npm_result['version_int'] == 0:
             raise Exception('Please install npm (7.+)')
-        if node_result['version_int'] < 0:
+        if node_result['version_int'] < 15:
             raise Exception(
                 'Needed node 15.+, '
                 'actually installed is '

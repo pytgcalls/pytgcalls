@@ -1,3 +1,4 @@
+import os
 from typing import Callable
 from typing import Dict
 from typing import List
@@ -43,8 +44,31 @@ class PyTgCalls(Methods):
         self._log_mode = log_mode
         super().__init__(self)
 
+    @staticmethod
+    def get_version(package_check):
+        result_cmd = os.popen(f'{package_check} -v').read()
+        result_cmd = result_cmd.replace('v', '')
+        if len(result_cmd) == 0:
+            return {
+                'version_int': 0,
+                'version': '0',
+            }
+        return {
+            'version_int': int(result_cmd.split('.')[0]),
+            'version': result_cmd,
+        }
+
     def run(self, before_start_callable: Callable = None):
         if self._app is not None:
+            node_result = self.get_version('node')
+            if node_result['version_int'] == 0:
+                raise Exception('Please install node (15.+)')
+            if node_result['version_int'] < 15:
+                raise Exception(
+                    'Needed node 15.+, '
+                    'actually installed is '
+                    f"{node_result['version']}",
+                )
             try:
                 # noinspection PyBroadException
                 @self._app.on_raw_update()
