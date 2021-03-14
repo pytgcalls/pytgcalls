@@ -5,50 +5,69 @@ import { RTCAudioSource, nonstandard } from 'wrtc';
 export class Stream extends EventEmitter {
     private readonly audioSource: RTCAudioSource;
     private cache: Buffer;
+    private local_readable = undefined;
     private _paused = false;
     private _finished = true;
     private _stopped = false;
     private OnStreamEnd = Function;
     private _finishedLoading = false;
-    private last_buffering = 0;
 
     constructor(
         readable?: Readable,
         readonly bitsPerSample = 16,
         readonly sampleRate = 48000,
         readonly channelCount = 1,
+        readonly log_mode = 0,
     ) {
         super();
 
         this.audioSource = new nonstandard.RTCAudioSource();
         this.cache = Buffer.alloc(0);
-
         this.setReadable(readable);
         this.processData();
     }
 
     setReadable(readable?: Readable) {
+        // @ts-ignore
+        this.local_readable = readable;
         if (this._stopped) {
             throw new Error('Cannot set readable when stopped');
         }
 
         this.cache = Buffer.alloc(0);
 
-        if (readable) {
+        if(this.local_readable !== undefined){
             this._finished = false;
             this._finishedLoading = false;
 
-            readable.on('data', data => {
-                this.cache = Buffer.concat([this.cache, data]);
-                this.last_buffering = new Date().getTime();
-            });
+            // @ts-ignore
+            this.local_readable.on('data', (data: any) => {
 
-            readable.on('end', () => {
+                if(!this.need_buffering()){
+                    // @ts-ignore
+                    this.local_readable.pause();
+                    if(this.log_mode > 1){
+                        console.log('ENDED_BUFFERING -> ', new Date().getTime());
+                    }
+                }
+                this.cache = Buffer.concat([this.cache, data]);
+            });
+            // @ts-ignore
+            this.local_readable.on('end', () => {
                 this._finishedLoading = true;
             });
         }
     }
 
+    private need_buffering(){
+        const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
+        return this.cache.length < (byteLength * 100) * 10;
+    }
+
+    private check_lag(){
+        const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
+        return this.cache.length < (byteLength * 100) * 5;
+    }
     pause() {
         if (this._stopped) {
             throw new Error('Cannot pause when stopped');
@@ -104,9 +123,16 @@ export class Stream extends EventEmitter {
 
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
 
-        const is_buffering = new Date().getTime() - this.last_buffering < 500;
-
-        if (!this._paused && !this._finished && (this.cache.length >= byteLength || this._finishedLoading) && !is_buffering) {
+        if(this.need_buffering()){
+            if(this.local_readable !== undefined){
+                // @ts-ignore
+                this.local_readable.resume();
+                if(this.log_mode > 1){
+                    console.log('BUFFERING -> ', new Date().getTime());
+                }
+            }
+        }
+        if (!this._paused && !this._finished && (this.cache.length >= byteLength || this._finishedLoading) && !this.check_lag()) {
             const buffer = this.cache.slice(0, byteLength);
             const samples = new Int16Array(new Uint8Array(buffer).buffer);
             this.cache = this.cache.slice(byteLength);
@@ -131,6 +157,6 @@ export class Stream extends EventEmitter {
             this.emit('finish');
         }
         let time_remove = new Date().getTime() - old_time
-        setTimeout(() => this.processData(), (this._finished || this._paused ? 500 : 10 || is_buffering) - time_remove);
+        setTimeout(() => this.processData(), (this._finished || this._paused || this.check_lag() ? 500 : 10 ) - time_remove);
     }
 }

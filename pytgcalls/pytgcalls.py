@@ -16,10 +16,10 @@ from .methods import Methods
 
 class PyTgCalls(Methods):
     def __init__(
-        self,
-        app: Client,
-        port: int = 24859,
-        log_mode: bool = False,
+            self,
+            app: Client,
+            port: int = 24859,
+            log_mode: int = 0,
     ):
         self._app = app
         self._app_core = None
@@ -43,6 +43,14 @@ class PyTgCalls(Methods):
         self._session_id = self._generate_session_id(20)
         self._log_mode = log_mode
         super().__init__(self)
+
+    @staticmethod
+    def verbose_mode():
+        return 1
+
+    @property
+    def ultra_verbose_mode(self):
+        return 2
 
     @staticmethod
     def get_version(package_check):
@@ -77,8 +85,8 @@ class PyTgCalls(Methods):
                         chat_id = int(f'-100{update.channel_id}')
                         if len(data2) > 0:
                             if isinstance(
-                                data2[update.channel_id],
-                                ChannelForbidden,
+                                    data2[update.channel_id],
+                                    ChannelForbidden,
                             ):
                                 for event in self._on_event_update[
                                     'KICK_HANDLER'
@@ -115,8 +123,8 @@ class PyTgCalls(Methods):
                     ):
                         try:
                             if isinstance(
-                                update.message.action,
-                                MessageActionInviteToGroupCall,
+                                    update.message.action,
+                                    MessageActionInviteToGroupCall,
                             ):
                                 for event in self._on_event_update[
                                     'GROUP_CALL_HANDLER'
