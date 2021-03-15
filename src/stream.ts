@@ -55,16 +55,25 @@ export class Stream extends EventEmitter {
             // @ts-ignore
             this.local_readable.on('end', () => {
                 this._finishedLoading = true;
+                if(this.log_mode > 1){
+                    console.log('ENDED_BUFFERING -> ', new Date().getTime());
+                }
             });
         }
     }
 
     private need_buffering(){
+        if(this._finishedLoading){
+            return false;
+        }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
         return this.cache.length < (byteLength * 100) * 10;
     }
 
     private check_lag(){
+        if(this._finishedLoading){
+            return false;
+        }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
         return this.cache.length < (byteLength * 100) * 5;
     }
