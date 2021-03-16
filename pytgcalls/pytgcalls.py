@@ -11,15 +11,16 @@ from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateNewChannelMessage
 from pyrogram import __version__
+
 from .methods import Methods
 
 
 class PyTgCalls(Methods):
     def __init__(
-            self,
-            app: Client,
-            port: int = 24859,
-            log_mode: int = 0,
+        self,
+        app: Client,
+        port: int = 24859,
+        log_mode: int = 0,
     ):
         self._app = app
         self._app_core = None
@@ -158,7 +159,7 @@ class PyTgCalls(Methods):
                 self._app.start()
                 self._my_id = self._app.get_me()['id'] # noqa
                 self._cache_local_peer = self._app.resolve_peer(
-                    self._my_id
+                    self._my_id,
                 )
                 if before_start_callable is not None:
                     # noinspection PyBroadException
