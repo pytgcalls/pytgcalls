@@ -17,7 +17,7 @@ class JoinGroupCall(SpawnProcess):
             chat_id: int,
             file_path: str,
             bitrate: int,
-            join_as: InputPeer
+            join_as: InputPeer,
     ):
         self.pytgcalls._cache_user_peer[chat_id] = join_as
         bitrate = 48000 if bitrate > 48000 else bitrate

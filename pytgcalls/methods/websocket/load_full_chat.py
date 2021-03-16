@@ -28,11 +28,11 @@ class LoadFullChat:
             )
             self.pytgcalls._cache_full_chat[chat_id] = {
                 'last_update': curr_time,
-                'full_chat': full_chat
+                'full_chat': full_chat,
             }
         if self.pytgcalls._log_mode > 1:
             print(
                 'Pyrogram -> GetFullChannel',
-                f'executed with {"cache" if load_cache else "Telegram"}'
+                f'executed with {"cache" if load_cache else "Telegram"}',
             )
         return full_chat
