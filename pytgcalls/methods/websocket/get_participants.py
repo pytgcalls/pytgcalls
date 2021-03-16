@@ -6,7 +6,7 @@ from pyrogram.raw.functions.phone import GetGroupParticipants
 from pyrogram.raw.types.phone import GroupParticipants
 
 
-class GetPartecipants:
+class GetParticipants:
     def __init__(self, pytgcalls):
         self.pytgcalls = pytgcalls
 
@@ -31,6 +31,6 @@ class GetPartecipants:
             )
         )
         return web.json_response([
-            {'source': x.source, 'user_id': x.user_id}
+            {'source': x.source, 'user_id': x.peer.user_id}
             for x in participants.participants
         ])

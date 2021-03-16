@@ -48,6 +48,7 @@ export class Stream extends EventEmitter {
                     this.local_readable.pause();
                     if(this.log_mode > 1){
                         console.log('ENDED_BUFFERING -> ', new Date().getTime());
+                        console.log('BYTES_STREAM_CACHE_LENGTH -> ', this.cache.length);
                     }
                 }
                 this.cache = Buffer.concat([this.cache, data]);
@@ -57,6 +58,7 @@ export class Stream extends EventEmitter {
                 this._finishedLoading = true;
                 if(this.log_mode > 1){
                     console.log('ENDED_BUFFERING -> ', new Date().getTime());
+                    console.log('BYTES_STREAM_CACHE_LENGTH -> ', this.cache.length);
                 }
             });
         }
@@ -141,7 +143,8 @@ export class Stream extends EventEmitter {
                 }
             }
         }
-        if (!this._paused && !this._finished && (this.cache.length >= byteLength || this._finishedLoading) && !this.check_lag()) {
+        const check_lag = this.check_lag();
+        if (!this._paused && !this._finished && (this.cache.length >= byteLength || this._finishedLoading) && !check_lag) {
             const buffer = this.cache.slice(0, byteLength);
             const samples = new Int16Array(new Uint8Array(buffer).buffer);
             this.cache = this.cache.slice(byteLength);
@@ -156,6 +159,8 @@ export class Stream extends EventEmitter {
             } catch (error) {
                 this.emit('error', error);
             }
+        }else if(check_lag){
+            console.log('STREAM_LAG -> ', new Date().getTime());
         }
 
         if (!this._finished && this._finishedLoading && this.cache.length < byteLength) {

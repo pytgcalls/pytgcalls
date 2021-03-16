@@ -30,7 +30,7 @@ class JoinVoiceCall:
         # noinspection PyBroadException
         try:
             chat_call = (
-                await self.pytgcalls._load_full_chat(params['chat_id'])
+                await self.pytgcalls._load_full_chat(int(params['chat_id']))
             ).full_chat.call
         except Exception:
             pass
@@ -41,11 +41,16 @@ class JoinVoiceCall:
                         call=chat_call,
                         params=DataJSON(data=json.dumps(request_call)),
                         muted=False,
+                        join_as=self.pytgcalls._cache_user_peer[
+                            int(params['chat_id'])
+                        ],
                     ),
                 )
+
                 transport = json.loads(result.updates[0].call.params.data)[
                     'transport'
                 ]
+
                 return web.json_response({
                     'transport': {
                         'ufrag': transport['ufrag'],
@@ -55,6 +60,6 @@ class JoinVoiceCall:
                     },
                 })
             except Exception as e:
-                if 'GROUPCALL_FORBIDDEN' not in str(e):
-                    print(e)
+                if self.pytgcalls._log_mode > 0:
+                    print('JOIN_VOICE_CALL_ERROR ->', e)
         return web.json_response({'transport': None})

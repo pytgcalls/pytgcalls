@@ -2,6 +2,7 @@ import json
 import os
 
 import requests
+from pyrogram.raw.base import InputPeer
 
 from ..core import SpawnProcess
 
@@ -11,7 +12,14 @@ class JoinGroupCall(SpawnProcess):
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    def join_group_call(self, chat_id: int, file_path: str, bitrate: int):
+    def join_group_call(
+            self,
+            chat_id: int,
+            file_path: str,
+            bitrate: int,
+            join_as: InputPeer,
+    ):
+        self.pytgcalls._cache_user_peer[chat_id] = join_as
         bitrate = 48000 if bitrate > 48000 else bitrate
         if (
             self.pytgcalls._init_js_core and
