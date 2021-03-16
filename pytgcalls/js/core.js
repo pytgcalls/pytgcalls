@@ -4,7 +4,7 @@ const ApiSender = require('./api_sender');
 
 (async () => {
     const port = process.argv[2].split('=')[1];
-    const log_mode = process.argv[3].split('=')[1] === 'True';
+    const log_mode = parseInt(process.argv[3].split('=')[1]);
     let socket = io('ws://localhost:' + port);
     console.log('Starting on port: ' + port);
     socket.on('connect', async function () {
@@ -17,7 +17,7 @@ const ApiSender = require('./api_sender');
     await socket.on('request', async function (data) {
         data = JSON.parse(data);
 
-        if (log_mode) {
+        if (log_mode > 0) {
             console.log('REQUEST: ', data);
         }
 
@@ -28,12 +28,12 @@ const ApiSender = require('./api_sender');
                     data['file_path'],
                     port,
                     data['bitrate'],
-                    log_mode
+                    log_mode,
                 );
 
                 let result = await list_connection[data['chat_id']].join_voice_call();
 
-                if (log_mode) {
+                if (log_mode > 0) {
                     console.log('UPDATED_LIST_OF_CONNECTIONS: ', list_connection);
                 }
 
@@ -60,7 +60,7 @@ const ApiSender = require('./api_sender');
                             chat_id: data['chat_id'],
                         });
                     } else {
-                        if (log_mode) {
+                        if (log_mode > 0) {
                             console.log('ERROR_INTERNAL: ', result);
                         }
                         delete list_connection[data['chat_id']];

@@ -1,4 +1,4 @@
-const { TGCalls, Stream } = require('../../lib');
+const { TGCalls, Stream } = require('./lib');
 const fetch = require('node-fetch');
 const fs = require('fs');
 
@@ -22,7 +22,7 @@ class RTCConnection {
                 fingerprint: payload.fingerprint,
                 source: payload.source,
             }
-            if (log_mode) {
+            if (log_mode > 0) {
                 console.log('request_join_call request -> ', request_join_call);
             }
             const req = await fetch('http://localhost:' + this.#port_request + '/request_join_call', {
@@ -30,7 +30,7 @@ class RTCConnection {
                 body: JSON.stringify(request_join_call),
             });
             const result = await req.json();
-            if (log_mode) {
+            if (log_mode > 0) {
                 console.log('request_join_call result -> ', result);
             }
             return result;
@@ -44,14 +44,14 @@ class RTCConnection {
                 }),
             });
             const result = await req.json();
-            if (log_mode) {
+            if (log_mode > 0) {
                 console.log('get_participants result -> ', result);
             }
             return result;
         };
 
         const readable = fs.createReadStream(path_file, { highWaterMark: 256 * 1024 });
-        this.#stream = new Stream(readable, 16, bitrate, 1);
+        this.#stream = new Stream(readable, 16, bitrate, 1, log_mode);
 
         this.#stream.OnStreamEnd = async () => {
             await fetch('http://localhost:' + this.#port_request + '/ended_stream', {

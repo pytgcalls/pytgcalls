@@ -1,3 +1,4 @@
+import os
 from typing import Callable
 from typing import Dict
 from typing import List
@@ -15,10 +16,10 @@ from .methods import Methods
 
 class PyTgCalls(Methods):
     def __init__(
-        self,
-        app: Client,
-        port: int = 24859,
-        log_mode: bool = False,
+            self,
+            app: Client,
+            port: int = 24859,
+            log_mode: int = 0,
     ):
         self._app = app
         self._app_core = None
@@ -32,6 +33,7 @@ class PyTgCalls(Methods):
             'CUSTOM_API_HANDLER': [],
             'GROUP_CALL_HANDLER': [],
             'KICK_HANDLER': [],
+            'CLOSED_HANDLER': [],
         }
         self._my_id = 0
         self.is_running = False
@@ -42,8 +44,39 @@ class PyTgCalls(Methods):
         self._log_mode = log_mode
         super().__init__(self)
 
+    @staticmethod
+    def verbose_mode():
+        return 1
+
+    @property
+    def ultra_verbose_mode(self):
+        return 2
+
+    @staticmethod
+    def get_version(package_check):
+        result_cmd = os.popen(f'{package_check} -v').read()
+        result_cmd = result_cmd.replace('v', '')
+        if len(result_cmd) == 0:
+            return {
+                'version_int': 0,
+                'version': '0',
+            }
+        return {
+            'version_int': int(result_cmd.split('.')[0]),
+            'version': result_cmd,
+        }
+
     def run(self, before_start_callable: Callable = None):
         if self._app is not None:
+            node_result = self.get_version('node')
+            if node_result['version_int'] == 0:
+                raise Exception('Please install node (15.+)')
+            if node_result['version_int'] < 15:
+                raise Exception(
+                    'Needed node 15.+, '
+                    'actually installed is '
+                    f"{node_result['version']}",
+                )
             try:
                 # noinspection PyBroadException
                 @self._app.on_raw_update()
@@ -52,8 +85,8 @@ class PyTgCalls(Methods):
                         chat_id = int(f'-100{update.channel_id}')
                         if len(data2) > 0:
                             if isinstance(
-                                data2[update.channel_id],
-                                ChannelForbidden,
+                                    data2[update.channel_id],
+                                    ChannelForbidden,
                             ):
                                 for event in self._on_event_update[
                                     'KICK_HANDLER'
@@ -73,8 +106,15 @@ class PyTgCalls(Methods):
                                 update.call,
                                 GroupCallDiscarded,
                         ):
+                            chat_id = int(f'-100{update.chat_id}')
+                            for event in self._on_event_update[
+                                'CLOSED_HANDLER'
+                            ]:
+                                await event['callable'](
+                                    chat_id,
+                                )
                             self.leave_group_call(
-                                int(f'-100{update.chat_id}'),
+                                chat_id,
                                 'closed_voice_chat',
                             )
                     if isinstance(
@@ -83,8 +123,8 @@ class PyTgCalls(Methods):
                     ):
                         try:
                             if isinstance(
-                                update.message.action,
-                                MessageActionInviteToGroupCall,
+                                    update.message.action,
+                                    MessageActionInviteToGroupCall,
                             ):
                                 for event in self._on_event_update[
                                     'GROUP_CALL_HANDLER'

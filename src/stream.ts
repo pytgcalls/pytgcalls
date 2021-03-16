@@ -5,6 +5,7 @@ import { RTCAudioSource, nonstandard } from 'wrtc';
 export class Stream extends EventEmitter {
     private readonly audioSource: RTCAudioSource;
     private cache: Buffer;
+    private local_readable = undefined;
     private _paused = false;
     private _finished = true;
     private _stopped = false;
@@ -16,37 +17,66 @@ export class Stream extends EventEmitter {
         readonly bitsPerSample = 16,
         readonly sampleRate = 48000,
         readonly channelCount = 1,
+        readonly log_mode = 0,
     ) {
         super();
 
         this.audioSource = new nonstandard.RTCAudioSource();
         this.cache = Buffer.alloc(0);
-
         this.setReadable(readable);
         this.processData();
     }
 
     setReadable(readable?: Readable) {
+        // @ts-ignore
+        this.local_readable = readable;
         if (this._stopped) {
             throw new Error('Cannot set readable when stopped');
         }
 
         this.cache = Buffer.alloc(0);
 
-        if (readable) {
+        if(this.local_readable !== undefined){
             this._finished = false;
             this._finishedLoading = false;
 
-            readable.on('data', data => {
+            // @ts-ignore
+            this.local_readable.on('data', (data: any) => {
+
+                if(!this.need_buffering()){
+                    // @ts-ignore
+                    this.local_readable.pause();
+                    if(this.log_mode > 1){
+                        console.log('ENDED_BUFFERING -> ', new Date().getTime());
+                    }
+                }
                 this.cache = Buffer.concat([this.cache, data]);
             });
-
-            readable.on('end', () => {
+            // @ts-ignore
+            this.local_readable.on('end', () => {
                 this._finishedLoading = true;
+                if(this.log_mode > 1){
+                    console.log('ENDED_BUFFERING -> ', new Date().getTime());
+                }
             });
         }
     }
 
+    private need_buffering(){
+        if(this._finishedLoading){
+            return false;
+        }
+        const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
+        return this.cache.length < (byteLength * 100) * 10;
+    }
+
+    private check_lag(){
+        if(this._finishedLoading){
+            return false;
+        }
+        const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
+        return this.cache.length < (byteLength * 100) * 5;
+    }
     pause() {
         if (this._stopped) {
             throw new Error('Cannot pause when stopped');
@@ -95,18 +125,26 @@ export class Stream extends EventEmitter {
     }
 
     private processData() {
+        const old_time=new Date().getTime()
         if (this._stopped) {
             return;
         }
 
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
 
-        if (!this._paused && !this._finished && (this.cache.length >= byteLength || this._finishedLoading)) {
+        if(this.need_buffering()){
+            if(this.local_readable !== undefined){
+                // @ts-ignore
+                this.local_readable.resume();
+                if(this.log_mode > 1){
+                    console.log('BUFFERING -> ', new Date().getTime());
+                }
+            }
+        }
+        if (!this._paused && !this._finished && (this.cache.length >= byteLength || this._finishedLoading) && !this.check_lag()) {
             const buffer = this.cache.slice(0, byteLength);
             const samples = new Int16Array(new Uint8Array(buffer).buffer);
-
             this.cache = this.cache.slice(byteLength);
-
             try {
                 this.audioSource.onData({
                     bitsPerSample: this.bitsPerSample,
@@ -127,7 +165,7 @@ export class Stream extends EventEmitter {
             }
             this.emit('finish');
         }
-
-        setTimeout(() => this.processData(), this._finished || this._paused ? 500 : 10);
+        let time_remove = new Date().getTime() - old_time
+        setTimeout(() => this.processData(), (this._finished || this._paused || this.check_lag() ? 500 : 10 ) - time_remove);
     }
 }

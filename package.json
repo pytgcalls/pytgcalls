@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run prepare",
     "test": "tsc --noEmit",
-    "prepare": "rm -rf lib/ && tsc",
+    "prepare": "rm -rf lib/ pytgcalls/js/lib/ && tsc && mv lib/ pytgcalls/js/",
     "preversion": "npm run test",
     "docs": "typedoc src/index.ts"
   },
