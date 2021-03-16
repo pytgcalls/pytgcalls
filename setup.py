@@ -49,7 +49,7 @@ class PostInstall(install):
                 ' to '
                 f'{site.getsitepackages()[0]}/pytgcalls/',
             )
-            if os.path.exists(
+            if not os.path.exists(
                 f'{site.getsitepackages()[0]}/pytgcalls',
             ):
                 os.system(

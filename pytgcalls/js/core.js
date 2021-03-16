@@ -32,21 +32,20 @@ const ApiSender = require('./api_sender');
                 );
 
                 let result = await list_connection[data['chat_id']].join_voice_call();
-
-                if (log_mode > 0) {
-                    console.log('UPDATED_LIST_OF_CONNECTIONS: ', list_connection);
-                }
-
                 if (result) {
                     await apiSender.sendUpdate(port, {
                         result: 'JOINED_VOICE_CHAT',
                         chat_id: data['chat_id'],
                     });
                 } else {
+                    delete list_connection[data['chat_id']];
                     await apiSender.sendUpdate(port, {
                         result: 'JOIN_ERROR',
                         chat_id: data['chat_id'],
                     });
+                }
+                if (log_mode > 0) {
+                    console.log('UPDATED_LIST_OF_CONNECTIONS: ', list_connection);
                 }
             }
         } else if (data['action'] === 'leave_call') {

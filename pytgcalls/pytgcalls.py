@@ -10,7 +10,7 @@ from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateNewChannelMessage
-
+from pyrogram import __version__
 from .methods import Methods
 
 
@@ -42,6 +42,9 @@ class PyTgCalls(Methods):
         self._async_processes: Dict[str, Dict] = {}
         self._session_id = self._generate_session_id(20)
         self._log_mode = log_mode
+        self._cache_user_peer: Dict[int, Dict] = {}
+        self._cache_full_chat: Dict[int, Dict] = {}
+        self._cache_local_peer = None
         super().__init__(self)
 
     @staticmethod
@@ -77,6 +80,14 @@ class PyTgCalls(Methods):
                     'actually installed is '
                     f"{node_result['version']}",
                 )
+            if int(__version__.split('.')[2]) < 13 and \
+                    int(__version__.split('.')[1]) == 1 and \
+                    int(__version__.split('.')[0]) == 1:
+                raise Exception(
+                    'Needed pyrogram 1.1.13+, '
+                    'actually installed is '
+                    f"{__version__}",
+                )
             try:
                 # noinspection PyBroadException
                 @self._app.on_raw_update()
@@ -85,8 +96,8 @@ class PyTgCalls(Methods):
                         chat_id = int(f'-100{update.channel_id}')
                         if len(data2) > 0:
                             if isinstance(
-                                    data2[update.channel_id],
-                                    ChannelForbidden,
+                                data2[update.channel_id],
+                                ChannelForbidden,
                             ):
                                 for event in self._on_event_update[
                                     'KICK_HANDLER'
@@ -94,6 +105,11 @@ class PyTgCalls(Methods):
                                     await event['callable'](
                                         chat_id,
                                     )
+                                # noinspection PyBroadException
+                                try:
+                                    del self._cache_user_peer[chat_id]
+                                except Exception:
+                                    pass
                                 self.leave_group_call(
                                     chat_id,
                                     'kicked_from_group',
@@ -113,6 +129,11 @@ class PyTgCalls(Methods):
                                 await event['callable'](
                                     chat_id,
                                 )
+                            # noinspection PyBroadException
+                            try:
+                                del self._cache_user_peer[chat_id]
+                            except Exception:
+                                pass
                             self.leave_group_call(
                                 chat_id,
                                 'closed_voice_chat',
@@ -134,9 +155,11 @@ class PyTgCalls(Methods):
                                     )
                         except Exception:
                             pass
-
                 self._app.start()
-                self._my_id = self._app.get_me()['id']
+                self._my_id = self._app.get_me()['id'] # noqa
+                self._cache_local_peer = self._app.resolve_peer(
+                    self._my_id
+                )
                 if before_start_callable is not None:
                     # noinspection PyBroadException
                     try:

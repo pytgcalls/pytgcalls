@@ -3,7 +3,6 @@ import json
 from aiohttp import web
 from aiohttp.web_request import BaseRequest
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
-from pyrogram.raw.types import InputUser
 
 
 class ChangeVolumeVoiceCall:
@@ -29,14 +28,14 @@ class ChangeVolumeVoiceCall:
                 await self.pytgcalls._app.send(
                     EditGroupCallParticipant(
                         call=chat_call,
-                        user_id=InputUser(
-                            user_id=self.pytgcalls.get_cache_id(),
-                            access_hash=0,
-                        ),
+                        participant=self.pytgcalls._cache_user_peer[
+                            int(params['chat_id']),
+                        ],
                         muted=False,
                         volume=params['volume'] * 100,
                     ),
                 )
+
                 result_json = {
                     'result': 'OK',
                 }

@@ -11,7 +11,9 @@ class LeaveGroupCall(SpawnProcess):
 
     # noinspection PyProtectedMember
     def leave_group_call(self, chat_id: int, type_leave: str = 'requested'):
-        if self.pytgcalls._init_js_core and self.pytgcalls._app is not None:
+        if self.pytgcalls._init_js_core and \
+                self.pytgcalls._app is not None and\
+                chat_id in self.pytgcalls._cache_user_peer:
             self._spawn_process(
                 requests.post,
                 (
@@ -29,6 +31,8 @@ class LeaveGroupCall(SpawnProcess):
             )
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
+            if chat_id not in self.pytgcalls._cache_user_peer:
+                code_err = 'GROUP_CALL_NOT_FOUND'
             if not self.pytgcalls._init_js_core:
                 code_err = 'JS_CORE_NOT_RUNNING'
             raise Exception(f'Error internal: {code_err}')

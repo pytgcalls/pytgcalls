@@ -1,7 +1,7 @@
 from .api_backend import ApiBackend
 from .change_volume_voice_call import ChangeVolumeVoiceCall
 from .event_finish import EventFinish
-from .get_partecipants import GetPartecipants
+from .get_participants import GetParticipants
 from .join_voice_call import JoinVoiceCall
 from .leave_voice_call import LeaveVoiceCall
 from .load_full_chat import LoadFullChat
@@ -13,7 +13,7 @@ class WebSocket(
     ApiBackend,
     ChangeVolumeVoiceCall,
     EventFinish,
-    GetPartecipants,
+    GetParticipants,
     JoinVoiceCall,
     LeaveVoiceCall,
     LoadFullChat,
