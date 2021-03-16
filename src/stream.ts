@@ -160,7 +160,9 @@ export class Stream extends EventEmitter {
                 this.emit('error', error);
             }
         }else if(check_lag){
-            console.log('STREAM_LAG -> ', new Date().getTime());
+            if(this.log_mode > 1){
+                console.log('STREAM_LAG -> ', new Date().getTime());
+            }
         }
 
         if (!this._finished && this._finishedLoading && this.cache.length < byteLength) {

@@ -107,14 +107,14 @@ class PyTgCalls(Methods):
                                         chat_id,
                                     )
                                 # noinspection PyBroadException
-                                try:
-                                    del self._cache_user_peer[chat_id]
-                                except Exception:
-                                    pass
                                 self.leave_group_call(
                                     chat_id,
                                     'kicked_from_group',
                                 )
+                                try:
+                                    del self._cache_user_peer[chat_id]
+                                except Exception:
+                                    pass
                     if isinstance(
                             update,
                             UpdateGroupCall,
@@ -131,14 +131,14 @@ class PyTgCalls(Methods):
                                     chat_id,
                                 )
                             # noinspection PyBroadException
-                            try:
-                                del self._cache_user_peer[chat_id]
-                            except Exception:
-                                pass
                             self.leave_group_call(
                                 chat_id,
                                 'closed_voice_chat',
                             )
+                            try:
+                                del self._cache_user_peer[chat_id]
+                            except Exception:
+                                pass
                     if isinstance(
                             update,
                             UpdateNewChannelMessage,
