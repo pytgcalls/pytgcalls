@@ -107,10 +107,13 @@ class PyTgCalls(Methods):
                                         chat_id,
                                     )
                                 # noinspection PyBroadException
-                                self.leave_group_call(
-                                    chat_id,
-                                    'kicked_from_group',
-                                )
+                                try:
+                                    self.leave_group_call(
+                                        chat_id,
+                                        'kicked_from_group',
+                                    )
+                                except Exception:
+                                    pass
                                 try:
                                     del self._cache_user_peer[chat_id]
                                 except Exception:
@@ -131,10 +134,13 @@ class PyTgCalls(Methods):
                                     chat_id,
                                 )
                             # noinspection PyBroadException
-                            self.leave_group_call(
-                                chat_id,
-                                'closed_voice_chat',
-                            )
+                            try:
+                                self.leave_group_call(
+                                    chat_id,
+                                    'closed_voice_chat',
+                                )
+                            except Exception:
+                                pass
                             try:
                                 del self._cache_user_peer[chat_id]
                             except Exception:
