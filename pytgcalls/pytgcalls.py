@@ -3,6 +3,7 @@ from typing import Callable
 from typing import Dict
 from typing import List
 
+from pyrogram import __version__
 from pyrogram import Client
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import GroupCallDiscarded
@@ -10,7 +11,6 @@ from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateNewChannelMessage
-from pyrogram import __version__
 
 from .methods import Methods
 
@@ -87,7 +87,7 @@ class PyTgCalls(Methods):
                 raise Exception(
                     'Needed pyrogram 1.1.13+, '
                     'actually installed is '
-                    f"{__version__}",
+                    f'{__version__}',
                 )
             try:
                 # noinspection PyBroadException
@@ -157,7 +157,7 @@ class PyTgCalls(Methods):
                         except Exception:
                             pass
                 self._app.start()
-                self._my_id = self._app.get_me()['id'] # noqa
+                self._my_id = self._app.get_me()['id']  # noqa
                 self._cache_local_peer = self._app.resolve_peer(
                     self._my_id,
                 )
