@@ -5,6 +5,7 @@ import requests
 from pyrogram.raw.base import InputPeer
 
 from ..core import SpawnProcess
+from ..stream.stream_type import StreamType
 
 
 class JoinGroupCall(SpawnProcess):
@@ -16,9 +17,16 @@ class JoinGroupCall(SpawnProcess):
             self,
             chat_id: int,
             file_path: str,
-            bitrate: int,
-            join_as: InputPeer,
+            bitrate: int = 48000,
+            join_as: InputPeer = None,
+            stream_type: StreamType = None,
     ):
+        if join_as is None:
+            join_as = self.pytgcalls._cache_local_peer
+        if stream_type is None:
+            stream_type = StreamType().local_stream
+        if stream_type.stream_mode == 0:
+            raise Exception('Error internal: INVALID_STREAM_MODE')
         self.pytgcalls._cache_user_peer[chat_id] = join_as
         bitrate = 48000 if bitrate > 48000 else bitrate
         if (
@@ -40,6 +48,7 @@ class JoinGroupCall(SpawnProcess):
                             'chat_id': chat_id,
                             'file_path': file_path,
                             'bitrate': bitrate,
+                            'buffer_long': stream_type.stream_mode,
                             'session_id': self.pytgcalls._session_id,
                         }),
                     ),

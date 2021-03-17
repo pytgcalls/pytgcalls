@@ -18,6 +18,7 @@ export class Stream extends EventEmitter {
         readonly sampleRate = 48000,
         readonly channelCount = 1,
         readonly log_mode = 0,
+        readonly buffer_long = 10
     ) {
         super();
 
@@ -69,7 +70,7 @@ export class Stream extends EventEmitter {
             return false;
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
-        return this.cache.length < (byteLength * 100) * 10;
+        return this.cache.length < (byteLength * 100) * this.buffer_long;
     }
 
     private check_lag(){
@@ -77,8 +78,13 @@ export class Stream extends EventEmitter {
             return false;
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
-        return this.cache.length < (byteLength * 100) * 5;
+        return this.cache.length < (byteLength * 100) * Stream.float2int(this.buffer_long / 2);
     }
+
+    private static float2int(value: number) {
+        return value | 0;
+    }
+
     pause() {
         if (this._stopped) {
             throw new Error('Cannot pause when stopped');

@@ -9,7 +9,7 @@ class RTCConnection {
     #port_request = 0;
     #current_logging = 0;
 
-    constructor(chat_id, path_file, port, bitrate, log_mode) {
+    constructor(chat_id, path_file, port, bitrate, log_mode, buffer_long) {
         this.#port_request = port;
         this.#tgcalls = new TGCalls();
         this.#current_logging = log_mode;
@@ -52,7 +52,7 @@ class RTCConnection {
         };
 
         const readable = fs.createReadStream(path_file, { highWaterMark: 256 * 1024 });
-        this.#stream = new Stream(readable, 16, bitrate, 1, log_mode);
+        this.#stream = new Stream(readable, 16, bitrate, 1, log_mode, buffer_long);
 
         this.#stream.OnStreamEnd = async () => {
             await fetch('http://localhost:' + this.#port_request + '/ended_stream', {
