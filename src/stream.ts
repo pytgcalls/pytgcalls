@@ -11,7 +11,6 @@ export class Stream extends EventEmitter {
     private _stopped = false;
     private OnStreamEnd = Function;
     private _finishedLoading = false;
-    private _retry_lag = 0
 
     constructor(
         readable?: Readable,
