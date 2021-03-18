@@ -174,12 +174,6 @@ export class Stream extends EventEmitter {
             if(this.log_mode > 1){
                 console.log('STREAM_LAG -> ', new Date().getTime());
                 console.log('BYTES_AVAILABLE -> ', this.cache.length);
-                this._retry_lag += 1
-                if(this._retry_lag > 5){
-                    // @ts-ignore
-                    this.local_readable.resume();
-                    this._retry_lag = 0;
-                }
             }
         }
 
