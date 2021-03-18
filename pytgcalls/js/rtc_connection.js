@@ -1,6 +1,6 @@
 const { TGCalls, Stream } = require('./lib');
 const fetch = require('node-fetch');
-const fs = require('fs');
+
 
 class RTCConnection {
     #tgcalls = null;
@@ -51,8 +51,7 @@ class RTCConnection {
             return result;
         };
 
-        const readable = fs.createReadStream(path_file);
-        this.#stream = new Stream(readable, 16, bitrate, 1, log_mode, buffer_long);
+        this.#stream = new Stream(path_file, 16, bitrate, 1, log_mode, buffer_long);
 
         this.#stream.OnStreamEnd = async () => {
             await fetch('http://localhost:' + this.#port_request + '/ended_stream', {
@@ -103,13 +102,12 @@ class RTCConnection {
         this.#stream.pause();
     }
 
-    resume() {
+    async resume() {
         this.#stream.resume();
     }
 
     change_stream(chat_id, path_file) {
-        const readable = fs.createReadStream(path_file);
-        this.#stream.setReadable(readable);
+        this.#stream.setReadable(path_file);
     }
 }
 

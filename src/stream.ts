@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { Readable } from 'stream';
+const fs = require('fs');
 import { RTCAudioSource, nonstandard } from 'wrtc';
 
 export class Stream extends EventEmitter {
@@ -11,26 +11,32 @@ export class Stream extends EventEmitter {
     private _stopped = false;
     private OnStreamEnd = Function;
     private _finishedLoading = false;
+    private _path_file = undefined;
+    private _bytes_loaded = 0;
+    private _bytes_speed = 0;
+
 
     constructor(
-        readable?: Readable,
+        path_file: any,
         readonly bitsPerSample = 16,
         readonly sampleRate = 48000,
         readonly channelCount = 1,
         readonly log_mode = 0,
-        readonly buffer_long = 10
+        readonly buffer_long = 10,
     ) {
         super();
 
         this.audioSource = new nonstandard.RTCAudioSource();
         this.cache = Buffer.alloc(0);
-        this.setReadable(readable);
+        this._path_file = path_file;
+        this.setReadable(path_file);
         this.processData();
     }
 
-    setReadable(readable?: Readable) {
+    setReadable(path_file: any) {
+        this._path_file = path_file;
         // @ts-ignore
-        this.local_readable = readable;
+        this.local_readable = fs.createReadStream(path_file);
         if (this._stopped) {
             throw new Error('Cannot set readable when stopped');
         }
@@ -43,15 +49,18 @@ export class Stream extends EventEmitter {
 
             // @ts-ignore
             this.local_readable.on('data', (data: any) => {
-
-                if(!this.need_buffering()){
+                this._bytes_loaded += data.length;
+                this._bytes_speed = data.length;
+                if(!this.need_buffering()) {
                     // @ts-ignore
                     this.local_readable.pause();
-                    if(this.log_mode > 1){
-                        console.log('ENDED_BUFFERING -> ', new Date().getTime());
-                        console.log('BYTES_STREAM_CACHE_LENGTH -> ', this.cache.length);
-                        console.log('BYTES_AVAILABLE -> ', this.cache.length);
+                    if (this.log_mode > 1) {
+                        console.log('ENDED_BUFFERING ->', new Date().getTime());
+                        console.log('BYTES_STREAM_CACHE_LENGTH ->', this.cache.length);
                     }
+                }
+                if (this.log_mode > 1) {
+                    console.log('BYTES_LOADED ->', this._bytes_loaded, 'OF ->',Stream.getFilesizeInBytes(this._path_file));
                 }
                 this.cache = Buffer.concat([this.cache, data]);
             });
@@ -59,22 +68,30 @@ export class Stream extends EventEmitter {
             this.local_readable.on('end', () => {
                 this._finishedLoading = true;
                 if(this.log_mode > 1){
-                    console.log('COMPLETED_BUFFERING -> ', new Date().getTime());
-                    console.log('BYTES_STREAM_CACHE_LENGTH -> ', this.cache.length);
-                    console.log('BYTES_AVAILABLE -> ', this.cache.length);
+                    console.log('COMPLETED_BUFFERING ->', new Date().getTime());
+                    console.log('BYTES_STREAM_CACHE_LENGTH ->', this.cache.length);
+                    console.log('BYTES_AVAILABLE ->', this.cache.length);
+                    console.log('BYTES_LOADED ->', this._bytes_loaded, 'OF ->',Stream.getFilesizeInBytes(this._path_file));
                 }
+            });
+            // @ts-ignore
+            this.local_readable.on('error', (data: any) => {
+                console.log(data);
             });
         }
     }
-
+    private static getFilesizeInBytes(filename: any) {
+        let stats = fs.statSync(filename);
+        return stats.size;
+    }
     private need_buffering(){
         if(this._finishedLoading){
             return false;
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
         let result_stream = this.cache.length < (byteLength * 100) * this.buffer_long;
-        // @ts-ignore
-        return result_stream && this.local_readable.readableLength > (byteLength * 2)
+        result_stream = result_stream && this._bytes_loaded < Stream.getFilesizeInBytes(this._path_file) - (this._bytes_speed * 2);
+        return result_stream;
     }
 
     private check_lag(){
@@ -82,11 +99,7 @@ export class Stream extends EventEmitter {
             return false;
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
-        return this.cache.length < (byteLength * 100) * Stream.float2int(this.buffer_long / 2);
-    }
-
-    private static float2int(value: number) {
-        return value | 0;
+        return this.cache.length < (byteLength * 100);
     }
 
     pause() {
@@ -151,6 +164,7 @@ export class Stream extends EventEmitter {
                 if(this.log_mode > 1){
                     console.log('BUFFERING -> ', new Date().getTime());
                 }
+
             }
         }
         const check_lag = this.check_lag();
