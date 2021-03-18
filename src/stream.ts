@@ -11,6 +11,7 @@ export class Stream extends EventEmitter {
     private _stopped = false;
     private OnStreamEnd = Function;
     private _finishedLoading = false;
+    private _retry_lag = 0
 
     constructor(
         readable?: Readable,
@@ -50,6 +51,7 @@ export class Stream extends EventEmitter {
                     if(this.log_mode > 1){
                         console.log('ENDED_BUFFERING -> ', new Date().getTime());
                         console.log('BYTES_STREAM_CACHE_LENGTH -> ', this.cache.length);
+                        console.log('BYTES_AVAILABLE -> ', this.cache.length);
                     }
                 }
                 this.cache = Buffer.concat([this.cache, data]);
@@ -58,8 +60,9 @@ export class Stream extends EventEmitter {
             this.local_readable.on('end', () => {
                 this._finishedLoading = true;
                 if(this.log_mode > 1){
-                    console.log('ENDED_BUFFERING -> ', new Date().getTime());
+                    console.log('COMPLETED_BUFFERING -> ', new Date().getTime());
                     console.log('BYTES_STREAM_CACHE_LENGTH -> ', this.cache.length);
+                    console.log('BYTES_AVAILABLE -> ', this.cache.length);
                 }
             });
         }
@@ -70,7 +73,9 @@ export class Stream extends EventEmitter {
             return false;
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
-        return this.cache.length < (byteLength * 100) * this.buffer_long;
+        let result_stream = this.cache.length < (byteLength * 100) * this.buffer_long;
+        // @ts-ignore
+        return result_stream && this.local_readable.readableLength > (byteLength * 2)
     }
 
     private check_lag(){
@@ -168,6 +173,13 @@ export class Stream extends EventEmitter {
         }else if(check_lag){
             if(this.log_mode > 1){
                 console.log('STREAM_LAG -> ', new Date().getTime());
+                console.log('BYTES_AVAILABLE -> ', this.cache.length);
+                this._retry_lag += 1
+                if(this._retry_lag > 5){
+                    // @ts-ignore
+                    this.local_readable.resume();
+                    this._retry_lag = 0;
+                }
             }
         }
 

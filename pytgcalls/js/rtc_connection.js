@@ -51,7 +51,7 @@ class RTCConnection {
             return result;
         };
 
-        const readable = fs.createReadStream(path_file, { highWaterMark: 256 * 1024 });
+        const readable = fs.createReadStream(path_file);
         this.#stream = new Stream(readable, 16, bitrate, 1, log_mode, buffer_long);
 
         this.#stream.OnStreamEnd = async () => {
@@ -108,7 +108,7 @@ class RTCConnection {
     }
 
     change_stream(chat_id, path_file) {
-        const readable = fs.createReadStream(path_file, { highWaterMark: 256 * 1024 });
+        const readable = fs.createReadStream(path_file);
         this.#stream.setReadable(readable);
     }
 }

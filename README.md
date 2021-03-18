@@ -18,10 +18,16 @@ Here's how to install the PyTgCalls lib, the commands are given below:
 
 ``` bash
 # With Git
-pip install git+https://github.com/pytgcalls/pytgcalls
+pip install git+https://github.com/pytgcalls/pytgcalls -U
 
 # With PyPi
-pip install py-tgcalls
+pip install py-tgcalls -U
+```
+
+## Problem with pyrogram?
+If do you have problems with pyrogram, reinstall by this command
+``` bash
+pip install git+https://github.com/pyrogram/pyrogram -U
 ```
 
 ## Conversion commands
