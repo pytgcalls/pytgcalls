@@ -98,8 +98,7 @@ export class Stream extends EventEmitter {
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
         let result_stream = this.cache.length < (byteLength * 100) * this.buffer_long;
-        result_stream = result_stream && this._bytes_loaded < Stream.getFilesizeInBytes(this._path_file) - (this._bytes_speed * 2);
-        return result_stream || this._finished_bytes;
+        return result_stream && (this._bytes_loaded < Stream.getFilesizeInBytes(this._path_file) - (this._bytes_speed * 2) || this._finished_bytes);
     }
 
     private check_lag(){
@@ -107,7 +106,7 @@ export class Stream extends EventEmitter {
             return false;
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
-        return this.cache.length < (byteLength * 100) || this._finished_bytes;
+        return this.cache.length < (byteLength * 100);
     }
 
     pause() {
@@ -206,12 +205,14 @@ export class Stream extends EventEmitter {
                 }
             }
             if(file_size === this._last_bytes_loaded){
-                if(this._equal_count >= 7){
+                if(this._equal_count >= 15){
                     this._equal_count = 0;
                     if(this.log_mode > 1){
                         console.log('NOT_ENOUGH_BYTES ->', old_time);
                     }
                     this._finished_bytes = true;
+                    // @ts-ignore
+                    this.local_readable.resume();
                 }else{
                     if(old_time - this._last_lag > 1000){
                         this._equal_count += 1;
