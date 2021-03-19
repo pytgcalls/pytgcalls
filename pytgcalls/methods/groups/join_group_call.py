@@ -27,6 +27,8 @@ class JoinGroupCall(SpawnProcess):
             stream_type = StreamType().local_stream
         if stream_type.stream_mode == 0:
             raise Exception('Error internal: INVALID_STREAM_MODE')
+        if os.path.getsize(file_path) == 0:
+            raise Exception('Error internal: INVALID_FILE_STREAM')
         self.pytgcalls._cache_user_peer[chat_id] = join_as
         bitrate = 48000 if bitrate > 48000 else bitrate
         if (

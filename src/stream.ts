@@ -39,6 +39,14 @@ export class Stream extends EventEmitter {
     }
 
     setReadable(path_file: any) {
+        this._bytes_loaded = 0;
+        this._bytes_speed = 0;
+        this._last_lag = 0;
+        this._equal_count = 0;
+        this._last_bytes_loaded = 0;
+        this._finished_bytes = false;
+        this._last_byte_check = 0;
+        this._last_byte = 0;
         this._path_file = path_file;
         // @ts-ignore
         this.local_readable = fs.createReadStream(path_file);
@@ -198,7 +206,7 @@ export class Stream extends EventEmitter {
                 }
             }
             if(file_size === this._last_bytes_loaded){
-                if(this._equal_count >= 5){
+                if(this._equal_count >= 7){
                     this._equal_count = 0;
                     if(this.log_mode > 1){
                         console.log('NOT_ENOUGH_BYTES ->', old_time);
