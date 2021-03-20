@@ -6,7 +6,7 @@
 
 [![pre-commit.ci status][pre-commit.ci-badge]][pre-commit.ci]
 
-This project allow to make Telegram group call with MTProto Api using Program and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library, socketio-client and [@evgeny-nadymov]
+This project allow to make Telegram group call with MTProto Api using Pyrogram and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library, socketio-client and [@evgeny-nadymov]
 
 # Common Problems
 
