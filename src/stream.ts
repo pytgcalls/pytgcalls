@@ -162,7 +162,7 @@ export class Stream extends EventEmitter {
             return;
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
-        if(!this._finishedLoading){
+        if(!(!this._finished && this._finishedLoading && this.cache.length < byteLength)){
             if(this.need_buffering()){
                 if(this.local_readable !== undefined){
                     // @ts-ignore
@@ -181,7 +181,6 @@ export class Stream extends EventEmitter {
             }else{
                 file_size = this._last_byte;
             }
-
             if (!this._paused && !this._finished && (this.cache.length >= byteLength || this._finishedLoading) && !check_lag) {
                 const buffer = this.cache.slice(0, byteLength);
                 const samples = new Int16Array(new Uint8Array(buffer).buffer);
@@ -204,28 +203,31 @@ export class Stream extends EventEmitter {
                     console.log('BYTES_LOADED ->', this._bytes_loaded, 'OF ->', file_size);
                 }
             }
-            if(file_size === this._last_bytes_loaded){
-                if(this._equal_count >= 15){
-                    this._equal_count = 0;
-                    if(this.log_mode > 1){
-                        console.log('NOT_ENOUGH_BYTES ->', old_time);
+            if(!this._finishedLoading){
+                if(file_size === this._last_bytes_loaded){
+                    if(this._equal_count >= 15){
+                        this._equal_count = 0;
+                        if(this.log_mode > 1){
+                            console.log('NOT_ENOUGH_BYTES ->', old_time);
+                        }
+                        this._finished_bytes = true;
+                        // @ts-ignore
+                        this.local_readable.resume();
+                    }else{
+                        if(old_time - this._last_lag > 1000){
+                            this._equal_count += 1;
+                            this._last_lag = old_time;
+                        }
                     }
-                    this._finished_bytes = true;
-                    // @ts-ignore
-                    this.local_readable.resume();
                 }else{
-                    if(old_time - this._last_lag > 1000){
-                        this._equal_count += 1;
-                        this._last_lag = old_time;
-                    }
+                    this._last_bytes_loaded = file_size;
+                    this._equal_count = 0;
+                    this._finished_bytes = false;
                 }
-            }else{
-                this._last_bytes_loaded = file_size;
-                this._equal_count = 0;
-                this._finished_bytes = false;
             }
+
         }
-        if (!this._finished && this._finishedLoading) {
+        if (!this._finished && this._finishedLoading && this.cache.length < byteLength) {
             this.finish();
             if (this.OnStreamEnd !== Function) {
                 this.OnStreamEnd();
@@ -233,6 +235,6 @@ export class Stream extends EventEmitter {
             this.emit('finish');
         }
         let time_remove = new Date().getTime() - old_time
-        setTimeout(() => this.processData(), (this._finished || this._paused || this.check_lag() ? 500 : 10 ) - time_remove);
+        setTimeout(() => this.processData(), (this._finished || this._paused || this.check_lag() ? 500 : 10) - time_remove);
     }
 }
