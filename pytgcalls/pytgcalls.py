@@ -81,11 +81,10 @@ class PyTgCalls(Methods):
                     'actually installed is '
                     f"{node_result['version']}",
                 )
-            if int(__version__.split('.')[2]) < 13 and \
-                    int(__version__.split('.')[1]) == 1 and \
+            if int(__version__.split('.')[1]) < 2 and \
                     int(__version__.split('.')[0]) == 1:
                 raise Exception(
-                    'Needed pyrogram 1.1.13+, '
+                    'Needed pyrogram 1.2.0+, '
                     'actually installed is '
                     f'{__version__}',
                 )
