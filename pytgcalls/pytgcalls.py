@@ -21,6 +21,7 @@ class PyTgCalls(Methods):
         app: Client,
         port: int = 24859,
         log_mode: int = 0,
+        flood_wait_cache: int = 120,
     ):
         self._app = app
         self._app_core = None
@@ -46,6 +47,7 @@ class PyTgCalls(Methods):
         self._cache_user_peer: Dict[int, Dict] = {}
         self._cache_full_chat: Dict[int, Dict] = {}
         self._cache_local_peer = None
+        self._flood_wait_cache = flood_wait_cache
         super().__init__(self)
 
     @staticmethod

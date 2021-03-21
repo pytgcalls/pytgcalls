@@ -15,7 +15,7 @@ class LoadFullChat:
         if chat_id in self.pytgcalls._cache_full_chat:
             if curr_time - self.pytgcalls._cache_full_chat[
                 chat_id
-            ]['last_update'] < 120:
+            ]['last_update'] < self.pytgcalls._flood_wait_cache:
                 load_cache = True
         if load_cache:
             full_chat = self.pytgcalls._cache_full_chat[
