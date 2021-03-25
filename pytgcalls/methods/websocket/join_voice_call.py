@@ -44,6 +44,7 @@ class JoinVoiceCall:
                         join_as=self.pytgcalls._cache_user_peer[
                             int(params['chat_id'])
                         ],
+                        invite_hash=params['invite_hash'],
                     ),
                 )
 

@@ -18,6 +18,7 @@ class JoinGroupCall(SpawnProcess):
             chat_id: int,
             file_path: str,
             bitrate: int = 48000,
+            invite_hash: str = None,
             join_as: InputPeer = None,
             stream_type: StreamType = None,
     ):
@@ -49,6 +50,7 @@ class JoinGroupCall(SpawnProcess):
                             'action': 'join_call',
                             'chat_id': chat_id,
                             'file_path': file_path,
+                            'invite_hash': invite_hash,
                             'bitrate': bitrate,
                             'buffer_long': stream_type.stream_mode,
                             'session_id': self.pytgcalls._session_id,

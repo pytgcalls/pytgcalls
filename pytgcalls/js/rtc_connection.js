@@ -8,11 +8,13 @@ class RTCConnection {
     #sign_source = 0;
     #port_request = 0;
     #current_logging = 0;
+    #invite_hash = null;
 
-    constructor(chat_id, path_file, port, bitrate, log_mode, buffer_long) {
+    constructor(chat_id, path_file, port, bitrate, log_mode, buffer_long, invite_hash) {
         this.#port_request = port;
         this.#tgcalls = new TGCalls();
         this.#current_logging = log_mode;
+        this.#invite_hash = invite_hash;
         this.#tgcalls.joinVoiceCall = async payload => {
             const request_join_call = {
                 chat_id: chat_id,
@@ -22,6 +24,7 @@ class RTCConnection {
                 setup: payload.setup,
                 fingerprint: payload.fingerprint,
                 source: payload.source,
+                invite_hash: this.#invite_hash,
             }
             if (log_mode > 0) {
                 console.log('request_join_call request -> ', request_join_call);
