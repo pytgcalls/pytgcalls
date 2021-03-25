@@ -5,7 +5,7 @@
 # PyTgCalls
 
 [![pre-commit.ci status][pre-commit.ci-badge]][pre-commit.ci]
-[![PyPI](https://img.shields.io/pypi/v/py-tgcalls.svg?style=flat)](https://pypi.org/project/py-tgcalls/) 
+[![PyPI](https://img.shields.io/pypi/v/py-tgcalls.svg?style=flat)](https://pypi.org/project/py-tgcalls/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py-tgcalls)](https://www.python.org/)
 [![GitHub](https://img.shields.io/github/license/pytgcalls/pytgcalls)](https://github.com/pytgcalls/pytgcalls/blob/master/LICENSE)
 ![OS](https://img.shields.io/badge/platform-Linux%20%7C%20WSL2.0-lightgrey)
