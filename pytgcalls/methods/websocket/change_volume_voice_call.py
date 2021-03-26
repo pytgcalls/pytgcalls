@@ -29,7 +29,7 @@ class ChangeVolumeVoiceCall:
                     EditGroupCallParticipant(
                         call=chat_call,
                         participant=self.pytgcalls._cache_user_peer[
-                            int(params['chat_id']),
+                            int(params['chat_id'])
                         ],
                         muted=False,
                         volume=params['volume'] * 100,
