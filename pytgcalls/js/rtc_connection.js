@@ -73,7 +73,7 @@ class RTCConnection {
             return result;
         } catch (e) {
             this.#stream.stop();
-            if (this.#current_logging > 1) {
+            if (this.#current_logging > 0) {
                 console.log('JOIN_VOICE_CALL_ERROR ->', e)
             }
             return false;
