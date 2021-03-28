@@ -72,6 +72,7 @@ const ApiSender = require('./api_sender');
                         });
                     }
                 } else {
+                    await list_connection[data['chat_id']].stop_stream();
                     delete list_connection[data['chat_id']];
                     await apiSender.sendUpdate(port, {
                         result: 'KICKED_FROM_GROUP',

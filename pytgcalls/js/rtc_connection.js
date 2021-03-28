@@ -79,11 +79,15 @@ class RTCConnection {
             return false;
         }
     }
-
-    async leave_group_call(chat_id) {
+    async stop_stream(){
         try {
             this.#stream.stop();
             this.#tgcalls.close();
+        }catch (e) {}
+    }
+    async leave_group_call(chat_id) {
+        try {
+            await this.stop_stream();
             return await (
                 await fetch('http://localhost:' + this.#port_request + '/request_leave_call', {
                     method: 'POST',
