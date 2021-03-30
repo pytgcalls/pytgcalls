@@ -20,6 +20,7 @@ export class Stream extends EventEmitter {
     private _finished_bytes = false;
     private _last_byte_check = 0;
     private _last_byte = 0;
+    private _running_pulse = false;
 
     constructor(
         path_file: any,
@@ -28,6 +29,7 @@ export class Stream extends EventEmitter {
         readonly channelCount = 1,
         readonly log_mode = 0,
         readonly buffer_long = 10,
+        readonly _time_pulse_buffer = buffer_long == 4 ? 1.5:0
     ) {
         super();
 
@@ -66,9 +68,13 @@ export class Stream extends EventEmitter {
                 if(!this.need_buffering()) {
                     // @ts-ignore
                     this.local_readable.pause();
+                    this._running_pulse = false;
                     if (this.log_mode > 1) {
                         console.log('ENDED_BUFFERING ->', new Date().getTime());
                         console.log('BYTES_STREAM_CACHE_LENGTH ->', this.cache.length);
+                        if(this.log_mode > 1){
+                            console.log('PULSE ->', this._running_pulse);
+                        }
                     }
                 }
                 if (this.log_mode > 1) {
@@ -92,13 +98,17 @@ export class Stream extends EventEmitter {
         let stats = fs.statSync(filename);
         return stats.size;
     }
-    private need_buffering(){
+    private need_buffering(with_check_pulse=true){
         if(this._finishedLoading){
             return false;
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
         let result_stream = this.cache.length < (byteLength * 100) * this.buffer_long;
-        return result_stream && (this._bytes_loaded < Stream.getFilesizeInBytes(this._path_file) - (this._bytes_speed * 2) || this._finished_bytes);
+        result_stream = result_stream && (this._bytes_loaded < Stream.getFilesizeInBytes(this._path_file) - (this._bytes_speed * 2) || this._finished_bytes)
+        if(this._time_pulse_buffer > 0 && with_check_pulse) {
+            result_stream = result_stream && this._running_pulse;
+        }
+        return result_stream;
     }
 
     private check_lag(){
@@ -163,8 +173,16 @@ export class Stream extends EventEmitter {
         }
         const byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
         if(!(!this._finished && this._finishedLoading && this.cache.length < byteLength)){
-            if(this.need_buffering()){
-                if(this.local_readable !== undefined){
+            if(this.need_buffering(false)){
+                let check_buff = true;
+                if(this._time_pulse_buffer > 0){
+                    this._running_pulse = this.cache.length  < ((byteLength * 100) * this._time_pulse_buffer);
+                    check_buff = this._running_pulse;
+                }
+                if(this.local_readable !== undefined && check_buff){
+                    if(this.log_mode > 1){
+                        console.log('PULSE ->', this._running_pulse);
+                    }
                     // @ts-ignore
                     this.local_readable.resume();
                     if(this.log_mode > 1){
@@ -174,7 +192,7 @@ export class Stream extends EventEmitter {
             }
             const check_lag = this.check_lag();
             let file_size: number;
-            if(old_time - this._last_byte_check > 500){
+            if(old_time - this._last_byte_check > 1000){
                 file_size = Stream.getFilesizeInBytes(this._path_file);
                 this._last_byte = file_size;
                 this._last_byte_check = old_time;
@@ -236,5 +254,8 @@ export class Stream extends EventEmitter {
         }
         let time_remove = new Date().getTime() - old_time
         setTimeout(() => this.processData(), (this._finished || this._paused || this.check_lag() ? 500 : 10) - time_remove);
+    }
+    sleep(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 }

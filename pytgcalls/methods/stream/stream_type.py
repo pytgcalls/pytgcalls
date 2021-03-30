@@ -12,6 +12,18 @@ class StreamType:
         self._stream_type = 10
         return self
 
+    """
+    *** Beta Pulse Stream ***
+    Send bytes like a pulsation, and this reduce the slice,
+    because the slice is too heavy
+
+    Support: LiveStream, LocalStream
+    """
+    @property
+    def beta_pulse_stream(self):
+        self._stream_type = 4
+        return self
+
     @property
     def stream_mode(self):
         return self._stream_type
