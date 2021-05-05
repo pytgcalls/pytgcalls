@@ -66,7 +66,7 @@ export class TGCalls<T> extends EventEmitter {
             params: this.#params,
         });
 
-        if (transport === null) {
+        if (!transport) {
             this.#connection.close();
             throw new Error('No transport found');
         }
