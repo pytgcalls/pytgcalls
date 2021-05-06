@@ -1,11 +1,13 @@
 *.egg-info
+*.session
+*.session-journal
 .env
 .env.test
 .idea
-package-lock.json
 __pycache__/
 dist/
 lib/
 node_modules/
-venv/
+package-lock.json
 tests/
+venv/
