@@ -29,9 +29,9 @@ class JoinVoiceCall:
         chat_call = None
         # noinspection PyBroadException
         try:
-            chat_call = (
-                await self.pytgcalls._load_full_chat(int(params['chat_id']))
-            ).full_chat.call
+            chat_call = await self.pytgcalls._load_chat_call(
+                int(params['chat_id']),
+            )
         except Exception:
             pass
         if chat_call is not None:
@@ -61,6 +61,14 @@ class JoinVoiceCall:
                     },
                 })
             except Exception as e:
+                if 'GROUPCALL_FORBIDDEN' in str(e):
+                    if int(params['chat_id']) in \
+                            self.pytgcalls._cache_full_chat:
+                        del self.pytgcalls._cache_full_chat[
+                            int(
+                                params['chat_id'],
+                            )
+                        ]
                 if self.pytgcalls._log_mode > 0:
                     print('JOIN_VOICE_CALL_ERROR ->', e)
         return web.json_response({'transport': None})

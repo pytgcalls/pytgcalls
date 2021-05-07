@@ -20,11 +20,9 @@ class ChangeVolumeVoiceCall:
         if params['session_id'] == self.pytgcalls._session_id:
             # noinspection PyBroadException
             try:
-                chat_call = (
-                    await self.pytgcalls._load_full_chat(
-                        params['chat_id'],
-                    )
-                ).full_chat.call
+                chat_call = await self.pytgcalls._load_chat_call(
+                    params['chat_id'],
+                )
                 await self.pytgcalls._app.send(
                     EditGroupCallParticipant(
                         call=chat_call,

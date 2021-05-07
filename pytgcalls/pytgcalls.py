@@ -1,4 +1,5 @@
 import os
+from time import time
 from typing import Callable
 from typing import Dict
 from typing import List
@@ -6,7 +7,9 @@ from typing import List
 from pyrogram import __version__
 from pyrogram import Client
 from pyrogram.raw.types import ChannelForbidden
+from pyrogram.raw.types import GroupCall
 from pyrogram.raw.types import GroupCallDiscarded
+from pyrogram.raw.types import InputGroupCall
 from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
@@ -94,6 +97,23 @@ class PyTgCalls(Methods):
                 # noinspection PyBroadException
                 @self._app.on_raw_update()
                 async def on_close(client, update, _, data2):
+                    if isinstance(update, UpdateGroupCall):
+                        if isinstance(update.call, GroupCallDiscarded):
+                            chat_id = int(f'-100{update.chat_id}')
+                            self._cache_full_chat[chat_id] = {
+                                'last_update': int(time()),
+                                'full_chat': None,
+                            }
+                        if isinstance(update.call, GroupCall):
+                            input_group_call = InputGroupCall(
+                                access_hash=update.call.access_hash,
+                                id=update.call.id,
+                            )
+                            chat_id = int(f'-100{update.chat_id}')
+                            self._cache_full_chat[chat_id] = {
+                                'last_update': int(time()),
+                                'full_chat': input_group_call,
+                            }
                     if isinstance(update, UpdateChannel):
                         chat_id = int(f'-100{update.channel_id}')
                         if len(data2) > 0:
@@ -180,7 +200,7 @@ class PyTgCalls(Methods):
                 self._spawn_process(
                     self._run_js,
                     (
-                        f'{__file__.replace("pytgcalls.py", "")}js/core.js',
+                        f'{__file__.replace("pytgcalls.py", "")}dist/index.js',
                         f'port={self._port} log_mode={self._log_mode}',
                     ),
                 )

@@ -1,97 +1,118 @@
-import { EventEmitter } from 'events';
-import { RTCPeerConnection } from 'wrtc';
-import { SdpBuilder } from './sdp-builder';
-import { parseSdp } from './utils';
-import { JoinVoiceCallCallback } from './types';
+// @ts-ignore
+import { connect } from 'socket.io-client';
+import RTCConnection from './rtc-connection';
+import sendUpdate from './send-update';
 
-export { Stream } from './stream';
+(async () => {
+    const port = parseInt(process.argv[2].split('=')[1]);
+    const logMode = parseInt(process.argv[3].split('=')[1]);
+    let socket = connect(`ws://localhost:${port}`);
+    socket.on('connect', () =>
+        console.log('\x1b[32m', 'Node.js core started!', '\x1b[0m')
+    );
 
-export class TGCalls<T> extends EventEmitter {
-    #connection?: RTCPeerConnection;
-    #params: T;
-    #source_id = 0;
-    joinVoiceCall?: JoinVoiceCallCallback<T>;
+    let connections: Array<RTCConnection> = [];
 
-    constructor(params: T) {
-        super();
-        this.#params = params;
-    }
+    await socket.on('request', async function (data: any) {
+        data = JSON.parse(data);
 
-    async start(track: MediaStreamTrack): Promise<boolean> {
-        if (this.#connection) {
-            throw new Error('Connection already started');
-        } else if (!this.joinVoiceCall) {
-            throw new Error('Please set the `joinVoiceCall` callback before calling `start()`');
+        if (logMode > 0) {
+            console.log('REQUEST: ', data);
         }
 
-        this.#connection = new RTCPeerConnection();
-        this.#connection.oniceconnectionstatechange = async () => {
-            this.emit('iceConnectionState', this.#connection?.iceConnectionState);
+        if (data['action'] === 'join_call') {
+            if (!connections[data.chat_id]) {
+                connections[data.chat_id] = new RTCConnection(
+                    data.chat_id,
+                    data['file_path'],
+                    port,
+                    data['bitrate'],
+                    logMode,
+                    data['buffer_lenght'],
+                    data['invite_hash']
+                );
 
-            switch (this.#connection?.iceConnectionState) {
-                case 'closed':
-                case 'failed':
-                    this.emit('hangUp');
-                    break;
+                const result = await connections[data.chat_id].joinCall();
+
+                if (result) {
+                    await sendUpdate(port, {
+                        result: 'JOINED_VOICE_CHAT',
+                        chat_id: data.chat_id,
+                    });
+                } else {
+                    delete connections[data.chat_id];
+                    await sendUpdate(port, {
+                        result: 'JOIN_ERROR',
+                        chat_id: data.chat_id,
+                    });
+                }
+
+                if (logMode > 0) {
+                    console.log('UPDATED_CONNECTIONS: ', connections);
+                }
             }
-        };
+        } else if (data['action'] === 'leave_call') {
+            if (connections[data.chat_id]) {
+                if (data['type'] !== 'kicked_from_group') {
+                    let result = await connections[data.chat_id].leave_call();
 
-        this.#connection.addTrack(track);
+                    if (result['result'] === 'OK') {
+                        delete connections[data.chat_id];
+                        await sendUpdate(port, {
+                            result: 'LEFT_VOICE_CHAT',
+                            chat_id: data.chat_id,
+                        });
+                    } else {
+                        if (logMode > 0) {
+                            console.log('ERROR_INTERNAL: ', result);
+                        }
 
-        const offer = await this.#connection.createOffer({
-            offerToReceiveVideo: false,
-            offerToReceiveAudio: true,
-        });
-
-        await this.#connection.setLocalDescription(offer);
-
-        if (!offer.sdp) {
-            return false;
+                        delete connections[data.chat_id];
+                        await sendUpdate(port, {
+                            result: 'LEFT_VOICE_CHAT',
+                            error: result['result'],
+                            chat_id: data.chat_id,
+                        });
+                    }
+                } else {
+                    await connections[data.chat_id].stop();
+                    delete connections[data.chat_id];
+                    await sendUpdate(port, {
+                        result: 'KICKED_FROM_GROUP',
+                        chat_id: data.chat_id,
+                    });
+                }
+            }
+        } else if (data['action'] === 'pause') {
+            if (connections[data.chat_id]) {
+                try {
+                    await connections[data.chat_id].pause();
+                    await sendUpdate(port, {
+                        result: 'PAUSED_AUDIO_STREAM',
+                        chat_id: data.chat_id,
+                    });
+                } catch (e) {}
+            }
+        } else if (data['action'] === 'resume') {
+            if (connections[data.chat_id]) {
+                try {
+                    await connections[data.chat_id].resume();
+                    await sendUpdate(port, {
+                        result: 'RESUMED_AUDIO_STREAM',
+                        chat_id: data.chat_id,
+                    });
+                } catch (e) {}
+            }
+        } else if (data['action'] === 'change_stream') {
+            if (connections[data.chat_id]) {
+                try {
+                    await connections[data.chat_id].changeStream(data.file_path);
+                    await sendUpdate(port, {
+                        result: 'CHANGED_AUDIO_STREAM',
+                        chat_id: data.chat_id,
+                    });
+                } catch (e) {}
+            }
         }
-
-        const { ufrag, pwd, hash, fingerprint, source } = parseSdp(offer.sdp);
-        if (!ufrag || !pwd || !hash || !fingerprint || !source) {
-            return false;
-        }
-
-        this.#source_id = source;
-
-        const { transport } = await this.joinVoiceCall({
-            ufrag,
-            pwd,
-            hash,
-            setup: 'active',
-            fingerprint,
-            source,
-            params: this.#params,
-        });
-
-        if (!transport) {
-            this.#connection.close();
-            throw new Error('No transport found');
-        }
-
-        const sessionId = Date.now();
-        const conference = {
-            sessionId,
-            transport,
-            ssrcs: [{ ssrc: source, isMain: true }],
-        };
-
-        await this.#connection.setRemoteDescription({
-            type: 'answer',
-            sdp: SdpBuilder.fromConference(conference, true),
-        });
-
-        return true;
-    }
-
-    getSignSource() {
-        return this.#source_id;
-    }
-
-    close() {
-        this.#connection?.close();
-        this.#connection = undefined;
-    }
-}
+    });
+})();

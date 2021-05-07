@@ -17,10 +17,10 @@ class LeaveGroupCall(SpawnProcess):
             self._spawn_process(
                 requests.post,
                 (
-                    f'http://'
+                    'http://'
                     f'{self.pytgcalls._host}:'
                     f'{self.pytgcalls._port}/'
-                    f'api_internal',
+                    'api_internal',
                     json.dumps({
                         'action': 'leave_call',
                         'chat_id': chat_id,

@@ -17,7 +17,7 @@ class RunJS:
             self.is_running = False
             print(
                 f'\n{self.pytgcalls.FAIL} '
-                f'Stopped NodeJS Core, '
-                f're-click Ctr+C to close properly!'
+                f'NodeJS Core Stopped, '
+                f'press Ctrl+C again to exit!'
                 f'{self.pytgcalls.ENDC}',
             )

@@ -31,7 +31,9 @@ export class SdpBuilder {
 
     addCandidate(c: Candidate) {
         this.push('a=candidate:');
-        this.push(`${c.foundation} ${c.component} ${c.protocol} ${c.priority} ${c.ip} ${c.port} typ ${c.type}`);
+        this.push(
+            `${c.foundation} ${c.component} ${c.protocol} ${c.priority} ${c.ip} ${c.port} typ ${c.type}`
+        );
 
         if ('rel-addr' in c) {
             this.push(` raddr ${c['rel-addr']} rport ${c['rel-port']}`);
@@ -41,9 +43,9 @@ export class SdpBuilder {
         this.addJoined();
     }
 
-    addHeader(sessionId: number, ssrcs: Ssrc[]) {
+    addHeader(session_id: number, ssrcs: Ssrc[]) {
         this.add('v=0');
-        this.add(`o=- ${sessionId} 2 IN IP4 0.0.0.0`);
+        this.add(`o=- ${session_id} 2 IN IP4 0.0.0.0`);
         this.add('s=-');
         this.add('t=0 0');
         this.add(`a=group:BUNDLE ${ssrcs.map(this.toAudioSsrc).join(' ')}`);
@@ -55,7 +57,9 @@ export class SdpBuilder {
         this.add(`a=ice-pwd:${transport.pwd}`);
 
         for (let fingerprint of transport.fingerprints) {
-            this.add(`a=fingerprint:${fingerprint.hash} ${fingerprint.fingerprint}`);
+            this.add(
+                `a=fingerprint:${fingerprint.hash} ${fingerprint.fingerprint}`
+            );
             this.add(`a=setup:passive`);
         }
 
@@ -122,7 +126,7 @@ export class SdpBuilder {
             }
         }
 
-        this.addHeader(conference.sessionId, ssrcs);
+        this.addHeader(conference.session_id, ssrcs);
 
         for (let entry of ssrcs) {
             this.addSsrcEntry(entry, conference.transport, isAnswer);

@@ -1,10 +1,11 @@
 *.egg-info
 .env
 .env.test
-.idea
+.mypy_cache/
+.idea/
+package-lock.json
 __pycache__/
 dist/
-lib/
 node_modules/
 venv/
 tests/

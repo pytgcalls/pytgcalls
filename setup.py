@@ -41,7 +41,6 @@ class PostInstall(install):
                 f"{npm_result['version']}",
             )
         os.system('npm install')
-        os.system('npm install --prefix pytgcalls/js/')
         if 'pip' in os.getcwd():
             print(
                 'Copying files from '
@@ -56,40 +55,31 @@ class PostInstall(install):
                     'mkdir '
                     f'{site.getsitepackages()[0]}/pytgcalls',
                 )
-            if not os.path.exists(
-                f'{site.getsitepackages()[0]}/pytgcalls/js',
-            ):
-                os.system(
-                    'mkdir '
-                    f'{site.getsitepackages()[0]}'
-                    '/pytgcalls/js',
-                )
             if os.path.exists(
-                f'{site.getsitepackages()[0]}/pytgcalls/js/lib',
+                    f'{site.getsitepackages()[0]}/pytgcalls/dist',
             ):
                 os.system(
                     'rm -r '
                     f'{site.getsitepackages()[0]}'
-                    '/pytgcalls/js/lib',
+                    '/pytgcalls/dist',
                 )
             if os.path.exists(
-                f'{site.getsitepackages()[0]}'
-                '/pytgcalls/js/node_modules',
+                    f'{site.getsitepackages()[0]}'
+                    '/pytgcalls/node_modules',
             ):
                 os.system(
                     'rm -r '
                     f'{site.getsitepackages()[0]}'
-                    '/pytgcalls/js/node_modules',
+                    '/pytgcalls/node_modules',
                 )
             os.system(
-                'cp -r '
-                f'{os.getcwd()}/pytgcalls/js/lib '
-                f'{site.getsitepackages()[0]}/pytgcalls/js/',
+                'cp -r node_modules/ '
+                f'{site.getsitepackages()[0]}/pytgcalls/node_modules',
             )
+            os.system('ls node_modules')
             os.system(
-                'cp -r '
-                'pytgcalls/js/node_modules '
-                f'{site.getsitepackages()[0]}/pytgcalls/js/',
+                'cp -r pytgcalls/dist/ '
+                f'{site.getsitepackages()[0]}/pytgcalls/dist',
             )
         install.run(self)
 

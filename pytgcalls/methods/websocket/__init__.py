@@ -4,7 +4,7 @@ from .event_finish import EventFinish
 from .get_participants import GetParticipants
 from .join_voice_call import JoinVoiceCall
 from .leave_voice_call import LeaveVoiceCall
-from .load_full_chat import LoadFullChat
+from .load_chat_call import LoadChatCall
 from .start_web_app import StartWebApp
 from .update_call_data import UpdateCallData
 
@@ -16,7 +16,7 @@ class WebSocket(
     GetParticipants,
     JoinVoiceCall,
     LeaveVoiceCall,
-    LoadFullChat,
+    LoadChatCall,
     StartWebApp,
     UpdateCallData,
 ):

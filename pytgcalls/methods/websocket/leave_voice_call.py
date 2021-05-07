@@ -19,13 +19,9 @@ class LeaveVoiceCall:
             params = json.loads(params)
         try:
             # noinspection PyBroadException
-            try:
-                del self.pytgcalls._cache_user_peer[int(params['chat_id'])]
-            except Exception:
-                pass
-            chat_call = (
-                await self.pytgcalls._load_full_chat(int(params['chat_id']))
-            ).full_chat.call
+            chat_call = await self.pytgcalls._load_chat_call(
+                int(params['chat_id']),
+            )
             if chat_call is not None:
                 # noinspection PyBroadException
                 await self.pytgcalls._app.send(
