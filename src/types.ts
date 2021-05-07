@@ -58,4 +58,6 @@ export interface JoinVoiceCallResponse {
     transport: Transport | null;
 }
 
-export type JoinVoiceCallCallback<T> = (payload: JoinVoiceCallParams<T>) => Promise<JoinVoiceCallResponse>;
+export type JoinVoiceCallCallback<T> = (
+    payload: JoinVoiceCallParams<T>
+) => Promise<JoinVoiceCallResponse>;

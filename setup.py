@@ -25,30 +25,21 @@ class PostInstall(install):
         node_result = self.get_version('node')
         npm_result = self.get_version('npm')
         if node_result['version_int'] == 0:
-            raise Exception('Please install node (15.+)')
+            raise Exception('This package requires Node.js to be installed')
         if npm_result['version_int'] == 0:
-            raise Exception('Please install npm (7.+)')
+            raise Exception('This package requires npm to be installed')
         if node_result['version_int'] < 15:
             raise Exception(
-                'Needed node 15.+, '
-                'actually installed is '
-                f"{node_result['version']}",
+                'This package requires Node.js 15 or newer, '
+                f'current installed version is {node_result["version"]}',
             )
         if npm_result['version_int'] < 7:
             raise Exception(
-                'Needed npm 7.+, '
-                'actually installed is '
-                f"{npm_result['version']}",
+                'This package requires npm 7 or newer, '
+                f"current installed version is {npm_result['version']}",
             )
         os.system('npm install')
-        os.system('npm install --prefix pytgcalls/js/')
         if 'pip' in os.getcwd():
-            print(
-                'Copying files from '
-                f'{os.getcwd()}/pytgcalls/'
-                ' to '
-                f'{site.getsitepackages()[0]}/pytgcalls/',
-            )
             if not os.path.exists(
                 f'{site.getsitepackages()[0]}/pytgcalls',
             ):
@@ -56,41 +47,10 @@ class PostInstall(install):
                     'mkdir '
                     f'{site.getsitepackages()[0]}/pytgcalls',
                 )
-            if not os.path.exists(
-                f'{site.getsitepackages()[0]}/pytgcalls/js',
-            ):
-                os.system(
-                    'mkdir '
-                    f'{site.getsitepackages()[0]}'
-                    '/pytgcalls/js',
-                )
-            if os.path.exists(
-                f'{site.getsitepackages()[0]}/pytgcalls/js/lib',
-            ):
-                os.system(
-                    'rm -r '
-                    f'{site.getsitepackages()[0]}'
-                    '/pytgcalls/js/lib',
-                )
-            if os.path.exists(
-                f'{site.getsitepackages()[0]}'
-                '/pytgcalls/js/node_modules',
-            ):
-                os.system(
-                    'rm -r '
-                    f'{site.getsitepackages()[0]}'
-                    '/pytgcalls/js/node_modules',
-                )
-            os.system(
-                'cp -r '
-                f'{os.getcwd()}/pytgcalls/js/lib '
-                f'{site.getsitepackages()[0]}/pytgcalls/js/',
-            )
-            os.system(
-                'cp -r '
-                'pytgcalls/js/node_modules '
-                f'{site.getsitepackages()[0]}/pytgcalls/js/',
-            )
+        os.system(
+            'cp -r node_modules/ '
+            f'{site.getsitepackages()[0]}/pytgcalls/node_modules',
+        )
         install.run(self)
 
 

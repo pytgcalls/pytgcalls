@@ -16,6 +16,7 @@ class JoinVoiceCall:
         params = await request.json()
         if isinstance(params, str):
             params = json.loads(params)
+        chat_id = int(params['chatId'])
         request_call = {
             'ufrag': params['ufrag'],
             'pwd': params['pwd'],
@@ -30,7 +31,7 @@ class JoinVoiceCall:
         # noinspection PyBroadException
         try:
             chat_call = (
-                await self.pytgcalls._load_full_chat(int(params['chat_id']))
+                await self.pytgcalls._load_full_chat(chat_id)
             ).full_chat.call
         except Exception:
             pass
@@ -41,17 +42,13 @@ class JoinVoiceCall:
                         call=chat_call,
                         params=DataJSON(data=json.dumps(request_call)),
                         muted=False,
-                        join_as=self.pytgcalls._cache_user_peer[
-                            int(params['chat_id'])
-                        ],
-                        invite_hash=params['invite_hash'],
+                        join_as=self.pytgcalls._cache_user_peer[chat_id],
+                        invite_hash=params['inviteHash'],
                     ),
                 )
-
                 transport = json.loads(result.updates[0].call.params.data)[
                     'transport'
                 ]
-
                 return web.json_response({
                     'transport': {
                         'ufrag': transport['ufrag'],

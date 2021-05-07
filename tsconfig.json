@@ -4,7 +4,7 @@
         "target": "ES2019",
         "module": "commonjs",
         "declaration": false,
-        "outDir": "lib/",
+        "outDir": "pytgcalls/dist/",
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
@@ -12,12 +12,5 @@
         "noFallthroughCasesInSwitch": true,
         "forceConsistentCasingInFileNames": true,
         "typeRoots": ["src/typings", "node_modules/@types"]
-    },
-    "typedocOptions": {
-        "excludePrivate": true,
-        "includeVersion": true,
-        "name": "tgcallsjs",
-        "out": "docs/",
-        "readme": "none"
     }
 }

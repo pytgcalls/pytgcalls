@@ -15,14 +15,15 @@ class ResumeStream(SpawnProcess):
             self._spawn_process(
                 requests.post,
                 (
-                    f'http://'
+                    'http://'
+
                     f'{self.pytgcalls._host}:'
                     f'{self.pytgcalls._port}/'
-                    f'api_internal',
+                    'api_internal',
                     json.dumps({
                         'action': 'resume',
-                        'chat_id': chat_id,
-                        'session_id': self.pytgcalls._session_id,
+                        'chatId': chat_id,
+                        'sessionId': self.pytgcalls._session_id,
                     }),
                 ),
             )

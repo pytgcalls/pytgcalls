@@ -31,7 +31,9 @@ export class SdpBuilder {
 
     addCandidate(c: Candidate) {
         this.push('a=candidate:');
-        this.push(`${c.foundation} ${c.component} ${c.protocol} ${c.priority} ${c.ip} ${c.port} typ ${c.type}`);
+        this.push(
+            `${c.foundation} ${c.component} ${c.protocol} ${c.priority} ${c.ip} ${c.port} typ ${c.type}`
+        );
 
         if ('rel-addr' in c) {
             this.push(` raddr ${c['rel-addr']} rport ${c['rel-port']}`);
@@ -55,7 +57,9 @@ export class SdpBuilder {
         this.add(`a=ice-pwd:${transport.pwd}`);
 
         for (let fingerprint of transport.fingerprints) {
-            this.add(`a=fingerprint:${fingerprint.hash} ${fingerprint.fingerprint}`);
+            this.add(
+                `a=fingerprint:${fingerprint.hash} ${fingerprint.fingerprint}`
+            );
             this.add(`a=setup:passive`);
         }
 
