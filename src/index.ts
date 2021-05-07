@@ -6,7 +6,6 @@ import sendUpdate from "./send-update";
     const port = parseInt(process.argv[2].split("=")[1]);
     const logMode = parseInt(process.argv[3].split("=")[1]);
     let socket = connect(`ws://localhost:${port}`);
-    console.log(`Starting on port: ${port}`);
     socket.on("connect", () =>
         console.log("\x1b[32m", "Node.js core started!", "\x1b[0m")
     );
