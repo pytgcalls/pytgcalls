@@ -22,7 +22,7 @@ class RunAsync:
                 'http://'
                 f'{self.pytgcalls._host}:'
                 f'{self.pytgcalls._port}/'
-                'async_request',
+                'asyncRequest',
                 json.dumps({
                     'ID': id_request,
                 }),
