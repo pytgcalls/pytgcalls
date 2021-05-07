@@ -1,32 +1,32 @@
 {
-  "name": "tgcalls",
-  "version": "0.1.1",
-  "description": "",
-  "main": "lib/index.js",
-  "scripts": {
-    "build": "npm run prepare",
-    "test": "tsc --noEmit",
-    "prepare": "rm -rf lib/ pytgcalls/js/lib/ && tsc && mv lib/ pytgcalls/js/",
-    "preversion": "npm run test",
-    "docs": "typedoc src/index.ts"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tgcallsjs/tgcalls.git"
-  },
-  "author": "Andrew Lane <contact@lungers.com>",
-  "license": "LGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/tgcallsjs/tgcalls/issues"
-  },
-  "homepage": "https://github.com/tgcallsjs/tgcalls#readme",
-  "devDependencies": {
-    "@types/node": "^14.14.35",
-    "typedoc": "^0.20.36",
-    "typescript": "^4.2.4"
-  },
-  "dependencies": {
-    "node-fetch": "^2.6.1",
-    "wrtc": "^0.4.7"
-  }
+    "name": "tgcalls",
+    "version": "0.1.1",
+    "description": "",
+    "main": "pytgcalls/dist",
+    "scripts": {
+        "build": "npx tsc",
+        "test": "npx tsc --noEmit",
+        "prepare": "npm run build",
+        "preversion": "npm run test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tgcallsjs/tgcalls.git"
+    },
+    "author": "Andrew Lane <contact@lungers.com>",
+    "license": "LGPL-3.0",
+    "bugs": {
+        "url": "https://github.com/tgcallsjs/tgcalls/issues"
+    },
+    "homepage": "https://github.com/tgcallsjs/tgcalls#readme",
+    "devDependencies": {
+        "@types/node": "^14.14.35",
+        "@types/node-fetch": "^2.5.10",
+        "@types/socket.io-client": "^1.4.36",
+        "typescript": "^4.2.4"
+    },
+    "dependencies": {
+        "node-fetch": "^2.6.1",
+        "wrtc": "^0.4.7"
+    }
 }

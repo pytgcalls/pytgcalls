@@ -48,7 +48,7 @@ export interface JoinVoiceCallParams<T> {
     ufrag: string;
     pwd: string;
     hash: string;
-    setup: 'active';
+    setup: "active";
     fingerprint: string;
     source: number;
     params: T;
@@ -58,4 +58,6 @@ export interface JoinVoiceCallResponse {
     transport: Transport | null;
 }
 
-export type JoinVoiceCallCallback<T> = (payload: JoinVoiceCallParams<T>) => Promise<JoinVoiceCallResponse>;
+export type JoinVoiceCallCallback<T> = (
+    payload: JoinVoiceCallParams<T>
+) => Promise<JoinVoiceCallResponse>;

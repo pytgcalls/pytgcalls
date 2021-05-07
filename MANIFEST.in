@@ -1,2 +1,1 @@
-graft pytgcalls/js
-graft pytgcalls/methods/logs
+graft pytgcalls/dist

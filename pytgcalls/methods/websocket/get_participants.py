@@ -15,13 +15,12 @@ class GetParticipants:
         params = await request.json()
         if isinstance(params, str):
             params = json.loads(params)
+        chat_id = params['chatId']
         participants: GroupParticipants = (
             await self.pytgcalls._app.send(
                 GetGroupParticipants(
                     call=(
-                        await self.pytgcalls._load_full_chat(
-                            params['chat_id'],
-                        )
+                        await self.pytgcalls._load_full_chat(chat_id)
                     ).full_chat.call,
                     ids=[],
                     sources=[],

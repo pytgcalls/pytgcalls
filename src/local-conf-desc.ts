@@ -1,4 +1,4 @@
-import { Candidate, Conference, Ssrc, Transport } from './types';
+import { Candidate, Conference, Ssrc, Transport } from "./types";
 
 export class SdpBuilder {
     #lines: string[] = [];
@@ -9,11 +9,11 @@ export class SdpBuilder {
     }
 
     join() {
-        return this.#lines.join('\n');
+        return this.#lines.join("\n");
     }
 
     finalize() {
-        return this.join() + '\n';
+        return this.join() + "\n";
     }
 
     private add(line: string) {
@@ -24,17 +24,19 @@ export class SdpBuilder {
         this.#newLine.push(word);
     }
 
-    private addJoined(separator = '') {
+    private addJoined(separator = "") {
         this.add(this.#newLine.join(separator));
         this.#newLine = [];
     }
 
     addCandidate(c: Candidate) {
-        this.push('a=candidate:');
-        this.push(`${c.foundation} ${c.component} ${c.protocol} ${c.priority} ${c.ip} ${c.port} typ ${c.type}`);
+        this.push("a=candidate:");
+        this.push(
+            `${c.foundation} ${c.component} ${c.protocol} ${c.priority} ${c.ip} ${c.port} typ ${c.type}`
+        );
 
-        if ('rel-addr' in c) {
-            this.push(` raddr ${c['rel-addr']} rport ${c['rel-port']}`);
+        if ("rel-addr" in c) {
+            this.push(` raddr ${c["rel-addr"]} rport ${c["rel-port"]}`);
         }
 
         this.push(` generation ${c.generation}`);
@@ -42,12 +44,12 @@ export class SdpBuilder {
     }
 
     addHeader(sessionId: number, ssrcs: Ssrc[]) {
-        this.add('v=0');
+        this.add("v=0");
         this.add(`o=- ${sessionId} 2 IN IP4 0.0.0.0`);
-        this.add('s=-');
-        this.add('t=0 0');
-        this.add(`a=group:BUNDLE ${ssrcs.map(this.toAudioSsrc).join(' ')}`);
-        this.add('a=ice-lite');
+        this.add("s=-");
+        this.add("t=0 0");
+        this.add(`a=group:BUNDLE ${ssrcs.map(this.toAudioSsrc).join(" ")}`);
+        this.add("a=ice-lite");
     }
 
     addTransport(transport: Transport) {
@@ -55,7 +57,9 @@ export class SdpBuilder {
         this.add(`a=ice-pwd:${transport.pwd}`);
 
         for (let fingerprint of transport.fingerprints) {
-            this.add(`a=fingerprint:${fingerprint.hash} ${fingerprint.fingerprint}`);
+            this.add(
+                `a=fingerprint:${fingerprint.hash} ${fingerprint.fingerprint}`
+            );
             this.add(`a=setup:passive`);
         }
 
@@ -71,13 +75,13 @@ export class SdpBuilder {
         this.add(`m=audio ${entry.isMain ? 1 : 0} RTP/SAVPF 111 126`);
 
         if (entry.isMain) {
-            this.add('c=IN IP4 0.0.0.0');
+            this.add("c=IN IP4 0.0.0.0");
         }
 
         this.add(`a=mid:${this.toAudioSsrc(entry)}`);
 
         if (entry.isRemoved) {
-            this.add('a=inactive');
+            this.add("a=inactive");
             return;
         }
 
@@ -85,22 +89,22 @@ export class SdpBuilder {
             this.addTransport(transport);
         }
 
-        this.add('a=rtpmap:111 opus/48000/2');
-        this.add('a=rtpmap:126 telephone-event/8000');
-        this.add('a=fmtp:111 minptime=10; useinbandfec=1; usedtx=1');
-        this.add('a=rtcp:1 IN IP4 0.0.0.0');
-        this.add('a=rtcp-mux');
-        this.add('a=rtcp-fb:111 transport-cc');
-        this.add('a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level');
+        this.add("a=rtpmap:111 opus/48000/2");
+        this.add("a=rtpmap:126 telephone-event/8000");
+        this.add("a=fmtp:111 minptime=10; useinbandfec=1; usedtx=1");
+        this.add("a=rtcp:1 IN IP4 0.0.0.0");
+        this.add("a=rtcp-mux");
+        this.add("a=rtcp-fb:111 transport-cc");
+        this.add("a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level");
 
         if (isAnswer) {
-            this.add('a=recvonly');
+            this.add("a=recvonly");
             return;
         } else if (entry.isMain) {
-            this.add('a=sendrecv');
+            this.add("a=sendrecv");
         } else {
-            this.add('a=sendonly');
-            this.add('a=bundle-only');
+            this.add("a=sendonly");
+            this.add("a=bundle-only");
         }
 
         this.add(`a=ssrc-group:FID ${ssrc}`);
@@ -137,7 +141,7 @@ export class SdpBuilder {
 
     private toAudioSsrc(ssrc: Ssrc) {
         if (ssrc.isMain) {
-            return '0';
+            return "0";
         }
 
         return `audio${ssrc.ssrc}`;

@@ -180,7 +180,7 @@ class PyTgCalls(Methods):
                 self._spawn_process(
                     self._run_js,
                     (
-                        f'{__file__.replace("pytgcalls.py", "")}js/core.js',
+                        f'{__file__.replace("pytgcalls.py", "")}dist/index.js',
                         f'port={self._port} log_mode={self._log_mode}',
                     ),
                 )

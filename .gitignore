@@ -3,10 +3,10 @@
 *.session-journal
 .env
 .env.test
-.idea
+.idea/
 __pycache__/
+build/
 dist/
-lib/
 node_modules/
 package-lock.json
 tests/
