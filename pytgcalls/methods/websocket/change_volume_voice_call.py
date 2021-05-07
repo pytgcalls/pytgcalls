@@ -32,7 +32,7 @@ class ChangeVolumeVoiceCall:
                         volume=params['volume'] * 100,
                     ),
                 )
-                result_json = {'result': 'OK',}
+                result_json = {'result': 'OK'}
             except Exception:
                 pass
         return web.json_response(result_json)
