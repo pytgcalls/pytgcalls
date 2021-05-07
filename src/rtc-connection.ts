@@ -129,7 +129,7 @@ class RTCConnection {
         this.stream.resume();
     }
 
-    setStream(filePath: string) {
+    changeStream(filePath: string) {
         this.stream.setReadable(filePath);
     }
 }

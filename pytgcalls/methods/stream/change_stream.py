@@ -25,7 +25,7 @@ class ChangeStream(SpawnProcess):
                     f'{self.pytgcalls._port}/'
                     'api_internal',
                     json.dumps({
-                        'action': 'change_stream',
+                        'action': 'changeStream',
                         'chatId': chat_id,
                         'filePath': file_path,
                         'sessionId': self.pytgcalls._session_id,

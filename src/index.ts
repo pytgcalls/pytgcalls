@@ -103,10 +103,10 @@ import sendUpdate from "./send-update";
                     });
                 } catch (e) {}
             }
-        } else if (data["action"] === "setStream") {
+        } else if (data["action"] === "changeStream") {
             if (connections[data.chatId]) {
                 try {
-                    await connections[data.chatId].setStream(data.filePath);
+                    await connections[data.chatId].changeStream(data.filePath);
                     await sendUpdate(port, {
                         result: "CHANGED_AUDIO_STREAM",
                         chatId: data.chatId,
