@@ -43,7 +43,9 @@ class PostInstall(install):
         os.system('npm install')
         folder_package = site.getusersitepackages()
         folder_package_tmp = site.getsitepackages()[0]
-        folder_package = folder_package_tmp if 'venv' in folder_package_tmp else folder_package
+        folder_package = folder_package_tmp if (
+            'venv' in folder_package_tmp
+        ) else folder_package
         if 'pip' in os.getcwd():
             print(
                 'Copying files from '
