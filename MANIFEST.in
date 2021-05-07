@@ -1,1 +1,2 @@
 graft pytgcalls/dist
+graft pytgcalls/methods/logs
