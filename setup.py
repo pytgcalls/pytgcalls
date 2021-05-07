@@ -41,44 +41,47 @@ class PostInstall(install):
                 f"{npm_result['version']}",
             )
         os.system('npm install')
+        folder_package = site.getusersitepackages()
+        folder_package_tmp = site.getsitepackages()[0]
+        folder_package = folder_package_tmp if 'venv' in folder_package_tmp else folder_package
         if 'pip' in os.getcwd():
             print(
                 'Copying files from '
                 f'{os.getcwd()}/pytgcalls/'
                 ' to '
-                f'{site.getusersitepackages()}/pytgcalls/',
+                f'{folder_package}/pytgcalls/',
             )
             if not os.path.exists(
-                f'{site.getusersitepackages()}/pytgcalls',
+                f'{folder_package}/pytgcalls',
             ):
                 os.system(
                     'mkdir '
-                    f'{site.getusersitepackages()}/pytgcalls',
+                    f'{folder_package}/pytgcalls',
                 )
             if os.path.exists(
-                    f'{site.getusersitepackages()}/pytgcalls/dist',
+                    f'{folder_package}/pytgcalls/dist',
             ):
                 os.system(
                     'rm -r '
-                    f'{site.getusersitepackages()}'
+                    f'{folder_package}'
                     '/pytgcalls/dist',
                 )
             if os.path.exists(
-                    f'{site.getusersitepackages()}'
+                    f'{folder_package}'
                     '/pytgcalls/node_modules',
             ):
                 os.system(
                     'rm -r '
-                    f'{site.getusersitepackages()}'
+                    f'{folder_package}'
                     '/pytgcalls/node_modules',
                 )
             os.system(
                 'cp -r node_modules/ '
-                f'{site.getusersitepackages()}/pytgcalls/node_modules',
+                f'{folder_package}/pytgcalls/node_modules',
             )
             os.system(
                 'cp -r pytgcalls/dist/ '
-                f'{site.getusersitepackages()}/pytgcalls/dist',
+                f'{folder_package}/pytgcalls/dist',
             )
         install.run(self)
 
