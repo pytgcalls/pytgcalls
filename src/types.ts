@@ -48,7 +48,7 @@ export interface JoinVoiceCallParams<T> {
     ufrag: string;
     pwd: string;
     hash: string;
-    setup: "active";
+    setup: 'active';
     fingerprint: string;
     source: number;
     params: T;

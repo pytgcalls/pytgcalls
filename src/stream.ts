@@ -1,6 +1,6 @@
-import { createReadStream, statSync } from "fs";
-import { EventEmitter } from "events";
-import { RTCAudioSource, nonstandard } from "wrtc";
+import { createReadStream, statSync } from 'fs';
+import { EventEmitter } from 'events';
+import { RTCAudioSource, nonstandard } from 'wrtc';
 
 export class Stream extends EventEmitter {
     private readonly audioSource: RTCAudioSource;
@@ -53,7 +53,7 @@ export class Stream extends EventEmitter {
         this.readable = createReadStream(filePath);
 
         if (this.stopped) {
-            throw new Error("Cannot set readable when stopped");
+            throw new Error('Cannot set readable when stopped');
         }
 
         this.cache = Buffer.alloc(0);
@@ -63,7 +63,7 @@ export class Stream extends EventEmitter {
             this.finishedLoading = false;
 
             // @ts-ignore
-            this.readable.on("data", (data: any) => {
+            this.readable.on('data', (data: any) => {
                 this.bytesLoaded += data.length;
                 this.bytesSpeed = data.length;
 
@@ -72,13 +72,13 @@ export class Stream extends EventEmitter {
                     this.readable.pause();
                     this.runningPulse = false;
                     if (this.logMode > 1) {
-                        console.log("ENDED_BUFFERING ->", new Date().getTime());
+                        console.log('ENDED_BUFFERING ->', new Date().getTime());
                         console.log(
-                            "BYTES_STREAM_CACHE_LENGTH ->",
+                            'BYTES_STREAM_CACHE_LENGTH ->',
                             this.cache.length
                         );
                         if (this.logMode > 1) {
-                            console.log("PULSE ->", this.runningPulse);
+                            console.log('PULSE ->', this.runningPulse);
                         }
                     }
                 }
@@ -86,9 +86,9 @@ export class Stream extends EventEmitter {
                 if (this.logMode > 1) {
                     // @ts-ignore
                     console.log(
-                        "BYTES_LOADED ->",
+                        'BYTES_LOADED ->',
                         this.bytesLoaded,
-                        "OF ->",
+                        'OF ->',
                         Stream.getFilesizeInBytes(this.filePath)
                     );
                 }
@@ -96,18 +96,18 @@ export class Stream extends EventEmitter {
                 this.cache = Buffer.concat([this.cache, data]);
             });
             // @ts-ignore
-            this.readable.on("end", () => {
+            this.readable.on('end', () => {
                 this.finishedLoading = true;
                 if (this.logMode > 1) {
-                    console.log("COMPLETED_BUFFERING ->", new Date().getTime());
+                    console.log('COMPLETED_BUFFERING ->', new Date().getTime());
                     console.log(
-                        "BYTES_STREAM_CACHE_LENGTH ->",
+                        'BYTES_STREAM_CACHE_LENGTH ->',
                         this.cache.length
                     );
                     console.log(
-                        "BYTES_LOADED ->",
+                        'BYTES_LOADED ->',
                         this.bytesLoaded,
-                        "OF ->",
+                        'OF ->',
                         Stream.getFilesizeInBytes(this.filePath)
                     );
                 }
@@ -155,20 +155,20 @@ export class Stream extends EventEmitter {
 
     pause() {
         if (this.stopped) {
-            throw new Error("Cannot pause when stopped");
+            throw new Error('Cannot pause when stopped');
         }
 
         this.paused = true;
-        this.emit("pause", this.paused);
+        this.emit('pause', this.paused);
     }
 
     resume() {
         if (this.stopped) {
-            throw new Error("Cannot resume when stopped");
+            throw new Error('Cannot resume when stopped');
         }
 
         this.paused = false;
-        this.emit("resume", this.paused);
+        this.emit('resume', this.paused);
     }
 
     finish() {
@@ -216,12 +216,12 @@ export class Stream extends EventEmitter {
                 }
                 if (this.readable !== undefined && checkBuff) {
                     if (this.logMode > 1) {
-                        console.log("PULSE ->", this.runningPulse);
+                        console.log('PULSE ->', this.runningPulse);
                     }
                     // @ts-ignore
                     this.readable.resume();
                     if (this.logMode > 1) {
-                        console.log("BUFFERING -> ", new Date().getTime());
+                        console.log('BUFFERING -> ', new Date().getTime());
                     }
                 }
             }
@@ -255,19 +255,19 @@ export class Stream extends EventEmitter {
                         samples,
                     });
                 } catch (error) {
-                    this.emit("error", error);
+                    this.emit('error', error);
                 }
             } else if (checkLag) {
                 if (this.logMode > 1) {
-                    console.log("STREAM_LAG -> ", new Date().getTime());
+                    console.log('STREAM_LAG -> ', new Date().getTime());
                     console.log(
-                        "BYTES_STREAM_CACHE_LENGTH ->",
+                        'BYTES_STREAM_CACHE_LENGTH ->',
                         this.cache.length
                     );
                     console.log(
-                        "BYTES_LOADED ->",
+                        'BYTES_LOADED ->',
                         this.bytesLoaded,
-                        "OF ->",
+                        'OF ->',
                         fileSize
                     );
                 }
@@ -278,7 +278,7 @@ export class Stream extends EventEmitter {
                     if (this.equalCount >= 15) {
                         this.equalCount = 0;
                         if (this.logMode > 1) {
-                            console.log("NOT_ENOUGH_BYTES ->", oldTime);
+                            console.log('NOT_ENOUGH_BYTES ->', oldTime);
                         }
                         this.finishedBytes = true;
                         // @ts-ignore
@@ -303,7 +303,7 @@ export class Stream extends EventEmitter {
             this.cache.length < byteLength
         ) {
             this.finish();
-            this.emit("finish");
+            this.emit('finish');
         }
 
         const toSubtract = new Date().getTime() - oldTime;

@@ -1,5 +1,5 @@
-import fetch from "node-fetch";
-import { TGCalls, Stream } from "./tgcalls";
+import fetch from 'node-fetch';
+import { TGCalls, Stream } from './tgcalls';
 
 class RTCConnection {
     chatId: number;
@@ -53,26 +53,26 @@ class RTCConnection {
             };
 
             if (logMode > 0) {
-                console.log("callJoinPayload -> ", payload);
+                console.log('callJoinPayload -> ', payload);
             }
 
             const joinCallResult = await (
                 await fetch(`http://localhost:${this.port}/joinCall`, {
-                    method: "POST",
+                    method: 'POST',
                     body: JSON.stringify(payload),
                 })
             ).json();
 
             if (logMode > 0) {
-                console.log("joinCallRequestResult -> ", joinCallResult);
+                console.log('joinCallRequestResult -> ', joinCallResult);
             }
 
             return joinCallResult;
         };
 
-        this.stream.on("finish", async () => {
+        this.stream.on('finish', async () => {
             await fetch(`http://localhost:${this.port}/streamEnded`, {
-                method: "POST",
+                method: 'POST',
                 body: JSON.stringify({
                     chatId: chatId,
                 }),
@@ -88,7 +88,7 @@ class RTCConnection {
             this.stream.stop();
 
             if (this.logMode > 0) {
-                console.log("joinCallError ->", e);
+                console.log('joinCallError ->', e);
             }
 
             return false;
@@ -107,7 +107,7 @@ class RTCConnection {
             this.stop();
             return await (
                 await fetch(`http://localhost:${this.port}/leaveCall`, {
-                    method: "POST",
+                    method: 'POST',
                     body: JSON.stringify({
                         chatId: this.chatId,
                     }),
@@ -115,7 +115,7 @@ class RTCConnection {
             ).json();
         } catch (e) {
             return {
-                action: "REQUEST_ERROR",
+                action: 'REQUEST_ERROR',
                 message: e.toString(),
             };
         }

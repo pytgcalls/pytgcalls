@@ -1,7 +1,7 @@
 // https://github.com/node-webrtc/node-webrtc/pull/656
 /// <reference lib="dom" />
 
-declare module "wrtc" {
+declare module 'wrtc' {
     export const MediaStream: {
         prototype: MediaStream;
         new (): MediaStream;
@@ -48,7 +48,7 @@ declare module "wrtc" {
             min: number;
             max: number;
         };
-        sdpSemantics?: "plan-b" | "unified-plan";
+        sdpSemantics?: 'plan-b' | 'unified-plan';
     };
 
     export const RTCPeerConnection: {
@@ -112,7 +112,7 @@ declare module "wrtc" {
     }
 
     export interface RTCAudioDataEvent extends RTCAudioData, Event {
-        type: "data";
+        type: 'data';
     }
 
     export interface RTCAudioSource {
@@ -133,12 +133,12 @@ declare module "wrtc" {
         readonly stopped: boolean;
         ondata: ((this: RTCAudioSink, ev: RTCAudioDataEvent) => any) | null;
         addEventListener(
-            type: "data",
+            type: 'data',
             listener: DataEventListener | DataEventListenerObject | null,
             options?: boolean | AddEventListenerOptions
         ): void;
         removeEventListener(
-            type: "data",
+            type: 'data',
             callback: DataEventListener | DataEventListenerObject | null,
             options?: EventListenerOptions | boolean
         ): void;
@@ -152,7 +152,7 @@ declare module "wrtc" {
     }
 
     export interface RTCVideoFrameEvent extends Event {
-        type: "frame";
+        type: 'frame';
         frame: RTCVideoFrame;
     }
 
@@ -181,12 +181,12 @@ declare module "wrtc" {
         readonly stopped: boolean;
         onframe: ((this: RTCVideoSink, ev: RTCVideoFrameEvent) => any) | null;
         addEventListener(
-            type: "data",
+            type: 'data',
             listener: FrameEventListener | FrameEventListenerObject | null,
             options?: boolean | AddEventListenerOptions
         ): void;
         removeEventListener(
-            type: "data",
+            type: 'data',
             callback: FrameEventListener | FrameEventListenerObject | null,
             options?: EventListenerOptions | boolean
         ): void;

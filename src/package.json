@@ -1,8 +1,0 @@
-{
-    "dependencies": {
-        "node-fetch": "^2.6.1",
-        "node-webrtc-audio-stream-source": "^0.3.0",
-        "wrtc": "^0.4.7",
-        "socket.io-client": "^4.0.1"
-    }
-}

@@ -1,10 +1,10 @@
-import { EventEmitter } from "events";
-import { RTCPeerConnection } from "wrtc";
-import { SdpBuilder } from "./sdp-builder";
-import { parseSdp } from "./utils";
-import { JoinVoiceCallCallback } from "./types";
+import { EventEmitter } from 'events';
+import { RTCPeerConnection } from 'wrtc';
+import { SdpBuilder } from './sdp-builder';
+import { parseSdp } from './utils';
+import { JoinVoiceCallCallback } from './types';
 
-export { Stream } from "./stream";
+export { Stream } from './stream';
 
 export class TGCalls<T> extends EventEmitter {
     #connection?: RTCPeerConnection;
@@ -18,24 +18,24 @@ export class TGCalls<T> extends EventEmitter {
 
     async start(track: MediaStreamTrack): Promise<boolean> {
         if (this.#connection) {
-            throw new Error("Connection already started");
+            throw new Error('Connection already started');
         } else if (!this.joinVoiceCall) {
             throw new Error(
-                "Please set the `joinVoiceCall` callback before calling `start()`"
+                'Please set the `joinVoiceCall` callback before calling `start()`'
             );
         }
 
         this.#connection = new RTCPeerConnection();
         this.#connection.oniceconnectionstatechange = async () => {
             this.emit(
-                "iceConnectionState",
+                'iceConnectionState',
                 this.#connection?.iceConnectionState
             );
 
             switch (this.#connection?.iceConnectionState) {
-                case "closed":
-                case "failed":
-                    this.emit("hangUp");
+                case 'closed':
+                case 'failed':
+                    this.emit('hangUp');
                     break;
             }
         };
@@ -66,7 +66,7 @@ export class TGCalls<T> extends EventEmitter {
                 ufrag,
                 pwd,
                 hash,
-                setup: "active",
+                setup: 'active',
                 fingerprint,
                 source,
                 params: this.#params,
@@ -78,7 +78,7 @@ export class TGCalls<T> extends EventEmitter {
 
         if (!joinGroupCallResult || !joinGroupCallResult.transport) {
             this.#connection.close();
-            throw new Error("No transport found");
+            throw new Error('No transport found');
         }
 
         const sessionId = Date.now();
@@ -89,7 +89,7 @@ export class TGCalls<T> extends EventEmitter {
         };
 
         await this.#connection.setRemoteDescription({
-            type: "answer",
+            type: 'answer',
             sdp: SdpBuilder.fromConference(conference, true),
         });
 
