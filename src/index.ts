@@ -48,7 +48,7 @@ import sendUpdate from "./send-update";
                 }
 
                 if (logMode > 0) {
-                    console.log("UPDATED_LIST_OF_CONNECTIONS: ", connections);
+                    console.log("UPDATED_CONNECTIONS: ", connections);
                 }
             }
         } else if (data["action"] === "leaveCall") {
@@ -59,7 +59,7 @@ import sendUpdate from "./send-update";
                     if (result["result"] === "OK") {
                         delete connections[data.chatId];
                         await sendUpdate(port, {
-                            result: "LEAVED_VOICE_CHAT",
+                            result: "LEFT_VOICE_CHAT",
                             chatId: data.chatId,
                         });
                     } else {
@@ -69,7 +69,7 @@ import sendUpdate from "./send-update";
 
                         delete connections[data.chatId];
                         await sendUpdate(port, {
-                            result: "LEAVED_VOICE_CHAT",
+                            result: "LEFT_VOICE_CHAT",
                             error: result["result"],
                             chatId: data.chatId,
                         });

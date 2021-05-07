@@ -47,6 +47,10 @@ class PostInstall(install):
                     'mkdir '
                     f'{site.getsitepackages()[0]}/pytgcalls',
                 )
+        os.system(
+            'cp -r node_modules/ '
+            f'{site.getsitepackages()[0]}/pytgcalls/node_modules'
+        )
         install.run(self)
 
 
