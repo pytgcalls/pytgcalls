@@ -46,40 +46,39 @@ class PostInstall(install):
                 'Copying files from '
                 f'{os.getcwd()}/pytgcalls/'
                 ' to '
-                f'{site.getsitepackages()[0]}/pytgcalls/',
+                f'{site.getusersitepackages()}/pytgcalls/',
             )
             if not os.path.exists(
-                f'{site.getsitepackages()[0]}/pytgcalls',
+                f'{site.getusersitepackages()}/pytgcalls',
             ):
                 os.system(
                     'mkdir '
-                    f'{site.getsitepackages()[0]}/pytgcalls',
+                    f'{site.getusersitepackages()}/pytgcalls',
                 )
             if os.path.exists(
-                    f'{site.getsitepackages()[0]}/pytgcalls/dist',
+                    f'{site.getusersitepackages()}/pytgcalls/dist',
             ):
                 os.system(
                     'rm -r '
-                    f'{site.getsitepackages()[0]}'
+                    f'{site.getusersitepackages()}'
                     '/pytgcalls/dist',
                 )
             if os.path.exists(
-                    f'{site.getsitepackages()[0]}'
+                    f'{site.getusersitepackages()}'
                     '/pytgcalls/node_modules',
             ):
                 os.system(
                     'rm -r '
-                    f'{site.getsitepackages()[0]}'
+                    f'{site.getusersitepackages()}'
                     '/pytgcalls/node_modules',
                 )
             os.system(
                 'cp -r node_modules/ '
-                f'{site.getsitepackages()[0]}/pytgcalls/node_modules',
+                f'{site.getusersitepackages()}/pytgcalls/node_modules',
             )
-            os.system('ls node_modules')
             os.system(
                 'cp -r pytgcalls/dist/ '
-                f'{site.getsitepackages()[0]}/pytgcalls/dist',
+                f'{site.getusersitepackages()}/pytgcalls/dist',
             )
         install.run(self)
 
