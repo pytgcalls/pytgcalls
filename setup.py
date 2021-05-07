@@ -85,6 +85,18 @@ class PostInstall(install):
                 'cp -r pytgcalls/dist/ '
                 f'{folder_package}/pytgcalls/dist',
             )
+        elif 'bdist_wheel' in sys.argv[2]:
+            if os.path.exists(
+                f'pytgcalls/node_modules/',
+            ):
+                os.system(
+                    'rm -r '
+                    f'pytgcalls/node_modules/',
+                )
+            os.system(
+                'cp -r node_modules/ '
+                f'pytgcalls/node_modules/',
+            )
         install.run(self)
 
 
