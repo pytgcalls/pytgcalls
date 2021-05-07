@@ -81,9 +81,9 @@ export class TGCalls<T> extends EventEmitter {
             throw new Error('No transport found');
         }
 
-        const sessionId = Date.now();
+        const session_id = Date.now();
         const conference = {
-            sessionId,
+            session_id,
             transport: joinGroupCallResult.transport,
             ssrcs: [{ ssrc: source, isMain: true }],
         };

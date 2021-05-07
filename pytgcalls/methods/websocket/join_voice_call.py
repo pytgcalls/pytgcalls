@@ -16,7 +16,6 @@ class JoinVoiceCall:
         params = await request.json()
         if isinstance(params, str):
             params = json.loads(params)
-        chat_id = int(params['chatId'])
         request_call = {
             'ufrag': params['ufrag'],
             'pwd': params['pwd'],
@@ -30,9 +29,9 @@ class JoinVoiceCall:
         chat_call = None
         # noinspection PyBroadException
         try:
-            chat_call = (
-                await self.pytgcalls._load_full_chat(chat_id)
-            ).full_chat.call
+            chat_call = await self.pytgcalls._load_chat_call(
+                int(params['chat_id']),
+            )
         except Exception:
             pass
         if chat_call is not None:
@@ -42,13 +41,17 @@ class JoinVoiceCall:
                         call=chat_call,
                         params=DataJSON(data=json.dumps(request_call)),
                         muted=False,
-                        join_as=self.pytgcalls._cache_user_peer[chat_id],
-                        invite_hash=params['inviteHash'],
+                        join_as=self.pytgcalls._cache_user_peer[
+                            int(params['chat_id'])
+                        ],
+                        invite_hash=params['invite_hash'],
                     ),
                 )
+
                 transport = json.loads(result.updates[0].call.params.data)[
                     'transport'
                 ]
+
                 return web.json_response({
                     'transport': {
                         'ufrag': transport['ufrag'],
@@ -58,6 +61,14 @@ class JoinVoiceCall:
                     },
                 })
             except Exception as e:
+                if 'GROUPCALL_FORBIDDEN' in str(e):
+                    if int(params['chat_id']) in \
+                            self.pytgcalls._cache_full_chat:
+                        del self.pytgcalls._cache_full_chat[
+                            int(
+                                params['chat_id'],
+                            )
+                        ]
                 if self.pytgcalls._log_mode > 0:
                     print('JOIN_VOICE_CALL_ERROR ->', e)
         return web.json_response({'transport': None})

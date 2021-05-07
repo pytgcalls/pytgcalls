@@ -43,9 +43,9 @@ export class SdpBuilder {
         this.addJoined();
     }
 
-    addHeader(sessionId: number, ssrcs: Ssrc[]) {
+    addHeader(session_id: number, ssrcs: Ssrc[]) {
         this.add('v=0');
-        this.add(`o=- ${sessionId} 2 IN IP4 0.0.0.0`);
+        this.add(`o=- ${session_id} 2 IN IP4 0.0.0.0`);
         this.add('s=-');
         this.add('t=0 0');
         this.add(`a=group:BUNDLE ${ssrcs.map(this.toAudioSsrc).join(' ')}`);
@@ -126,7 +126,7 @@ export class SdpBuilder {
             }
         }
 
-        this.addHeader(conference.sessionId, ssrcs);
+        this.addHeader(conference.session_id, ssrcs);
 
         for (let entry of ssrcs) {
             this.addSsrcEntry(entry, conference.transport, isAnswer);

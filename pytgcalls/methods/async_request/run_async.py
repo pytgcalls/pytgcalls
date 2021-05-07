@@ -19,10 +19,10 @@ class RunAsync:
         self.pytgcalls._spawn_process(
             requests.post,
             (
-                'http://'
+                f'http://'
                 f'{self.pytgcalls._host}:'
                 f'{self.pytgcalls._port}/'
-                'asyncRequest',
+                f'async_request',
                 json.dumps({
                     'ID': id_request,
                 }),

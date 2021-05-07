@@ -1,3 +1,4 @@
+// @ts-ignore
 import { connect } from 'socket.io-client';
 import RTCConnection from './rtc-connection';
 import sendUpdate from './send-update';
@@ -19,30 +20,30 @@ import sendUpdate from './send-update';
             console.log('REQUEST: ', data);
         }
 
-        if (data['action'] === 'joinCall') {
-            if (!connections[data.chatId]) {
-                connections[data.chatId] = new RTCConnection(
-                    data.chatId,
-                    data['filePath'],
+        if (data['action'] === 'join_call') {
+            if (!connections[data.chat_id]) {
+                connections[data.chat_id] = new RTCConnection(
+                    data.chat_id,
+                    data['file_path'],
                     port,
                     data['bitrate'],
                     logMode,
-                    data['bufferLength'],
-                    data['inviteHash']
+                    data['buffer_lenght'],
+                    data['invite_hash']
                 );
 
-                const result = await connections[data.chatId].joinCall();
+                const result = await connections[data.chat_id].joinCall();
 
                 if (result) {
                     await sendUpdate(port, {
                         result: 'JOINED_VOICE_CHAT',
-                        chatId: data.chatId,
+                        chat_id: data.chat_id,
                     });
                 } else {
-                    delete connections[data.chatId];
+                    delete connections[data.chat_id];
                     await sendUpdate(port, {
                         result: 'JOIN_ERROR',
-                        chatId: data.chatId,
+                        chat_id: data.chat_id,
                     });
                 }
 
@@ -50,65 +51,65 @@ import sendUpdate from './send-update';
                     console.log('UPDATED_CONNECTIONS: ', connections);
                 }
             }
-        } else if (data['action'] === 'leaveCall') {
-            if (connections[data.chatId]) {
+        } else if (data['action'] === 'leave_call') {
+            if (connections[data.chat_id]) {
                 if (data['type'] !== 'kicked_from_group') {
-                    let result = await connections[data.chatId].leaveCall();
+                    let result = await connections[data.chat_id].leave_call();
 
                     if (result['result'] === 'OK') {
-                        delete connections[data.chatId];
+                        delete connections[data.chat_id];
                         await sendUpdate(port, {
                             result: 'LEFT_VOICE_CHAT',
-                            chatId: data.chatId,
+                            chat_id: data.chat_id,
                         });
                     } else {
                         if (logMode > 0) {
                             console.log('ERROR_INTERNAL: ', result);
                         }
 
-                        delete connections[data.chatId];
+                        delete connections[data.chat_id];
                         await sendUpdate(port, {
                             result: 'LEFT_VOICE_CHAT',
                             error: result['result'],
-                            chatId: data.chatId,
+                            chat_id: data.chat_id,
                         });
                     }
                 } else {
-                    await connections[data.chatId].stop();
-                    delete connections[data.chatId];
+                    await connections[data.chat_id].stop();
+                    delete connections[data.chat_id];
                     await sendUpdate(port, {
                         result: 'KICKED_FROM_GROUP',
-                        chatId: data.chatId,
+                        chat_id: data.chat_id,
                     });
                 }
             }
         } else if (data['action'] === 'pause') {
-            if (connections[data.chatId]) {
+            if (connections[data.chat_id]) {
                 try {
-                    await connections[data.chatId].pause();
+                    await connections[data.chat_id].pause();
                     await sendUpdate(port, {
                         result: 'PAUSED_AUDIO_STREAM',
-                        chatId: data.chatId,
+                        chat_id: data.chat_id,
                     });
                 } catch (e) {}
             }
         } else if (data['action'] === 'resume') {
-            if (connections[data.chatId]) {
+            if (connections[data.chat_id]) {
                 try {
-                    await connections[data.chatId].resume();
+                    await connections[data.chat_id].resume();
                     await sendUpdate(port, {
                         result: 'RESUMED_AUDIO_STREAM',
-                        chatId: data.chatId,
+                        chat_id: data.chat_id,
                     });
                 } catch (e) {}
             }
-        } else if (data['action'] === 'changeStream') {
-            if (connections[data.chatId]) {
+        } else if (data['action'] === 'change_stream') {
+            if (connections[data.chat_id]) {
                 try {
-                    await connections[data.chatId].changeStream(data.filePath);
+                    await connections[data.chat_id].changeStream(data.file_path);
                     await sendUpdate(port, {
                         result: 'CHANGED_AUDIO_STREAM',
-                        chatId: data.chatId,
+                        chat_id: data.chat_id,
                     });
                 } catch (e) {}
             }

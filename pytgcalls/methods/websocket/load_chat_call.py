@@ -4,12 +4,12 @@ from pyrogram.raw.functions.channels import GetFullChannel
 from pyrogram.raw.types.messages import ChatFull
 
 
-class LoadFullChat:
+class LoadChatCall:
     def __init__(self, pytgcalls):
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    async def _load_full_chat(self, chat_id: int) -> ChatFull:
+    async def _load_chat_call(self, chat_id: int) -> ChatFull:
         curr_time = int(time())
         load_cache = False
         if chat_id in self.pytgcalls._cache_full_chat:
@@ -23,9 +23,11 @@ class LoadFullChat:
             ]['full_chat']
         else:
             chat = await self.pytgcalls._app.resolve_peer(chat_id)
-            full_chat = await self.pytgcalls._app.send(
-                GetFullChannel(channel=chat),
-            )
+            full_chat = (
+                await self.pytgcalls._app.send(
+                    GetFullChannel(channel=chat),
+                )
+            ).full_chat.call
             self.pytgcalls._cache_full_chat[chat_id] = {
                 'last_update': curr_time,
                 'full_chat': full_chat,

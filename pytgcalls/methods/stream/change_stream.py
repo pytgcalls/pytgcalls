@@ -20,15 +20,15 @@ class ChangeStream(SpawnProcess):
             self._spawn_process(
                 requests.post,
                 (
-                    'http://'
+                    f'http://'
                     f'{self.pytgcalls._host}:'
                     f'{self.pytgcalls._port}/'
-                    'api_internal',
+                    f'api_internal',
                     json.dumps({
-                        'action': 'changeStream',
-                        'chatId': chat_id,
-                        'filePath': file_path,
-                        'sessionId': self.pytgcalls._session_id,
+                        'action': 'change_stream',
+                        'chat_id': chat_id,
+                        'file_path': file_path,
+                        'session_id': self.pytgcalls._session_id,
                     }),
                 ),
             )

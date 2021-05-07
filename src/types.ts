@@ -11,7 +11,7 @@ export interface Transport {
 }
 
 export interface Conference {
-    sessionId: number;
+    session_id: number;
     transport: Transport;
     ssrcs: Ssrc[];
 }

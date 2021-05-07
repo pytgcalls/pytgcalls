@@ -27,6 +27,7 @@
     },
     "dependencies": {
         "node-fetch": "^2.6.1",
+        "@mapbox/node-pre-gyp": "^1.0.4",
         "socket.io-client": "^4.0.2",
         "wrtc": "^0.4.7"
     }

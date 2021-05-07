@@ -10,7 +10,7 @@ export class Stream extends EventEmitter {
     public finished: boolean = true;
     public stopped: boolean = false;
     private finishedLoading = false;
-    public filePath: string;
+    public file_path: string;
     private bytesLoaded: number = 0;
     private bytesSpeed: number = 0;
     private lastLag: number = 0;
@@ -22,24 +22,24 @@ export class Stream extends EventEmitter {
     private runningPulse: boolean = false;
 
     constructor(
-        filePath: string,
+        file_path: string,
         readonly bitsPerSample: number = 16,
         readonly sampleRate: number = 48000,
         readonly channelCount: number = 1,
         readonly logMode: number = 0,
-        readonly bufferLength: number = 10,
-        readonly timePulseBuffer: number = bufferLength == 4 ? 1.5 : 0
+        readonly buffer_lenght: number = 10,
+        readonly timePulseBuffer: number = buffer_lenght == 4 ? 1.5 : 0
     ) {
         super();
 
         this.audioSource = new nonstandard.RTCAudioSource();
         this.cache = Buffer.alloc(0);
-        this.filePath = filePath;
-        this.setReadable(filePath);
+        this.file_path = file_path;
+        this.setReadable(file_path);
         this.processData();
     }
 
-    setReadable(filePath: string) {
+    setReadable(file_path: string) {
         this.bytesLoaded = 0;
         this.bytesSpeed = 0;
         this.lastLag = 0;
@@ -48,9 +48,9 @@ export class Stream extends EventEmitter {
         this.finishedBytes = false;
         this.lastByteCheck = 0;
         this.lastByte = 0;
-        this.filePath = filePath;
+        this.file_path = file_path;
         // @ts-ignore
-        this.readable = createReadStream(filePath);
+        this.readable = createReadStream(file_path);
 
         if (this.stopped) {
             throw new Error('Cannot set readable when stopped');
@@ -89,7 +89,7 @@ export class Stream extends EventEmitter {
                         'BYTES_LOADED ->',
                         this.bytesLoaded,
                         'OF ->',
-                        Stream.getFilesizeInBytes(this.filePath)
+                        Stream.getFilesizeInBytes(this.file_path)
                     );
                 }
 
@@ -108,7 +108,7 @@ export class Stream extends EventEmitter {
                         'BYTES_LOADED ->',
                         this.bytesLoaded,
                         'OF ->',
-                        Stream.getFilesizeInBytes(this.filePath)
+                        Stream.getFilesizeInBytes(this.file_path)
                     );
                 }
             });
@@ -127,11 +127,11 @@ export class Stream extends EventEmitter {
         const byteLength =
             ((this.sampleRate * this.bitsPerSample) / 8 / 100) *
             this.channelCount;
-        let result = this.cache.length < byteLength * 100 * this.bufferLength;
+        let result = this.cache.length < byteLength * 100 * this.buffer_lenght;
         result =
             result &&
             (this.bytesLoaded <
-                Stream.getFilesizeInBytes(this.filePath) -
+                Stream.getFilesizeInBytes(this.file_path) -
                     this.bytesSpeed * 2 ||
                 this.finishedBytes);
 
@@ -230,7 +230,7 @@ export class Stream extends EventEmitter {
             let fileSize: number;
 
             if (oldTime - this.lastByteCheck > 1000) {
-                fileSize = Stream.getFilesizeInBytes(this.filePath);
+                fileSize = Stream.getFilesizeInBytes(this.file_path);
                 this.lastByte = fileSize;
                 this.lastByteCheck = oldTime;
             } else {

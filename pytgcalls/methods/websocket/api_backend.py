@@ -18,7 +18,7 @@ class ApiBackend:
             params = await request.json()
             if isinstance(params, str):
                 params = json.loads(params)
-            if params['sessionId'] == self.pytgcalls._session_id:
+            if params['session_id'] == self.pytgcalls._session_id:
                 await self.pytgcalls._sio.emit('request', json.dumps(params))
                 result_json = {
                     'result': 'ACCESS_GRANTED',

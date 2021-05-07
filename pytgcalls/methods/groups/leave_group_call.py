@@ -17,14 +17,14 @@ class LeaveGroupCall(SpawnProcess):
             self._spawn_process(
                 requests.post,
                 (
-                    'http://'
+                    f'http://'
                     f'{self.pytgcalls._host}:'
                     f'{self.pytgcalls._port}/'
-                    'api_internal',
+                    f'api_internal',
                     json.dumps({
-                        'action': 'leaveCall',
-                        'chatId': chat_id,
-                        'sessionId': self.pytgcalls._session_id,
+                        'action': 'leave_call',
+                        'chat_id': chat_id,
+                        'session_id': self.pytgcalls._session_id,
                         'type': type_leave,
                     }),
                 ),

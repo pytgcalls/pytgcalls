@@ -1,55 +1,56 @@
+// @ts-ignore
 import fetch from 'node-fetch';
-import { TGCalls, Stream } from './tgcalls';
+import {Stream, TGCalls} from './tgcalls';
 
 class RTCConnection {
-    chatId: number;
-    filePath: string;
+    chat_id: number;
+    file_path: string;
     port: number;
     bitrate: number;
     logMode: number;
-    bufferLength: number;
-    inviteHash: string;
+    buffer_lenght: number;
+    invite_hash: string;
 
     tgcalls: TGCalls<any>;
     stream: Stream;
 
     constructor(
-        chatId: number,
-        filePath: string,
+        chat_id: number,
+        file_path: string,
         port: number,
         bitrate: number,
         logMode: number,
-        bufferLength: number,
-        inviteHash: string
+        buffer_lenght: number,
+        invite_hash: string
     ) {
-        this.chatId = chatId;
-        this.filePath = filePath;
+        this.chat_id = chat_id;
+        this.file_path = file_path;
         this.port = port;
         this.bitrate = bitrate;
         this.logMode = logMode;
-        this.bufferLength = bufferLength;
-        this.inviteHash = inviteHash;
+        this.buffer_lenght = buffer_lenght;
+        this.invite_hash = invite_hash;
 
         this.tgcalls = new TGCalls({});
         this.stream = new Stream(
-            filePath,
+            file_path,
             16,
             bitrate,
             1,
             logMode,
-            bufferLength
+            buffer_lenght
         );
 
         this.tgcalls.joinVoiceCall = async (payload: any) => {
             payload = {
-                chatId: this.chatId,
+                chat_id: this.chat_id,
                 ufrag: payload.ufrag,
                 pwd: payload.pwd,
                 hash: payload.hash,
                 setup: payload.setup,
                 fingerprint: payload.fingerprint,
                 source: payload.source,
-                inviteHash: this.inviteHash,
+                invite_hash: this.invite_hash,
             };
 
             if (logMode > 0) {
@@ -57,7 +58,7 @@ class RTCConnection {
             }
 
             const joinCallResult = await (
-                await fetch(`http://localhost:${this.port}/joinCall`, {
+                await fetch(`http://localhost:${this.port}/request_join_call`, {
                     method: 'POST',
                     body: JSON.stringify(payload),
                 })
@@ -71,10 +72,10 @@ class RTCConnection {
         };
 
         this.stream.on('finish', async () => {
-            await fetch(`http://localhost:${this.port}/streamEnded`, {
+            await fetch(`http://localhost:${this.port}/ended_stream`, {
                 method: 'POST',
                 body: JSON.stringify({
-                    chatId: chatId,
+                    chat_id: chat_id,
                 }),
             });
         });
@@ -82,8 +83,7 @@ class RTCConnection {
 
     async joinCall() {
         try {
-            const result = await this.tgcalls.start(this.stream.createTrack());
-            return result;
+            return await this.tgcalls.start(this.stream.createTrack());
         } catch (e) {
             this.stream.stop();
 
@@ -102,14 +102,14 @@ class RTCConnection {
         } catch (e) {}
     }
 
-    async leaveCall() {
+    async leave_call() {
         try {
             this.stop();
             return await (
-                await fetch(`http://localhost:${this.port}/leaveCall`, {
+                await fetch(`http://localhost:${this.port}/request_leave_call`, {
                     method: 'POST',
                     body: JSON.stringify({
-                        chatId: this.chatId,
+                        chat_id: this.chat_id,
                     }),
                 })
             ).json();
@@ -129,8 +129,8 @@ class RTCConnection {
         this.stream.resume();
     }
 
-    changeStream(filePath: string) {
-        this.stream.setReadable(filePath);
+    changeStream(file_path: string) {
+        this.stream.setReadable(file_path);
     }
 }
 

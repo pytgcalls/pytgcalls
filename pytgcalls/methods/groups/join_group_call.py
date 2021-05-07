@@ -42,18 +42,18 @@ class JoinGroupCall(SpawnProcess):
                 self._spawn_process(
                     requests.post,
                     (
-                        'http://'
+                        f'http://'
                         f'{self.pytgcalls._host}:'
                         f'{self.pytgcalls._port}/'
-                        'api_internal',
+                        f'api_internal',
                         json.dumps({
-                            'action': 'joinCall',
-                            'chatId': chat_id,
-                            'filePath': file_path,
-                            'inviteHash': invite_hash,
+                            'action': 'join_call',
+                            'chat_id': chat_id,
+                            'file_path': file_path,
+                            'invite_hash': invite_hash,
                             'bitrate': bitrate,
-                            'bufferLength': stream_type.stream_mode,
-                            'sessionId': self.pytgcalls._session_id,
+                            'buffer_long': stream_type.stream_mode,
+                            'session_id': self.pytgcalls._session_id,
                         }),
                     ),
                 )

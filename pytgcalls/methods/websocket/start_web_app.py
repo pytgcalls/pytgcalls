@@ -21,28 +21,28 @@ class StartWebApp:
             self._init_js_core = True
 
         self.pytgcalls._app_core.router.add_post(
-            '/joinCall', self.pytgcalls._join_voice_call,
+            '/request_join_call', self.pytgcalls._join_voice_call,
         )
         self.pytgcalls._app_core.router.add_post(
-            '/leaveCall', self.pytgcalls._leave_voice_call,
+            '/request_leave_call', self.pytgcalls._leave_voice_call,
         )
         self.pytgcalls._app_core.router.add_post(
-            '/getParticipants', self.pytgcalls._get_participants,
+            '/get_participants', self.pytgcalls._get_participants,
         )
         self.pytgcalls._app_core.router.add_post(
-            '/streamEnded', self.pytgcalls._event_finish,
+            '/ended_stream', self.pytgcalls._event_finish,
         )
         self.pytgcalls._app_core.router.add_post(
-            '/update', self.pytgcalls._update_call_data,
+            '/update_request', self.pytgcalls._update_call_data,
         )
         self.pytgcalls._app_core.router.add_post(
             '/api_internal', self.pytgcalls._api_backend,
         )
         self.pytgcalls._app_core.router.add_post(
-            '/changeVolume', self.pytgcalls._change_volume_voice_call,
+            '/request_change_volume', self.pytgcalls._change_volume_voice_call,
         )
         self.pytgcalls._app_core.router.add_post(
-            '/asyncRequest', self.pytgcalls._async_result,
+            '/async_request', self.pytgcalls._async_result,
         )
         if len(self.pytgcalls._on_event_update['CUSTOM_API_HANDLER']) > 0:
             self.pytgcalls._app_core.router.add_post(
