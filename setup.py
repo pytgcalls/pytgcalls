@@ -1,6 +1,5 @@
 import os
-import site
-
+import sys
 from setuptools import setup
 from setuptools.command.install import install
 
@@ -41,9 +40,11 @@ class PostInstall(install):
                 f"{npm_result['version']}",
             )
         os.system('npm install')
-        folder_package = site.getusersitepackages()
-        folder_package_tmp = site.getsitepackages()[0]
-        folder_package = folder_package_tmp if 'venv' in folder_package_tmp else folder_package
+        folder_package = ''
+        for item in sys.path:
+            if 'dist-packages' in item or 'site-packages' in item:
+                folder_package = item
+                break
         if 'pip' in os.getcwd():
             print(
                 'Copying files from '
