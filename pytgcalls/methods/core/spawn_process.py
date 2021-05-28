@@ -1,5 +1,5 @@
-from collections import Callable
 import threading
+from collections import Callable
 
 
 class SpawnProcess:
