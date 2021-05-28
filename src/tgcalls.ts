@@ -87,7 +87,6 @@ export class TGCalls<T> extends EventEmitter {
             transport: joinGroupCallResult.transport,
             ssrcs: [{ ssrc: source, isMain: true }],
         };
-
         await this.#connection.setRemoteDescription({
             type: 'answer',
             sdp: SdpBuilder.fromConference(conference, true),

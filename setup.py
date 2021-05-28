@@ -22,6 +22,8 @@ class PostInstall(install):
 
     # noinspection PyBroadException
     def run(self):
+        if sys.platform.startswith('win'):
+            raise Exception('Installation from GitHub isn\'t supported on your platform.\nInstall with\n\npip3 install py-tgcalls -U')
         node_result = self.get_version('node')
         npm_result = self.get_version('npm')
         if node_result['version_int'] == 0:
