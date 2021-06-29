@@ -66,7 +66,6 @@ export class Stream extends EventEmitter {
             this.readable.on('data', (data: any) => {
                 this.bytesLoaded += data.length;
                 this.bytesSpeed = data.length;
-                console.log('BYTES_SPEED ->', this.bytesSpeed)
                 if (!this.needsBuffering()) {
                     // @ts-ignore
                     this.readable.pause();
