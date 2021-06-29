@@ -5,5 +5,5 @@ psutil
 pyrogram
 python-socketio
 requests
-types-requests
 tgcrypto
+types-requests
