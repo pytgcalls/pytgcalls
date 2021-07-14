@@ -172,6 +172,7 @@ export class Stream extends EventEmitter {
 
     finish() {
         this.finished = true;
+        this.emit('finish');
     }
 
     stop() {
@@ -302,7 +303,6 @@ export class Stream extends EventEmitter {
             this.cache.length < byteLength
         ) {
             this.finish();
-            this.emit('finish');
         }
 
         const toSubtract = new Date().getTime() - oldTime;
