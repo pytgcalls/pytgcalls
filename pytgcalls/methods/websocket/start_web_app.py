@@ -33,6 +33,9 @@ class StartWebApp:
             '/ended_stream', self.pytgcalls._event_finish,
         )
         self.pytgcalls._app_core.router.add_post(
+            '/no_voice_chat', self.pytgcalls._no_voice_chat_event,
+        )
+        self.pytgcalls._app_core.router.add_post(
             '/update_request', self.pytgcalls._update_call_data,
         )
         self.pytgcalls._app_core.router.add_post(

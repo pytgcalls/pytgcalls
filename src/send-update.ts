@@ -1,8 +1,9 @@
 // @ts-ignore
 import fetch from 'node-fetch';
+import { port } from './args';
 
-export default async (port: number | string, params: any) => {
-    await fetch(`http://localhost:${port}/update_request`, {
+export default (path: string, params: any) => {
+    return fetch(`http://localhost:${port}/${path}`, {
         method: 'POST',
         body: JSON.stringify(params),
     });

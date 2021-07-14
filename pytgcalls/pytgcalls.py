@@ -38,6 +38,7 @@ class PyTgCalls(Methods):
             'CUSTOM_API_HANDLER': [],
             'GROUP_CALL_HANDLER': [],
             'KICK_HANDLER': [],
+            'NO_VOICE_CHAT_HANDLER': [],
             'CLOSED_HANDLER': [],
         }
         self._my_id = 0

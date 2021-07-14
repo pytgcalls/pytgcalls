@@ -5,6 +5,7 @@ import { parseSdp } from './utils';
 import { JoinVoiceCallCallback } from './types';
 
 export { Stream } from './stream';
+import sendUpdate from './send-update';
 
 export class TGCalls<T> extends EventEmitter {
     #connection?: RTCPeerConnection;
@@ -78,7 +79,8 @@ export class TGCalls<T> extends EventEmitter {
 
         if (!joinGroupCallResult || !joinGroupCallResult.transport) {
             this.#connection.close();
-            throw new Error('No transport found');
+            await sendUpdate('no_voice_chat', this.#params);
+            return false;
         }
 
         const session_id = Date.now();

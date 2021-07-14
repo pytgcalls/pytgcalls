@@ -2,10 +2,9 @@
 import { connect } from 'socket.io-client';
 import RTCConnection from './rtc-connection';
 import sendUpdate from './send-update';
+import { port, logMode } from './args';
 
 (async () => {
-    const port = parseInt(process.argv[2].split('=')[1]);
-    const logMode = parseInt(process.argv[3].split('=')[1]);
     let socket = connect(`ws://localhost:${port}`);
     console.log('Starting on port: ' + port);
     socket.on('connect', () =>
@@ -36,13 +35,13 @@ import sendUpdate from './send-update';
                 const result = await connections[data.chat_id].joinCall();
 
                 if (result) {
-                    await sendUpdate(port, {
+                    await sendUpdate('update_request', {
                         result: 'JOINED_VOICE_CHAT',
                         chat_id: data.chat_id,
                     });
                 } else {
                     delete connections[data.chat_id];
-                    await sendUpdate(port, {
+                    await sendUpdate('update_request', {
                         result: 'JOIN_ERROR',
                         chat_id: data.chat_id,
                     });
@@ -59,7 +58,7 @@ import sendUpdate from './send-update';
 
                     if (result['result'] === 'OK') {
                         delete connections[data.chat_id];
-                        await sendUpdate(port, {
+                        await sendUpdate('update_request', {
                             result: 'LEFT_VOICE_CHAT',
                             chat_id: data.chat_id,
                         });
@@ -69,7 +68,7 @@ import sendUpdate from './send-update';
                         }
 
                         delete connections[data.chat_id];
-                        await sendUpdate(port, {
+                        await sendUpdate('update_request', {
                             result: 'LEFT_VOICE_CHAT',
                             error: result['result'],
                             chat_id: data.chat_id,
@@ -78,7 +77,7 @@ import sendUpdate from './send-update';
                 } else {
                     await connections[data.chat_id].stop();
                     delete connections[data.chat_id];
-                    await sendUpdate(port, {
+                    await sendUpdate('update_request', {
                         result: 'KICKED_FROM_GROUP',
                         chat_id: data.chat_id,
                     });
@@ -88,7 +87,7 @@ import sendUpdate from './send-update';
             if (connections[data.chat_id]) {
                 try {
                     await connections[data.chat_id].pause();
-                    await sendUpdate(port, {
+                    await sendUpdate('update_request', {
                         result: 'PAUSED_AUDIO_STREAM',
                         chat_id: data.chat_id,
                     });
@@ -98,7 +97,7 @@ import sendUpdate from './send-update';
             if (connections[data.chat_id]) {
                 try {
                     await connections[data.chat_id].resume();
-                    await sendUpdate(port, {
+                    await sendUpdate('update_request', {
                         result: 'RESUMED_AUDIO_STREAM',
                         chat_id: data.chat_id,
                     });
@@ -107,8 +106,10 @@ import sendUpdate from './send-update';
         } else if (data['action'] === 'change_stream') {
             if (connections[data.chat_id]) {
                 try {
-                    await connections[data.chat_id].changeStream(data.file_path);
-                    await sendUpdate(port, {
+                    await connections[data.chat_id].changeStream(
+                        data.file_path
+                    );
+                    await sendUpdate('update_request', {
                         result: 'CHANGED_AUDIO_STREAM',
                         chat_id: data.chat_id,
                     });

@@ -1,6 +1,6 @@
 // @ts-ignore
-import fetch from 'node-fetch';
-import {Stream, TGCalls} from './tgcalls';
+import { Stream, TGCalls } from './tgcalls';
+import sendUpdate from './send-update';
 
 class RTCConnection {
     chat_id: number;
@@ -31,7 +31,7 @@ class RTCConnection {
         this.buffer_lenght = buffer_lenght;
         this.invite_hash = invite_hash;
 
-        this.tgcalls = new TGCalls({});
+        this.tgcalls = new TGCalls({ chat_id });
         this.stream = new Stream(
             file_path,
             16,
@@ -58,10 +58,7 @@ class RTCConnection {
             }
 
             const joinCallResult = await (
-                await fetch(`http://localhost:${this.port}/request_join_call`, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                })
+                await sendUpdate('request_join_call', payload)
             ).json();
 
             if (logMode > 0) {
@@ -72,7 +69,7 @@ class RTCConnection {
         };
 
         this.stream.on('finish', async () => {
-            await fetch(`http://localhost:${this.port}/ended_stream`, {
+            await sendUpdate(`ended_stream`, {
                 method: 'POST',
                 body: JSON.stringify({
                     chat_id: chat_id,
@@ -106,11 +103,8 @@ class RTCConnection {
         try {
             this.stop();
             return await (
-                await fetch(`http://localhost:${this.port}/request_leave_call`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        chat_id: this.chat_id,
-                    }),
+                await sendUpdate(`request_leave_call`, {
+                    chat_id: this.chat_id,
                 })
             ).json();
         } catch (e) {
