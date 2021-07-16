@@ -9,12 +9,10 @@ export { Stream } from './stream';
 export class TGCalls<T> extends EventEmitter {
     #connection?: RTCPeerConnection;
     #params: T;
-    #chat_id: number;
     joinVoiceCall?: JoinVoiceCallCallback<T>;
 
-    constructor(params: T, chat_id: number) {
+    constructor(params: T) {
         super();
-        this.#chat_id = chat_id;
         this.#params = params;
     }
 
@@ -81,7 +79,7 @@ export class TGCalls<T> extends EventEmitter {
         if (!joinGroupCallResult || !joinGroupCallResult.transport) {
             this.#connection.close();
             // @ts-ignore
-            throw new Error('No active voice chat found on '+this.#chat_id);
+            throw new Error('No active voice chat found on '+this.#params.chat_id);
         }
 
         const session_id = Date.now();
