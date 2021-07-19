@@ -29,7 +29,7 @@ repos:
           - id: add-trailing-comma
             args: [--py36-plus]
     - repo: https://github.com/asottile/pyupgrade
-      rev: v2.19.4
+      rev: v2.21.2
       hooks:
           - id: pyupgrade
             args: [--py36-plus]
@@ -38,6 +38,6 @@ repos:
       hooks:
           - id: setup-cfg-fmt
     - repo: https://github.com/pre-commit/mirrors-mypy
-      rev: v0.902
+      rev: v0.910
       hooks:
           - id: mypy
