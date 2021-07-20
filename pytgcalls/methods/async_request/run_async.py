@@ -1,8 +1,7 @@
-# noreorder
 import json
-import requests
-
 from typing import Callable
+
+import requests
 
 
 class RunAsync:

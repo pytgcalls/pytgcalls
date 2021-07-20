@@ -4,6 +4,4 @@ Naked
 psutil
 pyrogram
 python-socketio
-requests
 tgcrypto
-types-requests
