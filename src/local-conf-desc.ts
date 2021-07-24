@@ -34,11 +34,6 @@ export class SdpBuilder {
         this.push(
             `${c.foundation} ${c.component} ${c.protocol} ${c.priority} ${c.ip} ${c.port} typ ${c.type}`
         );
-
-        if ('rel-addr' in c) {
-            this.push(` raddr ${c['rel-addr']} rport ${c['rel-port']}`);
-        }
-
         this.push(` generation ${c.generation}`);
         this.addJoined();
     }
