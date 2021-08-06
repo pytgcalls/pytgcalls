@@ -25,6 +25,7 @@ class PyTgCalls(Methods):
         port: int = 24859,
         log_mode: int = 0,
         flood_wait_cache: int = 120,
+        start_pyro: bool = True,
     ):
         self._app = app
         self._app_core = None
@@ -51,6 +52,7 @@ class PyTgCalls(Methods):
         self._cache_full_chat: Dict[int, Dict] = {}
         self._cache_local_peer = None
         self._flood_wait_cache = flood_wait_cache
+        self._start_pyro = start_pyro
         super().__init__(self)
 
     @staticmethod
@@ -183,8 +185,12 @@ class PyTgCalls(Methods):
                                     )
                         except Exception:
                             pass
-                self._app.start()
-                self._my_id = self._app.get_me()['id']  # noqa
+                if self._start_pyro:
+                    self._app.start()
+                try:
+                    self._my_id = self._app.get_me()['id']  # noqa
+                except ConnectionError:
+                    raise Exception('PYROGRAM_CLIENT_IS_NOT_RUNNING')
                 self._cache_local_peer = self._app.resolve_peer(
                     self._my_id,
                 )
