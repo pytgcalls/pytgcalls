@@ -10,8 +10,7 @@ class LeaveVoiceCall:
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    async def _leave_voice_call(self, request: BaseRequest):
-        params = await request.json()
+    async def _leave_voice_call(self, params: dict):
         result = {
             'result': 'OK',
         }
@@ -34,5 +33,4 @@ class LeaveVoiceCall:
             result = {
                 'result': str(e),
             }
-            pass
         return web.json_response(result)

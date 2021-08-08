@@ -11,10 +11,7 @@ class GetParticipants:
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    async def _get_participants(self, request: BaseRequest):
-        params = await request.json()
-        if isinstance(params, str):
-            params = json.loads(params)
+    async def _get_participants(self, params: dict):
         participants: GroupParticipants = (
             await self.pytgcalls._app.send(
                 GetGroupParticipants(

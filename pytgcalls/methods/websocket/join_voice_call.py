@@ -12,10 +12,7 @@ class JoinVoiceCall:
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    async def _join_voice_call(self, request: BaseRequest):
-        params = await request.json()
-        if isinstance(params, str):
-            params = json.loads(params)
+    async def _join_voice_call(self, params: dict):
         request_call = {
             'ufrag': params['ufrag'],
             'pwd': params['pwd'],

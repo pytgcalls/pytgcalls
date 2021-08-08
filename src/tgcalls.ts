@@ -64,6 +64,7 @@ export class TGCalls<T> extends EventEmitter {
         let joinGroupCallResult;
 
         try {
+            //The setup need to be active
             joinGroupCallResult = await this.joinVoiceCall({
                 ufrag,
                 pwd,
@@ -72,6 +73,7 @@ export class TGCalls<T> extends EventEmitter {
                 fingerprint,
                 source,
                 params: this.#params,
+
             });
         } catch (error) {
             this.#connection.close();
@@ -94,7 +96,6 @@ export class TGCalls<T> extends EventEmitter {
             type: 'answer',
             sdp: SdpBuilder.fromConference(conference, true),
         });
-
         return true;
     }
 

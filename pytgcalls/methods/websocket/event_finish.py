@@ -9,11 +9,7 @@ class EventFinish:
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    async def _event_finish(self, request: BaseRequest):
-        params = await request.json()
-        if isinstance(params, str):
-            params = json.loads(params)
-
+    async def _event_finish(self, params: dict):
         chat_id = int(params['chat_id'])
         self.pytgcalls._remove_active_call(chat_id)
 

@@ -15,9 +15,4 @@ class RunJS:
             execute_js(file_path, arguments)
         except KeyboardInterrupt:
             self.is_running = False
-            print(
-                f'\n{self.pytgcalls.FAIL} '
-                f'NodeJS Core Stopped, '
-                f'press Ctrl+C again to exit!'
-                f'{self.pytgcalls.ENDC}',
-            )
+            self.is_connected = False

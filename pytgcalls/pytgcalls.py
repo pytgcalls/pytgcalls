@@ -1,10 +1,13 @@
+import atexit
+import builtins
+import errno
 import os
-from time import time
+import socket
+import time
 from typing import Callable
 from typing import Dict
 from typing import List
 
-from pyrogram import __version__
 from pyrogram import Client
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import GroupCall
@@ -14,17 +17,19 @@ from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateNewChannelMessage
+from pytgcalls.methods.core import BColors
 
+from . import __version__
 from .methods import Methods
 
 
 class PyTgCalls(Methods):
     def __init__(
-        self,
-        app: Client,
-        port: int = 24859,
-        log_mode: int = 0,
-        flood_wait_cache: int = 120,
+            self,
+            app: Client,
+            port: int = 24859,
+            log_mode: int = 0,
+            flood_wait_cache: int = 120,
     ):
         self._app = app
         self._app_core = None
@@ -40,6 +45,17 @@ class PyTgCalls(Methods):
             'KICK_HANDLER': [],
             'CLOSED_HANDLER': [],
         }
+        self._list_requests = [
+            'request_join_call',
+            'request_leave_call',
+            'get_participants',
+            'ended_stream',
+            'update_request',
+            'api_internal',
+            'request_change_volume',
+            'async_request',
+            'api'
+        ]
         self._my_id = 0
         self.is_running = False
         self._calls: List[int] = []
@@ -51,6 +67,12 @@ class PyTgCalls(Methods):
         self._cache_full_chat: Dict[int, Dict] = {}
         self._cache_local_peer = None
         self._flood_wait_cache = flood_wait_cache
+        self.is_connected = False
+        if not hasattr(builtins, 'client_instances'):
+            builtins.client_instances = [self]
+        else:
+            builtins.client_instances.append(self)
+        atexit.register(self._before_close)
         super().__init__(self)
 
     @staticmethod
@@ -62,7 +84,7 @@ class PyTgCalls(Methods):
         return 2
 
     @staticmethod
-    def get_version(package_check):
+    def _get_version(package_check):
         result_cmd = os.popen(f'{package_check} -v').read()
         result_cmd = result_cmd.replace('v', '')
         if len(result_cmd) == 0:
@@ -77,7 +99,7 @@ class PyTgCalls(Methods):
 
     def run(self, before_start_callable: Callable = None):
         if self._app is not None:
-            node_result = self.get_version('node')
+            node_result = self._get_version('node')
             if node_result['version_int'] == 0:
                 raise Exception('Please install node (15.+)')
             if node_result['version_int'] < 15:
@@ -101,7 +123,7 @@ class PyTgCalls(Methods):
                         if isinstance(update.call, GroupCallDiscarded):
                             chat_id = int(f'-100{update.chat_id}')
                             self._cache_full_chat[chat_id] = {
-                                'last_update': int(time()),
+                                'last_update': int(time.time()),
                                 'full_chat': None,
                             }
                         if isinstance(update.call, GroupCall):
@@ -111,15 +133,15 @@ class PyTgCalls(Methods):
                             )
                             chat_id = int(f'-100{update.chat_id}')
                             self._cache_full_chat[chat_id] = {
-                                'last_update': int(time()),
+                                'last_update': int(time.time()),
                                 'full_chat': input_group_call,
                             }
                     if isinstance(update, UpdateChannel):
                         chat_id = int(f'-100{update.channel_id}')
                         if len(data2) > 0:
                             if isinstance(
-                                data2[update.channel_id],
-                                ChannelForbidden,
+                                    data2[update.channel_id],
+                                    ChannelForbidden,
                             ):
                                 for event in self._on_event_update[
                                     'KICK_HANDLER'
@@ -183,6 +205,7 @@ class PyTgCalls(Methods):
                                     )
                         except Exception:
                             pass
+
                 self._app.start()
                 self._my_id = self._app.get_me()['id']  # noqa
                 self._cache_local_peer = self._app.resolve_peer(
@@ -197,20 +220,65 @@ class PyTgCalls(Methods):
                                 return
                     except Exception:
                         pass
-                self._spawn_process(
-                    self._run_js,
-                    (
-                        f'{__file__.replace("pytgcalls.py", "")}dist/index.js',
-                        f'port={self._port} log_mode={self._log_mode}',
-                    ),
-                )
             except KeyboardInterrupt:
                 pass
-            self._start_web_app()
-            self.is_running = True
+            self.is_connected = True
         else:
             raise Exception('NEED_PYROGRAM_CLIENT')
         return self
+
+    # noinspection PyProtectedMember
+    def _before_close(self):
+        if not hasattr(builtins, 'running_server'):
+            my_pos = -1
+            list_instance = [instance for instance in builtins.client_instances if instance.is_connected]
+            warnings_mess = 0
+            for i, instance in enumerate(list_instance):
+                if instance is self:
+                    my_pos = i + 1
+                else:
+                    port_test = instance._port
+                    if port_test != 24859:
+                        warnings_mess += 1
+                        print(
+                            BColors.WARNING +
+                            f'WARNING: Unused port {port_test} at id {instance._my_id}!' +
+                            BColors.ENDC
+                        )
+                    instance.is_running = True
+            if warnings_mess > 0:
+                print('')  # FIX LINE SPACE
+            if my_pos == len(list_instance):
+                for instance in list_instance:
+                    if instance is not self:
+                        instance._port = self._port
+                self._run_server()
+
+    @staticmethod
+    def check_already_using(port):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        is_in_use = s.connect_ex(("127.0.0.1", port)) == 0
+        s.close()
+        return is_in_use
+
+    def _run_server(self):
+        builtins.running_server = True
+        print(
+            f'PyTgCalls v{__version__}, Copyright (C) 2021 Laky-64 <https://github.com/Laky-64>\n'
+            'Licensed under the terms of the GNU Lesser General Public License v3 or later (LGPLv3+)\n'
+        )
+        if not self.check_already_using(self._port):
+            self._spawn_process(
+                self._run_js,
+                (
+                    f'{__file__.replace("pytgcalls.py", "")}dist/index.js',
+                    f'port={self._port} log_mode={self._log_mode}',
+                ),
+            )
+            self.is_running = True
+            self._start_web_app()
+        else:
+            print(BColors.FAIL + f'Error: Port {self._port} already in use!' + BColors.ENDC)
 
     def _add_handler(self, type_event: str, func):
         self._on_event_update[type_event].append(func)

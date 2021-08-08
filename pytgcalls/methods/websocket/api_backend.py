@@ -1,3 +1,4 @@
+import builtins
 import json
 
 from aiohttp import web
@@ -9,20 +10,18 @@ class ApiBackend:
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    async def _api_backend(self, request: BaseRequest):
-        result_json = {
-            'result': 'ACCESS_DENIED',
-        }
-        # noinspection PyBroadException
-        try:
-            params = await request.json()
-            if isinstance(params, str):
-                params = json.loads(params)
-            if params['session_id'] == self.pytgcalls._session_id:
-                await self.pytgcalls._sio.emit('request', json.dumps(params))
-                result_json = {
-                    'result': 'ACCESS_GRANTED',
-                }
-        except Exception:
-            pass
-        return web.json_response(result_json)
+    @staticmethod
+    async def _api_backend(params: dict):
+        instances = [
+            instance for instance in builtins.client_instances
+            if instance._init_js_core
+        ]
+        if len(instances) > 0:
+            await instances[0]._sio.emit('request', json.dumps(params))
+            return web.json_response({
+                'result': 'ACCESS_GRANTED',
+            })
+        else:
+            return web.json_response({
+                'result': 'ACCESS_DENIED',
+            })

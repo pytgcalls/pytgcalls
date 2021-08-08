@@ -9,10 +9,7 @@ class UpdateCallData:
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    async def _update_call_data(self, request: BaseRequest):
-        params = await request.json()
-        if isinstance(params, str):
-            params = json.loads(params)
+    async def _update_call_data(self, params: dict):
         chat_id = int(params['chat_id'])
         if params['result'] == 'PAUSED_AUDIO_STREAM':
             self.pytgcalls._set_status(chat_id, 'paused')

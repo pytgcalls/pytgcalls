@@ -11,7 +11,8 @@ class PauseStream(SpawnProcess):
 
     # noinspection PyProtectedMember
     def pause_stream(self, chat_id: int):
-        if self.pytgcalls._init_js_core and self.pytgcalls._app is not None:
+        js_core_state = self.pytgcalls.is_running_js_core()
+        if js_core_state and self.pytgcalls._app is not None:
             self._spawn_process(
                 requests.post,
                 (
@@ -28,6 +29,6 @@ class PauseStream(SpawnProcess):
             )
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
-            if not self.pytgcalls._init_js_core:
+            if not js_core_state:
                 code_err = 'JS_CORE_NOT_RUNNING'
             raise Exception(f'Error internal: {code_err}')

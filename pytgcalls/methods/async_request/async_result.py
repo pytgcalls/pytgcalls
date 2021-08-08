@@ -9,10 +9,7 @@ class AsyncResult:
         self.pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    async def _async_result(self, request: BaseRequest):
-        params = await request.json()
-        if isinstance(params, str):
-            params = json.loads(params)
+    async def _async_result(self, params: dict):
         try:
             def_call = self.pytgcalls._async_processes[params['ID']]
             self.pytgcalls._async_processes[params['ID']] = {

@@ -12,7 +12,8 @@ class ChangeVolume(SpawnProcess):
     # noinspection PyProtectedMember
     def change_volume_call(self, chat_id: int, volume: int):
         volume = int(volume) if isinstance(volume, str) else volume
-        if self.pytgcalls._init_js_core and \
+        js_core_state = self.pytgcalls.is_running_js_core()
+        if js_core_state and \
                 self.pytgcalls._app is not None and\
                 chat_id in self.pytgcalls._cache_user_peer:
             volume = 200 if volume > 200 else (0 if volume < 0 else volume)
@@ -37,6 +38,6 @@ class ChangeVolume(SpawnProcess):
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
             if chat_id not in self.pytgcalls._cache_user_peer:
                 code_err = 'GROUP_CALL_NOT_FOUND'
-            if not self.pytgcalls._init_js_core:
+            if not js_core_state:
                 code_err = 'JS_CORE_NOT_RUNNING'
             raise Exception(f'Error internal: {code_err}')

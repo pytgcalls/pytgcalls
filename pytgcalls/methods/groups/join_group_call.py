@@ -32,8 +32,9 @@ class JoinGroupCall(SpawnProcess):
             raise Exception('Error internal: INVALID_FILE_STREAM')
         self.pytgcalls._cache_user_peer[chat_id] = join_as
         bitrate = 48000 if bitrate > 48000 else bitrate
+        js_core_state = self.pytgcalls.is_running_js_core()
         if (
-            self.pytgcalls._init_js_core and
+            js_core_state and
             self.pytgcalls._app is not None and
             os.path.isfile(file_path)
         ):
@@ -61,7 +62,7 @@ class JoinGroupCall(SpawnProcess):
                 raise Exception('Error internal: UNKNOWN ->', e)
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
-            if not self.pytgcalls._init_js_core:
+            if not js_core_state:
                 code_err = 'JS_CORE_NOT_RUNNING'
             if not os.path.isfile(file_path):
                 code_err = 'FILE_NOT_FOUND'

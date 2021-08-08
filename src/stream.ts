@@ -27,8 +27,8 @@ export class Stream extends EventEmitter {
         readonly sampleRate: number = 48000,
         readonly channelCount: number = 1,
         readonly logMode: number = 0,
-        readonly buffer_lenght: number = 10,
-        readonly timePulseBuffer: number = buffer_lenght == 4 ? 1.5 : 0
+        readonly buffer_length: number = 10,
+        readonly timePulseBuffer: number = buffer_length == 4 ? 1.5 : 0
     ) {
         super();
 
@@ -126,7 +126,7 @@ export class Stream extends EventEmitter {
         const byteLength =
             ((this.sampleRate * this.bitsPerSample) / 8 / 100) *
             this.channelCount;
-        let result = this.cache.length < byteLength * 100 * this.buffer_lenght;
+        let result = this.cache.length < byteLength * 100 * this.buffer_length;
         result =
             result &&
             (this.bytesLoaded <
