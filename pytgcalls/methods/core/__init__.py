@@ -6,6 +6,7 @@ from .get_max_voice_chat import GetMaxVoiceChat
 from .get_port_server import GetPortServer
 from .is_running_js_core import IsRunningJsCore
 from .run_js import RunJS
+from .run_waiting_requests import RunWaitingRequests
 from .spawn_process import SpawnProcess
 
 
@@ -18,6 +19,7 @@ class Core(
     GetPortServer,
     IsRunningJsCore,
     RunJS,
+    RunWaitingRequests,
     SpawnProcess,
 ):
     pass

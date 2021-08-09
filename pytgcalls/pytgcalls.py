@@ -56,6 +56,7 @@ class PyTgCalls(Methods):
             'async_request',
             'api'
         ]
+        self._waiting_start_request = []
         self._my_id = 0
         self.is_running = False
         self._calls: List[int] = []

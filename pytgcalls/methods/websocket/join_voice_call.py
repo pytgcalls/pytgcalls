@@ -44,11 +44,9 @@ class JoinVoiceCall:
                         invite_hash=params['invite_hash'],
                     ),
                 )
-
                 transport = json.loads(result.updates[0].call.params.data)[
                     'transport'
                 ]
-
                 return web.json_response({
                     'transport': {
                         'ufrag': transport['ufrag'],

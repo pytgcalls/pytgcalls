@@ -16,9 +16,11 @@ class StartWebApp:
         self.pytgcalls._app_core = web.Application()
         self.pytgcalls._sio.attach(self.pytgcalls._app_core)
 
+        # noinspection PyProtectedMember
         @self.pytgcalls._sio.event
         async def connect(sid, environ):
             self._init_js_core = True
+            self._run_waiting_requests()
 
         for request in self.pytgcalls._list_requests:
             self.pytgcalls._app_core.router.add_post(

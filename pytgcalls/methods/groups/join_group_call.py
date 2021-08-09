@@ -34,36 +34,46 @@ class JoinGroupCall(SpawnProcess):
         bitrate = 48000 if bitrate > 48000 else bitrate
         js_core_state = self.pytgcalls.is_running_js_core()
         if (
-            js_core_state and
             self.pytgcalls._app is not None and
             os.path.isfile(file_path)
         ):
             # noinspection PyBroadException
             try:
-                self._spawn_process(
-                    requests.post,
-                    (
-                        'http://'
-                        f'{self.pytgcalls._host}:'
-                        f'{self.pytgcalls._port}/'
-                        'api_internal',
-                        json.dumps({
-                            'action': 'join_call',
-                            'chat_id': chat_id,
-                            'file_path': file_path,
-                            'invite_hash': invite_hash,
-                            'bitrate': bitrate,
-                            'buffer_long': stream_type.stream_mode,
-                            'session_id': self.pytgcalls._session_id,
-                        }),
-                    ),
-                )
+                if js_core_state:
+                    self._spawn_process(
+                        requests.post,
+                        (
+                            'http://'
+                            f'{self.pytgcalls._host}:'
+                            f'{self.pytgcalls._port}/'
+                            'api_internal',
+                            json.dumps({
+                                'action': 'join_call',
+                                'chat_id': chat_id,
+                                'file_path': file_path,
+                                'invite_hash': invite_hash,
+                                'bitrate': bitrate,
+                                'buffer_long': stream_type.stream_mode,
+                                'session_id': self.pytgcalls._session_id,
+                            }),
+                        )
+                    )
+                else:
+                    self.pytgcalls._waiting_start_request.append([
+                        self.join_group_call,
+                        (
+                            chat_id,
+                            file_path,
+                            bitrate,
+                            invite_hash,
+                            join_as,
+                            stream_type
+                        )
+                    ])
             except Exception as e:
                 raise Exception('Error internal: UNKNOWN ->', e)
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
-            if not js_core_state:
-                code_err = 'JS_CORE_NOT_RUNNING'
             if not os.path.isfile(file_path):
                 code_err = 'FILE_NOT_FOUND'
             raise Exception(f'Error internal: {code_err}')
