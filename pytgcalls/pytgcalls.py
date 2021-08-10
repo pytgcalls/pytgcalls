@@ -133,7 +133,7 @@ class PyTgCalls(Methods):
                                     'KICK_HANDLER'
                                 ]:
                                     await event['callable'](
-                                        chat_id,
+                                        self, chat_id,
                                     )
                                 # noinspection PyBroadException
                                 try:
@@ -160,7 +160,7 @@ class PyTgCalls(Methods):
                                 'CLOSED_HANDLER'
                             ]:
                                 await event['callable'](
-                                    chat_id,
+                                    self, chat_id,
                                 )
                             # noinspection PyBroadException
                             try:
@@ -187,7 +187,7 @@ class PyTgCalls(Methods):
                                     'GROUP_CALL_HANDLER'
                                 ]:
                                     await event['callable'](
-                                        client, update.message,
+                                        self, client, update.message,
                                     )
                         except Exception:
                             pass
@@ -283,10 +283,12 @@ class PyTgCalls(Methods):
         if self._version_tuple(__version__) > \
                 self._version_tuple(remote_stable_ver + '.99'):
             remote_ver = remote_readable_ver = remote_dev_ver
+            my_ver = __version__
         else:
             remote_readable_ver = remote_stable_ver
             remote_ver = remote_stable_ver + '.99'
-        if self._version_tuple(remote_ver) > self._version_tuple(__version__):
+            my_ver = __version__ + '.99'
+        if self._version_tuple(remote_ver) > self._version_tuple(my_ver):
             print(
                 BColors._WARNING + f'Update Available!\n'
                 f'New PyTgCalls v{remote_readable_ver} is now available!\n' +

@@ -26,6 +26,6 @@ class UpdateCallData:
         ]:
             self._pytgcalls.run_async(
                 event['callable'],
-                (params,),
+                (self._pytgcalls, params,),
             )
         return web.Response(content_type='text/plain', text='OK')

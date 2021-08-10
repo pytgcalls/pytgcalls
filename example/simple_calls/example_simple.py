@@ -68,15 +68,15 @@ if __name__ == '__main__':
         )
 
     @call_py.on_kicked()
-    async def kicked_handler(chat_id: int):
+    async def kicked_handler(client: PyTgCalls, chat_id: int):
         print(f'Kicked from {chat_id}')
 
     @call_py.on_raw_update()
-    async def raw_handler(json):
+    async def raw_handler(client: PyTgCalls, json):
         print(json)
 
     @call_py.on_stream_end()
-    async def stream_end_handler(chat_id: int):
+    async def stream_end_handler(client: PyTgCalls, chat_id: int):
         print(f'Stream endend in {chat_id}')
 
     call_py.run()
