@@ -1,7 +1,4 @@
-import json
-
 from aiohttp import web
-from aiohttp.web_request import BaseRequest
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
 
 
@@ -29,5 +26,5 @@ class ChangeVolumeVoiceCall:
         except Exception:
             pass
         return web.json_response({
-                'result': 'OK',
+            'result': 'OK',
         })

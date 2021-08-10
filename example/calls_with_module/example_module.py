@@ -1,10 +1,7 @@
-import asyncio
 import os
 import time
 
 from pyrogram import Client
-from pyrogram import filters
-from pyrogram.types import Message
 
 from pytgcalls import PyLogs
 from pytgcalls import PyTgCalls

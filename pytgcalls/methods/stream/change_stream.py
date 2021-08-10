@@ -39,7 +39,7 @@ class ChangeStream(SpawnProcess):
                     (
                         chat_id,
                         file_path,
-                    )
+                    ),
                 ])
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'

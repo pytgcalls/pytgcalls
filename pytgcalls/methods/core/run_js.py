@@ -29,7 +29,7 @@ class RunJS:
         except subprocess.CalledProcessError as cpe:
             try:
                 sys.stderr.write(cpe.output)
-            except TypeError as te:
+            except TypeError:
                 sys.stderr.write(str(cpe.output))
         except Exception as e:
             raise e

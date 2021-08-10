@@ -1,7 +1,4 @@
-import json
-
 from aiohttp import web
-from aiohttp.web_request import BaseRequest
 
 
 class EventFinish:

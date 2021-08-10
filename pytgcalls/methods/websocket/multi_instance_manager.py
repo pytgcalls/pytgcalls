@@ -1,7 +1,7 @@
-from ..core import env
-
 from aiohttp import web
 from aiohttp.web_request import BaseRequest
+
+from ..core import env
 
 
 class MultiInstanceManager:
@@ -45,7 +45,7 @@ class MultiInstanceManager:
                 return await env.custom_api_instance._custom_api_update(params)
             else:
                 return web.json_response({
-                    'result': 'NO_AVAILABLE_CUSTOM_API_CLIENTS'
+                    'result': 'NO_AVAILABLE_CUSTOM_API_CLIENTS',
                 })
         return web.json_response({
             'result': 'INVALID_REQUEST',

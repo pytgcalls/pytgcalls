@@ -24,7 +24,7 @@ class RunAsync:
                 'async_request',
                 json.dumps({
                     'ID': id_request,
-                    'session_id': self._pytgcalls._session_id
+                    'session_id': self._pytgcalls._session_id,
                 }),
                 240,
             ),

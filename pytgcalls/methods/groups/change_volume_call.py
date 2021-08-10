@@ -38,7 +38,7 @@ class ChangeVolume(SpawnProcess):
                         (
                             chat_id,
                             volume,
-                        )
+                        ),
                     ])
             except Exception:
                 raise Exception('Error internal: NOT_IN_GROUP')

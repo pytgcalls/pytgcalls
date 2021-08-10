@@ -1,7 +1,4 @@
-import json
-
 from aiohttp import web
-from aiohttp.web_request import BaseRequest
 from pyrogram.raw.functions.phone import GetGroupParticipants
 from pyrogram.raw.types.phone import GroupParticipants
 

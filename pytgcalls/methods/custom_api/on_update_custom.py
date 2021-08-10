@@ -6,8 +6,6 @@ class OnUpdateCustom:
         self._custom_api = custom_api
 
     def on_update_custom_api(self) -> Callable:
-        method = 'CUSTOM_API_HANDLER'
-
         # noinspection PyProtectedMember
         def decorator(func: Callable) -> Callable:
             if self is not None:

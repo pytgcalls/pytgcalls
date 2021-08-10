@@ -34,7 +34,7 @@ class RTCConnection {
         this.invite_hash = invite_hash;
         this.session_id = session_id
 
-        this.tgcalls = new TGCalls({}, chat_id);
+        this.tgcalls = new TGCalls({chat_id});
         this.stream = new Stream(
             file_path,
             16,

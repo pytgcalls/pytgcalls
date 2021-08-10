@@ -33,7 +33,7 @@ class PauseStream(SpawnProcess):
                     self.pause_stream,
                     (
                         chat_id,
-                    )
+                    ),
                 ])
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'

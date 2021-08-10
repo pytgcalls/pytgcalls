@@ -12,5 +12,5 @@ class CustomApiUpdate:
             return web.json_response(await handler(params))
         else:
             return web.json_response({
-                'result': 'NO_AVAILABLE_CUSTOM_API_DECORATOR'
+                'result': 'NO_AVAILABLE_CUSTOM_API_DECORATOR',
             })

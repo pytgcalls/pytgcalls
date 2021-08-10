@@ -44,9 +44,8 @@ if __name__ == '__main__':
             stream_type=StreamType().local_stream,
         )
 
-
     @app.on_message(filters.regex('!p2'))
-    async def play_handler(client: Client, message: Message):
+    async def play_handler2(client: Client, message: Message):
         file = '../input.raw'
         while not os.path.exists(file):
             await asyncio.sleep(0.125)
@@ -62,9 +61,8 @@ if __name__ == '__main__':
             message.chat.id,
         )
 
-
     @app.on_message(filters.regex('!s2'))
-    async def stop_handler(client: Client, message: Message):
+    async def stop_handler2(client: Client, message: Message):
         call_py2.leave_group_call(
             message.chat.id,
         )

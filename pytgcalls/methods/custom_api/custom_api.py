@@ -9,6 +9,6 @@ class CustomAPI(CustomAPIHelpers):
             self._custom_api_handler = None
         else:
             raise Exception(
-                'You cannot use more than one CustomApi instance'
+                'You cannot use more than one CustomApi instance',
             )
         super().__init__(self)

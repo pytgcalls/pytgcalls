@@ -36,7 +36,7 @@ class LeaveGroupCall(SpawnProcess):
                     (
                         chat_id,
                         type_leave,
-                    )
+                    ),
                 ])
         else:
             code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'

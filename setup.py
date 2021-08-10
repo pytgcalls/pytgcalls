@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 from setuptools import setup
@@ -11,14 +12,17 @@ class PostInstall(install):
         result_cmd = os.popen(f'{package_check} -v').read()
         result_cmd = result_cmd.replace('v', '')
         if len(result_cmd) == 0:
-            return {
-                'version_int': 0,
-                'version': '0',
-            }
-        return {
-            'version_int': int(result_cmd.split('.')[0]),
-            'version': result_cmd,
-        }
+            return None
+        return result_cmd
+
+    @staticmethod
+    def _version_tuple(v):
+        list_version = []
+        for vmj in v.split('.'):
+            list_d = re.findall('[0-9]+', vmj)
+            for vmn in list_d:
+                list_version.append(int(vmn))
+        return tuple(list_version)
 
     # noinspection PyBroadException
     def run(self):
@@ -29,21 +33,21 @@ class PostInstall(install):
             )
         node_result = self.get_version('node')
         npm_result = self.get_version('npm')
-        if node_result['version_int'] == 0:
+        if node_result is None:
             raise Exception('Please install node (15.+)')
-        if npm_result['version_int'] == 0:
+        if npm_result is None:
             raise Exception('Please install npm (7.+)')
-        if node_result['version_int'] < 15:
+        if self._version_tuple(node_result) < self._version_tuple('15.0.0'):
             raise Exception(
                 'Needed node 15.+, '
                 'actually installed is '
-                f"{node_result['version']}",
+                f'{node_result}',
             )
-        if npm_result['version_int'] < 7:
+        if self._version_tuple(npm_result) < self._version_tuple('7.0.0'):
             raise Exception(
                 'Needed npm 7.+, '
                 'actually installed is '
-                f"{npm_result['version']}",
+                f'{npm_result}',
             )
         os.system('npm install')
         folder_package = ''

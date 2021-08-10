@@ -13,14 +13,14 @@ class StreamType:
         return self
 
     """
-    *** Beta Pulse Stream ***
+    *** Pulse Stream ***
     Send bytes like a pulsation, and this reduce the slice,
     because the slice is too heavy
 
     Support: LiveStream, LocalStream
     """
     @property
-    def beta_pulse_stream(self):
+    def pulse_stream(self):
         self._stream_type = 4
         return self
 

@@ -56,7 +56,7 @@ class JoinGroupCall(SpawnProcess):
                                 'buffer_long': stream_type.stream_mode,
                                 'session_id': self._pytgcalls._session_id,
                             }),
-                        )
+                        ),
                     )
                 else:
                     self._pytgcalls._waiting_start_request.append([
@@ -67,8 +67,8 @@ class JoinGroupCall(SpawnProcess):
                             bitrate,
                             invite_hash,
                             join_as,
-                            stream_type
-                        )
+                            stream_type,
+                        ),
                     ])
             except Exception as e:
                 raise Exception('Error internal: UNKNOWN ->', e)

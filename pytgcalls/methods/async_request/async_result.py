@@ -1,7 +1,4 @@
-import json
-
 from aiohttp import web
-from aiohttp.abc import BaseRequest
 
 
 class AsyncResult:
