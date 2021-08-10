@@ -40,14 +40,14 @@ import sendUpdate from './send-update';
                     await sendUpdate(port, {
                         result: 'JOINED_VOICE_CHAT',
                         chat_id: data.chat_id,
-                        session_id: data['session_id'],
+                        session_id: data.session_id,
                     });
                 } else {
                     delete connections[data.session_id + data.chat_id];
                     await sendUpdate(port, {
                         result: 'JOIN_ERROR',
                         chat_id: data.chat_id,
-                        session_id: data['session_id'],
+                        session_id: data.session_id,
                     });
                 }
 
@@ -61,70 +61,64 @@ import sendUpdate from './send-update';
                     let result = await connections[data.session_id + data.chat_id].leave_call();
 
                     if (result['result'] === 'OK') {
-                        let session_id = connections[data.session_id + data.chat_id].session_id;
                         delete connections[data.session_id + data.chat_id];
                         await sendUpdate(port, {
                             result: 'LEFT_VOICE_CHAT',
                             chat_id: data.chat_id,
-                            session_id: session_id,
+                            session_id: data.session_id,
                         });
                     } else {
                         if (logMode > 0) {
                             console.log('ERROR_INTERNAL: ', result);
                         }
-                        let session_id = connections[data.session_id + data.chat_id].session_id;
                         delete connections[data.session_id + data.chat_id];
                         await sendUpdate(port, {
                             result: 'LEFT_VOICE_CHAT',
                             error: result['result'],
                             chat_id: data.chat_id,
-                            session_id: session_id,
+                            session_id: data.session_id,
                         });
                     }
                 } else {
-                    let session_id = connections[data.session_id + data.chat_id].session_id;
                     await connections[data.session_id + data.chat_id].stop();
                     delete connections[data.session_id + data.chat_id];
                     await sendUpdate(port, {
                         result: 'KICKED_FROM_GROUP',
                         chat_id: data.chat_id,
-                        session_id: session_id,
+                        session_id: data.session_id,
                     });
                 }
             }
         } else if (data.action === 'pause') {
             if (connections[data.session_id + data.chat_id]) {
                 try {
-                    let session_id = connections[data.session_id + data.chat_id].session_id;
                     await connections[data.session_id + data.chat_id].pause();
                     await sendUpdate(port, {
                         result: 'PAUSED_AUDIO_STREAM',
                         chat_id: data.chat_id,
-                        session_id: session_id,
+                        session_id: data.session_id,
                     });
                 } catch (e) {}
             }
         } else if (data.action === 'resume') {
             if (connections[data.session_id + data.chat_id]) {
                 try {
-                    let session_id = connections[data.session_id + data.chat_id].session_id;
                     await connections[data.session_id + data.chat_id].resume();
                     await sendUpdate(port, {
                         result: 'RESUMED_AUDIO_STREAM',
                         chat_id: data.chat_id,
-                        session_id: session_id,
+                        session_id: data.session_id,
                     });
                 } catch (e) {}
             }
         } else if (data.action === 'change_stream') {
             if (connections[data.session_id + data.chat_id]) {
                 try {
-                    let session_id = connections[data.session_id + data.chat_id].session_id;
                     await connections[data.session_id + data.chat_id].changeStream(data.file_path);
                     await sendUpdate(port, {
                         result: 'CHANGED_AUDIO_STREAM',
                         chat_id: data.chat_id,
-                        session_id: session_id,
+                        session_id: data.session_id,
                     });
                 } catch (e) {}
             }
