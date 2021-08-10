@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 
 from pyrogram import Client
 from pyrogram import filters
@@ -36,7 +37,7 @@ if __name__ == '__main__':
     async def play_handler(client: Client, message: Message):
         file = '../input.raw'
         while not os.path.exists(file):
-            await asyncio.sleep(0.125)
+            time.sleep(0.125)
         call_py.join_group_call(
             message.chat.id,
             file,

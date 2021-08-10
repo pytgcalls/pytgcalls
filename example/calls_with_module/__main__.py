@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 
 from pyrogram import Client
 from pyrogram import filters
@@ -19,11 +20,10 @@ call_py = PyTgCalls(
     app,
     log_mode=PyLogs.ultra_verbose,
 )
-
 if __name__ == '__main__':
     file = '../input.raw'
     while not os.path.exists(file):
-        await asyncio.sleep(0.125)
+        time.sleep(0.125)
     call_py.join_group_call(
         -1001234567890,
         file,

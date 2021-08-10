@@ -1,6 +1,4 @@
 import atexit
-import builtins
-import errno
 import os
 import socket
 import time
@@ -21,6 +19,7 @@ from pytgcalls.methods.core import BColors
 
 from . import __version__
 from .methods import Methods
+from .methods.core import env
 
 
 class PyTgCalls(Methods):
@@ -69,20 +68,9 @@ class PyTgCalls(Methods):
         self._cache_local_peer = None
         self._flood_wait_cache = flood_wait_cache
         self.is_connected = False
-        if not hasattr(builtins, 'client_instances'):
-            builtins.client_instances = [self]
-        else:
-            builtins.client_instances.append(self)
+        env.client_instances.append(self)
         atexit.register(self._before_close)
         super().__init__(self)
-
-    @staticmethod
-    def verbose_mode():
-        return 1
-
-    @property
-    def ultra_verbose_mode(self):
-        return 2
 
     @staticmethod
     def _get_version(package_check):
@@ -230,9 +218,12 @@ class PyTgCalls(Methods):
 
     # noinspection PyProtectedMember
     def _before_close(self):
-        if not hasattr(builtins, 'running_server'):
+        if not hasattr(env, 'running_server'):
             my_pos = -1
-            list_instance = [instance for instance in builtins.client_instances if instance.is_connected]
+            list_instance = [
+                instance for instance in env.client_instances
+                if instance.is_connected and instance._app.is_connected
+            ]
             warnings_mess = 0
             for i, instance in enumerate(list_instance):
                 if instance is self:
@@ -242,9 +233,9 @@ class PyTgCalls(Methods):
                     if port_test != 24859:
                         warnings_mess += 1
                         print(
-                            BColors.WARNING +
+                            BColors._WARNING +
                             f'WARNING: Unused port {port_test} at id {instance._my_id}!' +
-                            BColors.ENDC
+                            BColors._ENDC
                         )
                     instance.is_running = True
             if warnings_mess > 0:
@@ -256,19 +247,19 @@ class PyTgCalls(Methods):
                 self._run_server()
 
     @staticmethod
-    def check_already_using(port):
+    def _check_already_using(port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         is_in_use = s.connect_ex(("127.0.0.1", port)) == 0
         s.close()
         return is_in_use
 
     def _run_server(self):
-        builtins.running_server = True
+        env.running_server = True
         print(
             f'PyTgCalls v{__version__}, Copyright (C) 2021 Laky-64 <https://github.com/Laky-64>\n'
             'Licensed under the terms of the GNU Lesser General Public License v3 or later (LGPLv3+)\n'
         )
-        if not self.check_already_using(self._port):
+        if not self._check_already_using(self._port):
             self._spawn_process(
                 self._run_js,
                 (
@@ -279,7 +270,7 @@ class PyTgCalls(Methods):
             self.is_running = True
             self._start_web_app()
         else:
-            print(BColors.FAIL + f'Error: Port {self._port} already in use!' + BColors.ENDC)
+            print(BColors._FAIL + f'Error: Port {self._port} already in use!' + BColors._ENDC)
 
     def _add_handler(self, type_event: str, func):
         self._on_event_update[type_event].append(func)

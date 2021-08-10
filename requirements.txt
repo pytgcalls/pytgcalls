@@ -1,6 +1,5 @@
 aiohttp
 asyncio
-Naked
 psutil
 pyrogram
 python-socketio
