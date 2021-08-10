@@ -1,5 +1,8 @@
 import asyncio
+import atexit
 import os
+import signal
+import subprocess
 import time
 
 from pyrogram import Client
@@ -21,12 +24,15 @@ call_py = PyTgCalls(
     log_mode=PyLogs.ultra_verbose,
 )
 if __name__ == '__main__':
-    @app.on_message(filters.regex('!p1'))
-    async def play_handler(client: Client, message: Message):
-        file = 'input.mp3'
+    proc = {}
+
+    @app.on_message(filters.regex('!test'))
+    async def test_handler(client: Client, message: Message):
+        global proc
+        file = 'input.webm'
         output_file = 'input_fifo.raw'
         os.mkfifo(output_file)
-        await asyncio.create_subprocess_shell(
+        proc[message.chat.id] = await asyncio.create_subprocess_shell(
             cmd=(
                 'ffmpeg '
                 '-y -i '
@@ -39,6 +45,7 @@ if __name__ == '__main__':
             ),
             stdin=asyncio.subprocess.PIPE,
         )
+
         while not os.path.exists(output_file):
             time.sleep(0.125)
         call_py.join_group_call(
@@ -46,4 +53,16 @@ if __name__ == '__main__':
             output_file,
             stream_type=StreamType().pulse_stream,
         )
+
+    def close_all_process():
+        global proc
+        for i in proc:
+            try:
+                proc[i].send_signal(signal.SIGINT)
+                proc[i].wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proc[i].kill()
+
+    # AVOID ZOMBIE FFMPEG PROCESS
+    atexit.register(close_all_process)
     call_py.run()
