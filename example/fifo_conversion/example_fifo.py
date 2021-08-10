@@ -26,7 +26,7 @@ if __name__ == '__main__':
         file = 'input.mp3'
         output_file = 'input_fifo.raw'
         os.mkfifo(output_file)
-        proc = await asyncio.create_subprocess_shell(
+        await asyncio.create_subprocess_shell(
             cmd=(
                 'ffmpeg '
                 '-y -i '
@@ -39,7 +39,6 @@ if __name__ == '__main__':
             ),
             stdin=asyncio.subprocess.PIPE,
         )
-        await proc.communicate()
         while not os.path.exists(output_file):
             time.sleep(0.125)
         call_py.join_group_call(

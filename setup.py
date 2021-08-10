@@ -41,13 +41,13 @@ class PostInstall(install):
             raise Exception(
                 'Needed node 15.+, '
                 'actually installed is '
-                f"{node_result}",
+                f'{node_result}',
             )
         if self._version_tuple(npm_result) < self._version_tuple('7.0.0'):
             raise Exception(
                 'Needed npm 7.+, '
                 'actually installed is '
-                f"{npm_result}",
+                f'{npm_result}',
             )
         os.system('npm install')
         folder_package = ''
