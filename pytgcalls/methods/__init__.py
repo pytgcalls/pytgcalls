@@ -1,7 +1,6 @@
 from .async_request import AsyncRequest
 from .call_property import CallProperty
 from .core import Core
-from .custom_api import CustomAPI
 from .groups import Groups
 from .handler import Handler
 from .stream import Stream
@@ -12,7 +11,6 @@ class Methods(
     AsyncRequest,
     CallProperty,
     Core,
-    CustomAPI,
     Groups,
     Stream,
     Handler,

@@ -3,7 +3,7 @@ from typing import Callable
 
 class OnStreamEnd:
     def __init__(self, pytgcalls):
-        self.pytgcalls = pytgcalls
+        self._pytgcalls = pytgcalls
 
     def on_stream_end(self) -> Callable:
         method = 'STREAM_END_HANDLER'
@@ -11,7 +11,7 @@ class OnStreamEnd:
         # noinspection PyProtectedMember
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self.pytgcalls._add_handler(
+                self._pytgcalls._add_handler(
                     method, {
                         'callable': func,
                     },

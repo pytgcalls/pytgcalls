@@ -21,7 +21,7 @@ call_py = PyTgCalls(
 if __name__ == '__main__':
     @app.on_message(filters.regex('!play'))
     async def play_handler(client: Client, message: Message):
-        file = 'input.raw'
+        file = '../input.raw'
         while not os.path.exists(file):
             await asyncio.sleep(0.125)
         call_py.join_group_call(
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     @app.on_message(filters.regex('!change_stream'))
     async def change_handler(client: Client, message: Message):
-        file = 'input.raw'
+        file = '../input.raw'
         call_py.change_stream(
             message.chat.id,
             file,

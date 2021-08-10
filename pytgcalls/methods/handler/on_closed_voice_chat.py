@@ -3,7 +3,7 @@ from typing import Callable
 
 class OnClosedVoiceChat:
     def __init__(self, pytgcalls):
-        self.pytgcalls = pytgcalls
+        self._pytgcalls = pytgcalls
 
     def on_closed_voice_chat(self) -> Callable:
         method = 'CLOSED_HANDLER'
@@ -11,7 +11,7 @@ class OnClosedVoiceChat:
         # noinspection PyProtectedMember
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self.pytgcalls._add_handler(
+                self._pytgcalls._add_handler(
                     method, {
                         'callable': func,
                     },

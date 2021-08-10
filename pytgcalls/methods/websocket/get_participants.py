@@ -1,24 +1,18 @@
-import json
-
 from aiohttp import web
-from aiohttp.web_request import BaseRequest
 from pyrogram.raw.functions.phone import GetGroupParticipants
 from pyrogram.raw.types.phone import GroupParticipants
 
 
 class GetParticipants:
     def __init__(self, pytgcalls):
-        self.pytgcalls = pytgcalls
+        self._pytgcalls = pytgcalls
 
     # noinspection PyProtectedMember
-    async def _get_participants(self, request: BaseRequest):
-        params = await request.json()
-        if isinstance(params, str):
-            params = json.loads(params)
+    async def _get_participants(self, params: dict):
         participants: GroupParticipants = (
-            await self.pytgcalls._app.send(
+            await self._pytgcalls._app.send(
                 GetGroupParticipants(
-                    call=await self.pytgcalls._load_chat_call(
+                    call=await self._pytgcalls._load_chat_call(
                         params['chat_id'],
                     ),
                     ids=[],

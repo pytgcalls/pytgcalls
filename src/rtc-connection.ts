@@ -8,8 +8,9 @@ class RTCConnection {
     port: number;
     bitrate: number;
     logMode: number;
-    buffer_lenght: number;
+    buffer_length: number;
     invite_hash: string;
+    session_id: string;
 
     tgcalls: TGCalls<any>;
     stream: Stream;
@@ -20,25 +21,27 @@ class RTCConnection {
         port: number,
         bitrate: number,
         logMode: number,
-        buffer_lenght: number,
-        invite_hash: string
+        buffer_length: number,
+        invite_hash: string,
+        session_id: string
     ) {
         this.chat_id = chat_id;
         this.file_path = file_path;
         this.port = port;
         this.bitrate = bitrate;
         this.logMode = logMode;
-        this.buffer_lenght = buffer_lenght;
+        this.buffer_length = buffer_length;
         this.invite_hash = invite_hash;
+        this.session_id = session_id
 
-        this.tgcalls = new TGCalls({}, chat_id);
+        this.tgcalls = new TGCalls({chat_id});
         this.stream = new Stream(
             file_path,
             16,
             bitrate,
             1,
             logMode,
-            buffer_lenght
+            buffer_length
         );
 
         this.tgcalls.joinVoiceCall = async (payload: any) => {
@@ -51,6 +54,7 @@ class RTCConnection {
                 fingerprint: payload.fingerprint,
                 source: payload.source,
                 invite_hash: this.invite_hash,
+                session_id: this.session_id,
             };
 
             if (logMode > 0) {
@@ -76,6 +80,7 @@ class RTCConnection {
                 method: 'POST',
                 body: JSON.stringify({
                     chat_id: chat_id,
+                    session_id: this.session_id,
                 }),
             });
         });
@@ -110,6 +115,7 @@ class RTCConnection {
                     method: 'POST',
                     body: JSON.stringify({
                         chat_id: this.chat_id,
+                        session_id: this.session_id,
                     }),
                 })
             ).json();

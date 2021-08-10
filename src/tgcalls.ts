@@ -8,13 +8,11 @@ export { Stream } from './stream';
 
 export class TGCalls<T> extends EventEmitter {
     #connection?: RTCPeerConnection;
-    #params: T;
-    #chat_id: number;
+    readonly #params: T;
     joinVoiceCall?: JoinVoiceCallCallback<T>;
 
-    constructor(params: T, chat_id: number) {
+    constructor(params: T) {
         super();
-        this.#chat_id = chat_id;
         this.#params = params;
     }
 
@@ -64,6 +62,7 @@ export class TGCalls<T> extends EventEmitter {
         let joinGroupCallResult;
 
         try {
+            //The setup need to be active
             joinGroupCallResult = await this.joinVoiceCall({
                 ufrag,
                 pwd,
@@ -72,6 +71,7 @@ export class TGCalls<T> extends EventEmitter {
                 fingerprint,
                 source,
                 params: this.#params,
+
             });
         } catch (error) {
             this.#connection.close();
@@ -81,7 +81,7 @@ export class TGCalls<T> extends EventEmitter {
         if (!joinGroupCallResult || !joinGroupCallResult.transport) {
             this.#connection.close();
             // @ts-ignore
-            throw new Error('No active voice chat found on '+this.#chat_id);
+            throw new Error('No active voice chat found on '+this.#params.chat_id);
         }
 
         const session_id = Date.now();
@@ -94,7 +94,6 @@ export class TGCalls<T> extends EventEmitter {
             type: 'answer',
             sdp: SdpBuilder.fromConference(conference, true),
         });
-
         return true;
     }
 
