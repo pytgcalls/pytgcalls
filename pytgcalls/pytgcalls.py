@@ -1,11 +1,14 @@
 import atexit
 import os
+import re
 import socket
 import time
 from typing import Callable
 from typing import Dict
 from typing import List
 
+import pyrogram
+import requests
 from pyrogram import Client
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import GroupCall
@@ -15,11 +18,11 @@ from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateNewChannelMessage
-from pytgcalls.methods.core import BColors
 
 from . import __version__
 from .methods import Methods
 from .methods.core import env
+from pytgcalls.methods.core import BColors
 
 
 class PyTgCalls(Methods):
@@ -33,13 +36,12 @@ class PyTgCalls(Methods):
         self._app = app
         self._app_core = None
         self._sio = None
-        self._host = '127.0.0.1'
+        self._host = 'localhost'
         self._port = port
         self._init_js_core = False
         self._on_event_update: Dict[str, list] = {
             'EVENT_UPDATE_HANDLER': [],
             'STREAM_END_HANDLER': [],
-            'CUSTOM_API_HANDLER': [],
             'GROUP_CALL_HANDLER': [],
             'KICK_HANDLER': [],
             'CLOSED_HANDLER': [],
@@ -53,9 +55,9 @@ class PyTgCalls(Methods):
             'api_internal',
             'request_change_volume',
             'async_request',
-            'api'
+            'api',
         ]
-        self._waiting_start_request = []
+        self._waiting_start_request: List = []
         self._my_id = 0
         self.is_running = False
         self._calls: List[int] = []
@@ -77,32 +79,27 @@ class PyTgCalls(Methods):
         result_cmd = os.popen(f'{package_check} -v').read()
         result_cmd = result_cmd.replace('v', '')
         if len(result_cmd) == 0:
-            return {
-                'version_int': 0,
-                'version': '0',
-            }
-        return {
-            'version_int': int(result_cmd.split('.')[0]),
-            'version': result_cmd,
-        }
+            return None
+        return result_cmd
 
     def run(self, before_start_callable: Callable = None):
         if self._app is not None:
             node_result = self._get_version('node')
-            if node_result['version_int'] == 0:
+            if node_result is None:
                 raise Exception('Please install node (15.+)')
-            if node_result['version_int'] < 15:
+            if self._version_tuple(node_result) < \
+                    self._version_tuple('15.0.0'):
                 raise Exception(
                     'Needed node 15.+, '
                     'actually installed is '
-                    f"{node_result['version']}",
+                    f'{node_result}',
                 )
-            if int(__version__.split('.')[1]) < 2 and \
-                    int(__version__.split('.')[0]) == 1:
+            if self._version_tuple(pyrogram.__version__) < \
+                    self._version_tuple('1.2.0'):
                 raise Exception(
                     'Needed pyrogram 1.2.0+, '
                     'actually installed is '
-                    f'{__version__}',
+                    f'{pyrogram.__version__}',
                 )
             try:
                 # noinspection PyBroadException
@@ -234,8 +231,9 @@ class PyTgCalls(Methods):
                         warnings_mess += 1
                         print(
                             BColors._WARNING +
-                            f'WARNING: Unused port {port_test} at id {instance._my_id}!' +
-                            BColors._ENDC
+                            f'WARNING: Unused port {port_test} '
+                            f'at id {instance._my_id}!' +
+                            BColors._ENDC,
                         )
                     instance.is_running = True
             if warnings_mess > 0:
@@ -249,16 +247,51 @@ class PyTgCalls(Methods):
     @staticmethod
     def _check_already_using(port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        is_in_use = s.connect_ex(("127.0.0.1", port)) == 0
+        is_in_use = s.connect_ex(('localhost', port)) == 0
         s.close()
         return is_in_use
+
+    @staticmethod
+    def _remote_version(branch: str):
+        return re.findall(
+            '__version__ = \'(.*?)\'', requests.get(
+                f'https://raw.githubusercontent.com/'
+                f'pytgcalls/pytgcalls/{branch}'
+                f'/pytgcalls/__version__.py',
+            ).text,
+        )[0]
+
+    @staticmethod
+    def _version_tuple(v):
+        list_version = []
+        for vmj in v.split('.'):
+            list_d = re.findall('[0-9]+', vmj)
+            for vmn in list_d:
+                list_version.append(int(vmn))
+        return tuple(list_version)
 
     def _run_server(self):
         env.running_server = True
         print(
-            f'PyTgCalls v{__version__}, Copyright (C) 2021 Laky-64 <https://github.com/Laky-64>\n'
-            'Licensed under the terms of the GNU Lesser General Public License v3 or later (LGPLv3+)\n'
+            f'PyTgCalls v{__version__}, Copyright (C) '
+            f'2021 Laky-64 <https://github.com/Laky-64>\n'
+            'Licensed under the terms of the GNU Lesser '
+            'General Public License v3 or later (LGPLv3+)\n',
         )
+        remote_stable_ver = self._remote_version('master')
+        remote_dev_ver = self._remote_version('dev')
+        if self._version_tuple(__version__) > \
+                self._version_tuple(remote_stable_ver + '.99'):
+            remote_ver = remote_readable_ver = remote_dev_ver
+        else:
+            remote_readable_ver = remote_stable_ver
+            remote_ver = remote_stable_ver + '.99'
+        if self._version_tuple(remote_ver) > self._version_tuple(__version__):
+            print(
+                BColors._WARNING + f'Update Available!\n'
+                f'New PyTgCalls v{remote_readable_ver} is now available!\n' +
+                BColors._ENDC,
+            )
         if not self._check_already_using(self._port):
             self._spawn_process(
                 self._run_js,
@@ -270,7 +303,10 @@ class PyTgCalls(Methods):
             self.is_running = True
             self._start_web_app()
         else:
-            print(BColors._FAIL + f'Error: Port {self._port} already in use!' + BColors._ENDC)
+            print(
+                BColors._FAIL +
+                f'Error: Port {self._port} already in use!' + BColors._ENDC,
+            )
 
     def _add_handler(self, type_event: str, func):
         self._on_event_update[type_event].append(func)
