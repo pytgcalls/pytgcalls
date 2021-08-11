@@ -13,6 +13,6 @@ class EventFinish:
         for event in self._pytgcalls._on_event_update['STREAM_END_HANDLER']:
             self._pytgcalls.run_async(
                 event['callable'],
-                (chat_id,),
+                (self, chat_id,),
             )
         return web.Response(content_type='text/plain', text='OK')
