@@ -2,11 +2,10 @@ import asyncio
 import os
 import time
 
-from pyrogram import Client
+from pyrogram import Client, idle
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import PyLogs
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 
@@ -23,14 +22,8 @@ app2 = Client(
 )
 
 # You can enter an unlimited number of PyTgCalls clients
-call_py = PyTgCalls(
-    app,
-    log_mode=PyLogs.ultra_verbose,
-)
-call_py2 = PyTgCalls(
-    app2,
-    log_mode=PyLogs.ultra_verbose,
-)
+call_py = PyTgCalls(app)
+call_py2 = PyTgCalls(app2)
 
 if __name__ == '__main__':
     @app.on_message(filters.regex('!p1'))
@@ -38,7 +31,7 @@ if __name__ == '__main__':
         file = '../input.raw'
         while not os.path.exists(file):
             time.sleep(0.125)
-        call_py.join_group_call(
+        await call_py.join_group_call(
             message.chat.id,
             file,
             stream_type=StreamType().local_stream,
@@ -49,7 +42,7 @@ if __name__ == '__main__':
         file = '../input.raw'
         while not os.path.exists(file):
             await asyncio.sleep(0.125)
-        call_py2.join_group_call(
+        await call_py2.join_group_call(
             message.chat.id,
             file,
             stream_type=StreamType().local_stream,
@@ -57,15 +50,17 @@ if __name__ == '__main__':
 
     @app.on_message(filters.regex('!s1'))
     async def stop_handler(client: Client, message: Message):
-        call_py.leave_group_call(
+        await call_py.leave_group_call(
             message.chat.id,
         )
 
     @app.on_message(filters.regex('!s2'))
     async def stop_handler2(client: Client, message: Message):
-        call_py2.leave_group_call(
+        await call_py2.leave_group_call(
             message.chat.id,
         )
 
-    call_py.run()
-    call_py2.run()
+    call_py.start()
+    call_py2.start()
+    idle()
+

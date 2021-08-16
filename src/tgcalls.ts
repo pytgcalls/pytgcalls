@@ -39,7 +39,6 @@ export class TGCalls<T> extends EventEmitter {
                     break;
             }
         };
-
         this.#connection.addTrack(track);
 
         const offer = await this.#connection.createOffer({
@@ -71,9 +70,9 @@ export class TGCalls<T> extends EventEmitter {
                 fingerprint,
                 source,
                 params: this.#params,
-
             });
         } catch (error) {
+            console.log(error);
             this.#connection.close();
             throw error;
         }

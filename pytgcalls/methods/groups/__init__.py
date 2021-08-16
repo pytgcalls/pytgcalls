@@ -1,7 +1,15 @@
-from .change_volume_call import ChangeVolume
+from .active_calls import ActiveCalls
+from .calls import Calls
+from .change_volume_call import ChangeVolumeCall
 from .join_group_call import JoinGroupCall
 from .leave_group_call import LeaveGroupCall
 
 
-class Groups(ChangeVolume, JoinGroupCall, LeaveGroupCall):
+class Groups(
+    ActiveCalls,
+    Calls,
+    ChangeVolumeCall,
+    JoinGroupCall,
+    LeaveGroupCall,
+):
     pass

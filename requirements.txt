@@ -1,5 +1,4 @@
 aiohttp
 psutil
 pyrogram
-python-socketio
 tgcrypto

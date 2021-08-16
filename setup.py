@@ -1,9 +1,10 @@
 import os
-import re
 import sys
 
 from setuptools import setup
 from setuptools.command.install import install
+
+from pytgcalls.environment import Environment
 
 
 class PostInstall(install):
@@ -15,40 +16,12 @@ class PostInstall(install):
             return None
         return result_cmd
 
-    @staticmethod
-    def _version_tuple(v):
-        list_version = []
-        for vmj in v.split('.'):
-            list_d = re.findall('[0-9]+', vmj)
-            for vmn in list_d:
-                list_version.append(int(vmn))
-        return tuple(list_version)
-
     # noinspection PyBroadException
     def run(self):
-        if sys.platform.startswith('win'):
-            raise Exception(
-                'Installation from GitHub isn\'t supported on your platform.'
-                '\nInstall with\n\npip3 install py-tgcalls -U',
-            )
-        node_result = self.get_version('node')
-        npm_result = self.get_version('npm')
-        if node_result is None:
-            raise Exception('Please install node (15.+)')
-        if npm_result is None:
-            raise Exception('Please install npm (7.+)')
-        if self._version_tuple(node_result) < self._version_tuple('15.0.0'):
-            raise Exception(
-                'Needed node 15.+, '
-                'actually installed is '
-                f'{node_result}',
-            )
-        if self._version_tuple(npm_result) < self._version_tuple('7.0.0'):
-            raise Exception(
-                'Needed npm 7.+, '
-                'actually installed is '
-                f'{npm_result}',
-            )
+        Environment(
+            '15.0.0',
+            '1.2.0'
+        ).check_environment()
         os.system('npm install')
         folder_package = ''
         for item in sys.path:
