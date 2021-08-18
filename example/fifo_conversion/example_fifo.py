@@ -5,8 +5,9 @@ import signal
 import subprocess
 import time
 
-from pyrogram import Client, idle
+from pyrogram import Client
 from pyrogram import filters
+from pyrogram import idle
 from pyrogram.types import Message
 
 from pytgcalls import PyTgCalls

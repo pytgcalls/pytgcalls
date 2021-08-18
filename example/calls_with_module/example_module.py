@@ -1,7 +1,8 @@
 import os
 import time
 
-from pyrogram import Client, idle
+from pyrogram import Client
+from pyrogram import idle
 
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType

@@ -24,12 +24,12 @@ class PyroCache:
     ) -> Optional[InputGroupCall]:
         full_chat = self._full_chat_cache.get(chat_id)
         if full_chat is not None:
-            logging.debug("FullChat cache hit for %d", chat_id)
+            logging.debug('FullChat cache hit for %d', chat_id)
             return full_chat
         else:
             # noinspection PyBroadException
             try:
-                logging.debug("FullChat cache miss for %d", chat_id)
+                logging.debug('FullChat cache miss for %d', chat_id)
                 chat = await self._app.resolve_peer(chat_id)
                 full_chat = (
                     await self._app.send(
@@ -38,7 +38,7 @@ class PyroCache:
                 ).full_chat.call
                 self.set_cache(
                     chat_id,
-                    full_chat
+                    full_chat,
                 )
                 return full_chat
             except Exception:
@@ -48,12 +48,12 @@ class PyroCache:
     def set_cache(
         self,
         chat_id: int,
-        input_call: InputGroupCall
+        input_call: InputGroupCall,
     ) -> None:
         self._full_chat_cache.put(
             chat_id,
             input_call,
-            self._cache_duration
+            self._cache_duration,
         )
 
     def drop_cache(

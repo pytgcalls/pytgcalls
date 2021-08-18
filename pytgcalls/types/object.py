@@ -1,11 +1,15 @@
-from .groups import JoinedVoiceChat, LeftVoiceChat, ErrorDuringJoin
-from .stream import PausedStream, ResumedStream, ChangedStream
+from .groups import ErrorDuringJoin
+from .groups import JoinedVoiceChat
+from .groups import LeftVoiceChat
+from .stream import ChangedStream
+from .stream import PausedStream
+from .stream import ResumedStream
 
 
 class Object:
     @staticmethod
     def from_dict(
-        data: dict
+        data: dict,
     ):
         event_name = data['result']
         chat_id = int(data['chat_id'])

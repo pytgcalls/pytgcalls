@@ -1,6 +1,8 @@
 import asyncio
 
-from ...exceptions import PyrogramNotSet, NodeJSNotRunning, NoActiveVoiceChat
+from ...exceptions import NoActiveVoiceChat
+from ...exceptions import NodeJSNotRunning
+from ...exceptions import PyrogramNotSet
 from ...scaffold import Scaffold
 
 
@@ -18,7 +20,6 @@ class LeaveGroupCall(Scaffold):
                 if chat_call is not None:
                     async def internal_sender():
                         await self._wait_until_run.wait()
-                        await asyncio.sleep(0.06)
                         await self._binding.send({
                             'action': 'leave_call',
                             'chat_id': chat_id,

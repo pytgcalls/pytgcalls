@@ -1,6 +1,7 @@
 import asyncio
 
-from ...exceptions import NodeJSNotRunning, PyrogramNotSet
+from ...exceptions import NodeJSNotRunning
+from ...exceptions import PyrogramNotSet
 from ...scaffold import Scaffold
 
 
@@ -11,10 +12,9 @@ class ResumeStream(Scaffold):
     ):
         if self._app is not None:
             if self._binding.is_alive() or \
-                        self._wait_until_run is not None:
+                    self._wait_until_run is not None:
                 async def internal_sender():
                     await self._wait_until_run.wait()
-                    await asyncio.sleep(0.06)
                     await self._binding.send({
                         'action': 'resume',
                         'chat_id': chat_id,

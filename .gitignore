@@ -11,3 +11,4 @@ pytgcalls/dist/
 node_modules/
 venv/
 tests/
+platforms/build/

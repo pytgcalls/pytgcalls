@@ -1,5 +1,6 @@
 from json import JSONDecodeError
 from typing import Callable
+from typing import Optional
 
 from aiohttp import web
 from aiohttp.web_request import BaseRequest
@@ -12,7 +13,7 @@ class CustomApi:
         self,
         port: int = 24859,
     ):
-        self._handler = None
+        self._handler: Optional[Callable] = None
         self._port = port
 
     def on_update_custom_api(self) -> Callable:

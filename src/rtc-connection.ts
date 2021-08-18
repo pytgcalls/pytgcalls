@@ -72,7 +72,9 @@ export class RTCConnection {
 
     async joinCall() {
         try {
-            return await this.tgcalls.start(this.stream.createTrack());
+            let result = await this.tgcalls.start(this.stream.createTrack());
+            this.stream.resume()
+            return result
         } catch (e) {
             this.stream.stop();
             Binding.log('joinCallError -> ' + e.toString(), Binding.INFO);

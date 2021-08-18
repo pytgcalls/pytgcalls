@@ -6,6 +6,6 @@ from .resume_stream import ResumeStream
 class Stream(
     ChangeStream,
     PauseStream,
-    ResumeStream
+    ResumeStream,
 ):
     pass

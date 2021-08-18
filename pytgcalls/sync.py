@@ -27,16 +27,24 @@ def async_to_sync(obj, name):
                 return coroutine
             else:
                 if inspect.iscoroutine(coroutine):
-                    return asyncio.run_coroutine_threadsafe(coroutine, loop).result()
+                    return asyncio.run_coroutine_threadsafe(
+                        coroutine,
+                        loop,
+                    ).result()
 
                 if inspect.isasyncgen(coroutine):
-                    return asyncio.run_coroutine_threadsafe(consume_generator(coroutine), loop).result()
+                    return asyncio.run_coroutine_threadsafe(
+                        consume_generator(coroutine),
+                        loop,
+                    ).result()
 
         if inspect.iscoroutine(coroutine):
             return loop.run_until_complete(coroutine)
 
         if inspect.isasyncgen(coroutine):
-            return loop.run_until_complete(consume_generator(coroutine))
+            return loop.run_until_complete(
+                consume_generator(coroutine),
+            )
 
     setattr(obj, name, async_to_sync_wrap)
 
@@ -45,8 +53,9 @@ def wrap(source):
     for name in dir(source):
         method = getattr(source, name)
 
-        if not name.startswith("_"):
-            if inspect.iscoroutinefunction(method) or inspect.isasyncgenfunction(method):
+        if not name.startswith('_'):
+            if inspect.iscoroutinefunction(method) or \
+                    inspect.isasyncgenfunction(method):
                 async_to_sync(source, name)
 
 

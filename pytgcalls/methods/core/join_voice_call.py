@@ -1,9 +1,9 @@
 import json
 import logging
-from typing import Dict
 
 from pyrogram.raw.functions.phone import JoinGroupCall
-from pyrogram.raw.types import Updates, DataJSON
+from pyrogram.raw.types import DataJSON
+from pyrogram.raw.types import Updates
 
 from ...scaffold import Scaffold
 
@@ -12,7 +12,7 @@ class JoinVoiceCall(Scaffold):
     async def _join_voice_call(
         self,
         params: dict,
-    ) -> Dict:
+    ):
         request_call = {
             'ufrag': params['ufrag'],
             'pwd': params['pwd'],

@@ -16,14 +16,14 @@ class PyTgCalls(Methods, Scaffold):
     def __init__(
         self,
         app: Client,
-        cache_duration: int = 120
+        cache_duration: int = 120,
     ):
         super().__init__()
         self._app = app
         self._is_running = False
         self._full_chat_cache = PyroCache(
             cache_duration,
-            app
+            app,
         )
         self._env_checker = Environment(
             self._REQUIRED_NODEJS_VERSION,

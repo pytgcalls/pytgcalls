@@ -29,7 +29,8 @@ class PyTgCallsSession:
                 remote_ver = remote_stable_ver + '.99'
                 my_ver = __version__ + '.99'
 
-            if VersionManager.version_tuple(remote_ver) > VersionManager.version_tuple(my_ver):
+            if VersionManager.version_tuple(remote_ver) > \
+                    VersionManager.version_tuple(my_ver):
                 print(
                     '\033[93m'
                     f'Update Available!\n'

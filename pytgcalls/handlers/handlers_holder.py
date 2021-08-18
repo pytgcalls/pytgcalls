@@ -1,5 +1,7 @@
 import asyncio
-from typing import Callable, List, Any, Dict
+from typing import Callable
+from typing import Dict
+from typing import List
 
 
 class HandlersHolder:
@@ -24,6 +26,6 @@ class HandlersHolder:
     def add_handler(
         self,
         event_name: str,
-        func: Callable
+        func: Callable,
     ):
         self._on_event_update[event_name].append(func)

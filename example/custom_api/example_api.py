@@ -6,7 +6,6 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from pytgcalls import CustomApi
-from pytgcalls import PyTgCalls
 
 app = Client(
     'py-tgcalls',

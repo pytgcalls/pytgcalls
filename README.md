@@ -10,6 +10,7 @@
 [![GitHub](https://img.shields.io/github/license/pytgcalls/pytgcalls)](https://github.com/pytgcalls/pytgcalls/blob/master/LICENSE)
 ![OS](https://img.shields.io/badge/platform-Linux%20%7C%20WSL2.0-lightgrey)
 [![Node Version](https://img.shields.io/badge/node-%3E%20%3D%2015.0.0%20-brightgreen)](https://nodejs.org/it/)
+![Architectures](https://img.shields.io/badge/architectures-x86__64%20%7C%20arm64v8-blue)
 
 This project allow to make Telegram group call with MTProto Api using Pyrogram and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library, socketio-client and [@evgeny-nadymov]
 
@@ -33,6 +34,9 @@ If is alive and stream is stopped, report to the issue with including last ultra
 ## How to install?
 
 Here's how to install the PyTgCalls lib, the commands are given below:
+
+### If you want installation from git
+You need to install docker, then enable the experimental mode
 
 ``` bash
 # With Git

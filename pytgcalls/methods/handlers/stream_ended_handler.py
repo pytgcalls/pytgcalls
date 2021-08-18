@@ -18,5 +18,5 @@ class StreamEndedHandler(Scaffold):
             chat_id,
         )
         return {
-            'result': 'OK'
+            'result': 'OK',
         }

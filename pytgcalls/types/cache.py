@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from time import time
-from typing import Any, Optional, Dict
+from typing import Any
+from typing import Dict
+from typing import Optional
 
 
 @dataclass
@@ -25,7 +27,7 @@ class Cache:
     def put(self, chat_id: int, data: Any, expiry_time: int = 0) -> None:
         self._store[chat_id] = CacheEntry(
             time=0 if expiry_time == 0 else (int(time()) + expiry_time),
-            data=data
+            data=data,
         )
 
     def pop(self, chat_id: int) -> Optional[Any]:

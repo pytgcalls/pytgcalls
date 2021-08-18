@@ -1,6 +1,13 @@
 from pyrogram import ContinuePropagation
-from pyrogram.raw.types import UpdateGroupCall, GroupCallDiscarded, GroupCall, InputGroupCall, UpdateChannel, \
-    ChannelForbidden, UpdateNewChannelMessage, MessageActionInviteToGroupCall, MessageService
+from pyrogram.raw.types import ChannelForbidden
+from pyrogram.raw.types import GroupCall
+from pyrogram.raw.types import GroupCallDiscarded
+from pyrogram.raw.types import InputGroupCall
+from pyrogram.raw.types import MessageActionInviteToGroupCall
+from pyrogram.raw.types import MessageService
+from pyrogram.raw.types import UpdateChannel
+from pyrogram.raw.types import UpdateGroupCall
+from pyrogram.raw.types import UpdateNewChannelMessage
 
 from ...scaffold import Scaffold
 

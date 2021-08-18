@@ -34,6 +34,7 @@ export class Stream extends EventEmitter {
 
         this.audioSource = new nonstandard.RTCAudioSource();
         this.cache = Buffer.alloc(0);
+        this.paused = true;
         this.file_path = file_path;
         this.setReadable(file_path);
         this.processData();

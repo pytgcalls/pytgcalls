@@ -2,7 +2,9 @@ import os
 
 import pyrogram
 
-from .exceptions import NodeJSNotInstalled, TooOldNodeJSVersion, TooOldPyrogramVersion
+from .exceptions import NodeJSNotInstalled
+from .exceptions import TooOldNodeJSVersion
+from .exceptions import TooOldPyrogramVersion
 from .version_manager import VersionManager
 
 
@@ -10,7 +12,7 @@ class Environment:
     def __init__(
         self,
         min_js_version: str,
-        min_pyrogram_version: str
+        min_pyrogram_version: str,
     ):
         self._REQUIRED_NODEJS_VERSION = min_js_version
         self._REQUIRED_PYROGRAM_VERSION = min_pyrogram_version

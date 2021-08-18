@@ -4,7 +4,7 @@ class NodeJSNotInstalled(Exception):
             version_needed: str,
     ):
         super().__init__(
-            f'Please install node ({version_needed}+)'
+            f'Please install node ({version_needed}+)',
         )
 
 
@@ -12,7 +12,7 @@ class TooOldNodeJSVersion(Exception):
     def __init__(
             self,
             version_needed: str,
-            node_version: str
+            node_version: str,
     ):
         super().__init__(
             f'Needed node {version_needed}+, '
@@ -25,7 +25,7 @@ class TooOldPyrogramVersion(Exception):
     def __init__(
             self,
             version_needed: str,
-            pyrogram_version: str
+            pyrogram_version: str,
     ):
         super().__init__(
             f'Needed pyrogram {version_needed}+, '
@@ -65,5 +65,10 @@ class PyTgCallsAlreadyRunning(Exception):
 
 
 class TooManyCustomApiDecorators(Exception):
+    def __init__(self):
+        super().__init__()
+
+
+class UnsupportedArchitecture(Exception):
     def __init__(self):
         super().__init__()

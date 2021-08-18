@@ -1,8 +1,11 @@
 from ...scaffold import Scaffold
 from ...types.call_holder import CallHolder
-from ...types.groups import JoinedVoiceChat, LeftVoiceChat
+from ...types.groups import JoinedVoiceChat
+from ...types.groups import LeftVoiceChat
 from ...types.object import Object
-from ...types.stream import PausedStream, ResumedStream, ChangedStream
+from ...types.stream import ChangedStream
+from ...types.stream import PausedStream
+from ...types.stream import ResumedStream
 
 
 class RawUpdateHandler(Scaffold):
@@ -33,5 +36,5 @@ class RawUpdateHandler(Scaffold):
             obj,
         )
         return {
-            'result': 'OK'
+            'result': 'OK',
         }

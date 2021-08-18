@@ -1,6 +1,3 @@
-import json
-from typing import Dict
-
 from pyrogram.raw.functions.phone import LeaveGroupCall
 
 from ...scaffold import Scaffold
@@ -10,7 +7,7 @@ class LeaveVoiceCall(Scaffold):
     async def _leave_voice_call(
         self,
         params: dict,
-    ) -> Dict:
+    ):
         result = {
             'result': 'OK',
         }

@@ -1,8 +1,9 @@
 import asyncio
 import os
 
-from pyrogram import Client, idle
+from pyrogram import Client
 from pyrogram import filters
+from pyrogram import idle
 from pyrogram.types import Message
 
 from pytgcalls import PyTgCalls
@@ -39,9 +40,8 @@ if __name__ == '__main__':
     async def cache_handler(client: Client, message: Message):
         print(call_py.cache_peer)
 
-
     @app.on_message(filters.regex('!ping'))
-    async def cache_handler(client: Client, message: Message):
+    async def ping_handler(client: Client, message: Message):
         print(call_py.ping)
 
     @app.on_message(filters.regex('!pause'))

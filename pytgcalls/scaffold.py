@@ -16,23 +16,23 @@ class Scaffold:
         self._on_event_update = None
         self._binding = None
 
-    def _handle_pyrogram(self, *args, **kwargs):
+    def _handle_pyrogram(self):
         pass
 
-    async def _start_binding(self, *args, **kwargs):
+    async def _start_binding(self):
         pass
 
-    async def _init_pyrogram(self, *args, **kwargs):
+    async def _init_pyrogram(self):
         pass
 
-    def _join_voice_call(self, *args, **kwargs):
+    async def _join_voice_call(self, params: dict):
         pass
 
-    def _leave_voice_call(self, *args, **kwargs):
+    async def _leave_voice_call(self, params: dict):
         pass
 
-    def _stream_ended_handler(self, *args, **kwargs):
+    async def _stream_ended_handler(self, params: dict):
         pass
 
-    def _raw_update_handler(self, *args, **kwargs):
+    async def _raw_update_handler(self, params: dict):
         pass

@@ -18,7 +18,7 @@ class BindingRunner(Scaffold):
                 elif data['action'] == 'update_request':
                     return await self._raw_update_handler(data)
             return {
-                'result': 'INVALID_REQUEST'
+                'result': 'INVALID_REQUEST',
             }
 
         @self._binding.on_connect()
