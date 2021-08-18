@@ -114,7 +114,9 @@ class DockerBuild(build_ext):
         build_ext.run(self)
 
     def build_extension(self, ext):
-        ext_dir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        ext_dir = os.path.abspath(
+            os.path.dirname(self.get_ext_fullpath(ext.name)),
+        )
         if not ext_dir.endswith(os.path.sep):
             ext_dir += os.path.sep
         sh = SetupHelper(

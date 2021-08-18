@@ -17,7 +17,7 @@ COPY setup.cfg .
 COPY LICENSE .
 COPY README.md .
 COPY requirements.txt .
-RUN python3 setup.py sdist bdist_wheel
+RUN python3 setup.py sdist bdist_wheel --plat-name manylinux2014_aarch64
 WORKDIR /usr/src/installer
 COPY platforms/arm64v8/install_platform.sh /usr/src/installer
 RUN chmod +x /usr/src/installer/install_platform.sh
