@@ -15,6 +15,7 @@ COPY tsconfig.json .
 COPY setup.py .
 COPY setup.cfg .
 COPY LICENSE .
+COPY README.md .
 COPY requirements.txt .
 RUN python3 setup.py sdist bdist_wheel
 WORKDIR /usr/src/installer
