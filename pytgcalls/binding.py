@@ -68,14 +68,11 @@ class Binding:
     @property
     def _arch_folder(self):
         pf = platform.machine()
-        if pf == 'x86_64':
-            pf = 'amd64'
-        elif pf == 'aarch64':
-            pf = 'arm64v8'
+        if pf == 'x86_64' or\
+                pf == 'aarch64':
+            return f'{__file__.replace("binding.py", "")}'
         else:
             raise UnsupportedArchitecture()
-        return f'{__file__.replace("binding.py","")}' \
-               f'platforms/{pf}/'
 
     async def connect(
         self,

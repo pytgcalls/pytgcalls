@@ -1,3 +1,2 @@
-mkdir -p /usr/src/platforms/build/arm64v8
-cp -r /usr/src/pytgcalls/node_modules /usr/src/platforms/build/arm64v8
-cp -r /usr/src/pytgcalls/pytgcalls/dist /usr/src/platforms/build/arm64v8
+mkdir -p /usr/src/mnt/dist
+cp -r /usr/src/pytgcalls/dist/* /usr/src/mnt/dist
