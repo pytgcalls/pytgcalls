@@ -5,9 +5,14 @@ import {Binding} from './binding'
 
 (async () => {
     let py_bind = new Binding();
-    py_bind.on('connect', async (user_id: number) =>
-        console.log('\x1b[32m', '[' + user_id + '] Started Node.js Core!', '\x1b[0m')
-    );
+    py_bind.on('connect', async (user_id: number) => {
+        let text = '[' + user_id + '] Started Node.js Core!'
+        if (process.platform === "win32") {
+            console.log(text)
+        }else{
+            console.log('\x1b[32m', text, '\x1b[0m')
+        }
+    });
     let connections: Array<RTCConnection> = [];
     py_bind.on('request', async function (data: any) {
         Binding.log('REQUEST: ' + JSON.stringify(data), Binding.INFO);

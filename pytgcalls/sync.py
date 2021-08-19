@@ -39,7 +39,10 @@ def async_to_sync(obj, name):
                     ).result()
 
         if inspect.iscoroutine(coroutine):
-            return loop.run_until_complete(coroutine)
+            try:
+                return loop.run_until_complete(coroutine)
+            except KeyboardInterrupt:
+                pass
 
         if inspect.isasyncgen(coroutine):
             return loop.run_until_complete(

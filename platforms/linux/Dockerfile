@@ -23,7 +23,6 @@ COPY .npmignore .
 COPY package.json .
 COPY tsconfig.json .
 COPY setup.py .
-COPY setup.cfg .
 COPY LICENSE .
 COPY README.md .
 COPY requirements.txt .

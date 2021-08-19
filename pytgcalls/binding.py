@@ -2,14 +2,13 @@ import asyncio
 import atexit
 import json
 import logging
-import platform
+import os
 import signal
 import subprocess
 from json import JSONDecodeError
 from time import time
 from typing import Callable
 
-from .exceptions import UnsupportedArchitecture
 from .exceptions import WaitPreviousPingRequest
 
 
@@ -66,13 +65,8 @@ class Binding:
             raise WaitPreviousPingRequest()
 
     @property
-    def _arch_folder(self):
-        pf = platform.machine()
-        if pf == 'x86_64' or\
-                pf == 'aarch64':
-            return f'{__file__.replace("binding.py", "")}'
-        else:
-            raise UnsupportedArchitecture()
+    def _run_folder(self):
+        return f'{__file__.replace("binding.py", "")}'
 
     async def connect(
         self,
@@ -80,9 +74,10 @@ class Binding:
         user_id: int,
     ):
         if self._js_process is None:
+            sep = os.path.sep
             self._js_process = await asyncio.create_subprocess_exec(
                 'node',
-                f'{self._arch_folder}dist/index.js',
+                f'{self._run_folder}dist{sep}index.js',
                 stdout=subprocess.PIPE,
                 stdin=subprocess.PIPE,
             )
@@ -92,7 +87,7 @@ class Binding:
                     if self._js_process.stdout is None:
                         break
                     out = (await self._js_process.stdout.readline())\
-                        .decode().replace('\n', '')
+                        .decode().replace('\n', '').replace('\r', '')
                     try:
                         json_out = json.loads(out)
                         if 'ping_with_response' and \

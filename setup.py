@@ -1,10 +1,11 @@
 import os
-import platform
+import shutil
 import subprocess
 import sys
 
 from setuptools import Extension
 from setuptools import setup
+from setuptools import find_packages
 from setuptools.command.build_ext import build_ext
 
 
@@ -37,76 +38,38 @@ class SetupHelper:
 
     def clean_old_installation(self):
         # CHECK IF IS INSTALLATION FROM PYPI
-        if os.path.isdir(f'{self._source_dir}src/'):
-            subprocess.check_output(
-                'rm -rf '
-                f'{self._folder_package}/pytgcalls/node_modules',
-                shell=True,
-            )
-            subprocess.check_output(
-                'rm -rf '
-                f'{self._folder_package}/pytgcalls/dist',
-                shell=True,
-            )
-            subprocess.check_output(
-                f'rm -rf {self._tmp_dir}',
-                shell=True,
-            )
-
-    @property
-    def _local_arch(self):
-        pf = platform.machine()
-        if pf == 'x86_64':
-            pf = 'amd64'
-        elif pf == 'aarch64':
-            pf = 'arm64v8'
-        else:
-            raise UnsupportedArchitecture()
-        return pf
+        sep = os.path.sep
+        if os.path.isdir(f'{self._source_dir}src{sep}'):
+            try:
+                shutil.rmtree(f'{self._folder_package}{sep}pytgcalls{sep}node_modules')
+            except OSError:
+                pass
+            try:
+                shutil.rmtree(f'{self._folder_package}{sep}pytgcalls{sep}dist')
+            except OSError:
+                pass
+            try:
+                shutil.rmtree(f'{self._tmp_dir}')
+            except OSError:
+                pass
 
     def run_installation(self):
         # CHECK IF IS INSTALLATION FROM PYPI
-        if os.path.isdir(f'{self._source_dir}src/'):
+        sep = os.path.sep
+        if os.path.isdir(f'{self._source_dir}src{sep}'):
             # COPY NEEDED FILES
-            subprocess.check_output(
-                f'cp -r {self._source_dir}src/ '
-                f'{self._tmp_dir}src/',
-                shell=True,
-            )
-            subprocess.check_output(
-                f'cp -r {self._source_dir}package.json '
-                f'{self._tmp_dir}',
-                shell=True,
-            )
-            subprocess.check_output(
-                f'cp -r {self._source_dir}tsconfig.json '
-                f'{self._tmp_dir}',
-                shell=True,
-            )
-            subprocess.check_output(
-                f'cp -r {self._source_dir}.npmignore '
-                f'{self._tmp_dir}',
-                shell=True,
-            )
+            shutil.copytree(f'{self._source_dir}src{sep}', f'{self._tmp_dir}src{sep}')
+            shutil.copyfile(f'{self._source_dir}package.json', f'{self._tmp_dir}package.json')
+            shutil.copyfile(f'{self._source_dir}tsconfig.json', f'{self._tmp_dir}tsconfig.json')
+            shutil.copyfile(f'{self._source_dir}.npmignore', f'{self._tmp_dir}.npmignore')
             # START COMPILATION
             subprocess.check_call(
                 'npm install .',
                 shell=True,
                 cwd=self._tmp_dir,
             )
-            subprocess.check_output(
-                'cp -r '
-                f'{self._tmp_dir}node_modules '
-                f'{self._ext_dir}pytgcalls/',
-                shell=True,
-            )
-            subprocess.check_output(
-                'cp -r '
-                f'{self._tmp_dir}pytgcalls/dist '
-                f'{self._ext_dir}pytgcalls/',
-                shell=True,
-            )
-            return
+            shutil.copytree(f'{self._tmp_dir}node_modules{sep}', f'{self._ext_dir}pytgcalls{sep}node_modules{sep}')
+            shutil.copytree(f'{self._tmp_dir}dist{sep}', f'{self._ext_dir}pytgcalls{sep}dist{sep}')
 
 
 class UnsupportedArchitecture(Exception):
@@ -124,19 +87,50 @@ class DockerBuild(build_ext):
         )
         if not ext_dir.endswith(os.path.sep):
             ext_dir += os.path.sep
+        if not os.path.exists(self.build_temp):
+            os.makedirs(self.build_temp)
         sh = SetupHelper(
             ext.source_dir,
             ext_dir,
             self.build_temp,
         )
         sh.clean_old_installation()
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
         sh.run_installation()
 
 
 setup(
+    name='py_tgcalls',
+    version='0.7.0.rc11',
+    long_description='file: README.md',
+    long_description_content_type='text/markdown',
+    url='https://github.com/pytgcalls/pytgcalls',
+    author='Laky-64',
+    author_email='iraci.matteo@gmail.com',
+    license='LGPL-3.0',
+    license_file='LICENSE',
+    classifiers=[
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
+    ],
     ext_modules=[NodeJsExtension('pytgcalls')],
+    packages=find_packages(),
+    install_requires=[
+        'aiohttp',
+        'httpx',
+        'psutil',
+        'pyrogram',
+        'tgcrypto',
+    ],
+    python_requires='>=3.6.1',
+    include_package_data=True,
+    universal=True,
     cmdclass={
         'build_ext': DockerBuild,
     },

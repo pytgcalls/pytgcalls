@@ -30,7 +30,7 @@ class BindingRunner(Scaffold):
 
             pass
 
-        PyTgCallsSession()
+        await PyTgCallsSession().start()
         started_core = asyncio.Event()
         self._async_core = asyncio.ensure_future(
             self._binding.connect(
@@ -38,4 +38,7 @@ class BindingRunner(Scaffold):
                 self._my_id,
             ),
         )
-        await started_core.wait()
+        try:
+            await started_core.wait()
+        except KeyboardInterrupt:
+            pass

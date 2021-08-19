@@ -2,7 +2,7 @@
     "name": "tgcalls",
     "version": "0.1.5",
     "description": "",
-    "main": "pytgcalls/dist",
+    "main": "dist",
     "scripts": {
         "build": "npx tsc",
         "test": "npx tsc --noEmit",

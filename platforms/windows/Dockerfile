@@ -1,3 +1,4 @@
-ARG core=mcr.microsoft.com/windows/servercore:ltsc2019
-ARG target=mcr.microsoft.com/windows/nanoserver:1809
-FROM $core
+ARG python_version="3.6"
+ARG dname="winamd64"
+ARG pname="manylinux2014_x86_64"
+FROM ${dname}/python:${python_version}-windowsservercore-1809
