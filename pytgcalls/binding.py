@@ -174,5 +174,8 @@ class Binding:
         })
 
     async def _send(self, json_data: dict):
-        self._js_process.stdin.write(json.dumps(json_data).encode())
-        await self._js_process.stdin.drain()
+        try:
+            self._js_process.stdin.write(json.dumps(json_data).encode())
+            await self._js_process.stdin.drain()
+        except ConnectionResetError:
+            pass

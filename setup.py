@@ -108,10 +108,6 @@ class SetupHelper:
             )
             return
 
-        # CHECK IF IS SUPPORTED
-        if not os.path.isdir(f'{self._source_dir}node_modules/'):
-            raise Exception('Not supported on your platform')
-
 
 class UnsupportedArchitecture(Exception):
     def __init__(self):

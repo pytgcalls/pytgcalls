@@ -61,3 +61,7 @@ def wrap(source):
 
 # Wrap all Client's relevant methods
 wrap(Methods)
+
+
+class ASyncer:
+    pass
