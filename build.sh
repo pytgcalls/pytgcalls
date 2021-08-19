@@ -1,18 +1,20 @@
 # CLEAN ENVIRONMENT
 rm -rf dist/
 # RUN BUILD
+build_platforms_name=(amd64 arm64v8)
+build_platforms_arch=(linux/amd64 linux/arm64/v8)
+build_plat_name=(manylinux2014_x86_64 manylinux2014_aarch64)
+python_versions=("3.6" "3.7" "3.8" "3.9")
 
-# ARM64V8 BUILD
-docker buildx build -t pytgcalls:arm64 . -f platforms/arm64v8/Dockerfile
-docker run --platform linux/arm64/v8 -v "$PWD":/usr/src/mnt pytgcalls:arm64 ./install_platform.sh
-
-# AMD64 BUILD
-docker buildx build -t pytgcalls:amd64 . -f platforms/amd64/Dockerfile
-docker run --platform linux/amd64 -v "$PWD":/usr/src/mnt pytgcalls:amd64 ./install_platform.sh
-
-# WINDOWS_AMD64 BUILD
-# if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
-#  docker buildx build --platform windows/amd64 -t pytgcalls:windows_amd64 . -f platforms/windows_amd64/Dockerfile
-# @fi;
-# NOT SUPPORTED TO RUN WINDOWS DOCKER ON LINUX
-# ABOUT THIS https://stackoverflow.com/questions/42158596/can-windows-containers-be-hosted-on-linux
+for i2 in "${!build_platforms_name[@]}";
+do
+  pl_dname="${build_platforms_name[$i2]}"
+  pl_arch="${build_platforms_arch[$i2]}"
+  pl_pname="${build_plat_name[$i2]}"
+  for i in "${!python_versions[@]}";
+  do
+    p_version="${python_versions[$i]}"
+    docker buildx build --build-arg pname="$pl_pname" --build-arg dname="$pl_dname" --build-arg python_version="$p_version" --platform "$pl_arch" -t pytgcalls_p"$p_version":"$pl_dname" . -f platforms/linux/Dockerfile
+    docker run --platform "$pl_arch" -v "$PWD":/usr/src/mnt pytgcalls_p"$p_version":"$pl_dname" ./linux_mount.sh
+  done
+done

@@ -36,20 +36,22 @@ class SetupHelper:
         self._folder_package = folder_package
 
     def clean_old_installation(self):
-        subprocess.check_output(
-            'rm -rf '
-            f'{self._folder_package}/pytgcalls/node_modules',
-            shell=True,
-        )
-        subprocess.check_output(
-            'rm -rf '
-            f'{self._folder_package}/pytgcalls/dist',
-            shell=True,
-        )
-        subprocess.check_output(
-            f'rm -rf {self._tmp_dir}',
-            shell=True,
-        )
+        # CHECK IF IS INSTALLATION FROM PYPI
+        if os.path.isdir(f'{self._source_dir}src/'):
+            subprocess.check_output(
+                'rm -rf '
+                f'{self._folder_package}/pytgcalls/node_modules',
+                shell=True,
+            )
+            subprocess.check_output(
+                'rm -rf '
+                f'{self._folder_package}/pytgcalls/dist',
+                shell=True,
+            )
+            subprocess.check_output(
+                f'rm -rf {self._tmp_dir}',
+                shell=True,
+            )
 
     @property
     def _local_arch(self):
@@ -63,45 +65,52 @@ class SetupHelper:
         return pf
 
     def run_installation(self):
-        # COPY NEEDED FILES
-        subprocess.check_output(
-            f'cp -r {self._source_dir}src/ '
-            f'{self._tmp_dir}src/',
-            shell=True,
-        )
-        subprocess.check_output(
-            f'cp -r {self._source_dir}package.json '
-            f'{self._tmp_dir}',
-            shell=True,
-        )
-        subprocess.check_output(
-            f'cp -r {self._source_dir}tsconfig.json '
-            f'{self._tmp_dir}',
-            shell=True,
-        )
-        subprocess.check_output(
-            f'cp -r {self._source_dir}.npmignore '
-            f'{self._tmp_dir}',
-            shell=True,
-        )
-        # START COMPILATION
-        subprocess.check_call(
-            'npm install .',
-            shell=True,
-            cwd=self._tmp_dir,
-        )
-        subprocess.check_output(
-            'cp -r '
-            f'{self._tmp_dir}node_modules '
-            f'{self._ext_dir}pytgcalls/',
-            shell=True,
-        )
-        subprocess.check_output(
-            'cp -r '
-            f'{self._tmp_dir}pytgcalls/dist '
-            f'{self._ext_dir}pytgcalls/',
-            shell=True,
-        )
+        # CHECK IF IS INSTALLATION FROM PYPI
+        if os.path.isdir(f'{self._source_dir}src/'):
+            # COPY NEEDED FILES
+            subprocess.check_output(
+                f'cp -r {self._source_dir}src/ '
+                f'{self._tmp_dir}src/',
+                shell=True,
+            )
+            subprocess.check_output(
+                f'cp -r {self._source_dir}package.json '
+                f'{self._tmp_dir}',
+                shell=True,
+            )
+            subprocess.check_output(
+                f'cp -r {self._source_dir}tsconfig.json '
+                f'{self._tmp_dir}',
+                shell=True,
+            )
+            subprocess.check_output(
+                f'cp -r {self._source_dir}.npmignore '
+                f'{self._tmp_dir}',
+                shell=True,
+            )
+            # START COMPILATION
+            subprocess.check_call(
+                'npm install .',
+                shell=True,
+                cwd=self._tmp_dir,
+            )
+            subprocess.check_output(
+                'cp -r '
+                f'{self._tmp_dir}node_modules '
+                f'{self._ext_dir}pytgcalls/',
+                shell=True,
+            )
+            subprocess.check_output(
+                'cp -r '
+                f'{self._tmp_dir}pytgcalls/dist '
+                f'{self._ext_dir}pytgcalls/',
+                shell=True,
+            )
+            return
+
+        # CHECK IF IS SUPPORTED
+        if not os.path.isdir(f'{self._source_dir}node_modules/'):
+            raise Exception('Not supported on your platform')
 
 
 class UnsupportedArchitecture(Exception):
