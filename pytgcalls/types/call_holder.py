@@ -1,7 +1,7 @@
 from typing import Dict
 
-from .groups import GroupCall
 from ..exceptions import GroupCallNotFound
+from .groups import GroupCall
 
 
 class CallHolder:

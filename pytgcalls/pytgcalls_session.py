@@ -33,7 +33,8 @@ class PyTgCallsSession:
             if VersionManager.version_tuple(remote_ver) > \
                     VersionManager.version_tuple(my_ver):
                 text = f'Update Available!\n'\
-                       f'New PyTgCalls v{remote_readable_ver} is now available!\n'
+                       f'New PyTgCalls v{remote_readable_ver} ' \
+                       f'is now available!\n'
                 if sys.platform.startswith('win'):
                     print(f'\033[93m{text}\033[0m')
                 else:
@@ -42,12 +43,14 @@ class PyTgCallsSession:
     @staticmethod
     async def _remote_version(branch: str):
         async def get_async(url) -> Response:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(http2=True) as client:
                 return await client.get(url)
         return re.findall(
-            '__version__ = \'(.*?)\'', (await get_async(
-                f'https://raw.githubusercontent.com/'
-                f'pytgcalls/pytgcalls/{branch}'
-                f'/pytgcalls/__version__.py',
-            )).text,
+            '__version__ = \'(.*?)\'', (
+                await get_async(
+                    f'https://raw.githubusercontent.com/'
+                    f'pytgcalls/pytgcalls/{branch}'
+                    f'/pytgcalls/__version__.py',
+                )
+            ).text,
         )[0]

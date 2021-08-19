@@ -4,8 +4,8 @@ import subprocess
 import sys
 
 from setuptools import Extension
-from setuptools import setup
 from setuptools import find_packages
+from setuptools import setup
 from setuptools.command.build_ext import build_ext
 
 
@@ -41,7 +41,9 @@ class SetupHelper:
         sep = os.path.sep
         if os.path.isdir(f'{self._source_dir}src{sep}'):
             try:
-                shutil.rmtree(f'{self._folder_package}{sep}pytgcalls{sep}node_modules')
+                shutil.rmtree(
+                    f'{self._folder_package}{sep}pytgcalls{sep}node_modules',
+                )
             except OSError:
                 pass
             try:
@@ -58,18 +60,36 @@ class SetupHelper:
         sep = os.path.sep
         if os.path.isdir(f'{self._source_dir}src{sep}'):
             # COPY NEEDED FILES
-            shutil.copytree(f'{self._source_dir}src{sep}', f'{self._tmp_dir}src{sep}')
-            shutil.copyfile(f'{self._source_dir}package.json', f'{self._tmp_dir}package.json')
-            shutil.copyfile(f'{self._source_dir}tsconfig.json', f'{self._tmp_dir}tsconfig.json')
-            shutil.copyfile(f'{self._source_dir}.npmignore', f'{self._tmp_dir}.npmignore')
+            shutil.copytree(
+                f'{self._source_dir}src{sep}',
+                f'{self._tmp_dir}src{sep}',
+            )
+            shutil.copyfile(
+                f'{self._source_dir}package.json',
+                f'{self._tmp_dir}package.json',
+            )
+            shutil.copyfile(
+                f'{self._source_dir}tsconfig.json',
+                f'{self._tmp_dir}tsconfig.json',
+            )
+            shutil.copyfile(
+                f'{self._source_dir}.npmignore',
+                f'{self._tmp_dir}.npmignore',
+            )
             # START COMPILATION
             subprocess.check_call(
                 'npm install .',
                 shell=True,
                 cwd=self._tmp_dir,
             )
-            shutil.copytree(f'{self._tmp_dir}node_modules{sep}', f'{self._ext_dir}pytgcalls{sep}node_modules{sep}')
-            shutil.copytree(f'{self._tmp_dir}dist{sep}', f'{self._ext_dir}pytgcalls{sep}dist{sep}')
+            shutil.copytree(
+                f'{self._tmp_dir}node_modules{sep}',
+                f'{self._ext_dir}pytgcalls{sep}node_modules{sep}',
+            )
+            shutil.copytree(
+                f'{self._tmp_dir}dist{sep}',
+                f'{self._ext_dir}pytgcalls{sep}dist{sep}',
+            )
 
 
 class UnsupportedArchitecture(Exception):
@@ -109,7 +129,8 @@ setup(
     license='LGPL-3.0',
     license_file='LICENSE',
     classifiers=[
-        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'License :: OSI Approved :: '
+        'GNU Lesser General Public License v3 (LGPLv3)',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.6',
