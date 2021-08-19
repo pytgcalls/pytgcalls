@@ -43,7 +43,7 @@ class PyTgCallsSession:
     @staticmethod
     async def _remote_version(branch: str):
         async def get_async(url) -> Response:
-            async with httpx.AsyncClient(http2=True) as client:
+            async with httpx.AsyncClient() as client:
                 return await client.get(url)
         return re.findall(
             '__version__ = \'(.*?)\'', (
