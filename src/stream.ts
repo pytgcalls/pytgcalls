@@ -67,14 +67,20 @@ export class Stream extends EventEmitter {
             this.readable.on('data', (data: any) => {
                 this.bytesLoaded += data.length;
                 this.bytesSpeed = data.length;
-                if (!this.needsBuffering()) {
-                    // @ts-ignore
-                    this.readable.pause();
-                    this.runningPulse = false;
-                    Binding.log('ENDED_BUFFERING -> ' + new Date().getTime(), Binding.DEBUG);
-                    Binding.log('BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length, Binding.DEBUG);
-                    Binding.log('PULSE -> ' + this.runningPulse, Binding.DEBUG);
+                try {
+                    if (!this.needsBuffering()) {
+                        // @ts-ignore
+                        this.readable.pause();
+                        this.runningPulse = false;
+                        Binding.log('ENDED_BUFFERING -> ' + new Date().getTime(), Binding.DEBUG);
+                        Binding.log('BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length, Binding.DEBUG);
+                        Binding.log('PULSE -> ' + this.runningPulse, Binding.DEBUG);
+                    }
+                }catch (e){
+                    this.emit('stream_deleted')
+                    return;
                 }
+
                 Binding.log(
                     'BYTES_LOADED -> ' +
                     this.bytesLoaded +
@@ -183,7 +189,6 @@ export class Stream extends EventEmitter {
 
     private processData() {
         const oldTime = new Date().getTime();
-
         if (this.stopped) {
             return;
         }
@@ -199,32 +204,43 @@ export class Stream extends EventEmitter {
                 this.cache.length < byteLength
             )
         ) {
-            if (this.needsBuffering(false)) {
-                let checkBuff = true;
-                if (this.timePulseBuffer > 0) {
-                    this.runningPulse =
-                        this.cache.length <
-                        byteLength * 100 * this.timePulseBuffer;
-                    checkBuff = this.runningPulse;
+            try {
+                if (this.needsBuffering(false)) {
+                    let checkBuff = true;
+                    if (this.timePulseBuffer > 0) {
+                        this.runningPulse =
+                            this.cache.length <
+                            byteLength * 100 * this.timePulseBuffer;
+                        checkBuff = this.runningPulse;
+                    }
+                    if (this.readable !== undefined && checkBuff) {
+                        Binding.log('PULSE -> ' + this.runningPulse, Binding.DEBUG);
+                        // @ts-ignore
+                        this.readable.resume();
+                        Binding.log('BUFFERING -> ' + new Date().getTime(), Binding.DEBUG);
+                    }
                 }
-                if (this.readable !== undefined && checkBuff) {
-                    Binding.log('PULSE -> ' + this.runningPulse, Binding.DEBUG);
-                    // @ts-ignore
-                    this.readable.resume();
-                    Binding.log('BUFFERING -> ' + new Date().getTime(), Binding.DEBUG);
-                }
+            }catch (e){
+                this.emit('stream_deleted')
+                return;
             }
+
 
             const checkLag = this.checkLag();
             let fileSize: number;
-
-            if (oldTime - this.lastByteCheck > 1000) {
-                fileSize = Stream.getFilesizeInBytes(this.file_path);
-                this.lastByte = fileSize;
-                this.lastByteCheck = oldTime;
-            } else {
-                fileSize = this.lastByte;
+            try {
+                if (oldTime - this.lastByteCheck > 1000) {
+                    fileSize = Stream.getFilesizeInBytes(this.file_path);
+                    this.lastByte = fileSize;
+                    this.lastByteCheck = oldTime;
+                } else {
+                    fileSize = this.lastByte;
+                }
+            }catch (e){
+                this.emit('stream_deleted')
+                return;
             }
+
 
             if (
                 !this.paused &&

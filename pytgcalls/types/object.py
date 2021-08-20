@@ -4,6 +4,7 @@ from .groups import LeftVoiceChat
 from .stream import ChangedStream
 from .stream import PausedStream
 from .stream import ResumedStream
+from .stream import StreamDeleted
 
 
 class Object:
@@ -25,3 +26,5 @@ class Object:
             return ErrorDuringJoin(chat_id)
         elif event_name == 'LEFT_VOICE_CHAT':
             return LeftVoiceChat(chat_id)
+        elif event_name == 'STREAM_DELETED':
+            return StreamDeleted(chat_id)

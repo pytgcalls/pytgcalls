@@ -1,6 +1,6 @@
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
 
-from ...exceptions import NoActiveVoiceChat
+from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import PyrogramNotSet
 from ...scaffold import Scaffold
@@ -24,7 +24,7 @@ class ChangeVolumeCall(Scaffold):
                         ),
                     )
                 else:
-                    raise NoActiveVoiceChat()
+                    raise NoActiveGroupCall()
             else:
                 raise NodeJSNotRunning()
         else:

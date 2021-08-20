@@ -7,7 +7,7 @@ import {Binding} from './binding'
     let py_bind = new Binding();
     py_bind.on('connect', async (user_id: number) => {
         let text = '[' + user_id + '] Started Node.js Core!'
-        if (process.platform === "win32") {
+        if (process.platform === 'win32') {
             console.log(text)
         }else{
             console.log('\x1b[32m', text, '\x1b[0m')
@@ -46,7 +46,6 @@ import {Binding} from './binding'
             if (connections[data.chat_id]) {
                 if (data.type !== 'kicked_from_group') {
                     let result = await connections[data.chat_id].leave_call();
-
                     if (result['result'] === 'OK') {
                         delete connections[data.chat_id];
                         await py_bind.sendUpdate({

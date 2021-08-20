@@ -61,13 +61,21 @@ export class RTCConnection {
 
             return joinCallResult;
         };
-
         this.stream.on('finish', async () => {
             await this.binding.sendUpdate({
                 action: 'stream_ended',
                 chat_id: chat_id,
             })
         });
+        this.stream.on('stream_deleted', async () => {
+            this.stream.stop();
+
+            await this.binding.sendUpdate({
+                action: 'update_request',
+                result: 'STREAM_DELETED',
+                chat_id: chat_id,
+            })
+        })
     }
 
     async joinCall() {

@@ -49,7 +49,7 @@ class NodeJSNotRunning(Exception):
         super().__init__()
 
 
-class NoActiveVoiceChat(Exception):
+class NoActiveGroupCall(Exception):
     def __init__(self):
         super().__init__()
 

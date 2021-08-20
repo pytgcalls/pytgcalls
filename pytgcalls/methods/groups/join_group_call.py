@@ -4,7 +4,7 @@ import os
 from pyrogram.raw.base import InputPeer
 
 from ...exceptions import InvalidStreamMode
-from ...exceptions import NoActiveVoiceChat
+from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import PyrogramNotSet
 from ...scaffold import Scaffold
@@ -49,7 +49,7 @@ class JoinGroupCall(Scaffold):
                             })
                         asyncio.ensure_future(internal_sender())
                     else:
-                        raise NoActiveVoiceChat()
+                        raise NoActiveGroupCall()
                 else:
                     raise NodeJSNotRunning()
             else:

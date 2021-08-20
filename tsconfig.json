@@ -1,7 +1,7 @@
 {
     "include": ["src/"],
     "compilerOptions": {
-        "target": "ES2019",
+        "target": "ES2020",
         "module": "commonjs",
         "declaration": false,
         "outDir": "dist/",

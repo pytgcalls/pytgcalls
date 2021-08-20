@@ -1,3 +1,5 @@
+import asyncio
+
 from ...scaffold import Scaffold
 from ...types.call_holder import CallHolder
 from ...types.groups import JoinedVoiceChat
@@ -6,6 +8,7 @@ from ...types.object import Object
 from ...types.stream import ChangedStream
 from ...types.stream import PausedStream
 from ...types.stream import ResumedStream
+from ...types.stream import StreamDeleted
 
 
 class RawUpdateHandler(Scaffold):
@@ -30,6 +33,18 @@ class RawUpdateHandler(Scaffold):
             self._call_holder.remove_call(
                 obj.chat_id,
             )
+        elif isinstance(obj, StreamDeleted):
+            self._call_holder.remove_call(
+                obj.chat_id,
+            )
+            asyncio.ensure_future(
+                self._binding.send({
+                    'action': 'leave_call',
+                    'chat_id': obj.chat_id,
+                    'type': 'file_deleted',
+                }),
+            )
+
         await self._on_event_update.propagate(
             'RAW_UPDATE_HANDLER',
             self,
