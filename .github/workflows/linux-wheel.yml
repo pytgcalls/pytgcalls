@@ -1,0 +1,45 @@
+# This is the workflow to make and push wheels to PyPi
+
+name: PyTgCalls-Linux
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the selected branch
+  push:
+    branches: [ dev-release ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "pytgwin"
+  pytglin:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-20.04
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: '3.8'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build the Wheels via Docker
+        run: |
+          git clone https://github.com/pytgcalls/pytgcalls.git --branch dev-release
+          cd pytgcalls
+          chmod +x build.sh
+          ./build.sh
+      - name: Push to PyPi
+        env:
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+        run: |
+          cd pytgcalls
+          cd dist
+          rm *.tar.gz
+          cd ..
+          pip3 install twine
+          python3 -m twine check dist/*
+          python3 -m twine upload dist/*

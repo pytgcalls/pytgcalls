@@ -1,0 +1,66 @@
+# This is the workflow to make and push wheels to PyPi
+
+name: PyTgCalls-Windows
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the selected branch
+  push:
+    branches: [ dev-release ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "pytgwin"
+  pytgwin:
+    # The type of runner that the job will run on
+    runs-on: windows-2019
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Setup various Python versions
+        run: |
+          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.6.0/python-3.6.0.exe" -OutFile "c:/temp/python-3.6.0.exe"
+          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.7.0/python-3.7.0.exe" -OutFile "c:/temp/python-3.7.0.exe"
+          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.8.0/python-3.8.0.exe" -OutFile "c:/temp/python-3.8.0.exe"
+          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.9.0/python-3.9.0.exe" -OutFile "c:/temp/python-3.9.0.exe"
+          cd c:/temp
+          python-3.6.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-36
+          python-3.7.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-37
+          python-3.8.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-38
+          python-3.9.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-39
+          Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+          choco install -y --force nodejs@v16.7.0
+      - name: Build the Wheel
+        run: |
+          c:/temp/py-36/python.exe -m pip install wheel
+          c:/temp/py-37/python.exe -m pip install wheel
+          c:/temp/py-38/python.exe -m pip install wheel
+          c:/temp/py-39/python.exe -m pip install wheel
+          git clone https://github.com/pytgcalls/pytgcalls.git --branch dev-release
+          cd pytgcalls
+          rmdir dist\ /s /q
+          rmdir build\ /s /q
+          rmdir py_tgcalls.egg-info\ /s /q
+          c:/temp/py-36/python.exe setup.py sdist bdist_wheel
+          rmdir build\ /s /q
+          c:/temp/py-367/python.exe setup.py sdist bdist_wheel
+          rmdir build\ /s /q
+          c:/temp/py-38/python.exe setup.py sdist bdist_wheel
+          rmdir build\ /s /q
+          c:/temp/py-39/python.exe setup.py sdist bdist_wheel
+          rmdir build\ /s /q
+          rmdir py_tgcalls.egg-info\ /s /q
+      - name: Push to PyPi
+        env:
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+        run: |
+          cd pytgcalls
+          cd dist
+          rm *.tar.gz
+          cd ..
+          c:/temp/py-38/python.exe -m pip install twine
+          c:/temp/py-38/python.exe -m twine check dist/*
+          c:/temp/py-38/python.exe -m twine upload dist/*
