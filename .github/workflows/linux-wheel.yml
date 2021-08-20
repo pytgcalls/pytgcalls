@@ -6,7 +6,7 @@ name: PyTgCalls-Linux
 on:
   # Triggers the workflow on push events but only for the selected branch
   push:
-    branches: [ dev ]
+    branches: [ dev-release ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -27,7 +27,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
       - name: Build the Wheels via Docker
         run: |
-          git clone https://github.com/pytgcalls/pytgcalls.git --branch dev
+          git clone https://github.com/pytgcalls/pytgcalls.git --branch dev-release
           cd pytgcalls
           chmod +x build.sh
           ./build.sh
