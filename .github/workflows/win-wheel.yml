@@ -19,6 +19,10 @@ jobs:
     runs-on: windows-2019
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
       - name: Setup various Python versions
         run: |
           Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.6.0/python-3.6.0.exe" -OutFile "c:\temp\python-3.6.0.exe"
@@ -29,8 +33,6 @@ jobs:
           c:\temp\python-3.7.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:\temp\py-37
           c:\temp\python-3.8.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:\temp\py-38
           c:\temp\python-3.9.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:\temp\py-39
-          Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-          choco install -y --force nodejs@v16.7.0
       - name: Build the Wheel
         run: |
           c:\temp\py-36\python.exe -m pip install wheel
