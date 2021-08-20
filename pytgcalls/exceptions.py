@@ -69,11 +69,6 @@ class TooManyCustomApiDecorators(Exception):
         super().__init__()
 
 
-class UnsupportedArchitecture(Exception):
-    def __init__(self):
-        super().__init__()
-
-
 class GroupCallNotFound(Exception):
     def __init__(self):
         super().__init__()

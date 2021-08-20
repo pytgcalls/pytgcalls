@@ -5,6 +5,8 @@ import logging
 import os
 import signal
 import subprocess
+import sys
+from asyncio.log import logger
 from json import JSONDecodeError
 from time import time
 from typing import Callable
@@ -22,13 +24,24 @@ class Binding:
         self._waiting_ping = None
 
         def cleanup():
-            if self._js_process is not None:
+            async def async_cleanup():
                 try:
-                    self._js_process.send_signal(signal.SIGINT)
+                    if self._js_process is not None:
+                        if not sys.platform.startswith('win'):
+                            self._js_process.send_signal(signal.SIGINT)
+                            await asyncio.wait_for(self._js_process.communicate(), timeout=3)
+                        else:
+                            self._js_process.kill()
+                            await self._js_process.communicate()
                 except subprocess.TimeoutExpired:
+                    logger.warning("Node.js did not terminate cleanly, killing process...")
                     self._js_process.kill()
+                    await self._js_process.communicate()
                 except ProcessLookupError:
                     pass
+                logger.info("Node.js stopped")
+            asyncio.get_event_loop().run_until_complete(async_cleanup())
+
         atexit.register(cleanup)
 
     def on_update(self) -> Callable:

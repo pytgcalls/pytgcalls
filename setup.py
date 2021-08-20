@@ -92,12 +92,7 @@ class SetupHelper:
             )
 
 
-class UnsupportedArchitecture(Exception):
-    def __init__(self):
-        super().__init__()
-
-
-class DockerBuild(build_ext):
+class NodeJsBuilder(build_ext):
     def run(self):
         build_ext.run(self)
 
@@ -153,7 +148,7 @@ setup(
     include_package_data=True,
     universal=True,
     cmdclass={
-        'build_ext': DockerBuild,
+        'build_ext': NodeJsBuilder,
     },
     zip_safe=False,
 )
