@@ -1,67 +1,66 @@
 # This is the workflow to make and push wheels to PyPi
 
 name: PyTgCalls-Windows
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push events but only for the selected branch
   push:
     branches: [ dev-release ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+
 jobs:
-  # This workflow contains a single job called "pytgwin"
-  pytgwin:
-    # The type of runner that the job will run on
+  pytgwin-build:
     runs-on: windows-2019
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.7', '3.8', '3.9']
     steps:
+      - name: Checkout dev-release
+        uses: actions/checkout@v2
+        with:
+          ref: dev-release
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Setup various Python versions
+      - name: Setup Python${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pip requirements
         run: |
-          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.6.0/python-3.6.0.exe" -OutFile "c:\temp\python-3.6.0.exe"
-          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.7.0/python-3.7.0.exe" -OutFile "c:\temp\python-3.7.0.exe"
-          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.8.0/python-3.8.0.exe" -OutFile "c:\temp\python-3.8.0.exe"
-          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.9.0/python-3.9.0.exe" -OutFile "c:\temp\python-3.9.0.exe"
-          & "c:\temp\python-3.6.0.exe" /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:\temp\py-36
-          & "c:\temp\python-3.7.0.exe" /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:\temp\py-37
-          & "c:\temp\python-3.8.0.exe" /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:\temp\py-38
-          & "c:\temp\python-3.9.0.exe" /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:\temp\py-39
-      - name: Build the Wheel
+          python -m pip install wheel setuptools
+      - name: Build wheel for Python${{ matrix.python-version }}
         run: |
-          & "c:\temp\py-36\python.exe" -m pip install wheel
-          & "c:\temp\py-37\python.exe" -m pip install wheel
-          & "c:\temp\py-38\python.exe" -m pip install wheel
-          & "c:\temp\py-39\python.exe" -m pip install wheel
-          & git clone https://github.com/pytgcalls/pytgcalls.git --branch dev-release
-          & cd pytgcalls
-          & rmdir 'dist\' /s /q
-          & rmdir 'build\' /s /q
-          & rmdir "py_tgcalls.egg-info\" /s /q
-          & "c:\temp\py-36\python.exe" setup.py sdist bdist_wheel"
-          & rmdir 'build\' /s /q
-          & "c:\temp\py-367\python.exe" setup.py sdist bdist_wheel
-          & rmdir 'build\' /s /q
-          & "c:\temp\py-38\python.exe" setup.py sdist bdist_wheel
-          & rmdir 'build\' /s /q
-          & "c:\temp\py-39\python.exe" setup.py sdist bdist_wheel
-          & rmdir 'build\' /s /q
-          & rmdir "py_tgcalls.egg-info\" /s /q
+          python setup.py sdist bdist_wheel
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytgcalls-python${{ matrix.python-version }}
+          path:
+            dist/*.whl
+  pytgwin-publish:
+    runs-on: windows-2019
+    needs: pytgwin-build
+    steps:
+      - name: Install Python3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install pip requirements
+        run: |
+          python -m pip install twine
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: tmp/
+      - name: Extract artifacts
+        run: |
+          md dist
+          Get-ChildItem -Path .\tmp -Recurse -File | Move-Item -Destination .\dist
       - name: Push to PyPi
         env:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
         run: |
-          & "cd" pytgcalls
-          & "cd" dist
-          & "rm" *.tar.gz
-          & "cd" ..
-          & "c:\temp\py-38\python.exe" -m pip install twine
-          & "c:\temp\py-38\python.exe" -m twine check dist/*
-          & "c:\temp\py-38\python.exe" -m twine upload dist/*
+          python -m twine check dist/*
+          python -m twine upload dist/*
