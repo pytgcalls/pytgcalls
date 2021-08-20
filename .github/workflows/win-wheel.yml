@@ -6,7 +6,7 @@ name: PyTgCalls-Windows
 on:
   # Triggers the workflow on push events but only for the selected branch
   push:
-    branches: [ dev ]
+    branches: [ dev-release ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
