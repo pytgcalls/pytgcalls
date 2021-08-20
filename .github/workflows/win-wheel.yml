@@ -38,7 +38,7 @@ jobs:
           c:/temp/py-37/python.exe -m pip install wheel
           c:/temp/py-38/python.exe -m pip install wheel
           c:/temp/py-39/python.exe -m pip install wheel
-          git clone https://github.com/pytgcalls/pytgcalls.git --branch dev
+          git clone https://github.com/pytgcalls/pytgcalls.git --branch dev-release
           cd pytgcalls
           rmdir dist\ /s /q
           rmdir build\ /s /q
