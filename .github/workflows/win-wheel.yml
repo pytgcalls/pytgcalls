@@ -25,11 +25,10 @@ jobs:
           Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.7.0/python-3.7.0.exe" -OutFile "c:/temp/python-3.7.0.exe"
           Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.8.0/python-3.8.0.exe" -OutFile "c:/temp/python-3.8.0.exe"
           Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.9.0/python-3.9.0.exe" -OutFile "c:/temp/python-3.9.0.exe"
-          cd c:/temp
-          python-3.6.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-36
-          python-3.7.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-37
-          python-3.8.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-38
-          python-3.9.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-39
+          c:/temp/python-3.6.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-36
+          c:/temp/python-3.7.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-37
+          c:/temp/python-3.8.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-38
+          c:/temp/python-3.9.0.exe /quiet InstallAllUsers=0 Include_test=0 Include_tcltk=0 DefaultJustForMeTargetDir=c:/temp/py-39
           Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
           choco install -y --force nodejs@v16.7.0
       - name: Build the Wheel
