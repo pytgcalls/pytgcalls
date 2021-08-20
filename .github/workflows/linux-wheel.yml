@@ -27,6 +27,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
       - name: Build the Wheels via Docker
         run: |
+          docker run --privileged --rm tonistiigi/binfmt --install all
           git clone https://github.com/pytgcalls/pytgcalls.git --branch dev-release
           cd pytgcalls
           chmod +x build.sh
