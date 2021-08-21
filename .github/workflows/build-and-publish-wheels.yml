@@ -3,7 +3,7 @@
 name: Build Wheels
 on:
   push:
-    branches: [ dev-release, master ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
@@ -87,8 +87,6 @@ jobs:
     steps:
       - name: Checkout dev-release
         uses: actions/checkout@v2
-        with:
-          ref: dev-release
       - name: Setup Node
         uses: actions/setup-node@v2
         with:

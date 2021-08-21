@@ -115,7 +115,7 @@ class NodeJsBuilder(build_ext):
         sh.run_installation()
 
 
-with open(os.path.join(base_path, 'README.md'), 'r', encoding='utf-8') as f:
+with open(os.path.join(base_path, 'README.md'), encoding='utf-8') as f:
     readme = f.read()
 
 setup(

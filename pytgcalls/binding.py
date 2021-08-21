@@ -29,17 +29,23 @@ class Binding:
                     if self._js_process is not None:
                         if not sys.platform.startswith('win'):
                             self._js_process.send_signal(signal.SIGINT)
-                            await asyncio.wait_for(self._js_process.communicate(), timeout=3)
+                            await asyncio.wait_for(
+                                self._js_process.communicate(),
+                                timeout=3,
+                            )
                         else:
                             self._js_process.kill()
                             await self._js_process.communicate()
                 except subprocess.TimeoutExpired:
-                    logger.warning("Node.js did not terminate cleanly, killing process...")
+                    logger.warning(
+                        'Node.js did not terminate cleanly, '
+                        'killing process...',
+                    )
                     self._js_process.kill()
                     await self._js_process.communicate()
                 except ProcessLookupError:
                     pass
-                logger.info("Node.js stopped")
+                logger.info('Node.js stopped')
             asyncio.get_event_loop().run_until_complete(async_cleanup())
 
         atexit.register(cleanup)

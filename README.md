@@ -66,7 +66,7 @@ ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -acodec pcm_s16l
 
 ## Credits
 
-Big thanks to [@evgeny-nadymov] for allowing us to use their code from [telegram-react] and thanks 
+Big thanks to [@evgeny-nadymov] for allowing us to use their code from [telegram-react] and thanks
 to [alemidev] for helping to rebuild this library
 
 This library is based on [tgcallsjs] developed [@AndrewLaneX] and pyservercall by [@Laky-64]
