@@ -1,19 +1,17 @@
-from .async_request import AsyncRequest
-from .call_property import CallProperty
 from .core import Core
+from .decorators import Decorators
 from .groups import Groups
-from .handler import Handler
+from .handlers import Handlers
 from .stream import Stream
-from .websocket import WebSocket
+from .utilities import Utilities
 
 
 class Methods(
-    AsyncRequest,
-    CallProperty,
     Core,
+    Decorators,
     Groups,
+    Handlers,
     Stream,
-    Handler,
-    WebSocket,
+    Utilities,
 ):
     pass

@@ -1,7 +1,6 @@
-from .__version__ import __version__
-from .methods.custom_api.custom_api import CustomAPI
-from .methods.logs.py_logs import PyLogs
-from .methods.stream.stream_type import StreamType
+from .custom_api import CustomApi
 from .pytgcalls import PyTgCalls
+from .stream_type import StreamType
+from .sync import ASyncer
 
-__all__ = ('__version__', 'PyLogs', 'StreamType', 'PyTgCalls', 'CustomAPI')
+__all__ = ('ASyncer', 'CustomApi', 'PyTgCalls', 'StreamType')

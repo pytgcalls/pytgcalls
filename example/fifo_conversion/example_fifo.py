@@ -7,9 +7,9 @@ import time
 
 from pyrogram import Client
 from pyrogram import filters
+from pyrogram import idle
 from pyrogram.types import Message
 
-from pytgcalls import PyLogs
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 
@@ -19,10 +19,7 @@ app = Client(
     api_hash='abcdef12345',
 )
 
-call_py = PyTgCalls(
-    app,
-    log_mode=PyLogs.ultra_verbose,
-)
+call_py = PyTgCalls(app)
 if __name__ == '__main__':
     proc = {}
 
@@ -48,7 +45,7 @@ if __name__ == '__main__':
 
         while not os.path.exists(output_file):
             time.sleep(0.125)
-        call_py.join_group_call(
+        await call_py.join_group_call(
             message.chat.id,
             output_file,
             stream_type=StreamType().pulse_stream,
@@ -65,4 +62,5 @@ if __name__ == '__main__':
 
     # AVOID ZOMBIE FFMPEG PROCESS
     atexit.register(close_all_process)
-    call_py.run()
+    call_py.start()
+    idle()

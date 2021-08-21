@@ -1,45 +1,34 @@
-import json
+import asyncio
 
-import requests
+from ...exceptions import NoActiveGroupCall
+from ...exceptions import NodeJSNotRunning
+from ...exceptions import PyrogramNotSet
+from ...scaffold import Scaffold
 
-from ..core import SpawnProcess
 
-
-class LeaveGroupCall(SpawnProcess):
-    def __init__(self, pytgcalls):
-        self._pytgcalls = pytgcalls
-
-    # noinspection PyProtectedMember
-    def leave_group_call(self, chat_id: int, type_leave: str = 'requested'):
-        js_core_state = self._pytgcalls.is_running_js_core()
-        if self._pytgcalls._app is not None and\
-                chat_id in self._pytgcalls._cache_user_peer:
-            if js_core_state:
-                self._spawn_process(
-                    requests.post,
-                    (
-                        'http://'
-                        f'{self._pytgcalls._host}:'
-                        f'{self._pytgcalls._port}/'
-                        'api_internal',
-                        json.dumps({
+class LeaveGroupCall(Scaffold):
+    async def leave_group_call(
+        self,
+        chat_id: int,
+    ):
+        if self._app is not None:
+            if self._binding.is_alive() or \
+                    self._wait_until_run is not None:
+                chat_call = await self._full_chat_cache.get_full_chat(
+                    chat_id,
+                )
+                if chat_call is not None:
+                    async def internal_sender():
+                        await self._wait_until_run.wait()
+                        await self._binding.send({
                             'action': 'leave_call',
                             'chat_id': chat_id,
-                            'session_id': self._pytgcalls._session_id,
-                            'type': type_leave,
-                        }),
-                    ),
-                )
+                            'type': 'requested',
+                        })
+                    asyncio.ensure_future(internal_sender())
+                else:
+                    raise NoActiveGroupCall()
             else:
-                self._pytgcalls._waiting_start_request.append([
-                    self.leave_group_call,
-                    (
-                        chat_id,
-                        type_leave,
-                    ),
-                ])
+                raise NodeJSNotRunning()
         else:
-            code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
-            if chat_id not in self._pytgcalls._cache_user_peer:
-                code_err = 'GROUP_CALL_NOT_FOUND'
-            raise Exception(f'Error internal: {code_err}')
+            raise PyrogramNotSet()

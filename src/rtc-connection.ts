@@ -1,16 +1,15 @@
 // @ts-ignore
 import fetch from 'node-fetch';
 import {Stream, TGCalls} from './tgcalls';
+import {Binding} from "./binding";
 
-class RTCConnection {
+export class RTCConnection {
     chat_id: number;
     file_path: string;
-    port: number;
+    binding: Binding;
     bitrate: number;
-    logMode: number;
     buffer_length: number;
     invite_hash: string;
-    session_id: string;
 
     tgcalls: TGCalls<any>;
     stream: Stream;
@@ -18,21 +17,17 @@ class RTCConnection {
     constructor(
         chat_id: number,
         file_path: string,
-        port: number,
+        binding: Binding,
         bitrate: number,
-        logMode: number,
         buffer_length: number,
         invite_hash: string,
-        session_id: string
     ) {
         this.chat_id = chat_id;
         this.file_path = file_path;
-        this.port = port;
+        this.binding = binding;
         this.bitrate = bitrate;
-        this.logMode = logMode;
         this.buffer_length = buffer_length;
         this.invite_hash = invite_hash;
-        this.session_id = session_id
 
         this.tgcalls = new TGCalls({chat_id});
         this.stream = new Stream(
@@ -40,7 +35,6 @@ class RTCConnection {
             16,
             bitrate,
             1,
-            logMode,
             buffer_length
         );
 
@@ -54,48 +48,44 @@ class RTCConnection {
                 fingerprint: payload.fingerprint,
                 source: payload.source,
                 invite_hash: this.invite_hash,
-                session_id: this.session_id,
             };
 
-            if (logMode > 0) {
-                console.log('callJoinPayload -> ', payload);
-            }
+            Binding.log('callJoinPayload -> ' + JSON.stringify(payload), Binding.INFO);
 
-            const joinCallResult = await (
-                await fetch(`http://localhost:${this.port}/request_join_call`, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                })
-            ).json();
+            const joinCallResult = await this.binding.sendUpdate({
+                action: 'join_voice_call_request',
+                payload: payload
+            });
 
-            if (logMode > 0) {
-                console.log('joinCallRequestResult -> ', joinCallResult);
-            }
+            Binding.log('joinCallRequestResult -> ' + JSON.stringify(joinCallResult), Binding.INFO);
 
             return joinCallResult;
         };
-
         this.stream.on('finish', async () => {
-            await fetch(`http://localhost:${this.port}/ended_stream`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    chat_id: chat_id,
-                    session_id: this.session_id,
-                }),
-            });
+            await this.binding.sendUpdate({
+                action: 'stream_ended',
+                chat_id: chat_id,
+            })
         });
+        this.stream.on('stream_deleted', async () => {
+            this.stream.stop();
+
+            await this.binding.sendUpdate({
+                action: 'update_request',
+                result: 'STREAM_DELETED',
+                chat_id: chat_id,
+            })
+        })
     }
 
     async joinCall() {
         try {
-            return await this.tgcalls.start(this.stream.createTrack());
+            let result = await this.tgcalls.start(this.stream.createTrack());
+            this.stream.resume()
+            return result
         } catch (e) {
             this.stream.stop();
-
-            if (this.logMode > 0) {
-                console.log('joinCallError ->', e);
-            }
-
+            Binding.log('joinCallError -> ' + e.toString(), Binding.INFO);
             return false;
         }
     }
@@ -110,15 +100,10 @@ class RTCConnection {
     async leave_call() {
         try {
             this.stop();
-            return await (
-                await fetch(`http://localhost:${this.port}/request_leave_call`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        chat_id: this.chat_id,
-                        session_id: this.session_id,
-                    }),
-                })
-            ).json();
+            return await this.binding.sendUpdate({
+                action: 'leave_call_request',
+                chat_id: this.chat_id,
+            });
         } catch (e) {
             return {
                 action: 'REQUEST_ERROR',
@@ -139,5 +124,3 @@ class RTCConnection {
         this.stream.setReadable(file_path);
     }
 }
-
-export default RTCConnection;

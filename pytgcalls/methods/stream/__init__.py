@@ -3,5 +3,9 @@ from .pause_stream import PauseStream
 from .resume_stream import ResumeStream
 
 
-class Stream(ChangeStream, PauseStream, ResumeStream):
+class Stream(
+    ChangeStream,
+    PauseStream,
+    ResumeStream,
+):
     pass

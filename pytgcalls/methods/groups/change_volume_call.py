@@ -1,49 +1,31 @@
-import json
+from pyrogram.raw.functions.phone import EditGroupCallParticipant
 
-import requests
+from ...exceptions import NoActiveGroupCall
+from ...exceptions import NodeJSNotRunning
+from ...exceptions import PyrogramNotSet
+from ...scaffold import Scaffold
 
-from ..core import SpawnProcess
 
-
-class ChangeVolume(SpawnProcess):
-    def __init__(self, pytgcalls):
-        self._pytgcalls = pytgcalls
-
-    # noinspection PyProtectedMember
-    def change_volume_call(self, chat_id: int, volume: int):
-        volume = int(volume) if isinstance(volume, str) else volume
-        js_core_state = self._pytgcalls.is_running_js_core()
-        if self._pytgcalls._app is not None and\
-                chat_id in self._pytgcalls._cache_user_peer:
-            volume = 200 if volume > 200 else (0 if volume < 0 else volume)
-            try:
-                if js_core_state:
-                    self._spawn_process(
-                        requests.post,
-                        (
-                            'http://'
-                            f'{self._pytgcalls._host}:'
-                            f'{self._pytgcalls._port}/'
-                            'request_change_volume',
-                            json.dumps({
-                                'chat_id': chat_id,
-                                'volume': volume,
-                                'session_id': self._pytgcalls._session_id,
-                            }),
+class ChangeVolumeCall(Scaffold):
+    async def change_volume_call(self, chat_id: int, volume: int):
+        if self._app is not None:
+            if self._binding.is_alive() or\
+                    self._wait_until_run is not None:
+                chat_call = await self._full_chat_cache.get_full_chat(
+                    chat_id,
+                )
+                if chat_call is not None:
+                    await self._app.send(
+                        EditGroupCallParticipant(
+                            call=chat_call,
+                            participant=self._cache_user_peer.get(chat_id),
+                            muted=False,
+                            volume=volume * 100,
                         ),
                     )
                 else:
-                    self._pytgcalls._waiting_start_request.append([
-                        self.change_volume_call,
-                        (
-                            chat_id,
-                            volume,
-                        ),
-                    ])
-            except Exception:
-                raise Exception('Error internal: NOT_IN_GROUP')
+                    raise NoActiveGroupCall()
+            else:
+                raise NodeJSNotRunning()
         else:
-            code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
-            if chat_id not in self._pytgcalls._cache_user_peer:
-                code_err = 'GROUP_CALL_NOT_FOUND'
-            raise Exception(f'Error internal: {code_err}')
+            raise PyrogramNotSet()

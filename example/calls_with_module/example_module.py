@@ -2,8 +2,8 @@ import os
 import time
 
 from pyrogram import Client
+from pyrogram import idle
 
-from pytgcalls import PyLogs
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 
@@ -13,11 +13,9 @@ app = Client(
     api_hash='abcdef12345',
 )
 
-call_py = PyTgCalls(
-    app,
-    log_mode=PyLogs.ultra_verbose,
-)
+call_py = PyTgCalls(app)
 if __name__ == '__main__':
+    call_py.start()
     file = '../input.raw'
     while not os.path.exists(file):
         time.sleep(0.125)
@@ -26,4 +24,4 @@ if __name__ == '__main__':
         file,
         stream_type=StreamType().local_stream,
     )
-    call_py.run()
+    idle()

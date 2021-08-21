@@ -1,40 +1,26 @@
-import json
+import asyncio
 
-import requests
+from ...exceptions import NodeJSNotRunning
+from ...exceptions import PyrogramNotSet
+from ...scaffold import Scaffold
 
-from ..core import SpawnProcess
 
-
-class ResumeStream(SpawnProcess):
-    def __init__(self, pytgcalls):
-        self._pytgcalls = pytgcalls
-
-    # noinspection PyProtectedMember
-    def resume_stream(self, chat_id: int):
-        js_core_state = self._pytgcalls.is_running_js_core()
-        if self._pytgcalls._app is not None:
-            if js_core_state:
-                self._spawn_process(
-                    requests.post,
-                    (
-                        'http://'
-                        f'{self._pytgcalls._host}:'
-                        f'{self._pytgcalls._port}/'
-                        'api_internal',
-                        json.dumps({
-                            'action': 'resume',
-                            'chat_id': chat_id,
-                            'session_id': self._pytgcalls._session_id,
-                        }),
-                    ),
-                )
+class ResumeStream(Scaffold):
+    async def resume_stream(
+        self,
+        chat_id: int,
+    ):
+        if self._app is not None:
+            if self._binding.is_alive() or \
+                    self._wait_until_run is not None:
+                async def internal_sender():
+                    await self._wait_until_run.wait()
+                    await self._binding.send({
+                        'action': 'resume',
+                        'chat_id': chat_id,
+                    })
+                asyncio.ensure_future(internal_sender())
             else:
-                self._pytgcalls._waiting_start_request.append([
-                    self.resume_stream,
-                    (
-                        chat_id,
-                    ),
-                ])
+                raise NodeJSNotRunning()
         else:
-            code_err = 'PYROGRAM_CLIENT_IS_NOT_RUNNING'
-            raise Exception(f'Error internal: {code_err}')
+            raise PyrogramNotSet()

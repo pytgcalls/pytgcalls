@@ -1,0 +1,137 @@
+# This is the workflow to make and push wheels to PyPi
+
+name: Build Wheels
+on:
+  push:
+    branches: [ dev-release, master ]
+  workflow_dispatch:
+
+jobs:
+  pytglin-build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        arch-image-names: [ 'amd64', 'arm64v8' ]
+        include:
+          - arch-image-names: 'amd64'
+            arch-run-names: 'linux/amd64'
+            build-plat-names: 'manylinux2014_x86_64'
+
+          - arch-image-names: 'arm64v8'
+            arch-run-names: 'linux/arm64/v8'
+            build-plat-names: 'manylinux2014_aarch64'
+        python-version: [ '3.6', '3.7', '3.8', '3.9' ]
+    steps:
+      - name: Checkout dev-release
+        uses: actions/checkout@v2
+        with:
+          ref: dev-release
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: Enable multi-arch support
+        run: |
+          echo '{"experimental": true}' | sudo tee /etc/docker/daemon.json > /dev/null
+          sudo systemctl restart docker
+      - name: Build Docker Image
+        run: |
+          docker buildx build --load --build-arg pname="${{ matrix.build-plat-names }}" --build-arg dname="${{ matrix.arch-image-names }}" --build-arg python_version="${{ matrix.python-version }}" --platform "${{ matrix.arch-run-names }}" -t pytgcalls_p"${{ matrix.python-version }}":"${{ matrix.arch-image-names }}" . -f platforms/linux/Dockerfile
+      - name: Run Docker Container
+        run: |
+          docker run --platform "${{ matrix.arch-run-names }}" -v "$PWD":/usr/src/mnt pytgcalls_p"${{ matrix.python-version }}":"${{ matrix.arch-image-names }}" ./linux_mount.sh
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytgcalls-python${{ matrix.python-version }}
+          path:
+            dist/*.whl
+  pytgwin-build:
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        python-version: [ '3.6', '3.7', '3.8', '3.9' ]
+    steps:
+      - name: Checkout dev-release
+        uses: actions/checkout@v2
+        with:
+          ref: dev-release
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Setup Python${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pip requirements
+        run: |
+          python -m pip install wheel setuptools
+      - name: Build wheel for Python${{ matrix.python-version }}
+        run: |
+          python setup.py sdist bdist_wheel
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytgcalls-python${{ matrix.python-version }}
+          path:
+            dist/*.whl
+  pytgmac-build:
+    runs-on: macos-11
+    strategy:
+      matrix:
+        python-version: [ '3.6', '3.7', '3.8', '3.9' ]
+    steps:
+      - name: Checkout dev-release
+        uses: actions/checkout@v2
+        with:
+          ref: dev-release
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Setup Python${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pip requirements
+        run: |
+          python -m pip install wheel setuptools
+      - name: Build wheel for Python${{ matrix.python-version }}
+        run: |
+          python setup.py sdist bdist_wheel
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytgcalls-python${{ matrix.python-version }}
+          path:
+            dist/*.whl
+  pytgcalls-publish:
+    runs-on: windows-2019
+    needs: [pytglin-build, pytgwin-build, pytgmac-build]
+    steps:
+      - name: Install Python3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install pip requirements
+        run: |
+          python -m pip install twine
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: tmp/
+      - name: Extract artifacts
+        run: |
+          md dist
+          Get-ChildItem -Path .\tmp -Recurse -File | Move-Item -Destination .\dist
+      - name: Push to PyPi
+        env:
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+        run: |
+          python -m twine check dist/*
+          python -m twine upload dist/*

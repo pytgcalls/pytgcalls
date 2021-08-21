@@ -5,22 +5,16 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import CustomAPI
-from pytgcalls import PyLogs
-from pytgcalls import PyTgCalls
+from pytgcalls import CustomApi
 
 app = Client(
     'py-tgcalls',
     api_id=123456789,
     api_hash='abcdef12345',
 )
-call_py = PyTgCalls(
-    app,
-    log_mode=PyLogs.ultra_verbose,
-)
 
 if __name__ == '__main__':
-    ca = CustomAPI()
+    ca = CustomApi()
 
     # Useful for making requests for bots in PHP
     # with Webhooks or bots in different programming language
@@ -35,10 +29,10 @@ if __name__ == '__main__':
     def test_handler(client: Client, message: Message):
         print(
             requests.post(
-                'http://localhost:24859/api', json.dumps({
+                'http://localhost:24859/', json.dumps({
                     'answer': 'HI',
                 }),
             ).json(),
         )
-
-    call_py.run()
+    app.start()
+    ca.run()

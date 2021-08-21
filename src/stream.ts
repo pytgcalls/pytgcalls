@@ -1,6 +1,7 @@
 import { createReadStream, statSync } from 'fs';
 import { EventEmitter } from 'events';
 import { RTCAudioSource, nonstandard } from 'wrtc';
+import {Binding} from "./binding";
 
 export class Stream extends EventEmitter {
     private readonly audioSource: RTCAudioSource;
@@ -26,7 +27,6 @@ export class Stream extends EventEmitter {
         readonly bitsPerSample: number = 16,
         readonly sampleRate: number = 48000,
         readonly channelCount: number = 1,
-        readonly logMode: number = 0,
         readonly buffer_length: number = 10,
         readonly timePulseBuffer: number = buffer_length == 4 ? 1.5 : 0
     ) {
@@ -34,6 +34,7 @@ export class Stream extends EventEmitter {
 
         this.audioSource = new nonstandard.RTCAudioSource();
         this.cache = Buffer.alloc(0);
+        this.paused = true;
         this.file_path = file_path;
         this.setReadable(file_path);
         this.processData();
@@ -66,50 +67,49 @@ export class Stream extends EventEmitter {
             this.readable.on('data', (data: any) => {
                 this.bytesLoaded += data.length;
                 this.bytesSpeed = data.length;
-                if (!this.needsBuffering()) {
-                    // @ts-ignore
-                    this.readable.pause();
-                    this.runningPulse = false;
-                    if (this.logMode > 1) {
-                        console.log('ENDED_BUFFERING ->', new Date().getTime());
-                        console.log(
-                            'BYTES_STREAM_CACHE_LENGTH ->',
-                            this.cache.length
-                        );
-                        if (this.logMode > 1) {
-                            console.log('PULSE ->', this.runningPulse);
-                        }
+                try {
+                    if (!this.needsBuffering()) {
+                        // @ts-ignore
+                        this.readable.pause();
+                        this.runningPulse = false;
+                        Binding.log('ENDED_BUFFERING -> ' + new Date().getTime(), Binding.DEBUG);
+                        Binding.log('BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length, Binding.DEBUG);
+                        Binding.log('PULSE -> ' + this.runningPulse, Binding.DEBUG);
                     }
+                }catch (e){
+                    this.emit('stream_deleted')
+                    return;
                 }
 
-                if (this.logMode > 1) {
-                    // @ts-ignore
-                    console.log(
-                        'BYTES_LOADED ->',
-                        this.bytesLoaded,
-                        'OF ->',
-                        Stream.getFilesizeInBytes(this.file_path)
-                    );
-                }
-
+                Binding.log(
+                    'BYTES_LOADED -> ' +
+                    this.bytesLoaded +
+                    'OF -> ' +
+                    Stream.getFilesizeInBytes(this.file_path),
+                    Binding.DEBUG
+                );
                 this.cache = Buffer.concat([this.cache, data]);
             });
             // @ts-ignore
             this.readable.on('end', () => {
                 this.finishedLoading = true;
-                if (this.logMode > 1) {
-                    console.log('COMPLETED_BUFFERING ->', new Date().getTime());
-                    console.log(
-                        'BYTES_STREAM_CACHE_LENGTH ->',
-                        this.cache.length
-                    );
-                    console.log(
-                        'BYTES_LOADED ->',
-                        this.bytesLoaded,
-                        'OF ->',
-                        Stream.getFilesizeInBytes(this.file_path)
-                    );
-                }
+                Binding.log(
+                    'COMPLETED_BUFFERING -> ' +
+                    new Date().getTime(),
+                    Binding.DEBUG
+                );
+                Binding.log(
+                    'BYTES_STREAM_CACHE_LENGTH -> ' +
+                    this.cache.length,
+                    Binding.DEBUG
+                );
+                Binding.log(
+                    'BYTES_LOADED -> ' +
+                    this.bytesLoaded +
+                    'OF -> ' +
+                    Stream.getFilesizeInBytes(this.file_path),
+                    Binding.DEBUG
+                );
             });
         }
     }
@@ -172,7 +172,6 @@ export class Stream extends EventEmitter {
 
     finish() {
         this.finished = true;
-        this.emit('finish');
     }
 
     stop() {
@@ -190,7 +189,6 @@ export class Stream extends EventEmitter {
 
     private processData() {
         const oldTime = new Date().getTime();
-
         if (this.stopped) {
             return;
         }
@@ -206,36 +204,43 @@ export class Stream extends EventEmitter {
                 this.cache.length < byteLength
             )
         ) {
-            if (this.needsBuffering(false)) {
-                let checkBuff = true;
-                if (this.timePulseBuffer > 0) {
-                    this.runningPulse =
-                        this.cache.length <
-                        byteLength * 100 * this.timePulseBuffer;
-                    checkBuff = this.runningPulse;
-                }
-                if (this.readable !== undefined && checkBuff) {
-                    if (this.logMode > 1) {
-                        console.log('PULSE ->', this.runningPulse);
+            try {
+                if (this.needsBuffering(false)) {
+                    let checkBuff = true;
+                    if (this.timePulseBuffer > 0) {
+                        this.runningPulse =
+                            this.cache.length <
+                            byteLength * 100 * this.timePulseBuffer;
+                        checkBuff = this.runningPulse;
                     }
-                    // @ts-ignore
-                    this.readable.resume();
-                    if (this.logMode > 1) {
-                        console.log('BUFFERING -> ', new Date().getTime());
+                    if (this.readable !== undefined && checkBuff) {
+                        Binding.log('PULSE -> ' + this.runningPulse, Binding.DEBUG);
+                        // @ts-ignore
+                        this.readable.resume();
+                        Binding.log('BUFFERING -> ' + new Date().getTime(), Binding.DEBUG);
                     }
                 }
+            }catch (e){
+                this.emit('stream_deleted')
+                return;
             }
+
 
             const checkLag = this.checkLag();
             let fileSize: number;
-
-            if (oldTime - this.lastByteCheck > 1000) {
-                fileSize = Stream.getFilesizeInBytes(this.file_path);
-                this.lastByte = fileSize;
-                this.lastByteCheck = oldTime;
-            } else {
-                fileSize = this.lastByte;
+            try {
+                if (oldTime - this.lastByteCheck > 1000) {
+                    fileSize = Stream.getFilesizeInBytes(this.file_path);
+                    this.lastByte = fileSize;
+                    this.lastByteCheck = oldTime;
+                } else {
+                    fileSize = this.lastByte;
+                }
+            }catch (e){
+                this.emit('stream_deleted')
+                return;
             }
+
 
             if (
                 !this.paused &&
@@ -258,28 +263,26 @@ export class Stream extends EventEmitter {
                     this.emit('error', error);
                 }
             } else if (checkLag) {
-                if (this.logMode > 1) {
-                    console.log('STREAM_LAG -> ', new Date().getTime());
-                    console.log(
-                        'BYTES_STREAM_CACHE_LENGTH ->',
-                        this.cache.length
-                    );
-                    console.log(
-                        'BYTES_LOADED ->',
-                        this.bytesLoaded,
-                        'OF ->',
-                        fileSize
-                    );
-                }
+                Binding.log('STREAM_LAG -> ' + new Date().getTime(), Binding.DEBUG);
+                Binding.log(
+                    'BYTES_STREAM_CACHE_LENGTH -> ' +
+                    this.cache.length,
+                    Binding.DEBUG
+                );
+                Binding.log(
+                    'BYTES_LOADED -> ' +
+                    this.bytesLoaded +
+                    'OF -> ' +
+                    Stream.getFilesizeInBytes(this.file_path),
+                    Binding.DEBUG
+                );
             }
 
             if (!this.finishedLoading) {
                 if (fileSize === this.lastBytesLoaded) {
                     if (this.equalCount >= 15) {
                         this.equalCount = 0;
-                        if (this.logMode > 1) {
-                            console.log('NOT_ENOUGH_BYTES ->', oldTime);
-                        }
+                        Binding.log('NOT_ENOUGH_BYTES -> ' + oldTime, Binding.DEBUG);
                         this.finishedBytes = true;
                         // @ts-ignore
                         this.readable.resume();
@@ -303,6 +306,7 @@ export class Stream extends EventEmitter {
             this.cache.length < byteLength
         ) {
             this.finish();
+            this.emit('finish');
         }
 
         const toSubtract = new Date().getTime() - oldTime;
