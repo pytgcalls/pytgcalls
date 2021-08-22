@@ -119,7 +119,7 @@ with open(os.path.join(base_path, 'README.md'), encoding='utf-8') as f:
     readme = f.read()
 
 setup(
-    name='py_tgcalls',
+    name='py-tgcalls',
     version='0.7.1',
     long_description=readme,
     long_description_content_type='text/markdown',
