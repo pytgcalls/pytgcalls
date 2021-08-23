@@ -2,7 +2,7 @@ from ...scaffold import Scaffold
 
 
 class GetCall(Scaffold):
-    def get_active_call(
+    def get_call(
         self,
         chat_id: int,
     ):

@@ -1,4 +1,7 @@
+from typing import Dict
+
 from pyrogram import ContinuePropagation
+from pyrogram.raw.types import Channel
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import GroupCall
 from pyrogram.raw.types import GroupCallDiscarded
@@ -97,4 +100,27 @@ class PyrogramHandler(Scaffold):
                             self,
                             update.message.action,
                         )
+            if isinstance(
+                data2,
+                Dict,
+            ):
+                for channel_id in data2:
+                    if isinstance(
+                        update,
+                        UpdateNewChannelMessage,
+                    ):
+                        if isinstance(
+                            update.message,
+                            MessageService,
+                        ):
+                            if isinstance(
+                                data2[channel_id],
+                                Channel,
+                            ):
+                                if data2[channel_id].left:
+                                    await self._on_event_update.propagate(
+                                        'LEFT_HANDLER',
+                                        self,
+                                        int(f'-100{channel_id}'),
+                                    )
             raise ContinuePropagation()
