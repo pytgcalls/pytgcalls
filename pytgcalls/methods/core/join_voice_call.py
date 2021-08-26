@@ -3,6 +3,7 @@ import logging
 
 from pyrogram.raw.functions.phone import JoinGroupCall
 from pyrogram.raw.types import DataJSON
+from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import Updates
 
 from ...scaffold import Scaffold
@@ -38,17 +39,19 @@ class JoinVoiceCall(Scaffold):
                         invite_hash=params['invite_hash'],
                     ),
                 )
-                transport = json.loads(result.updates[0].call.params.data)[
-                    'transport'
-                ]
-                return {
-                    'transport': {
-                        'ufrag': transport['ufrag'],
-                        'pwd': transport['pwd'],
-                        'fingerprints': transport['fingerprints'],
-                        'candidates': transport['candidates'],
-                    },
-                }
+                for update in result.updates:
+                    if isinstance(update, UpdateGroupCall):
+                        transport = json.loads(update.call.params.data)[
+                            'transport'
+                        ]
+                        return {
+                            'transport': {
+                                'ufrag': transport['ufrag'],
+                                'pwd': transport['pwd'],
+                                'fingerprints': transport['fingerprints'],
+                                'candidates': transport['candidates'],
+                            },
+                        }
             except Exception as e:
                 if 'GROUPCALL_FORBIDDEN' in str(e):
                     self._full_chat_cache.drop_cache(chat_id)

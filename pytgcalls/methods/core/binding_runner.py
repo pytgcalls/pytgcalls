@@ -24,14 +24,15 @@ class BindingRunner(Scaffold):
         @self._binding.on_connect()
         async def connect():
             try:
-                self._wait_until_run.set()
+                self._wait_until_run.set_result(None)
             except Exception as e:
                 print(e)
 
             pass
 
         await PyTgCallsSession().start()
-        started_core = asyncio.Event()
+        loop = asyncio.get_event_loop()
+        started_core = loop.create_future()
         self._async_core = asyncio.ensure_future(
             self._binding.connect(
                 started_core,
@@ -39,6 +40,6 @@ class BindingRunner(Scaffold):
             ),
         )
         try:
-            await started_core.wait()
+            await started_core
         except KeyboardInterrupt:
             pass

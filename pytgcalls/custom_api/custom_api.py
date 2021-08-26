@@ -14,6 +14,8 @@ class CustomApi:
         port: int = 24859,
     ):
         self._handler: Optional[Callable] = None
+        self._app: web.Application = web.Application()
+        self._runner: Optional[web.AppRunner] = None
         self._port = port
 
     def on_update_custom_api(self) -> Callable:
@@ -27,9 +29,7 @@ class CustomApi:
         else:
             raise TooManyCustomApiDecorators()
 
-    def run(self):
-        app_core = web.Application()
-
+    async def start(self):
         async def on_update(request: BaseRequest):
             try:
                 params = await request.json()
@@ -51,13 +51,11 @@ class CustomApi:
                     'result': 'NO_CUSTOM_API_DECORATOR',
                 })
 
-        app_core.router.add_post(
+        self._app.router.add_post(
             '/',
             on_update,
         )
-        web.run_app(
-            app_core,
-            host='localhost',
-            port=self._port,
-            ssl_context=None,
-        )
+        runner = web.AppRunner(self._app)
+        await runner.setup()
+        site = web.TCPSite(runner, 'localhost', self._port)
+        await site.start()
