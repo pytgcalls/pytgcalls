@@ -1,71 +1,55 @@
-// @ts-ignore
-import fetch from 'node-fetch';
-import {Stream, TGCalls} from './tgcalls';
-import {Binding} from "./binding";
+import { Stream, TGCalls } from './tgcalls';
+import { Binding } from './binding';
 
 export class RTCConnection {
-    chat_id: number;
-    file_path: string;
-    binding: Binding;
-    bitrate: number;
-    buffer_length: number;
-    invite_hash: string;
-
     tgcalls: TGCalls<any>;
     stream: Stream;
 
     constructor(
-        chat_id: number,
-        file_path: string,
-        binding: Binding,
-        bitrate: number,
-        buffer_length: number,
-        invite_hash: string,
+        public chatId: number,
+        public filePath: string,
+        public binding: Binding,
+        public bitrate: number,
+        public bufferLength: number,
+        public inviteHash: string,
     ) {
-        this.chat_id = chat_id;
-        this.file_path = file_path;
-        this.binding = binding;
-        this.bitrate = bitrate;
-        this.buffer_length = buffer_length;
-        this.invite_hash = invite_hash;
-
-        this.tgcalls = new TGCalls({chat_id});
-        this.stream = new Stream(
-            file_path,
-            16,
-            bitrate,
-            1,
-            buffer_length
-        );
+        this.tgcalls = new TGCalls({ chatId: this.chatId });
+        this.stream = new Stream(filePath, 16, bitrate, 1, bufferLength);
 
         this.tgcalls.joinVoiceCall = async (payload: any) => {
             payload = {
-                chat_id: this.chat_id,
+                chat_id: this.chatId,
                 ufrag: payload.ufrag,
                 pwd: payload.pwd,
                 hash: payload.hash,
                 setup: payload.setup,
                 fingerprint: payload.fingerprint,
                 source: payload.source,
-                invite_hash: this.invite_hash,
+                invite_hash: this.inviteHash,
             };
 
-            Binding.log('callJoinPayload -> ' + JSON.stringify(payload), Binding.INFO);
+            Binding.log(
+                'callJoinPayload -> ' + JSON.stringify(payload),
+                Binding.INFO,
+            );
 
             const joinCallResult = await this.binding.sendUpdate({
                 action: 'join_voice_call_request',
-                payload: payload
+                payload: payload,
             });
 
-            Binding.log('joinCallRequestResult -> ' + JSON.stringify(joinCallResult), Binding.INFO);
+            Binding.log(
+                'joinCallRequestResult -> ' + JSON.stringify(joinCallResult),
+                Binding.INFO,
+            );
 
             return joinCallResult;
         };
         this.stream.on('finish', async () => {
             await this.binding.sendUpdate({
                 action: 'stream_ended',
-                chat_id: chat_id,
-            })
+                chat_id: chatId,
+            });
         });
         this.stream.on('stream_deleted', async () => {
             this.stream.stop();
@@ -73,16 +57,16 @@ export class RTCConnection {
             await this.binding.sendUpdate({
                 action: 'update_request',
                 result: 'STREAM_DELETED',
-                chat_id: chat_id,
-            })
-        })
+                chat_id: chatId,
+            });
+        });
     }
 
     async joinCall() {
         try {
             let result = await this.tgcalls.start(this.stream.createTrack());
-            this.stream.resume()
-            return result
+            this.stream.resume();
+            return result;
         } catch (e) {
             this.stream.stop();
             Binding.log('joinCallError -> ' + e.toString(), Binding.INFO);
@@ -102,7 +86,7 @@ export class RTCConnection {
             this.stop();
             return await this.binding.sendUpdate({
                 action: 'leave_call_request',
-                chat_id: this.chat_id,
+                chat_id: this.chatId,
             });
         } catch (e) {
             return {
@@ -120,7 +104,8 @@ export class RTCConnection {
         this.stream.resume();
     }
 
-    changeStream(file_path: string) {
-        this.stream.setReadable(file_path);
+    changeStream(filePath: string) {
+        this.filePath = filePath;
+        this.stream.setReadable(this.filePath);
     }
 }

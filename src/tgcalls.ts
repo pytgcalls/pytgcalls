@@ -8,7 +8,7 @@ export { Stream } from './stream';
 
 export class TGCalls<T> extends EventEmitter {
     #connection?: RTCPeerConnection;
-    readonly #params: T;
+    readonly #params: any;
     joinVoiceCall?: JoinVoiceCallCallback<T>;
 
     constructor(params: T) {
@@ -21,7 +21,7 @@ export class TGCalls<T> extends EventEmitter {
             throw new Error('Connection already started');
         } else if (!this.joinVoiceCall) {
             throw new Error(
-                'Please set the `joinVoiceCall` callback before calling `start()`'
+                'Please set the `joinVoiceCall` callback before calling `start()`',
             );
         }
 
@@ -29,7 +29,7 @@ export class TGCalls<T> extends EventEmitter {
         this.#connection.oniceconnectionstatechange = async () => {
             this.emit(
                 'iceConnectionState',
-                this.#connection?.iceConnectionState
+                this.#connection?.iceConnectionState,
             );
 
             switch (this.#connection?.iceConnectionState) {
@@ -79,8 +79,9 @@ export class TGCalls<T> extends EventEmitter {
 
         if (!joinGroupCallResult || !joinGroupCallResult.transport) {
             this.#connection.close();
-            // @ts-ignore
-            throw new Error('No active voice chat found on '+this.#params.chat_id);
+            throw new Error(
+                'No active voice chat found on ' + this.#params.chatId,
+            );
         }
 
         const session_id = Date.now();

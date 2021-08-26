@@ -59,5 +59,5 @@ export interface JoinVoiceCallResponse {
 }
 
 export type JoinVoiceCallCallback<T> = (
-    payload: JoinVoiceCallParams<T>
+    payload: JoinVoiceCallParams<T>,
 ) => Promise<JoinVoiceCallResponse>;

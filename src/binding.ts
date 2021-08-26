@@ -1,91 +1,99 @@
 import { EventEmitter } from 'events';
 
-export class Binding extends EventEmitter{
-    private is_connected: boolean;
+export class Binding extends EventEmitter {
+    private connected = false;
     private readonly ssid: string;
-    private readonly list_promise: any;
-    static DEBUG: number = 1;
-    static INFO: number = 2;
-    static WARNING: number = 3;
-    static ERROR: number = 4;
+    private readonly promises = new Map<string, CallableFunction>();
+    static DEBUG = 1;
+    static INFO = 2;
+    static WARNING = 3;
+    static ERROR = 4;
+
     constructor() {
         super();
-        this.is_connected = false;
-        this.ssid = '0';
-        this.list_promise = [];
+
         process.stdin.on('data', (chunk: boolean) => {
             try {
-                let data = JSON.parse(chunk.toString());
-                if(data.try_connect == 'connected') {
-                    this.is_connected = true;
-                    Binding.sendUpdateInternal({
-                        ping: true
-                    })
-                    setInterval(function () {
-                        Binding.sendUpdateInternal({
-                            ping: true
-                        })
-                    }, 10000)
+                const data = JSON.parse(chunk.toString());
+
+                if (data.try_connect == 'connected') {
+                    this.connected = true;
+                    Binding.sendInternalUpdate({
+                        ping: true,
+                    });
+                    setInterval(
+                        () =>
+                            Binding.sendInternalUpdate({
+                                ping: true,
+                            }),
+                        10000,
+                    );
                     this.emit('connect', data.user_id);
-                }else if(data.ping_with_response){
-                     Binding.sendUpdateInternal({
-                        ping_with_response: true
-                    })
-                }else if(data.ssid == this.ssid){
-                    if (data.uid !== undefined){
-                        if(this.list_promise[data.uid] !== undefined){
-                            if(data.data !== undefined){
-                                this.list_promise[data.uid](data.data);
-                            }else{
-                                this.list_promise[data.uid](null);
+                } else if (data.ping_with_response) {
+                    Binding.sendInternalUpdate({
+                        ping_with_response: true,
+                    });
+                } else if (data.ssid == this.ssid) {
+                    if (data.uid !== undefined) {
+                        const promise = this.promises.get(data.uid);
+                        if (promise) {
+                            if (data.data !== undefined) {
+                                promise(data.data);
+                            } else {
+                                promise(null);
                             }
                         }
-                    }else{
+                    } else {
                         this.emit('request', data.data);
                     }
                 }
-            }catch(e){}
+            } catch (e) {}
         });
         this.ssid = Binding.makeID(12);
-        Binding.sendUpdateInternal({
-            try_connect: this.ssid
-        })
+        Binding.sendInternalUpdate({
+            try_connect: this.ssid,
+        });
     }
-    async sendUpdate(update: any): Promise<any>{
-        if(this.is_connected){
-            let uid = Binding.makeID(12);
-            Binding.sendUpdateInternal({
+
+    async sendUpdate(update: any): Promise<any> {
+        if (this.connected) {
+            const uid = Binding.makeID(12);
+            Binding.sendInternalUpdate({
+                uid,
                 data: update,
-                uid: uid,
-                ssid: this.ssid
+                ssid: this.ssid,
             });
-            return new Promise((resolve) => {
-                this.list_promise[uid] = (data: any) => {
-                    resolve(data)
-                    delete this.list_promise[uid]
-                }
-            })
-        }else{
+            return new Promise(resolve => {
+                this.promises.set(uid, (data: any) => {
+                    resolve(data);
+                    this.promises.delete(uid);
+                });
+            });
+        } else {
             throw new Error('No connected client');
         }
     }
-    static log(message: string, verbose_mode: number){
-        Binding.sendUpdateInternal({
+
+    static log(message: string, verbose_mode: number) {
+        Binding.sendInternalUpdate({
             log_message: message,
             verbose_mode: verbose_mode,
-        })
+        });
     }
+
     private static makeID(length: number): string {
-        let result           = '';
-        let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let charactersLength = characters.length;
-        for (let i = 0; i < length; i++ ) {
-            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        const characters =
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(
+                Math.floor(Math.random() * characters.length),
+            );
         }
         return result;
     }
 
-    private static sendUpdateInternal(update: any){
-        console.log(JSON.stringify(update))
+    private static sendInternalUpdate(update: any) {
+        console.log(JSON.stringify(update));
     }
 }
