@@ -2,8 +2,8 @@ import json
 import logging
 
 from pyrogram.raw.functions.phone import JoinGroupCall
-from pyrogram.raw.types import UpdateGroupCallConnection
 from pyrogram.raw.types import DataJSON
+from pyrogram.raw.types import UpdateGroupCallConnection
 from pyrogram.raw.types import Updates
 
 from ...scaffold import Scaffold
