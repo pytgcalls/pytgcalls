@@ -15,24 +15,22 @@ binding.on('connect', async (userId: number) => {
 
 binding.on('request', async function (data: any) {
     Binding.log('REQUEST: ' + JSON.stringify(data), Binding.INFO);
-    const connection = connections.get(data.chat_id);
+    let connection = connections.get(data.chat_id);
 
     switch (data.action) {
         case 'join_call':
             if (!connection) {
-                connections.set(
+                connection = new RTCConnection(
                     data.chat_id,
-                    new RTCConnection(
-                        data.chat_id,
-                        data.file_path,
-                        binding,
-                        data.bitrate,
-                        data.buffer_length,
-                        data.invite_hash,
-                    ),
+                    data.file_path,
+                    binding,
+                    data.bitrate,
+                    data.buffer_length,
+                    data.invite_hash,
                 );
+                connections.set(data.chat_id, connection);
 
-                const result = await connection!.joinCall();
+                const result = await connection.joinCall();
 
                 if (result) {
                     await binding.sendUpdate({
