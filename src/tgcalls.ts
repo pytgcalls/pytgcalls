@@ -9,6 +9,7 @@ export { Stream } from './stream';
 export class TGCalls<T> extends EventEmitter {
     #connection?: RTCPeerConnection;
     readonly #params: any;
+    private track?: MediaStreamTrack;
     joinVoiceCall?: JoinVoiceCallCallback<T>;
 
     constructor(params: T) {
@@ -39,7 +40,9 @@ export class TGCalls<T> extends EventEmitter {
                     break;
             }
         };
-        this.#connection.addTrack(track);
+
+        this.track = track;
+        this.#connection.addTrack(this.track);
 
         const offer = await this.#connection.createOffer({
             offerToReceiveVideo: false,
@@ -95,6 +98,24 @@ export class TGCalls<T> extends EventEmitter {
             sdp: SdpBuilder.fromConference(conference, true),
         });
         return true;
+    }
+
+    mute() {
+        if (this.track && this.track.enabled) {
+            this.track.enabled = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    unmute() {
+        if (this.track && !this.track.enabled) {
+            this.track.enabled = true;
+            return true;
+        }
+
+        return false;
     }
 
     close() {
