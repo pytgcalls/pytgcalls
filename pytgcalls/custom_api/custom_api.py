@@ -41,7 +41,7 @@ class CustomApi:
                 result = await self._handler(params)
                 if isinstance(result, dict) or \
                         isinstance(result, list):
-                    return web.json_response()
+                    return web.json_response(result)
                 else:
                     return web.json_response({
                         'result': 'INVALID_RESPONSE',
