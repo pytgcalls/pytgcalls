@@ -6,6 +6,7 @@ import os
 import signal
 import subprocess
 import sys
+from asyncio import Future
 from asyncio.log import logger
 from json import JSONDecodeError
 from time import time
@@ -89,7 +90,7 @@ class Binding:
 
     async def connect(
         self,
-        event: asyncio.Event,
+        event: Future,
         user_id: int,
     ):
         if self._js_process is None:
@@ -100,7 +101,7 @@ class Binding:
                 stdout=subprocess.PIPE,
                 stdin=subprocess.PIPE,
             )
-            event.set()
+            event.set_result(None)
             while True:
                 try:
                     if self._js_process.stdout is None:

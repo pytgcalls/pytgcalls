@@ -3,6 +3,7 @@ import functools
 import inspect
 import threading
 
+from .custom_api import CustomApi
 from .methods import Methods
 
 
@@ -64,6 +65,7 @@ def wrap(source):
 
 # Wrap all Client's relevant methods
 wrap(Methods)
+wrap(CustomApi)
 
 
 class ASyncer:

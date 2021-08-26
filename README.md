@@ -13,7 +13,7 @@
 ![Architectures](https://img.shields.io/badge/architectures-x86__64%20%7C%20arm64v8%20%7C%20win__amd64%20%7C%20darwin__x64-blue)
 [![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
 
-This project allow to make Telegram group call with MTProto Api using Pyrogram and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library, socketio-client and [@evgeny-nadymov]
+This project allow to make Telegram group call with MTProto Api using Pyrogram and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library and [@evgeny-nadymov]
 
 # Common Problems
 
@@ -51,17 +51,17 @@ pip install py-tgcalls -U
 
 From file to raw format
 ``` bash
-ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -acodec pcm_s16le -ar {BITRATE} {OUTPUT_FILE}
+ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_FILE}
 ```
 
 From stream link to raw format
 ``` bash
-ffmpeg -y -i {STREAM_LINK} -f s16le -ac 1 -acodec pcm_s16le -ar {BITRATE} {OUTPUT_FILE}
+ffmpeg -y -i {STREAM_LINK} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_FILE}
 ```
 
 From youtube video/live-stream to raw format
 ``` bash
-ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -acodec pcm_s16le -ar {BITRATE} {OUTPUT_FILE}
+ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -ar {BITRATE} {OUTPUT_FILE}
 ```
 
 ## Credits

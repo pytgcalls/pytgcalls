@@ -1,3 +1,7 @@
+from asyncio import Future
+from typing import Optional
+
+
 class Scaffold:
     _REQUIRED_NODEJS_VERSION = '15.0.0'
     _REQUIRED_PYROGRAM_VERSION = '1.2.0'
@@ -8,7 +12,7 @@ class Scaffold:
         self._is_running = None
         self._my_id = None
         self._full_chat_cache = None
-        self._wait_until_run = None
+        self._wait_until_run: Optional[Future] = None
         self._env_checker = None
         self._call_holder = None
         self._cache_user_peer = None

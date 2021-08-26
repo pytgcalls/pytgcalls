@@ -3,6 +3,7 @@ import json
 import requests
 from pyrogram import Client
 from pyrogram import filters
+from pyrogram import idle
 from pyrogram.types import Message
 
 from pytgcalls import CustomApi
@@ -35,4 +36,5 @@ if __name__ == '__main__':
             ).json(),
         )
     app.start()
-    ca.run()
+    ca.start()
+    idle()

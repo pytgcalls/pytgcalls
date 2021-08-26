@@ -39,7 +39,7 @@ class CallHolder:
         if chat_id in self._calls:
             if self._calls[chat_id] != self.IDLE:
                 return GroupCall(chat_id, self._calls[chat_id])
-        raise GroupCallNotFound()
+        raise GroupCallNotFound(chat_id)
 
     def get_call(
         self,
@@ -47,7 +47,7 @@ class CallHolder:
     ):
         if chat_id in self._calls:
             return GroupCall(chat_id, self._calls[chat_id])
-        raise GroupCallNotFound()
+        raise GroupCallNotFound(chat_id)
 
     def remove_call(
         self,

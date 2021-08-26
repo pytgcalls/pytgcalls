@@ -9,8 +9,9 @@ from ...scaffold import Scaffold
 class ChangeVolumeCall(Scaffold):
     async def change_volume_call(self, chat_id: int, volume: int):
         if self._app is not None:
-            if self._binding.is_alive() or\
-                    self._wait_until_run is not None:
+            if self._wait_until_run is not None:
+                if not self._wait_until_run.done():
+                    await self._wait_until_run
                 chat_call = await self._full_chat_cache.get_full_chat(
                     chat_id,
                 )

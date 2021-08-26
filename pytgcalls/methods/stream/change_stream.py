@@ -13,11 +13,11 @@ class ChangeStream(Scaffold):
         file_path: str,
     ):
         if self._app is not None:
-            if self._binding.is_alive() or \
-                    self._wait_until_run is not None:
+            if self._wait_until_run is not None:
                 if os.path.isfile(file_path):
                     async def internal_sender():
-                        await self._wait_until_run.wait()
+                        if not self._wait_until_run.done():
+                            await self._wait_until_run
                         await self._binding.send({
                             'action': 'change_stream',
                             'chat_id': chat_id,
