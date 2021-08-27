@@ -100,7 +100,7 @@ export class RTCConnection {
         this.stream.pause();
     }
 
-    async resume() {
+    resume() {
         this.stream.resume();
     }
 

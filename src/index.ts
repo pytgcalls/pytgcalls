@@ -110,7 +110,7 @@ binding.on('request', async function (data: any) {
                 } catch (e) {}
             }
             break;
-        case 'mute':
+        case 'mute_stream':
             if (connection) {
                 connection.tgcalls.mute();
                 await binding.sendUpdate({
@@ -120,7 +120,7 @@ binding.on('request', async function (data: any) {
                 });
             }
             break;
-        case 'unmute':
+        case 'unmute_stream':
             if (connection) {
                 connection.tgcalls.unmute();
                 await binding.sendUpdate({

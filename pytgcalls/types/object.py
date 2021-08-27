@@ -2,6 +2,8 @@ from .groups import ErrorDuringJoin
 from .groups import JoinedVoiceChat
 from .groups import LeftVoiceChat
 from .stream import ChangedStream
+from .stream import MutedStream
+from .stream import UnMutedStream
 from .stream import PausedStream
 from .stream import ResumedStream
 from .stream import StreamDeleted
@@ -28,3 +30,7 @@ class Object:
             return LeftVoiceChat(chat_id)
         elif event_name == 'STREAM_DELETED':
             return StreamDeleted(chat_id)
+        elif event_name == 'MUTED_AUDIO_STREAM':
+            return MutedStream(chat_id)
+        elif event_name == 'UNMUTED_AUDIO_STREAM':
+            return UnMutedStream(chat_id)
