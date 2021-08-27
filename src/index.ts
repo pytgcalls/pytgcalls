@@ -110,5 +110,25 @@ binding.on('request', async function (data: any) {
                 } catch (e) {}
             }
             break;
+        case 'mute':
+            if (connection) {
+                connection.tgcalls.mute();
+                await binding.sendUpdate({
+                    action: 'update_request',
+                    result: 'MUTED_AUDIO_STREAM',
+                    chat_id: data.chat_id,
+                });
+            }
+            break;
+        case 'unmute':
+            if (connection) {
+                connection.tgcalls.unmute();
+                await binding.sendUpdate({
+                    action: 'update_request',
+                    result: 'UNMUTED_AUDIO_STREAM',
+                    chat_id: data.chat_id,
+                });
+            }
+            break;
     }
 });
