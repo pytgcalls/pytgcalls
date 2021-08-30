@@ -1,7 +1,7 @@
 import asyncio
 
 from ...exceptions import NodeJSNotRunning
-from ...exceptions import PyrogramNotSet
+from ...exceptions import NoMtProtoClientSet
 from ...scaffold import Scaffold
 
 
@@ -24,4 +24,4 @@ class UnMuteStream(Scaffold):
             else:
                 raise NodeJSNotRunning()
         else:
-            raise PyrogramNotSet()
+            raise NoMtProtoClientSet()

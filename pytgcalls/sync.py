@@ -3,8 +3,11 @@ import functools
 import inspect
 import threading
 
+from pyrogram.methods.utilities import idle as idle_module
+
 from .custom_api import CustomApi
 from .methods import Methods
+from .mtproto import MtProtoClient
 
 
 def async_to_sync(obj, name):
@@ -66,7 +69,6 @@ def wrap(source):
 # Wrap all Client's relevant methods
 wrap(Methods)
 wrap(CustomApi)
-
-
-class ASyncer:
-    pass
+wrap(MtProtoClient)
+async_to_sync(idle_module, 'idle')
+idle = getattr(idle_module, 'idle')

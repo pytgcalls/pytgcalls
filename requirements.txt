@@ -1,5 +1,4 @@
 aiohttp
 httpx
 psutil
-pyrogram
 tgcrypto

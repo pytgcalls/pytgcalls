@@ -1,8 +1,7 @@
 import asyncio
-import os
 
 from ...exceptions import NodeJSNotRunning
-from ...exceptions import PyrogramNotSet
+from ...exceptions import NoMtProtoClientSet
 from ...scaffold import Scaffold
 
 
@@ -25,4 +24,4 @@ class MuteStream(Scaffold):
             else:
                 raise NodeJSNotRunning()
         else:
-            raise PyrogramNotSet()
+            raise NoMtProtoClientSet()

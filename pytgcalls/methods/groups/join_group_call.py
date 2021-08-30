@@ -1,12 +1,10 @@
 import asyncio
 import os
 
-from pyrogram.raw.base import InputPeer
-
 from ...exceptions import InvalidStreamMode
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
-from ...exceptions import PyrogramNotSet
+from ...exceptions import NoMtProtoClientSet
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
 
@@ -18,7 +16,7 @@ class JoinGroupCall(Scaffold):
         file_path: str,
         bitrate: int = 48000,
         invite_hash: str = None,
-        join_as: InputPeer = None,
+        join_as=None,
         stream_type: StreamType = None,
     ):
         if join_as is None:
@@ -34,7 +32,7 @@ class JoinGroupCall(Scaffold):
                 if self._wait_until_run is not None:
                     if not self._wait_until_run.done():
                         await self._wait_until_run
-                    chat_call = await self._full_chat_cache.get_full_chat(
+                    chat_call = await self._app.get_full_chat(
                         chat_id,
                     )
                     if chat_call is not None:
@@ -53,6 +51,6 @@ class JoinGroupCall(Scaffold):
                 else:
                     raise NodeJSNotRunning()
             else:
-                raise PyrogramNotSet()
+                raise NoMtProtoClientSet()
         else:
             raise FileNotFoundError()

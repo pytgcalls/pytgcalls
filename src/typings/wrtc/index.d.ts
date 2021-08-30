@@ -86,8 +86,8 @@ declare module 'wrtc' {
     };
 
     export const RTCSctpTransport: {
-        prototype: RTCSctpTransport;
-        new (): RTCSctpTransport;
+        prototype: typeof RTCSctpTransport;
+        new (): typeof RTCSctpTransport;
     };
 
     export const RTCSessionDescription: {

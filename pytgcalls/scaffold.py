@@ -5,13 +5,13 @@ from typing import Optional
 class Scaffold:
     _REQUIRED_NODEJS_VERSION = '15.0.0'
     _REQUIRED_PYROGRAM_VERSION = '1.2.0'
+    _REQUIRED_TELETHON_VERSION = '1.23.0'
 
     def __init__(self):
         self._app = None
         self._async_core = None
         self._is_running = None
         self._my_id = None
-        self._full_chat_cache = None
         self._wait_until_run: Optional[Future] = None
         self._env_checker = None
         self._call_holder = None
@@ -20,13 +20,13 @@ class Scaffold:
         self._on_event_update = None
         self._binding = None
 
-    def _handle_pyrogram(self):
+    def _handle_mtproto(self):
         pass
 
     async def _start_binding(self):
         pass
 
-    async def _init_pyrogram(self):
+    async def _init_mtproto(self):
         pass
 
     async def _join_voice_call(self, params: dict):

@@ -2,7 +2,7 @@ import asyncio
 
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
-from ...exceptions import PyrogramNotSet
+from ...exceptions import NoMtProtoClientSet
 from ...scaffold import Scaffold
 
 
@@ -13,7 +13,7 @@ class LeaveGroupCall(Scaffold):
     ):
         if self._app is not None:
             if self._wait_until_run is not None:
-                chat_call = await self._full_chat_cache.get_full_chat(
+                chat_call = await self._app.get_full_chat(
                     chat_id,
                 )
                 if chat_call is not None:
@@ -31,4 +31,4 @@ class LeaveGroupCall(Scaffold):
             else:
                 raise NodeJSNotRunning()
         else:
-            raise PyrogramNotSet()
+            raise NoMtProtoClientSet()

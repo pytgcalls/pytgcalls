@@ -1,27 +1,25 @@
 import logging
+from typing import Any
 from typing import Optional
 
-from pyrogram import Client
-from pyrogram.raw.functions.channels import GetFullChannel
-from pyrogram.raw.types import InputGroupCall
-
-from .types import Cache
+from ..types import Cache
+from .bridged_client import BridgedClient
 
 
-class PyroCache:
+class ClientCache:
     def __init__(
         self,
         cache_duration: int,
-        app: Client,
+        app: BridgedClient,
     ):
-        self._app = app
+        self._app: BridgedClient = app
         self._cache_duration = cache_duration
         self._full_chat_cache = Cache()
 
     async def get_full_chat(
         self,
         chat_id: int,
-    ) -> Optional[InputGroupCall]:
+    ) -> Optional[Any]:
         full_chat = self._full_chat_cache.get(chat_id)
         if full_chat is not None:
             logging.debug('FullChat cache hit for %d', chat_id)
@@ -30,12 +28,7 @@ class PyroCache:
             # noinspection PyBroadException
             try:
                 logging.debug('FullChat cache miss for %d', chat_id)
-                chat = await self._app.resolve_peer(chat_id)
-                full_chat = (
-                    await self._app.send(
-                        GetFullChannel(channel=chat),
-                    )
-                ).full_chat.call
+                full_chat = await self._app.get_call(chat_id)
                 self.set_cache(
                     chat_id,
                     full_chat,
@@ -48,7 +41,7 @@ class PyroCache:
     def set_cache(
         self,
         chat_id: int,
-        input_call: InputGroupCall,
+        input_call: Any,
     ) -> None:
         self._full_chat_cache.put(
             chat_id,

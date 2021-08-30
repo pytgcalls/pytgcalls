@@ -3,10 +3,10 @@ from .groups import JoinedVoiceChat
 from .groups import LeftVoiceChat
 from .stream import ChangedStream
 from .stream import MutedStream
-from .stream import UnMutedStream
 from .stream import PausedStream
 from .stream import ResumedStream
 from .stream import StreamDeleted
+from .stream import UnMutedStream
 
 
 class Object:

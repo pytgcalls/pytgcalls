@@ -1,10 +1,11 @@
 import { createReadStream, ReadStream, statSync } from 'fs';
 import { EventEmitter } from 'events';
-import { RTCAudioSource, nonstandard } from 'wrtc';
+import {RTCAudioSource, nonstandard, RTCVideoSource} from 'wrtc';
 import { Binding } from './binding';
 
 export class Stream extends EventEmitter {
     private readonly audioSource: RTCAudioSource;
+    private readonly videoSource: RTCVideoSource;
     private cache: Buffer;
     private readable?: ReadStream;
     public paused: boolean = false;
@@ -20,6 +21,9 @@ export class Stream extends EventEmitter {
     private lastByteCheck: number = 0;
     private lastByte: number = 0;
     private runningPulse: boolean = false;
+    private isVideo: boolean = false;
+    private videoWidth: number = 0;
+    private videoHeight: number = 0;
 
     constructor(
         public filePath: string,
@@ -32,6 +36,7 @@ export class Stream extends EventEmitter {
         super();
 
         this.audioSource = new nonstandard.RTCAudioSource();
+        this.videoSource = new nonstandard.RTCVideoSource();
         this.cache = Buffer.alloc(0);
         this.paused = true;
         this.setReadable(this.filePath);
@@ -187,12 +192,15 @@ export class Stream extends EventEmitter {
         this.stopped = true;
     }
 
-    createTrack() {
+    createAudioTrack() {
         return this.audioSource.createTrack();
     }
 
-    getIdSource() {
-        return this.audioSource;
+    createVideoTrack(width: number, height: number) {
+        this.videoWidth = width;
+        this.videoHeight = height;
+        this.isVideo = true;
+        return this.videoSource.createTrack();
     }
 
     private processData() {
@@ -259,20 +267,34 @@ export class Stream extends EventEmitter {
                 (this.cache.length >= byteLength || this.finishedLoading) &&
                 !checkLag
             ) {
-                const buffer = this.cache.slice(0, byteLength);
-                const samples = new Int16Array(new Uint8Array(buffer).buffer);
-                this.cache = this.cache.slice(byteLength);
-                try {
-                    this.audioSource.onData({
-                        bitsPerSample: this.bitsPerSample,
-                        sampleRate: this.sampleRate,
-                        channelCount: this.channelCount,
-                        numberOfFrames: samples.length,
-                        samples,
-                    });
-                } catch (error) {
-                    this.emit('error', error);
+                if(this.isVideo) {
+                    const buffer = this.cache.slice(0, byteLength);
+                    const samples = new Int16Array(new Uint8Array(buffer).buffer)
+                    this.cache = this.cache.slice(byteLength);
+                    // HERE IS WRONG VIDEO SENDING
+                    const i420Frame = {
+                        width: this.videoWidth,
+                        height: this.videoHeight,
+                        data: new Uint8ClampedArray(samples)
+                    };
+                    this.videoSource.onFrame(i420Frame)
+                }else{
+                    const buffer = this.cache.slice(0, byteLength);
+                    const samples = new Int16Array(new Uint8Array(buffer).buffer);
+                    this.cache = this.cache.slice(byteLength);
+                    try {
+                        this.audioSource.onData({
+                            bitsPerSample: this.bitsPerSample,
+                            sampleRate: this.sampleRate,
+                            channelCount: this.channelCount,
+                            numberOfFrames: samples.length,
+                            samples,
+                        });
+                    } catch (error) {
+                        this.emit('error', error);
+                    }
                 }
+
             } else if (checkLag) {
                 Binding.log(
                     'STREAM_LAG -> ' + new Date().getTime(),

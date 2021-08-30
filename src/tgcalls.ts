@@ -43,6 +43,7 @@ export class TGCalls<T> extends EventEmitter {
 
         this.track = track;
         this.#connection.addTrack(this.track);
+        //this.#connection.addTrack(track2);
 
         const offer = await this.#connection.createOffer({
             offerToReceiveVideo: false,

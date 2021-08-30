@@ -3,9 +3,9 @@ import os
 
 from pyrogram import Client
 from pyrogram import filters
-from pyrogram import idle
 from pyrogram.types import Message
 
+from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 from pytgcalls.types import Update

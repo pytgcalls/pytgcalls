@@ -3,7 +3,8 @@ import { Binding } from './binding';
 
 export class RTCConnection {
     tgcalls: TGCalls<any>;
-    stream: Stream;
+    audioStream: Stream;
+    //videoStream: Stream;
 
     constructor(
         public chatId: number,
@@ -14,7 +15,8 @@ export class RTCConnection {
         public inviteHash: string,
     ) {
         this.tgcalls = new TGCalls({ chatId: this.chatId });
-        this.stream = new Stream(filePath, 16, bitrate, 1, bufferLength);
+        this.audioStream = new Stream(filePath, 16, bitrate, 1, bufferLength);
+        // this.videoStream = new Stream('test.iv4', 16, bitrate, 1, bufferLength);
 
         this.tgcalls.joinVoiceCall = async (payload: any) => {
             payload = {
@@ -45,14 +47,14 @@ export class RTCConnection {
 
             return joinCallResult;
         };
-        this.stream.on('finish', async () => {
+        this.audioStream.on('finish', async () => {
             await this.binding.sendUpdate({
                 action: 'stream_ended',
                 chat_id: chatId,
             });
         });
-        this.stream.on('stream_deleted', async () => {
-            this.stream.stop();
+        this.audioStream.on('stream_deleted', async () => {
+            this.audioStream.stop();
 
             await this.binding.sendUpdate({
                 action: 'update_request',
@@ -64,11 +66,13 @@ export class RTCConnection {
 
     async joinCall() {
         try {
-            let result = await this.tgcalls.start(this.stream.createTrack());
-            this.stream.resume();
+            let result = await this.tgcalls.start(this.audioStream.createAudioTrack());
+            this.audioStream.resume();
+            //this.videoStream.resume();
             return result;
-        } catch (e) {
-            this.stream.stop();
+        } catch (e: any) {
+            this.audioStream.stop();
+            //this.videoStream.stop();
             Binding.log('joinCallError -> ' + e.toString(), Binding.INFO);
             return false;
         }
@@ -76,7 +80,8 @@ export class RTCConnection {
 
     stop() {
         try {
-            this.stream.stop();
+            this.audioStream.stop();
+            //this.videoStream.stop();
             this.tgcalls.close();
         } catch (e) {}
     }
@@ -88,7 +93,7 @@ export class RTCConnection {
                 action: 'leave_call_request',
                 chat_id: this.chatId,
             });
-        } catch (e) {
+        } catch (e: any) {
             return {
                 action: 'REQUEST_ERROR',
                 message: e.toString(),
@@ -97,15 +102,17 @@ export class RTCConnection {
     }
 
     pause() {
-        this.stream.pause();
+        this.audioStream.pause();
+        //this.videoStream.pause();
     }
 
     resume() {
-        this.stream.resume();
+        this.audioStream.resume();
+        //this.videoStream.resume();
     }
 
     changeStream(filePath: string) {
         this.filePath = filePath;
-        this.stream.setReadable(this.filePath);
+        this.audioStream.setReadable(this.filePath);
     }
 }

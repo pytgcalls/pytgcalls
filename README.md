@@ -27,7 +27,7 @@
 </p>
 
 
-# PyTgCalls 
+# PyTgCalls
 
 [![pre-commit.ci status][pre-commit.ci-badge]][pre-commit.ci]
 [![PyPI](https://img.shields.io/pypi/v/py-tgcalls.svg?style=flat)](https://pypi.org/project/py-tgcalls/)
@@ -39,6 +39,10 @@
 [![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
 
 This project allow to make Telegram group call with MTProto Api using Pyrogram and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library and [@evgeny-nadymov]
+
+## What are the supported clients?
+The supported client for now is Pyrogram and Telethon, but we accept 
+also other clients, you can open a pull request with the edits
 
 ## How to install?
 Here's how to install the PyTgCalls lib, the commands are given below:

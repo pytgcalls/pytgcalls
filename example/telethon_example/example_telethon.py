@@ -1,13 +1,13 @@
 import os
 import time
 
-from pyrogram import Client
+from telethon import TelegramClient
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 
-app = Client(
+app = TelegramClient(
     'py-tgcalls',
     api_id=123456789,
     api_hash='abcdef12345',
