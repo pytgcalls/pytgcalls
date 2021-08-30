@@ -3,7 +3,7 @@
 name: Build Wheels
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev ]
   workflow_dispatch:
 
 jobs:
@@ -22,10 +22,13 @@ jobs:
             build-plat-names: 'manylinux2014_aarch64'
         python-version: [ '3.6', '3.7', '3.8', '3.9' ]
     steps:
-      - name: Checkout master
+      - name: Get Branch Name
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+        id: github_info
+      - name: Checkout ${{ steps.github_info.outputs.branch }}
         uses: actions/checkout@v2
         with:
-          ref: master
+          ref: ${{ steps.github_info.outputs.branch }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -55,10 +58,13 @@ jobs:
       matrix:
         python-version: [ '3.6', '3.7', '3.8', '3.9' ]
     steps:
-      - name: Checkout master
+      - name: Get Branch Name
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+        id: github_info
+      - name: Checkout ${{ steps.github_info.outputs.branch }}
         uses: actions/checkout@v2
         with:
-          ref: master
+          ref: ${{ steps.github_info.outputs.branch }}
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
@@ -85,10 +91,13 @@ jobs:
       matrix:
         python-version: [ '3.6', '3.7', '3.8', '3.9' ]
     steps:
-      - name: Checkout master
+      - name: Get Branch Name
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+        id: github_info
+      - name: Checkout ${{ steps.github_info.outputs.branch }}
         uses: actions/checkout@v2
         with:
-          ref: master
+          ref: ${{ steps.github_info.outputs.branch }}
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
@@ -133,5 +142,6 @@ jobs:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
         run: |
+          echo "${{ github.ref }} ${{ github.workspace }}"
           python -m twine check dist/*
           python -m twine upload dist/*
