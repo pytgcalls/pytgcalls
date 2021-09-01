@@ -9,7 +9,7 @@ from pyrogram.raw.functions.phone import JoinGroupCall, LeaveGroupCall, EditGrou
 from pyrogram.raw.types import InputGroupCall, Updates, DataJSON, UpdateGroupCall, \
     UpdateNewChannelMessage, MessageService, Channel, MessageActionInviteToGroupCall, UpdateChannel, ChannelForbidden, \
     GroupCall, GroupCallDiscarded, UpdateNewMessage, MessageActionChatDeleteUser, PeerChat, ChatForbidden, Chat, \
-    InputChannel, InputPeerChannel
+    InputChannel, InputPeerChannel, UpdateGroupCallConnection
 
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
@@ -105,7 +105,6 @@ class PyrogramClient(BridgedClient):
                                     await self._handler['KICK_HANDLER'](
                                         chat_id,
                                     )
-
             if isinstance(
                 data2,
                 Dict,
@@ -204,12 +203,13 @@ class PyrogramClient(BridgedClient):
                     params=DataJSON(data=json.dumps(json_join)),
                     muted=False,
                     join_as=join_as,
+                    video_stopped=False,
                     invite_hash=invite_hash,
                 ),
             )
             for update in result.updates:
-                if isinstance(update, UpdateGroupCall):
-                    transport = json.loads(update.call.params.data)[
+                if isinstance(update, UpdateGroupCallConnection):
+                    transport = json.loads(update.params.data)[
                         'transport'
                     ]
                     return {

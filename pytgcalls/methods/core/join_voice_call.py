@@ -18,6 +18,13 @@ class JoinVoiceCall(Scaffold):
             }],
             'ssrc': params['source'],
         }
+        if params['source_groups'] is not None:
+            request_call['source_groups'] = [
+                {
+                    'semantics': 'FID',
+                    'sources': [ssrc for ssrc in params['source_groups']]
+                }
+            ]
         chat_id = int(params['chat_id'])
         try:
             return await self._app.join_group_call(

@@ -13,7 +13,8 @@ class JoinGroupCall(Scaffold):
     async def join_group_call(
         self,
         chat_id: int,
-        file_path: str,
+        file_audio_path: str,
+        file_video_path: str = None,
         bitrate: int = 48000,
         invite_hash: str = None,
         join_as=None,
@@ -27,30 +28,36 @@ class JoinGroupCall(Scaffold):
             raise InvalidStreamMode()
         self._cache_user_peer.put(chat_id, join_as)
         bitrate = 48000 if bitrate > 48000 else bitrate
-        if os.path.isfile(file_path):
-            if self._app is not None:
-                if self._wait_until_run is not None:
-                    if not self._wait_until_run.done():
-                        await self._wait_until_run
-                    chat_call = await self._app.get_full_chat(
-                        chat_id,
-                    )
-                    if chat_call is not None:
-                        async def internal_sender():
-                            await self._binding.send({
-                                'action': 'join_call',
-                                'chat_id': chat_id,
-                                'file_path': file_path,
-                                'invite_hash': invite_hash,
-                                'bitrate': bitrate,
-                                'buffer_long': stream_type.stream_mode,
-                            })
-                        asyncio.ensure_future(internal_sender())
-                    else:
-                        raise NoActiveGroupCall()
-                else:
-                    raise NodeJSNotRunning()
-            else:
-                raise NoMtProtoClientSet()
-        else:
+        if file_video_path is not None:
+            if not os.path.isfile(file_video_path):
+                raise FileNotFoundError()
+        if not os.path.isfile(file_audio_path):
             raise FileNotFoundError()
+        if self._app is not None:
+            if self._wait_until_run is not None:
+                if not self._wait_until_run.done():
+                    await self._wait_until_run
+                chat_call = await self._app.get_full_chat(
+                    chat_id,
+                )
+                if chat_call is not None:
+                    async def internal_sender():
+                        request = {
+                            'action': 'join_call',
+                            'chat_id': chat_id,
+                            'file_audio_path': file_audio_path,
+                            'invite_hash': invite_hash,
+                            'bitrate': bitrate,
+                            'buffer_long': stream_type.stream_mode,
+                        }
+                        if file_video_path is not None:
+                            request['file_video_path'] = file_video_path
+                        await self._binding.send(request)
+                    asyncio.ensure_future(internal_sender())
+                else:
+                    raise NoActiveGroupCall()
+            else:
+                raise NodeJSNotRunning()
+        else:
+            raise NoMtProtoClientSet()
+

@@ -4,19 +4,22 @@ import { Binding } from './binding';
 export class RTCConnection {
     tgcalls: TGCalls<any>;
     audioStream: Stream;
-    //videoStream: Stream;
+    videoStream?: Stream;
 
     constructor(
         public chatId: number,
-        public filePath: string,
         public binding: Binding,
         public bitrate: number,
         public bufferLength: number,
         public inviteHash: string,
+        public fileAudioPath: string,
+        public fileVideoPath?: string,
     ) {
         this.tgcalls = new TGCalls({ chatId: this.chatId });
-        this.audioStream = new Stream(filePath, 16, bitrate, 1, bufferLength);
-        // this.videoStream = new Stream('test.iv4', 16, bitrate, 1, bufferLength);
+        this.audioStream = new Stream(fileAudioPath, 16, bitrate, 1, bufferLength);
+        if(fileVideoPath !== undefined){
+            this.videoStream = new Stream(fileVideoPath, 16, bitrate, 1, bufferLength);
+        }
 
         this.tgcalls.joinVoiceCall = async (payload: any) => {
             payload = {
@@ -27,6 +30,7 @@ export class RTCConnection {
                 setup: payload.setup,
                 fingerprint: payload.fingerprint,
                 source: payload.source,
+                source_groups: payload.source_groups,
                 invite_hash: this.inviteHash,
             };
 
@@ -66,14 +70,22 @@ export class RTCConnection {
 
     async joinCall() {
         try {
-            let result = await this.tgcalls.start(this.audioStream.createAudioTrack());
+            let videoTrack = undefined;
+            if(this.videoStream !== undefined){
+                videoTrack = this.videoStream.createVideoTrack(640, 360);
+            }
+            let result = await this.tgcalls.start(this.audioStream.createAudioTrack(), videoTrack);
+            if(this.videoStream !== undefined){
+                this.videoStream.resume();
+            }
             this.audioStream.resume();
-            //this.videoStream.resume();
             return result;
         } catch (e: any) {
             this.audioStream.stop();
-            //this.videoStream.stop();
-            Binding.log('joinCallError -> ' + e.toString(), Binding.INFO);
+            if(this.videoStream !== undefined){
+                this.videoStream.stop();
+            }
+            Binding.log('joinCallError -> ' + e.toString(), Binding.ERROR);
             return false;
         }
     }
@@ -81,7 +93,9 @@ export class RTCConnection {
     stop() {
         try {
             this.audioStream.stop();
-            //this.videoStream.stop();
+            if(this.videoStream !== undefined){
+                this.videoStream.stop();
+            }
             this.tgcalls.close();
         } catch (e) {}
     }
@@ -103,16 +117,23 @@ export class RTCConnection {
 
     pause() {
         this.audioStream.pause();
-        //this.videoStream.pause();
+        if(this.videoStream !== undefined){
+            this.videoStream.pause();
+        }
     }
 
     resume() {
         this.audioStream.resume();
-        //this.videoStream.resume();
+        if(this.videoStream !== undefined){
+            this.videoStream.resume();
+        }
     }
 
-    changeStream(filePath: string) {
-        this.filePath = filePath;
-        this.audioStream.setReadable(this.filePath);
+    changeStream(fileAudioPath: string, fileVideoPath?: string) {
+        this.fileAudioPath = fileAudioPath;
+        if(fileVideoPath !== undefined && this.videoStream !== undefined){
+            this.fileVideoPath = fileVideoPath;
+            this.videoStream.setReadable(this.fileVideoPath);
+        }
     }
 }

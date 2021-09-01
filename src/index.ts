@@ -22,16 +22,15 @@ binding.on('request', async function (data: any) {
             if (!connection) {
                 connection = new RTCConnection(
                     data.chat_id,
-                    data.file_path,
                     binding,
                     data.bitrate,
                     data.buffer_length,
                     data.invite_hash,
+                    data.file_audio_path,
+                    data.file_video_path,
                 );
                 connections.set(data.chat_id, connection);
-
                 const result = await connection.joinCall();
-
                 if (result) {
                     await binding.sendUpdate({
                         action: 'update_request',

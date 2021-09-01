@@ -55,6 +55,12 @@ pip install git+https://github.com/pytgcalls/pytgcalls -U
 pip install py-tgcalls -U
 ```
 
+## Conversion command (Video)
+From file to raw format
+``` bash
+ffmpeg -i {INPUT_FILE} -f rawvideo -pix_fmt yuv420p {OUTPUT_FILE}
+```
+
 ## Conversion commands
 
 From file to raw format

@@ -50,7 +50,8 @@ class MtProtoClient:
                 invite_hash,
                 join_as,
             )
-        raise InvalidMtProtoClient()
+        else:
+            raise InvalidMtProtoClient()
 
     async def leave_group_call(
         self,
@@ -60,7 +61,8 @@ class MtProtoClient:
             await self._bind_client.leave_group_call(
                 chat_id,
             )
-        raise InvalidMtProtoClient()
+        else:
+            raise InvalidMtProtoClient()
 
     async def change_volume(
         self,
@@ -74,7 +76,8 @@ class MtProtoClient:
                 volume,
                 participant,
             )
-        raise InvalidMtProtoClient()
+        else:
+            raise InvalidMtProtoClient()
 
     async def get_full_chat(
         self,
@@ -110,7 +113,8 @@ class MtProtoClient:
     async def start(self):
         if self._bind_client is not None:
             await self._bind_client.start()
-        raise InvalidMtProtoClient()
+        else:
+            raise InvalidMtProtoClient()
 
     def on_closed_voice_chat(self) -> Callable:
         if self._bind_client is not None:

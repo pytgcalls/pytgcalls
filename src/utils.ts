@@ -13,13 +13,17 @@ export function parseSdp(sdp: string): Sdp {
         return null;
     };
 
-    let rawSource = lookup('a=ssrc:');
+    let rawAudioSource = lookup('a=ssrc:');
+    let rawVideoSource = lookup('a=ssrc-group:FID ');
     return {
         fingerprint: lookup('a=fingerprint:')?.split(' ')[1] ?? null,
         hash: lookup('a=fingerprint:')?.split(' ')[0] ?? null,
         setup: lookup('a=setup:'),
         pwd: lookup('a=ice-pwd:'),
         ufrag: lookup('a=ice-ufrag:'),
-        source: rawSource ? parseInt(rawSource.split(' ')[0]) : null,
+        audioSource: rawAudioSource ? parseInt(rawAudioSource.split(' ')[0]) : null,
+        source_groups: rawVideoSource ? rawVideoSource.split(' ').map(obj => {
+            return parseInt(obj);
+        }) : null,
     };
 }
