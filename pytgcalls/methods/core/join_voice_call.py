@@ -19,11 +19,11 @@ class JoinVoiceCall(Scaffold):
             'ssrc': params['source'],
         }
         if params['source_groups'] is not None:
-            request_call['source_groups'] = [
+            request_call['ssrc-groups'] = [
                 {
                     'semantics': 'FID',
-                    'sources': [ssrc for ssrc in params['source_groups']]
-                }
+                    'sources': [ssrc for ssrc in params['source_groups']],
+                },
             ]
         chat_id = int(params['chat_id'])
         try:

@@ -1,15 +1,36 @@
 import json
-from typing import Optional, Callable, Dict
+from typing import Callable
+from typing import Dict
+from typing import Optional
 
-from pyrogram import Client, ContinuePropagation
+from pyrogram import Client
+from pyrogram import ContinuePropagation
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.functions.channels import GetFullChannel
 from pyrogram.raw.functions.messages import GetFullChat
-from pyrogram.raw.functions.phone import JoinGroupCall, LeaveGroupCall, EditGroupCallParticipant
-from pyrogram.raw.types import InputGroupCall, Updates, DataJSON, UpdateGroupCall, \
-    UpdateNewChannelMessage, MessageService, Channel, MessageActionInviteToGroupCall, UpdateChannel, ChannelForbidden, \
-    GroupCall, GroupCallDiscarded, UpdateNewMessage, MessageActionChatDeleteUser, PeerChat, ChatForbidden, Chat, \
-    InputChannel, InputPeerChannel, UpdateGroupCallConnection
+from pyrogram.raw.functions.phone import EditGroupCallParticipant
+from pyrogram.raw.functions.phone import JoinGroupCall
+from pyrogram.raw.functions.phone import LeaveGroupCall
+from pyrogram.raw.types import Channel
+from pyrogram.raw.types import ChannelForbidden
+from pyrogram.raw.types import Chat
+from pyrogram.raw.types import ChatForbidden
+from pyrogram.raw.types import DataJSON
+from pyrogram.raw.types import GroupCall
+from pyrogram.raw.types import GroupCallDiscarded
+from pyrogram.raw.types import InputChannel
+from pyrogram.raw.types import InputGroupCall
+from pyrogram.raw.types import InputPeerChannel
+from pyrogram.raw.types import MessageActionChatDeleteUser
+from pyrogram.raw.types import MessageActionInviteToGroupCall
+from pyrogram.raw.types import MessageService
+from pyrogram.raw.types import PeerChat
+from pyrogram.raw.types import UpdateChannel
+from pyrogram.raw.types import UpdateGroupCall
+from pyrogram.raw.types import UpdateGroupCallConnection
+from pyrogram.raw.types import UpdateNewChannelMessage
+from pyrogram.raw.types import UpdateNewMessage
+from pyrogram.raw.types import Updates
 
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
@@ -86,7 +107,9 @@ class PyrogramClient(BridgedClient):
                         MessageActionInviteToGroupCall,
                     ):
                         if 'INVITE_HANDLER' in self._handler:
-                            await self._handler['INVITE_HANDLER'](update.message.action)
+                            await self._handler['INVITE_HANDLER'](
+                                update.message.action,
+                            )
                     if isinstance(
                         update.message.action,
                         MessageActionChatDeleteUser,
@@ -175,10 +198,12 @@ class PyrogramClient(BridgedClient):
         if isinstance(chat, InputPeerChannel):
             return (
                 await self._app.send(
-                    GetFullChannel(channel=InputChannel(
-                        channel_id=chat.channel_id,
-                        access_hash=chat.access_hash,
-                    )),
+                    GetFullChannel(
+                        channel=InputChannel(
+                            channel_id=chat.channel_id,
+                            access_hash=chat.access_hash,
+                        ),
+                    ),
                 )
             ).full_chat.call
         else:

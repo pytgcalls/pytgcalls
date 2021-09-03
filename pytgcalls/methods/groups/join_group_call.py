@@ -60,4 +60,3 @@ class JoinGroupCall(Scaffold):
                 raise NodeJSNotRunning()
         else:
             raise NoMtProtoClientSet()
-

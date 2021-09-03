@@ -1,7 +1,9 @@
-from typing import Any, Callable, Optional
+from typing import Any
+from typing import Callable
+from typing import Optional
 
-from .bridged_client import BridgedClient
 from ..exceptions import InvalidMtProtoClient
+from .bridged_client import BridgedClient
 
 
 class MtProtoClient:

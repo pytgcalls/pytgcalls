@@ -208,10 +208,14 @@ export class Stream extends EventEmitter {
         if (this.stopped) {
             return;
         }
+        let byteLength;
+        if(this.isVideo) {
+            byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
+        }else{
+            // NEEDED BYTE LENGTH CALCULATION
+            byteLength = 345600
+        }
 
-        const byteLength =
-            ((this.sampleRate * this.bitsPerSample) / 8 / 100) *
-            this.channelCount;
 
         if (
             !(
@@ -269,13 +273,13 @@ export class Stream extends EventEmitter {
             ) {
                 if(this.isVideo) {
                     const buffer = this.cache.slice(0, byteLength);
-                    const samples = new Int16Array(new Uint8Array(buffer).buffer)
+                    console.log('BYTES', buffer.byteLength)
                     this.cache = this.cache.slice(byteLength);
                     // HERE IS WRONG VIDEO SENDING
                     const i420Frame = {
                         width: this.videoWidth,
                         height: this.videoHeight,
-                        data: new Uint8ClampedArray(samples)
+                        data: new Uint8ClampedArray(buffer)
                     };
                     this.videoSource.onFrame(i420Frame)
                 }else{

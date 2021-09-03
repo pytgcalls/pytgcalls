@@ -58,7 +58,6 @@ export class TGCalls<T> extends EventEmitter {
         if (!offer.sdp) {
             return false;
         }
-
         const { ufrag, pwd, hash, fingerprint, audioSource, source_groups} = parseSdp(offer.sdp);
 
         if (!ufrag || !pwd || !hash || !fingerprint || !audioSource) {
