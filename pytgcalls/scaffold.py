@@ -4,7 +4,7 @@ from typing import Optional
 
 class Scaffold:
     _REQUIRED_NODEJS_VERSION = '15.0.0'
-    _REQUIRED_PYROGRAM_VERSION = '1.2.0'
+    _REQUIRED_PYROGRAM_VERSION = '1.2.9'
     _REQUIRED_TELETHON_VERSION = '1.23.0'
 
     def __init__(self):
@@ -35,8 +35,11 @@ class Scaffold:
     async def _leave_voice_call(self, params: dict):
         pass
 
-    async def _stream_ended_handler(self, params: dict):
+    async def _stream_ended_handler(self, params: dict, is_audio: bool):
         pass
 
     async def _raw_update_handler(self, params: dict):
+        pass
+
+    async def _set_video_call_status(self, params: dict):
         pass

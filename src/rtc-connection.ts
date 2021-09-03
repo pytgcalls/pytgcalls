@@ -4,22 +4,21 @@ import { Binding } from './binding';
 export class RTCConnection {
     tgcalls: TGCalls<any>;
     audioStream: Stream;
-    videoStream?: Stream;
+    videoStream: Stream;
 
     constructor(
         public chatId: number,
         public binding: Binding,
-        public bitrate: number,
         public bufferLength: number,
         public inviteHash: string,
-        public fileAudioPath: string,
-        public fileVideoPath?: string,
+        public audioParams: any,
+        public videoParams?: any,
     ) {
         this.tgcalls = new TGCalls({ chatId: this.chatId });
-        this.audioStream = new Stream(fileAudioPath, 16, bitrate, 1, bufferLength);
-        if(fileVideoPath !== undefined){
-            this.videoStream = new Stream(fileVideoPath, 16, bitrate, 1, bufferLength);
-        }
+        const fileAudioPath = audioParams.path;
+        const fileVideoPath = videoParams === undefined ? undefined:videoParams.path;
+        this.audioStream = new Stream(fileAudioPath, 16, audioParams.bitrate, 1, bufferLength);
+        this.videoStream = new Stream(fileVideoPath);
 
         this.tgcalls.joinVoiceCall = async (payload: any) => {
             payload = {
@@ -31,6 +30,7 @@ export class RTCConnection {
                 fingerprint: payload.fingerprint,
                 source: payload.source,
                 source_groups: payload.source_groups,
+                have_video: fileVideoPath === undefined,
                 invite_hash: this.inviteHash,
             };
 
@@ -53,38 +53,59 @@ export class RTCConnection {
         };
         this.audioStream.on('finish', async () => {
             await this.binding.sendUpdate({
-                action: 'stream_ended',
+                action: 'stream_audio_ended',
+                chat_id: chatId,
+            });
+        });
+        this.videoStream.on('finish', async () => {
+            await this.binding.sendUpdate({
+                action: 'stream_video_ended',
                 chat_id: chatId,
             });
         });
         this.audioStream.on('stream_deleted', async () => {
             this.audioStream.stop();
-
+            this.videoStream.stop();
             await this.binding.sendUpdate({
                 action: 'update_request',
                 result: 'STREAM_DELETED',
                 chat_id: chatId,
             });
         });
+        this.videoStream.on('stream_deleted', async () => {
+            this.audioStream.stop();
+            this.videoStream.stop();
+            await this.binding.sendUpdate({
+                action: 'update_request',
+                result: 'STREAM_DELETED',
+                chat_id: chatId,
+            });
+        });
+        this.audioStream.on('sync_lag', async (status: boolean) => {
+            this.videoStream.set_sync_lag(status);
+        });
+        this.videoStream.on('sync_lag', async (status: boolean) => {
+            this.audioStream.set_sync_lag(status);
+        });
     }
 
     async joinCall() {
         try {
-            let videoTrack = undefined;
-            if(this.videoStream !== undefined){
-                videoTrack = this.videoStream.createVideoTrack(640, 360);
-            }
+            const video_width = this.videoParams === undefined ? 1:this.videoParams.width;
+            const video_height = this.videoParams === undefined ? 1:this.videoParams.height;
+            const video_framerate = this.videoParams === undefined ? 1:this.videoParams.framerate;
+            const videoTrack = this.videoStream.createVideoTrack(
+                video_width,
+                video_height,
+                video_framerate,
+            );
             let result = await this.tgcalls.start(this.audioStream.createAudioTrack(), videoTrack);
-            if(this.videoStream !== undefined){
-                this.videoStream.resume();
-            }
+            this.videoStream.resume();
             this.audioStream.resume();
             return result;
         } catch (e: any) {
             this.audioStream.stop();
-            if(this.videoStream !== undefined){
-                this.videoStream.stop();
-            }
+            this.videoStream.stop();
             Binding.log('joinCallError -> ' + e.toString(), Binding.ERROR);
             return false;
         }
@@ -93,9 +114,7 @@ export class RTCConnection {
     stop() {
         try {
             this.audioStream.stop();
-            if(this.videoStream !== undefined){
-                this.videoStream.stop();
-            }
+            this.videoStream.stop();
             this.tgcalls.close();
         } catch (e) {}
     }
@@ -117,23 +136,36 @@ export class RTCConnection {
 
     pause() {
         this.audioStream.pause();
-        if(this.videoStream !== undefined){
-            this.videoStream.pause();
-        }
+        this.videoStream.pause();
     }
 
     resume() {
         this.audioStream.resume();
-        if(this.videoStream !== undefined){
-            this.videoStream.resume();
-        }
+        this.videoStream.resume();
     }
 
-    changeStream(fileAudioPath: string, fileVideoPath?: string) {
-        this.fileAudioPath = fileAudioPath;
-        if(fileVideoPath !== undefined && this.videoStream !== undefined){
-            this.fileVideoPath = fileVideoPath;
-            this.videoStream.setReadable(this.fileVideoPath);
+    async changeStream(audioParams: any, videoParams?: any,) {
+        this.audioStream.setReadable(audioParams.path);
+        this.audioParams = audioParams;
+        this.audioStream.setAudioParams(audioParams.bitrate);
+        if(
+            !(this.videoParams == undefined && videoParams == undefined) ||
+            !(this.videoParams != undefined && videoParams != undefined)
+        ){
+            await this.binding.sendUpdate({
+                action: 'upgrade_video_status',
+                chat_id: this.chatId,
+                status: videoParams == undefined
+            });
         }
+        this.videoParams = videoParams;
+        if(this.videoParams != undefined){
+            this.videoStream.setVideoParams(
+                this.videoParams.width,
+                this.videoParams.height,
+                this.videoParams.framerate,
+            )
+        }
+        this.videoStream.setReadable(this.videoParams == undefined ? undefined:this.videoParams.path);
     }
 }

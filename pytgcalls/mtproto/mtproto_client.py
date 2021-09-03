@@ -43,6 +43,7 @@ class MtProtoClient:
         chat_id: int,
         json_join: dict,
         invite_hash: str,
+        have_video: bool,
         join_as: Any,
     ) -> dict:
         if self._bind_client is not None:
@@ -50,6 +51,7 @@ class MtProtoClient:
                 chat_id,
                 json_join,
                 invite_hash,
+                have_video,
                 join_as,
             )
         else:
@@ -76,6 +78,21 @@ class MtProtoClient:
             await self._bind_client.change_volume(
                 chat_id,
                 volume,
+                participant,
+            )
+        else:
+            raise InvalidMtProtoClient()
+
+    async def set_video_call_status(
+        self,
+        chat_id: int,
+        status: bool,
+        participant: Any,
+    ):
+        if self._bind_client is not None:
+            await self._bind_client.set_video_call_status(
+                chat_id,
+                status,
                 participant,
             )
         else:

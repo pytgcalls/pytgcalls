@@ -9,7 +9,6 @@ export function parseSdp(sdp: string): Sdp {
                 return line.substr(prefix.length);
             }
         }
-
         return null;
     };
 

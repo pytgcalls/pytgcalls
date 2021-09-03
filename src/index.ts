@@ -23,11 +23,10 @@ binding.on('request', async function (data: any) {
                 connection = new RTCConnection(
                     data.chat_id,
                     binding,
-                    data.bitrate,
                     data.buffer_length,
                     data.invite_hash,
-                    data.file_audio_path,
-                    data.file_video_path,
+                    data.stream_audio,
+                    data.stream_video,
                 );
                 connections.set(data.chat_id, connection);
                 const result = await connection.joinCall();
@@ -100,7 +99,10 @@ binding.on('request', async function (data: any) {
         case 'change_stream':
             if (connection) {
                 try {
-                    connection.changeStream(data.file_path);
+                    await connection.changeStream(
+                        data.stream_audio,
+                        data.stream_video,
+                    );
                     await binding.sendUpdate({
                         action: 'update_request',
                         result: 'CHANGED_AUDIO_STREAM',

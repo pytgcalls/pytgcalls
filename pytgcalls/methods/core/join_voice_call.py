@@ -31,6 +31,7 @@ class JoinVoiceCall(Scaffold):
                 chat_id,
                 request_call,
                 params['invite_hash'],
+                params['have_video'],
                 self._cache_user_peer.get(chat_id),
             )
         except Exception as e:

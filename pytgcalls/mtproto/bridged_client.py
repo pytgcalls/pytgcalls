@@ -15,6 +15,7 @@ class BridgedClient:
         chat_id: int,
         json_join: dict,
         invite_hash: str,
+        have_video: bool,
         join_as: Any,
     ) -> dict:
         pass
@@ -29,6 +30,14 @@ class BridgedClient:
         self,
         chat_id: int,
         volume: int,
+        participant: Any,
+    ):
+        pass
+
+    async def set_video_call_status(
+        self,
+        chat_id: int,
+        status: bool,
         participant: Any,
     ):
         pass

@@ -56,9 +56,14 @@ pip install py-tgcalls -U
 ```
 
 ## Conversion command (Video)
-From file to raw format
+From file to video raw format
 ``` bash
 ffmpeg -i {INPUT_FILE} -f rawvideo -pix_fmt yuv420p {OUTPUT_FILE}
+```
+
+From H264/VP8/VP9 to Audio and Video
+``` bash
+ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p {OUTPUT_VIDEO_FILE}
 ```
 
 ## Conversion commands

@@ -9,6 +9,8 @@ export class Stream extends EventEmitter {
     private cache: Buffer;
     private readable?: ReadStream;
     public paused: boolean = false;
+    public paused_sync_lag: boolean = false;
+    public last_lag_status: boolean = false;
     public finished: boolean = true;
     public stopped: boolean = false;
     private finishedLoading = false;
@@ -24,26 +26,28 @@ export class Stream extends EventEmitter {
     private isVideo: boolean = false;
     private videoWidth: number = 0;
     private videoHeight: number = 0;
+    private videoFramerate: number = 0;
 
     constructor(
-        public filePath: string,
+        public filePath?: string,
         readonly bitsPerSample: number = 16,
-        readonly sampleRate: number = 48000,
+        public sampleRate: number = 48000,
         readonly channelCount: number = 1,
         readonly buffer_length: number = 10,
         readonly timePulseBuffer: number = buffer_length == 4 ? 1.5 : 0,
     ) {
         super();
-
         this.audioSource = new nonstandard.RTCAudioSource();
         this.videoSource = new nonstandard.RTCVideoSource();
         this.cache = Buffer.alloc(0);
         this.paused = true;
-        this.setReadable(this.filePath);
+        if(this.filePath !== undefined){
+            this.setReadable(this.filePath);
+        }
         this.processData();
     }
 
-    setReadable(filePath: string) {
+    setReadable(filePath?: string) {
         this.bytesLoaded = 0;
         this.bytesSpeed = 0;
         this.lastLag = 0;
@@ -52,13 +56,18 @@ export class Stream extends EventEmitter {
         this.finishedBytes = false;
         this.lastByteCheck = 0;
         this.lastByte = 0;
+        this.paused_sync_lag = false;
+        this.last_lag_status = false;
 
         if (this.readable) {
             this.readable.removeListener('data', this.dataListener);
             this.readable.removeListener('end', this.endListener);
         }
-
         this.filePath = filePath;
+        if(filePath === undefined){
+            this.readable = undefined;
+            return;
+        }
         this.readable = createReadStream(filePath);
 
         if (this.stopped) {
@@ -78,21 +87,26 @@ export class Stream extends EventEmitter {
 
     private endListener = (() => {
         this.finishedLoading = true;
-        Binding.log(
-            'COMPLETED_BUFFERING -> ' + new Date().getTime(),
-            Binding.DEBUG,
-        );
-        Binding.log(
-            'BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length,
-            Binding.DEBUG,
-        );
-        Binding.log(
-            'BYTES_LOADED -> ' +
-                this.bytesLoaded +
-                'OF -> ' +
-                Stream.getFilesizeInBytes(this.filePath),
-            Binding.DEBUG,
-        );
+        if(this.filePath !== undefined){
+            Binding.log(
+                'COMPLETED_BUFFERING -> ' + new Date().getTime() +
+                            ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
+                Binding.DEBUG,
+            );
+            Binding.log(
+                'BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length +
+                            ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
+                Binding.DEBUG,
+            );
+            Binding.log(
+                'BYTES_LOADED -> ' +
+                    this.bytesLoaded +
+                    'OF -> ' +
+                    Stream.getFilesizeInBytes(this.filePath) +
+                            ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
+                Binding.DEBUG,
+            );
+        }
     }).bind(this);
 
     private dataListener = ((data: any) => {
@@ -102,28 +116,11 @@ export class Stream extends EventEmitter {
             if (!this.needsBuffering()) {
                 this.readable?.pause();
                 this.runningPulse = false;
-                Binding.log(
-                    'ENDED_BUFFERING -> ' + new Date().getTime(),
-                    Binding.DEBUG,
-                );
-                Binding.log(
-                    'BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length,
-                    Binding.DEBUG,
-                );
-                Binding.log('PULSE -> ' + this.runningPulse, Binding.DEBUG);
             }
         } catch (e) {
             this.emit('stream_deleted');
             return;
         }
-
-        Binding.log(
-            'BYTES_LOADED -> ' +
-                this.bytesLoaded +
-                'OF -> ' +
-                Stream.getFilesizeInBytes(this.filePath),
-            Binding.DEBUG,
-        );
         this.cache = Buffer.concat([this.cache, data]);
     }).bind(this);
 
@@ -132,7 +129,7 @@ export class Stream extends EventEmitter {
     }
 
     private needsBuffering(withPulseCheck = true) {
-        if (this.finishedLoading) {
+        if (this.finishedLoading || this.filePath === undefined) {
             return false;
         }
 
@@ -174,6 +171,10 @@ export class Stream extends EventEmitter {
         this.emit('pause', this.paused);
     }
 
+    set_sync_lag(status: boolean) {
+        this.paused_sync_lag = status;
+    }
+
     resume() {
         if (this.stopped) {
             throw new Error('Cannot resume when stopped');
@@ -196,11 +197,22 @@ export class Stream extends EventEmitter {
         return this.audioSource.createTrack();
     }
 
-    createVideoTrack(width: number, height: number) {
+    createVideoTrack(width: number, height: number, framerate: number) {
         this.videoWidth = width;
         this.videoHeight = height;
         this.isVideo = true;
+        this.videoFramerate = 1000 / framerate;
         return this.videoSource.createTrack();
+    }
+
+    setVideoParams(width: number, height: number, framerate: number) {
+        this.videoWidth = width;
+        this.videoHeight = height;
+        this.videoFramerate = 1000 / framerate;
+    }
+
+    setAudioParams(bitrate: number) {
+        this.sampleRate = bitrate;
     }
 
     private processData() {
@@ -210,19 +222,17 @@ export class Stream extends EventEmitter {
         }
         let byteLength;
         if(this.isVideo) {
-            byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
+            byteLength = 1.5 * this.videoWidth * this.videoHeight;
         }else{
-            // NEEDED BYTE LENGTH CALCULATION
-            byteLength = 345600
+            byteLength = ((this.sampleRate * this.bitsPerSample) / 8 / 100) * this.channelCount;
         }
-
 
         if (
             !(
                 !this.finished &&
                 this.finishedLoading &&
                 this.cache.length < byteLength
-            )
+            ) && this.filePath !== undefined
         ) {
             try {
                 if (this.needsBuffering(false)) {
@@ -234,15 +244,7 @@ export class Stream extends EventEmitter {
                         checkBuff = this.runningPulse;
                     }
                     if (this.readable !== undefined && checkBuff) {
-                        Binding.log(
-                            'PULSE -> ' + this.runningPulse,
-                            Binding.DEBUG,
-                        );
                         this.readable.resume();
-                        Binding.log(
-                            'BUFFERING -> ' + new Date().getTime(),
-                            Binding.DEBUG,
-                        );
                     }
                 }
             } catch (e) {
@@ -251,6 +253,10 @@ export class Stream extends EventEmitter {
             }
 
             const checkLag = this.checkLag();
+            if(checkLag !== this.last_lag_status){
+                this.last_lag_status = checkLag;
+                this.emit('sync_lag', checkLag);
+            }
             let fileSize: number;
             try {
                 if (oldTime - this.lastByteCheck > 1000) {
@@ -267,15 +273,14 @@ export class Stream extends EventEmitter {
 
             if (
                 !this.paused &&
+                !this.paused_sync_lag &&
                 !this.finished &&
                 (this.cache.length >= byteLength || this.finishedLoading) &&
                 !checkLag
             ) {
                 if(this.isVideo) {
                     const buffer = this.cache.slice(0, byteLength);
-                    console.log('BYTES', buffer.byteLength)
                     this.cache = this.cache.slice(byteLength);
-                    // HERE IS WRONG VIDEO SENDING
                     const i420Frame = {
                         width: this.videoWidth,
                         height: this.videoHeight,
@@ -301,28 +306,32 @@ export class Stream extends EventEmitter {
 
             } else if (checkLag) {
                 Binding.log(
-                    'STREAM_LAG -> ' + new Date().getTime(),
+                    'STREAM_LAG -> ' + new Date().getTime() +
+                        ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
                     Binding.DEBUG,
                 );
                 Binding.log(
-                    'BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length,
+                    'BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length +
+                        ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
                     Binding.DEBUG,
                 );
                 Binding.log(
                     'BYTES_LOADED -> ' +
                         this.bytesLoaded +
                         'OF -> ' +
-                        Stream.getFilesizeInBytes(this.filePath),
+                        Stream.getFilesizeInBytes(this.filePath) +
+                        ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
                     Binding.DEBUG,
                 );
             }
 
             if (!this.finishedLoading) {
                 if (fileSize === this.lastBytesLoaded) {
-                    if (this.equalCount >= 15) {
+                    if (this.equalCount >= 8) {
                         this.equalCount = 0;
                         Binding.log(
-                            'NOT_ENOUGH_BYTES -> ' + oldTime,
+                            'NOT_ENOUGH_BYTES -> ' + oldTime +
+                        ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
                             Binding.DEBUG,
                         );
                         this.finishedBytes = true;
@@ -344,7 +353,8 @@ export class Stream extends EventEmitter {
         if (
             !this.finished &&
             this.finishedLoading &&
-            this.cache.length < byteLength
+            this.cache.length < byteLength &&
+            this.filePath !== undefined
         ) {
             this.finish();
             this.emit('finish');
@@ -353,8 +363,9 @@ export class Stream extends EventEmitter {
         const toSubtract = new Date().getTime() - oldTime;
         setTimeout(
             () => this.processData(),
-            (this.finished || this.paused || this.checkLag() ? 500 : 10) -
-                toSubtract,
+            (
+                this.finished || this.paused || this.checkLag() || this.filePath === undefined ? 500 : this.isVideo ? this.videoFramerate:10
+            ) - toSubtract,
         );
     }
 

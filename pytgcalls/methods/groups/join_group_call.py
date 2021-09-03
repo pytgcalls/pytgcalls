@@ -7,15 +7,16 @@ from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
+from ...types.input_stream import InputAudioStream
+from ...types.input_stream import InputVideoStream
 
 
 class JoinGroupCall(Scaffold):
     async def join_group_call(
         self,
         chat_id: int,
-        file_audio_path: str,
-        file_video_path: str = None,
-        bitrate: int = 48000,
+        stream_audio: InputAudioStream,
+        stream_video: InputVideoStream = None,
         invite_hash: str = None,
         join_as=None,
         stream_type: StreamType = None,
@@ -27,11 +28,10 @@ class JoinGroupCall(Scaffold):
         if stream_type.stream_mode == 0:
             raise InvalidStreamMode()
         self._cache_user_peer.put(chat_id, join_as)
-        bitrate = 48000 if bitrate > 48000 else bitrate
-        if file_video_path is not None:
-            if not os.path.isfile(file_video_path):
+        if stream_video is not None:
+            if not os.path.isfile(stream_video.path):
                 raise FileNotFoundError()
-        if not os.path.isfile(file_audio_path):
+        if not os.path.isfile(stream_audio.path):
             raise FileNotFoundError()
         if self._app is not None:
             if self._wait_until_run is not None:
@@ -45,13 +45,21 @@ class JoinGroupCall(Scaffold):
                         request = {
                             'action': 'join_call',
                             'chat_id': chat_id,
-                            'file_audio_path': file_audio_path,
+                            'stream_audio': {
+                                'path': stream_audio.path,
+                                'bitrate': stream_audio.parameters.bitrate,
+                            },
                             'invite_hash': invite_hash,
-                            'bitrate': bitrate,
                             'buffer_long': stream_type.stream_mode,
                         }
-                        if file_video_path is not None:
-                            request['file_video_path'] = file_video_path
+                        if stream_video is not None:
+                            video_parameters = stream_video.parameters
+                            request['stream_video'] = {
+                                'path': stream_video.path,
+                                'width': video_parameters.width,
+                                'height': video_parameters.height,
+                                'framerate': video_parameters.frame_rate,
+                            }
                         await self._binding.send(request)
                     asyncio.ensure_future(internal_sender())
                 else:

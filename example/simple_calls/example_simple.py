@@ -9,6 +9,7 @@ from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 from pytgcalls.types import Update
+from pytgcalls.types.input_stream import InputAudioStream
 
 app = Client(
     'py-tgcalls',
@@ -24,7 +25,9 @@ if __name__ == '__main__':
             await asyncio.sleep(0.125)
         await call_py.join_group_call(
             message.chat.id,
-            file,
+            InputAudioStream(
+                file,
+            ),
             stream_type=StreamType().local_stream,
         )
 
@@ -33,7 +36,9 @@ if __name__ == '__main__':
         file = '../input.raw'
         await call_py.change_stream(
             message.chat.id,
-            file,
+            InputAudioStream(
+                file,
+            ),
         )
 
     @app.on_message(filters.regex('!cache'))

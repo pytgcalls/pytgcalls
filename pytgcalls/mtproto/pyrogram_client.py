@@ -218,6 +218,7 @@ class PyrogramClient(BridgedClient):
         chat_id: int,
         json_join: dict,
         invite_hash: str,
+        have_video: bool,
         join_as: InputPeer,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
@@ -228,7 +229,7 @@ class PyrogramClient(BridgedClient):
                     params=DataJSON(data=json.dumps(json_join)),
                     muted=False,
                     join_as=join_as,
-                    video_stopped=False,
+                    video_stopped=have_video,
                     invite_hash=invite_hash,
                 ),
             )
@@ -274,6 +275,23 @@ class PyrogramClient(BridgedClient):
                     participant=participant,
                     muted=False,
                     volume=volume * 100,
+                ),
+            )
+
+    async def set_video_call_status(
+        self,
+        chat_id: int,
+        status: bool,
+        participant: InputPeer,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._app.send(
+                EditGroupCallParticipant(
+                    call=chat_call,
+                    participant=participant,
+                    muted=False,
+                    video_stopped=status,
                 ),
             )
 

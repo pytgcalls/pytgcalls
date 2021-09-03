@@ -9,7 +9,7 @@ from pyrogram.types import Message
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
-
+from pytgcalls.types.input_stream import InputAudioStream
 
 app = Client(
     'py-tgcalls',
@@ -34,7 +34,9 @@ if __name__ == '__main__':
             time.sleep(0.125)
         await call_py.join_group_call(
             message.chat.id,
-            file,
+            InputAudioStream(
+                file,
+            ),
             stream_type=StreamType().local_stream,
         )
 
@@ -45,7 +47,9 @@ if __name__ == '__main__':
             await asyncio.sleep(0.125)
         await call_py2.join_group_call(
             message.chat.id,
-            file,
+            InputAudioStream(
+                file,
+            ),
             stream_type=StreamType().local_stream,
         )
 

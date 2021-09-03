@@ -3,6 +3,7 @@ import { RTCPeerConnection } from 'wrtc';
 import { SdpBuilder } from './sdp-builder';
 import { parseSdp } from './utils';
 import { JoinVoiceCallCallback } from './types';
+import {Binding} from "./binding";
 
 export { Stream } from './stream';
 
@@ -18,7 +19,7 @@ export class TGCalls<T> extends EventEmitter {
         this.#params = params;
     }
 
-    async start(audioTrack: MediaStreamTrack, videoTrack?: MediaStreamTrack): Promise<boolean> {
+    async start(audioTrack: MediaStreamTrack, videoTrack: MediaStreamTrack): Promise<boolean> {
         if (this.#connection) {
             throw new Error('Connection already started');
         } else if (!this.joinVoiceCall) {
@@ -44,13 +45,11 @@ export class TGCalls<T> extends EventEmitter {
 
         this.audioTrack = audioTrack;
         this.#connection.addTrack(this.audioTrack);
-        if(videoTrack !== undefined){
-            this.videoTrack = videoTrack;
-            this.#connection.addTrack(this.videoTrack);
-        }
+        this.videoTrack = videoTrack;
+        this.#connection.addTrack(this.videoTrack);
 
         const offer = await this.#connection.createOffer({
-            offerToReceiveVideo: videoTrack !== undefined,
+            offerToReceiveVideo: true,
             offerToReceiveAudio: true,
         });
 
@@ -60,7 +59,7 @@ export class TGCalls<T> extends EventEmitter {
         }
         const { ufrag, pwd, hash, fingerprint, audioSource, source_groups} = parseSdp(offer.sdp);
 
-        if (!ufrag || !pwd || !hash || !fingerprint || !audioSource) {
+        if (!ufrag || !pwd || !hash || !fingerprint || !audioSource || !source_groups) {
             return false;
         }
 
@@ -77,8 +76,8 @@ export class TGCalls<T> extends EventEmitter {
                 source_groups: source_groups,
                 params: this.#params,
             });
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            Binding.log(error.toString(), Binding.ERROR);
             this.#connection.close();
             throw error;
         }
@@ -97,14 +96,13 @@ export class TGCalls<T> extends EventEmitter {
             ssrcs: [
                 {
                     ssrc: audioSource,
-                    isMain: true,
-                    ssrc_group: source_groups == null ? undefined:source_groups
+                    ssrc_group: source_groups,
                 },
             ],
         };
         await this.#connection.setRemoteDescription({
             type: 'answer',
-            sdp: SdpBuilder.fromConference(conference, true),
+            sdp: SdpBuilder.fromConference(conference),
         });
         return true;
     }
