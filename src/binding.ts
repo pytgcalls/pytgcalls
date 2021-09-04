@@ -14,7 +14,7 @@ export class Binding extends EventEmitter {
 
         process.stdin.on('data', (chunk: boolean) => {
             try {
-                const list_data = chunk.toString().split('}{');
+                const list_data = chunk.toString().replace('}{','}\n{').split('\n');
                 for(let i = 0; i < list_data.length; i++){
                     const data = JSON.parse(list_data[i]);
                     if (data.try_connect == 'connected') {

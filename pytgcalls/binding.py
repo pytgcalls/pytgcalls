@@ -107,62 +107,71 @@ class Binding:
                     if self._js_process.stdout is None:
                         break
                     out = (await self._js_process.stdout.readline())\
-                        .decode().replace('\n', '').replace('\r', '')
-                    try:
-                        json_out = json.loads(out)
-                        if 'ping_with_response' and \
-                                self._waiting_ping is not None:
-                            self._waiting_ping.set()
-                        if 'ping' in json_out:
-                            self._last_ping = int(time())
-                        if 'try_connect' in json_out:
-                            self._ssid = json_out['try_connect']
-                            asyncio.ensure_future(
-                                self._send({
-                                    'try_connect': 'connected',
-                                    'user_id': user_id,
-                                }),
-                            )
-                            asyncio.ensure_future(self._on_connect())
-                        elif 'ssid' in json_out and 'uid' in json_out:
-                            if json_out['ssid'] == self._ssid:
-                                if self._on_request is not None:
-                                    async def future_response(
-                                        future_json_out: dict,
-                                    ):
-                                        result = await self._on_request(
-                                            future_json_out['data'],
+                        .decode().replace('\r', '')
+                    if not out:
+                        break
+                    list_data = out.split('\n')
+                    for update in list_data:
+                        try:
+                            json_out = json.loads(update)
+                            if 'ping_with_response' and \
+                                    self._waiting_ping is not None:
+                                self._waiting_ping.set()
+                            if 'ping' in json_out:
+                                self._last_ping = int(time())
+                            if 'try_connect' in json_out:
+                                self._ssid = json_out['try_connect']
+                                asyncio.ensure_future(
+                                    self._send({
+                                        'try_connect': 'connected',
+                                        'user_id': user_id,
+                                    }),
+                                )
+                                asyncio.ensure_future(self._on_connect())
+                            elif 'ssid' in json_out and 'uid' in json_out:
+                                if json_out['ssid'] == self._ssid:
+                                    if self._on_request is not None:
+                                        async def future_response(
+                                                future_json_out: dict,
+                                        ):
+                                            result = await self._on_request(
+                                                future_json_out['data'],
+                                            )
+                                            if isinstance(result, dict):
+                                                await self._send_response(
+                                                    result,
+                                                    future_json_out['uid'],
+                                                )
+                                            else:
+                                                await self._send_error(
+                                                    'INVALID_RESPONSE',
+                                                    future_json_out['uid'],
+                                                )
+
+                                        asyncio.ensure_future(
+                                            future_response(json_out),
                                         )
-                                        if isinstance(result, dict):
-                                            await self._send_response(
-                                                result,
-                                                future_json_out['uid'],
-                                            )
-                                        else:
-                                            await self._send_error(
-                                                'INVALID_RESPONSE',
-                                                future_json_out['uid'],
-                                            )
-                                    asyncio.ensure_future(
-                                        future_response(json_out),
+                            elif 'log_message' in json_out \
+                                    and 'verbose_mode' in json_out:
+                                if json_out['verbose_mode'] == 1:
+                                    logging.debug(json_out['log_message'])
+                                elif json_out['verbose_mode'] == 2:
+                                    logging.info(json_out['log_message'])
+                                elif json_out['verbose_mode'] == 3:
+                                    logging.warning(json_out['log_message'])
+                                elif json_out['verbose_mode'] == 4:
+                                    logging.error(json_out['log_message'])
+                        except JSONDecodeError:
+                            if update:
+                                if ':replace_line:' in update:
+                                    print(
+                                        update.replace(
+                                            ':replace_line:', '',
+                                        ),
+                                        end='\r',
                                     )
-                        elif 'log_message' in json_out \
-                                and 'verbose_mode' in json_out:
-                            if json_out['verbose_mode'] == 1:
-                                logging.debug(json_out['log_message'])
-                            elif json_out['verbose_mode'] == 2:
-                                logging.info(json_out['log_message'])
-                            elif json_out['verbose_mode'] == 3:
-                                logging.warning(json_out['log_message'])
-                            elif json_out['verbose_mode'] == 4:
-                                logging.error(json_out['log_message'])
-                    except JSONDecodeError:
-                        if not out:
-                            break
-                        if ':replace_line:' in out:
-                            print(out.replace(':replace_line:', ''), end='\r')
-                        else:
-                            print(out)
+                                else:
+                                    print(update)
                 except TimeoutError:
                     pass
 
