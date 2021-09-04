@@ -1,5 +1,6 @@
 import asyncio
 import os
+from stat import S_ISFIFO
 
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
@@ -18,9 +19,9 @@ class ChangeStream(Scaffold):
         if self._app is not None:
             if self._wait_until_run is not None:
                 if stream_video is not None:
-                    if not os.path.isfile(stream_video.path):
+                    if (not os.path.isfile(stream_video.path)) and (not S_ISFIFO(os.stat(stream_video.path).st_mode)):
                         raise FileNotFoundError()
-                if not os.path.isfile(stream_audio.path):
+                if (not os.path.isfile(stream_audio.path)) and (not S_ISFIFO(os.stat(stream_audio.path).st_mode)):
                     raise FileNotFoundError()
 
                 async def internal_sender():
