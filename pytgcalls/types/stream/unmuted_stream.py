@@ -9,4 +9,4 @@ class UnMutedStream(Update):
         super().__init__(chat_id)
 
     def __str__(self):
-        return 'UNMUTED_AUDIO_STREAM'
+        return 'UNMUTED_STREAM'

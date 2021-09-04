@@ -106,8 +106,8 @@ export class SdpBuilder {
         this.add('a=rtcp-fb:102 nack pli');
         this.add('a=rtpmap:103 rtx/90000');
         this.add('a=fmtp:103 apt=102');
-        this.add('a=recvonly');
 
+        this.add('a=recvonly');
         this.add('a=rtcp:1 IN IP4 0.0.0.0');
         this.add('a=rtcp-mux');
         //END VIDEO CODECS

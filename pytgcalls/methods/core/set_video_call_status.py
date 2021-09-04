@@ -1,3 +1,5 @@
+from asyncio.log import logger
+
 from pytgcalls.scaffold import Scaffold
 
 
@@ -17,6 +19,7 @@ class SetVideoCallStatus(Scaffold):
                 self._cache_user_peer.get(chat_id),
             )
         except Exception as e:
+            logger.error(f'SetVideoCallStatus: {e}')
             result = {
                 'result': str(e),
             }

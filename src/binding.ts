@@ -14,40 +14,45 @@ export class Binding extends EventEmitter {
 
         process.stdin.on('data', (chunk: boolean) => {
             try {
-                const data = JSON.parse(chunk.toString());
-
-                if (data.try_connect == 'connected') {
-                    this.connected = true;
-                    Binding.sendInternalUpdate({
-                        ping: true,
-                    });
-                    setInterval(
-                        () =>
-                            Binding.sendInternalUpdate({
-                                ping: true,
-                            }),
-                        10000,
-                    );
-                    this.emit('connect', data.user_id);
-                } else if (data.ping_with_response) {
-                    Binding.sendInternalUpdate({
-                        ping_with_response: true,
-                    });
-                } else if (data.ssid == this.ssid) {
-                    if (data.uid !== undefined) {
-                        const promise = this.promises.get(data.uid);
-                        if (promise) {
-                            if (data.data !== undefined) {
-                                promise(data.data);
-                            } else {
-                                promise(null);
+                const list_data = chunk.toString().split('}{');
+                for(let i = 0; i < list_data.length; i++){
+                    const data = JSON.parse(list_data[i]);
+                    if (data.try_connect == 'connected') {
+                        this.connected = true;
+                        Binding.sendInternalUpdate({
+                            ping: true,
+                        });
+                        setInterval(
+                            () =>
+                                Binding.sendInternalUpdate({
+                                    ping: true,
+                                }),
+                            10000,
+                        );
+                        this.emit('connect', data.user_id);
+                    } else if (data.ping_with_response) {
+                        Binding.sendInternalUpdate({
+                            ping_with_response: true,
+                        });
+                    } else if (data.ssid == this.ssid) {
+                        if (data.uid !== undefined) {
+                            const promise = this.promises.get(data.uid);
+                            if (promise) {
+                                if (data.data !== undefined) {
+                                    promise(data.data);
+                                } else {
+                                    promise(null);
+                                }
                             }
+                        } else {
+                            this.emit('request', data.data);
                         }
-                    } else {
-                        this.emit('request', data.data);
                     }
                 }
-            } catch (e) {}
+
+            } catch (e) {
+                Binding.log('Invalid Binding Update', Binding.ERROR);
+            }
         });
         this.ssid = Binding.makeID(12);
         Binding.sendInternalUpdate({

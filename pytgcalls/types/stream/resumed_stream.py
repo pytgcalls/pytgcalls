@@ -9,4 +9,4 @@ class ResumedStream(Update):
         super().__init__(chat_id)
 
     def __str__(self):
-        return 'RESUMED_AUDIO_STREAM'
+        return 'RESUMED_STREAM'

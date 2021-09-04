@@ -78,7 +78,7 @@ binding.on('request', async function (data: any) {
                     connection.pause();
                     await binding.sendUpdate({
                         action: 'update_request',
-                        result: 'PAUSED_AUDIO_STREAM',
+                        result: 'PAUSED_STREAM',
                         chat_id: data.chat_id,
                     });
                 } catch (e) {}
@@ -90,7 +90,7 @@ binding.on('request', async function (data: any) {
                     connection.resume();
                     await binding.sendUpdate({
                         action: 'update_request',
-                        result: 'RESUMED_AUDIO_STREAM',
+                        result: 'RESUMED_STREAM',
                         chat_id: data.chat_id,
                     });
                 } catch (e) {}
@@ -105,7 +105,7 @@ binding.on('request', async function (data: any) {
                     );
                     await binding.sendUpdate({
                         action: 'update_request',
-                        result: 'CHANGED_AUDIO_STREAM',
+                        result: 'CHANGED_STREAM',
                         chat_id: data.chat_id,
                     });
                 } catch (e) {}
@@ -116,7 +116,7 @@ binding.on('request', async function (data: any) {
                 connection.tgcalls.mute();
                 await binding.sendUpdate({
                     action: 'update_request',
-                    result: 'MUTED_AUDIO_STREAM',
+                    result: 'MUTED_STREAM',
                     chat_id: data.chat_id,
                 });
             }
@@ -126,7 +126,7 @@ binding.on('request', async function (data: any) {
                 connection.tgcalls.unmute();
                 await binding.sendUpdate({
                     action: 'update_request',
-                    result: 'UNMUTED_AUDIO_STREAM',
+                    result: 'UNMUTED_STREAM',
                     chat_id: data.chat_id,
                 });
             }
