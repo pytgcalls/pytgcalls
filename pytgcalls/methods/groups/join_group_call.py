@@ -1,5 +1,6 @@
 import asyncio
 import os
+from stat import S_ISFIFO
 
 from ...exceptions import InvalidStreamMode
 from ...exceptions import NoActiveGroupCall
@@ -29,9 +30,9 @@ class JoinGroupCall(Scaffold):
             raise InvalidStreamMode()
         self._cache_user_peer.put(chat_id, join_as)
         if stream_video is not None:
-            if not os.path.isfile(stream_video.path):
+            if (not os.path.isfile(stream_video.path)) and (not S_ISFIFO(os.stat(stream_video.path).st_mode)):
                 raise FileNotFoundError()
-        if not os.path.isfile(stream_audio.path):
+        if (not os.path.isfile(stream_audio.path)) and (not S_ISFIFO(os.stat(stream_video.path).st_mode)):
             raise FileNotFoundError()
         if self._app is not None:
             if self._wait_until_run is not None:
