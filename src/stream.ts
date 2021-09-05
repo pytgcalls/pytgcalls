@@ -132,7 +132,7 @@ export class Stream extends EventEmitter {
     }
 
     private needed_time(){
-        return this.isVideo ? 1:50;
+        return this.isVideo ? 1:75;
     }
 
     private needsBuffering(withPulseCheck = true) {
@@ -386,7 +386,7 @@ export class Stream extends EventEmitter {
     }
 
     currentPlayedTime(): number | undefined{
-        if(this.filePath === undefined || this.playedBytes <= this.bytesLength()){
+        if(this.filePath === undefined || this.playedBytes <= this.bytesLength() || this.finishedLoading){
             return undefined;
         }else{
             return Math.round((this.playedBytes/this.bytesLength()) / (1 / this.frameTime()))
