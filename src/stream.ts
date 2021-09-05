@@ -61,6 +61,7 @@ export class Stream extends EventEmitter {
         this.finishedBytes = false;
         this.lastByteCheck = 0;
         this.lastByte = 0;
+        this.playedBytes = 0;
 
         if (this.readable) {
             this.readable.removeListener('data', this.dataListener);
@@ -132,7 +133,7 @@ export class Stream extends EventEmitter {
     }
 
     private needed_time(){
-        return this.isVideo ? 1:75;
+        return this.isVideo ? 1:50;
     }
 
     private needsBuffering(withPulseCheck = true) {
@@ -289,17 +290,13 @@ export class Stream extends EventEmitter {
                     const buffer = this.cache.slice(0, byteLength);
                     const samples = new Int16Array(new Uint8Array(buffer).buffer);
                     this.cache = this.cache.slice(byteLength);
-                    try {
-                        this.audioSource.onData({
-                            bitsPerSample: this.bitsPerSample,
-                            sampleRate: this.sampleRate,
-                            channelCount: this.channelCount,
-                            numberOfFrames: samples.length,
-                            samples,
-                        });
-                    } catch (error) {
-                        this.emit('error', error);
-                    }
+                    this.audioSource.onData({
+                        bitsPerSample: this.bitsPerSample,
+                        sampleRate: this.sampleRate,
+                        channelCount: this.channelCount,
+                        numberOfFrames: samples.length,
+                        samples,
+                    });
                 }
 
             } else if (checkLag) {
@@ -371,7 +368,7 @@ export class Stream extends EventEmitter {
             const local_play_time = this.currentPlayedTime();
             if (remote_play_time != undefined && local_play_time != undefined) {
                 if(local_play_time > remote_play_time){
-                    this.lastDifferenceRemote = local_play_time - remote_play_time;
+                    this.lastDifferenceRemote = this.float2int((local_play_time - remote_play_time) * 10000);
                     return true;
                 }
             }
@@ -384,12 +381,15 @@ export class Stream extends EventEmitter {
             this.finished || this.paused || this.checkLag() || this.filePath === undefined ? 500 : this.isVideo ? this.videoFramerate:10
         );
     }
+    float2int (value: number) {
+        return value | 0;
+    }
 
     currentPlayedTime(): number | undefined{
-        if(this.filePath === undefined || this.playedBytes <= this.bytesLength() || this.finishedLoading){
+        if(this.filePath === undefined || this.playedBytes <= this.bytesLength() || this.finished){
             return undefined;
         }else{
-            return Math.round((this.playedBytes/this.bytesLength()) / (1 / this.frameTime()))
+            return this.float2int((this.playedBytes/this.bytesLength()) / (0.0001 / this.frameTime()))
         }
     }
 }
