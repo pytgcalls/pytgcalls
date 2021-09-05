@@ -63,13 +63,22 @@ ffmpeg -i {INPUT_FILE} -f rawvideo -pix_fmt yuv420p -vf scale=640:-1 {OUTPUT_FIL
 
 From H264/VP8/VP9 to Audio and Video
 ``` bash
-ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale=640:-1 {OUTPUT_VIDEO_FILE}
+ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale={SCALING}:-1 {OUTPUT_VIDEO_FILE}
 ```
 
 From YouTube Live stream to Video
 
 > ### Important!
-> The max resolution allowed by Telegram is of 640x360 at 30 fps
+> The max resolution allowed by Telegram is of 720p at 30 fps
+> Here also listed the scaling format
+> - 360p = 640
+> - 480p = 864
+> - 720p = 1280
+> 
+> If you have any problem with green screen or un-synchronized video, it can be one of the problem:
+> - Invalid FFMPEG command
+> - The video quality is higher than the original video
+> - Invalid PyTgCalls video parameters
 
 ## Conversion commands
 
