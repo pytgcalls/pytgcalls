@@ -1,8 +1,8 @@
 import asyncio
-import os
 
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
+from ...file_manager import FileManager
 from ...scaffold import Scaffold
 from ...types.input_stream import InputAudioStream
 from ...types.input_stream import InputVideoStream
@@ -18,10 +18,8 @@ class ChangeStream(Scaffold):
         if self._app is not None:
             if self._wait_until_run is not None:
                 if stream_video is not None:
-                    if not os.path.isfile(stream_video.path):
-                        raise FileNotFoundError()
-                if not os.path.isfile(stream_audio.path):
-                    raise FileNotFoundError()
+                    FileManager.check_file_exist(stream_video.path)
+                FileManager.check_file_exist(stream_audio.path)
 
                 async def internal_sender():
                     if not self._wait_until_run.done():

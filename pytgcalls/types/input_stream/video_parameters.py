@@ -1,9 +1,9 @@
 class VideoParameters:
     def __init__(
         self,
-        width: int,
-        height: int,
-        frame_rate: int,
+        width: int = 640,
+        height: int = 360,
+        frame_rate: int = 25,
     ):
         self.width: int = width
         self.height: int = height

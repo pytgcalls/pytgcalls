@@ -62,3 +62,10 @@ export interface JoinVoiceCallResponse {
 export type JoinVoiceCallCallback<T> = (
     payload: JoinVoiceCallParams<T>,
 ) => Promise<JoinVoiceCallResponse>;
+
+export interface RemotePlayingTimeResponse {
+    time?: number;
+}
+
+export type RemotePlayingTimeCallback = (
+) => RemotePlayingTimeResponse;

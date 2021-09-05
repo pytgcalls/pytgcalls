@@ -83,8 +83,8 @@ if __name__ == '__main__':
         print(update)
 
     @call_py.on_stream_end()
-    async def stream_end_handler(client: PyTgCalls, chat_id: int):
-        print(f'Stream endend in {chat_id}')
+    async def stream_end_handler(client: PyTgCalls, update: Update):
+        print(f'Stream ended in {update.chat_id}', update)
 
     call_py.start()
     idle()

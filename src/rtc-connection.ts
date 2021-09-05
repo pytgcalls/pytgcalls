@@ -81,12 +81,16 @@ export class RTCConnection {
                 chat_id: chatId,
             });
         });
-        this.audioStream.on('sync_lag', async (status: boolean) => {
-            this.videoStream.set_sync_lag(status);
-        });
-        this.videoStream.on('sync_lag', async (status: boolean) => {
-            this.audioStream.set_sync_lag(status);
-        });
+        this.audioStream.remotePlayingTime = () => {
+            return {
+                time: this.videoStream.currentPlayedTime()
+            }
+        };
+        this.videoStream.remotePlayingTime = () => {
+            return {
+                time: this.audioStream.currentPlayedTime()
+            }
+        };
     }
 
     async joinCall() {

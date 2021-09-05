@@ -58,13 +58,18 @@ pip install py-tgcalls -U
 ## Conversion command (Video)
 From file to video raw format
 ``` bash
-ffmpeg -i {INPUT_FILE} -f rawvideo -pix_fmt yuv420p {OUTPUT_FILE}
+ffmpeg -i {INPUT_FILE} -f rawvideo -pix_fmt yuv420p -vf scale=640:-1 {OUTPUT_FILE}
 ```
 
 From H264/VP8/VP9 to Audio and Video
 ``` bash
-ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p {OUTPUT_VIDEO_FILE}
+ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale=640:-1 {OUTPUT_VIDEO_FILE}
 ```
+
+From YouTube Live stream to Video
+
+> ### Important!
+> The max resolution allowed by Telegram is of 640x360 at 30 fps
 
 ## Conversion commands
 

@@ -1,10 +1,11 @@
 import asyncio
-import os
+import logging
 
 from ...exceptions import InvalidStreamMode
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
+from ...file_manager import FileManager
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
 from ...types.input_stream import InputAudioStream
@@ -29,10 +30,8 @@ class JoinGroupCall(Scaffold):
             raise InvalidStreamMode()
         self._cache_user_peer.put(chat_id, join_as)
         if stream_video is not None:
-            if not os.path.isfile(stream_video.path):
-                raise FileNotFoundError()
-        if not os.path.isfile(stream_audio.path):
-            raise FileNotFoundError()
+            FileManager.check_file_exist(stream_video.path)
+        FileManager.check_file_exist(stream_audio.path)
         if self._app is not None:
             if self._wait_until_run is not None:
                 if not self._wait_until_run.done():
@@ -54,6 +53,11 @@ class JoinGroupCall(Scaffold):
                         }
                         if stream_video is not None:
                             video_parameters = stream_video.parameters
+                            if video_parameters.frame_rate % 5 != 0:
+                                logging.warning(
+                                    'For better experience the '
+                                    'video frame rate must be a multiple of 5',
+                                )
                             request['stream_video'] = {
                                 'path': stream_video.path,
                                 'width': video_parameters.width,
