@@ -133,7 +133,7 @@ export class Stream extends EventEmitter {
     }
 
     private needed_time(){
-        return this.isVideo ? 1:50;
+        return this.isVideo ? 0.5:50;
     }
 
     private needsBuffering(withPulseCheck = true) {
@@ -356,9 +356,10 @@ export class Stream extends EventEmitter {
         }
 
         const toSubtract = new Date().getTime() - oldTime;
+        const timeoutWait = this.frameTime() - toSubtract - this.lastDifferenceRemote;
         setTimeout(
             () => this.processData(),
-            this.frameTime() - toSubtract - this.lastDifferenceRemote,
+            timeoutWait > 0 ? timeoutWait:1,
         );
     }
 
@@ -368,7 +369,7 @@ export class Stream extends EventEmitter {
             const local_play_time = this.currentPlayedTime();
             if (remote_play_time != undefined && local_play_time != undefined) {
                 if(local_play_time > remote_play_time){
-                    this.lastDifferenceRemote = this.float2int((local_play_time - remote_play_time) * 10000);
+                    this.lastDifferenceRemote = (local_play_time - remote_play_time) * 10000;
                     return true;
                 }
             }
@@ -381,15 +382,12 @@ export class Stream extends EventEmitter {
             this.finished || this.paused || this.checkLag() || this.filePath === undefined ? 500 : this.isVideo ? this.videoFramerate:10
         );
     }
-    float2int (value: number) {
-        return value | 0;
-    }
 
     currentPlayedTime(): number | undefined{
         if(this.filePath === undefined || this.playedBytes <= this.bytesLength() || this.finished){
             return undefined;
         }else{
-            return this.float2int((this.playedBytes/this.bytesLength()) / (0.0001 / this.frameTime()))
+            return Math.floor((this.playedBytes/this.bytesLength()) / (0.0001 / this.frameTime()))
         }
     }
 }
