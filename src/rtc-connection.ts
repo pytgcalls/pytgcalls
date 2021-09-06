@@ -138,14 +138,28 @@ export class RTCConnection {
         }
     }
 
-    pause() {
+    async pause() {
         this.audioStream.pause();
         this.videoStream.pause();
+        if(this.videoParams != undefined){
+            await this.binding.sendUpdate({
+                action: 'upgrade_video_status',
+                chat_id: this.chatId,
+                paused_status: true,
+            });
+        }
     }
 
-    resume() {
+    async resume() {
         this.audioStream.resume();
         this.videoStream.resume();
+        if(this.videoParams != undefined){
+            await this.binding.sendUpdate({
+                action: 'upgrade_video_status',
+                chat_id: this.chatId,
+                paused_status: false,
+            });
+        }
     }
 
     async changeStream(audioParams: any, videoParams?: any,) {
@@ -159,7 +173,7 @@ export class RTCConnection {
             await this.binding.sendUpdate({
                 action: 'upgrade_video_status',
                 chat_id: this.chatId,
-                status: videoParams == undefined
+                stopped_status: videoParams == undefined
             });
         }
         this.videoParams = videoParams;

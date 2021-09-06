@@ -75,7 +75,7 @@ binding.on('request', async function (data: any) {
         case 'pause':
             if (connection) {
                 try {
-                    connection.pause();
+                    await connection.pause();
                     await binding.sendUpdate({
                         action: 'update_request',
                         result: 'PAUSED_STREAM',
@@ -87,7 +87,7 @@ binding.on('request', async function (data: any) {
         case 'resume':
             if (connection) {
                 try {
-                    connection.resume();
+                    await connection.resume();
                     await binding.sendUpdate({
                         action: 'update_request',
                         result: 'RESUMED_STREAM',

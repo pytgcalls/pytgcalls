@@ -86,13 +86,15 @@ class MtProtoClient:
     async def set_video_call_status(
         self,
         chat_id: int,
-        status: bool,
+        stopped_status: Optional[bool],
+        paused_status: Optional[bool],
         participant: Any,
     ):
         if self._bind_client is not None:
             await self._bind_client.set_video_call_status(
                 chat_id,
-                status,
+                stopped_status,
+                paused_status,
                 participant,
             )
         else:

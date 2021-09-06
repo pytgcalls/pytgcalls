@@ -213,7 +213,7 @@ export class Stream extends EventEmitter {
         this.sampleRate = bitrate;
     }
 
-    private bytesLength(){
+    private bytesLength(): number{
         if(this.isVideo) {
             return 1.5 * this.videoWidth * this.videoHeight;
         }else{
@@ -277,9 +277,8 @@ export class Stream extends EventEmitter {
                 !checkLag
             ) {
                 this.playedBytes += byteLength;
+                const buffer = this.cache.slice(0, byteLength);
                 if(this.isVideo) {
-                    const buffer = this.cache.slice(0, byteLength);
-                    this.cache = this.cache.slice(byteLength);
                     const i420Frame = {
                         width: this.videoWidth,
                         height: this.videoHeight,
@@ -287,9 +286,7 @@ export class Stream extends EventEmitter {
                     };
                     this.videoSource.onFrame(i420Frame)
                 }else{
-                    const buffer = this.cache.slice(0, byteLength);
                     const samples = new Int16Array(new Uint8Array(buffer).buffer);
-                    this.cache = this.cache.slice(byteLength);
                     this.audioSource.onData({
                         bitsPerSample: this.bitsPerSample,
                         sampleRate: this.sampleRate,
@@ -298,7 +295,7 @@ export class Stream extends EventEmitter {
                         samples,
                     });
                 }
-
+                this.cache = this.cache.slice(byteLength);
             } else if (checkLag) {
                 Binding.log(
                     'STREAM_LAG -> ' + new Date().getTime() +
@@ -377,7 +374,7 @@ export class Stream extends EventEmitter {
         return false;
     }
 
-    private frameTime(){
+    private frameTime(): number{
         return (
             this.finished || this.paused || this.checkLag() || this.filePath === undefined ? 500 : this.isVideo ? this.videoFramerate:10
         );

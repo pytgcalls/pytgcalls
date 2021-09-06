@@ -11,11 +11,16 @@ class SetVideoCallStatus(Scaffold):
         result = {
             'result': 'OK',
         }
+        stopped_status = params['stopped_status'] \
+            if 'stopped_status' in params else None
+        paused_status = params['paused_status'] \
+            if 'paused_status' in params else None
         try:
             chat_id = int(params['chat_id'])
             await self._app.set_video_call_status(
                 chat_id,
-                params['status'],
+                stopped_status,
+                paused_status,
                 self._cache_user_peer.get(chat_id),
             )
         except Exception as e:

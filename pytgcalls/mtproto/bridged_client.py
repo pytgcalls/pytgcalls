@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from typing import Callable
 
 
@@ -37,7 +37,8 @@ class BridgedClient:
     async def set_video_call_status(
         self,
         chat_id: int,
-        status: bool,
+        stopped_status: Optional[bool],
+        paused_status: Optional[bool],
         participant: Any,
     ):
         pass
