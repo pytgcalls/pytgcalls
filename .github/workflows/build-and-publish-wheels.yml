@@ -4,6 +4,17 @@ name: Build Wheels
 on:
   push:
     branches: [ master, dev ]
+    paths-ignore:
+      - '.gitignore'
+      - '.npmignore'
+      - '.pre-commit-config.yaml'
+      - 'CODE_OF_CONDUCT.md'
+      - 'CONTRIBUTING.md'
+      - 'LICENSE'
+      - 'README.md'
+      - 'install_nodejs.sh'
+      - 'example/*'
+      - '.github/*'
   workflow_dispatch:
 
 jobs:
