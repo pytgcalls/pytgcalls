@@ -78,7 +78,7 @@ From YouTube Live stream to Video
 > - 360p = 640
 > - 480p = 864
 > - 720p = 1280
-> 
+>
 > If you have any problem with green screen or un-synchronized video, it can be one of these problems:
 > - Invalid FFMPEG command
 > - The video quality specified to convert is higher than the original video one
