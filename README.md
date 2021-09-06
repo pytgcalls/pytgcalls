@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://github.com/MarshalX/tgcalls">
+    <a href="https://github.com/pytgcalls/pytgcalls">
         <img src="https://user-images.githubusercontent.com/32808683/111091141-62473b00-8508-11eb-9c05-3e0fd4a21af3.png" alt="pytgcalls logo" />
     </a>
     <br>
@@ -38,11 +38,10 @@
 ![Architectures](https://img.shields.io/badge/architectures-x86__64%20%7C%20arm64v8%20%7C%20win__amd64%20%7C%20darwin__x64-blue)
 [![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
 
-This project allow to make Telegram group call with MTProto Api using Pyrogram and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library and [@evgeny-nadymov]
+This project allows to make Telegram group call with MTProto Api using Pyrogram and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library and [@evgeny-nadymov]
 
 ## What are the supported clients?
-The supported client for now is Pyrogram and Telethon, but we accept
-also other clients, you can open a pull request with the edits
+The supported clients for now are Pyrogram and Telethon, but we accept other clients too, you can open a pull request with the edits
 
 ## How to install?
 Here's how to install the PyTgCalls lib, the commands are given below:
@@ -51,12 +50,12 @@ Here's how to install the PyTgCalls lib, the commands are given below:
 # With Git
 pip install git+https://github.com/pytgcalls/pytgcalls -U
 
-# With PyPi (Raccomended)
+# With PyPi (Reccomended)
 pip install py-tgcalls -U
 ```
 
 ## Conversion command (Video)
-From file to video raw format
+From file to raw video
 ``` bash
 ffmpeg -i {INPUT_FILE} -f rawvideo -pix_fmt yuv420p -vf scale=640:-1 {OUTPUT_FILE}
 ```
@@ -64,6 +63,11 @@ ffmpeg -i {INPUT_FILE} -f rawvideo -pix_fmt yuv420p -vf scale=640:-1 {OUTPUT_FIL
 From H264/VP8/VP9 to Audio and Video
 ``` bash
 ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale={SCALING}:-1 {OUTPUT_VIDEO_FILE}
+```
+
+From youtube video/live-stream to Audio and Video
+``` bash
+ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale={SCALING}:-1 {OUTPUT_VIDEO_FILE}
 ```
 
 From YouTube Live stream to Video
@@ -75,9 +79,9 @@ From YouTube Live stream to Video
 > - 480p = 864
 > - 720p = 1280
 > 
-> If you have any problem with green screen or un-synchronized video, it can be one of the problem:
+> If you have any problem with green screen or un-synchronized video, it can be one of these problems:
 > - Invalid FFMPEG command
-> - The video quality is higher than the original video
+> - The video quality specified to convert is higher than the original video one
 > - Invalid PyTgCalls video parameters
 
 ## Conversion commands
