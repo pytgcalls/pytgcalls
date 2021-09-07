@@ -3,12 +3,15 @@ import { RTCPeerConnection } from 'wrtc';
 import { SdpBuilder } from './sdp-builder';
 import { parseSdp } from './utils';
 import { JoinVoiceCallCallback } from './types';
+import {Binding} from "./binding";
 
 export { Stream } from './stream';
 
 export class TGCalls<T> extends EventEmitter {
     #connection?: RTCPeerConnection;
     readonly #params: any;
+    private audioTrack?: MediaStreamTrack;
+    private videoTrack?: MediaStreamTrack;
     joinVoiceCall?: JoinVoiceCallCallback<T>;
 
     constructor(params: T) {
@@ -16,7 +19,7 @@ export class TGCalls<T> extends EventEmitter {
         this.#params = params;
     }
 
-    async start(track: MediaStreamTrack): Promise<boolean> {
+    async start(audioTrack: MediaStreamTrack, videoTrack: MediaStreamTrack): Promise<boolean> {
         if (this.#connection) {
             throw new Error('Connection already started');
         } else if (!this.joinVoiceCall) {
@@ -39,27 +42,28 @@ export class TGCalls<T> extends EventEmitter {
                     break;
             }
         };
-        this.#connection.addTrack(track);
+
+        this.audioTrack = audioTrack;
+        this.#connection.addTrack(this.audioTrack);
+        this.videoTrack = videoTrack;
+        this.#connection.addTrack(this.videoTrack);
 
         const offer = await this.#connection.createOffer({
-            offerToReceiveVideo: false,
+            offerToReceiveVideo: true,
             offerToReceiveAudio: true,
         });
 
         await this.#connection.setLocalDescription(offer);
-
         if (!offer.sdp) {
             return false;
         }
+        const { ufrag, pwd, hash, fingerprint, audioSource, source_groups} = parseSdp(offer.sdp);
 
-        const { ufrag, pwd, hash, fingerprint, source } = parseSdp(offer.sdp);
-
-        if (!ufrag || !pwd || !hash || !fingerprint || !source) {
+        if (!ufrag || !pwd || !hash || !fingerprint || !audioSource || !source_groups) {
             return false;
         }
 
         let joinGroupCallResult;
-
         try {
             //The setup need to be active
             joinGroupCallResult = await this.joinVoiceCall({
@@ -68,11 +72,12 @@ export class TGCalls<T> extends EventEmitter {
                 hash,
                 setup: 'active',
                 fingerprint,
-                source,
+                source: audioSource,
+                source_groups: source_groups,
                 params: this.#params,
             });
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            Binding.log(error.toString(), Binding.ERROR);
             this.#connection.close();
             throw error;
         }
@@ -88,13 +93,36 @@ export class TGCalls<T> extends EventEmitter {
         const conference = {
             session_id,
             transport: joinGroupCallResult.transport,
-            ssrcs: [{ ssrc: source, isMain: true }],
+            ssrcs: [
+                {
+                    ssrc: audioSource,
+                    ssrc_group: source_groups,
+                },
+            ],
         };
         await this.#connection.setRemoteDescription({
             type: 'answer',
-            sdp: SdpBuilder.fromConference(conference, true),
+            sdp: SdpBuilder.fromConference(conference),
         });
         return true;
+    }
+
+    mute() {
+        if (this.audioTrack && this.audioTrack.enabled) {
+            this.audioTrack.enabled = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    unmute() {
+        if (this.audioTrack && !this.audioTrack.enabled) {
+            this.audioTrack.enabled = true;
+            return true;
+        }
+
+        return false;
     }
 
     close() {

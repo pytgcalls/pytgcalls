@@ -34,6 +34,19 @@ class TooOldPyrogramVersion(Exception):
         )
 
 
+class TooOldTelethonVersion(Exception):
+    def __init__(
+        self,
+        version_needed: str,
+        telethon_version: str,
+    ):
+        super().__init__(
+            f'Needed telethon {version_needed}+, '
+            'actually installed is '
+            f'{telethon_version}',
+        )
+
+
 class InvalidStreamMode(Exception):
     def __init__(self):
         super().__init__(
@@ -41,10 +54,10 @@ class InvalidStreamMode(Exception):
         )
 
 
-class PyrogramNotSet(Exception):
+class NoMtProtoClientSet(Exception):
     def __init__(self):
         super().__init__(
-            'Pyrogram not set',
+            'No MtProto client set',
         )
 
 
@@ -90,4 +103,11 @@ class GroupCallNotFound(Exception):
     ):
         super().__init__(
             f'Group call not found with the chat id {chat_id}',
+        )
+
+
+class InvalidMtProtoClient(Exception):
+    def __init__(self):
+        super().__init__(
+            'Invalid MtProto Client',
         )

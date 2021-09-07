@@ -3,8 +3,11 @@ import functools
 import inspect
 import threading
 
+from pyrogram.methods.utilities import idle as idle_module
+
 from .custom_api import CustomApi
 from .methods import Methods
+from .mtproto import MtProtoClient
 
 
 def async_to_sync(obj, name):
@@ -21,34 +24,46 @@ def async_to_sync(obj, name):
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:
-            loop = main_loop
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-        if loop.is_running():
-            if threading.current_thread() is threading.main_thread():
+        if threading.current_thread() is threading.main_thread():
+            if loop.is_running():
                 return coroutine
             else:
                 if inspect.iscoroutine(coroutine):
-                    return asyncio.run_coroutine_threadsafe(
-                        coroutine,
-                        loop,
-                    ).result()
+                    return loop.run_until_complete(coroutine)
 
                 if inspect.isasyncgen(coroutine):
-                    return asyncio.run_coroutine_threadsafe(
+                    return loop.run_until_complete(
                         consume_generator(coroutine),
-                        loop,
+                    )
+        else:
+            if inspect.iscoroutine(coroutine):
+                if loop.is_running():
+                    async def coro_wrapper():
+                        return await asyncio.wrap_future(
+                            asyncio.run_coroutine_threadsafe(
+                                coroutine,
+                                main_loop,
+                            ),
+                        )
+
+                    return coro_wrapper()
+                else:
+                    return asyncio.run_coroutine_threadsafe(
+                        coroutine,
+                        main_loop,
                     ).result()
 
-        if inspect.iscoroutine(coroutine):
-            try:
-                return loop.run_until_complete(coroutine)
-            except KeyboardInterrupt:
-                pass
-
-        if inspect.isasyncgen(coroutine):
-            return loop.run_until_complete(
-                consume_generator(coroutine),
-            )
+            if inspect.isasyncgen(coroutine):
+                if loop.is_running():
+                    return coroutine
+                else:
+                    return asyncio.run_coroutine_threadsafe(
+                        consume_generator(coroutine),
+                        main_loop,
+                    ).result()
 
     setattr(obj, name, async_to_sync_wrap)
 
@@ -66,7 +81,6 @@ def wrap(source):
 # Wrap all Client's relevant methods
 wrap(Methods)
 wrap(CustomApi)
-
-
-class ASyncer:
-    pass
+wrap(MtProtoClient)
+async_to_sync(idle_module, 'idle')
+idle = getattr(idle_module, 'idle')

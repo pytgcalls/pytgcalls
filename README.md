@@ -1,6 +1,31 @@
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/32808683/111091141-62473b00-8508-11eb-9c05-3e0fd4a21af3.png" alt="pytgcalls logo" />
+    <a href="https://github.com/pytgcalls/pytgcalls">
+        <img src="https://user-images.githubusercontent.com/32808683/111091141-62473b00-8508-11eb-9c05-3e0fd4a21af3.png" alt="pytgcalls logo" />
+    </a>
+    <br>
+    <b>A simple and elegant client that allows you to make group voice calls quickly and easily.</b>
+    <br>
+    <a href="https://github.com/pytgcalls/pytgcalls/tree/master/example">
+        Examples
+    </a>
+    •
+    <a href="https://pytgcalls.github.io/">
+        Documentation
+    </a>
+    •
+    <a href="https://pypi.org/project/py-tgcalls/">
+        PyPi
+    </a>
+    •
+    <a href="https://t.me/pytgcallsnews">
+        Channel
+    </a>
+    •
+    <a href="https://t.me/pytgcallschat">
+        Chat
+    </a>
 </p>
+
 
 # PyTgCalls
 
@@ -13,39 +38,51 @@
 ![Architectures](https://img.shields.io/badge/architectures-x86__64%20%7C%20arm64v8%20%7C%20win__amd64%20%7C%20darwin__x64-blue)
 [![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
 
-This project allow to make Telegram group call with MTProto Api using Pyrogram and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library and [@evgeny-nadymov]
+This project allows to make Telegram group call with MTProto Api using Pyrogram and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library and [@evgeny-nadymov]
 
-# Common Problems
-
-## Problem with pyrogram?
-If do you have problems with pyrogram, reinstall by this command
-``` bash
-pip install git+https://github.com/pyrogram/pyrogram -U
-```
-
-## Live stream or ffmpeg live conversion stopped?
-Check before if is changing the size of file(Is a method to check if ffmpeg is alive).
-
-If is alive and stream is stopped, report to the issue with including last ultra verbose log and put in to nekobin.
-
-## Docs
-
-[Read the docs!][docs]
+## What are the supported clients?
+The supported clients for now are Pyrogram and Telethon, but we accept other clients too, you can open a pull request with the edits
 
 ## How to install?
-
 Here's how to install the PyTgCalls lib, the commands are given below:
-
-### If you want installation from git
-You need to install docker, then enable the experimental mode
 
 ``` bash
 # With Git
 pip install git+https://github.com/pytgcalls/pytgcalls -U
 
-# With PyPi
+# With PyPi (Recommended)
 pip install py-tgcalls -U
 ```
+
+## Conversion command (Video)
+From file to raw video
+``` bash
+ffmpeg -i {INPUT_FILE} -f rawvideo -pix_fmt yuv420p -vf scale=640:-1 {OUTPUT_FILE}
+```
+
+From H264/VP8/VP9 to Audio and Video
+``` bash
+ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale={SCALING}:-1 {OUTPUT_VIDEO_FILE}
+```
+
+From youtube video/live-stream to Audio and Video
+``` bash
+ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale={SCALING}:-1 {OUTPUT_VIDEO_FILE}
+```
+
+From YouTube Live stream to Video
+
+> ### Important!
+> The max resolution allowed by Telegram is of 720p at 30 fps
+> Here also listed the scaling format
+> - 360p = 640
+> - 480p = 864
+> - 720p = 1280
+>
+> If you have any problem with green screen or un-synchronized video, it can be one of these problems:
+> - Invalid FFMPEG command
+> - The video quality specified to convert is higher than the original video one
+> - Invalid PyTgCalls video parameters
 
 ## Conversion commands
 
@@ -73,7 +110,6 @@ This library is based on [tgcallsjs] developed [@AndrewLaneX] and pyservercall b
 
 [pre-commit.ci-badge]: https://results.pre-commit.ci/badge/github/pytgcalls/pytgcalls/master.svg
 [pre-commit.ci]: https://results.pre-commit.ci/latest/github/pytgcalls/pytgcalls/master
-[docs]: https://pytgcalls.github.io/
 [@evgeny-nadymov]: https://github.com/evgeny-nadymov/
 [@AndrewLaneX]: https://github.com/AndrewLaneX/
 [telegram-react]: https://github.com/evgeny-nadymov/telegram-react/

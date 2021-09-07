@@ -13,8 +13,12 @@ class BindingRunner(Scaffold):
                     return await self._join_voice_call(data['payload'])
                 elif data['action'] == 'leave_call_request':
                     return await self._leave_voice_call(data)
-                elif data['action'] == 'stream_ended':
-                    return await self._stream_ended_handler(data)
+                elif data['action'] == 'stream_audio_ended':
+                    return await self._stream_ended_handler(data, True)
+                elif data['action'] == 'stream_video_ended':
+                    return await self._stream_ended_handler(data, False)
+                elif data['action'] == 'upgrade_video_status':
+                    return await self._set_video_call_status(data)
                 elif data['action'] == 'update_request':
                     return await self._raw_update_handler(data)
             return {

@@ -18,7 +18,7 @@ class Cache:
     def get(self, chat_id: int) -> Optional[Any]:
         if chat_id in self._store:
             if self._store[chat_id].time == 0 or \
-                    int(time()) - self._store[chat_id].time > 0:
+                    self._store[chat_id].time - int(time()) > 0:
                 return self._store[chat_id].data
             else:
                 self._store.pop(chat_id, None)

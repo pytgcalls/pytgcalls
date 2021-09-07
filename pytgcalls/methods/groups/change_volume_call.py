@@ -1,8 +1,6 @@
-from pyrogram.raw.functions.phone import EditGroupCallParticipant
-
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
-from ...exceptions import PyrogramNotSet
+from ...exceptions import NoMtProtoClientSet
 from ...scaffold import Scaffold
 
 
@@ -12,21 +10,18 @@ class ChangeVolumeCall(Scaffold):
             if self._wait_until_run is not None:
                 if not self._wait_until_run.done():
                     await self._wait_until_run
-                chat_call = await self._full_chat_cache.get_full_chat(
+                chat_call = await self._app.get_full_chat(
                     chat_id,
                 )
                 if chat_call is not None:
-                    await self._app.send(
-                        EditGroupCallParticipant(
-                            call=chat_call,
-                            participant=self._cache_user_peer.get(chat_id),
-                            muted=False,
-                            volume=volume * 100,
-                        ),
+                    await self._app.change_volume(
+                        chat_id,
+                        volume,
+                        self._cache_user_peer.get(chat_id),
                     )
                 else:
                     raise NoActiveGroupCall()
             else:
                 raise NodeJSNotRunning()
         else:
-            raise PyrogramNotSet()
+            raise NoMtProtoClientSet()

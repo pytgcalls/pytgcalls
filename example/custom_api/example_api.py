@@ -3,10 +3,10 @@ import json
 import requests
 from pyrogram import Client
 from pyrogram import filters
-from pyrogram import idle
 from pyrogram.types import Message
 
 from pytgcalls import CustomApi
+from pytgcalls import idle
 
 app = Client(
     'py-tgcalls',

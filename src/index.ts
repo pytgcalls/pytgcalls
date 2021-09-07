@@ -22,16 +22,14 @@ binding.on('request', async function (data: any) {
             if (!connection) {
                 connection = new RTCConnection(
                     data.chat_id,
-                    data.file_path,
                     binding,
-                    data.bitrate,
                     data.buffer_length,
                     data.invite_hash,
+                    data.stream_audio,
+                    data.stream_video,
                 );
                 connections.set(data.chat_id, connection);
-
                 const result = await connection.joinCall();
-
                 if (result) {
                     await binding.sendUpdate({
                         action: 'update_request',
@@ -77,10 +75,10 @@ binding.on('request', async function (data: any) {
         case 'pause':
             if (connection) {
                 try {
-                    connection.pause();
+                    await connection.pause();
                     await binding.sendUpdate({
                         action: 'update_request',
-                        result: 'PAUSED_AUDIO_STREAM',
+                        result: 'PAUSED_STREAM',
                         chat_id: data.chat_id,
                     });
                 } catch (e) {}
@@ -89,10 +87,10 @@ binding.on('request', async function (data: any) {
         case 'resume':
             if (connection) {
                 try {
-                    connection.resume();
+                    await connection.resume();
                     await binding.sendUpdate({
                         action: 'update_request',
-                        result: 'RESUMED_AUDIO_STREAM',
+                        result: 'RESUMED_STREAM',
                         chat_id: data.chat_id,
                     });
                 } catch (e) {}
@@ -101,13 +99,36 @@ binding.on('request', async function (data: any) {
         case 'change_stream':
             if (connection) {
                 try {
-                    connection.changeStream(data.file_path);
+                    await connection.changeStream(
+                        data.stream_audio,
+                        data.stream_video,
+                    );
                     await binding.sendUpdate({
                         action: 'update_request',
-                        result: 'CHANGED_AUDIO_STREAM',
+                        result: 'CHANGED_STREAM',
                         chat_id: data.chat_id,
                     });
                 } catch (e) {}
+            }
+            break;
+        case 'mute_stream':
+            if (connection) {
+                connection.tgcalls.mute();
+                await binding.sendUpdate({
+                    action: 'update_request',
+                    result: 'MUTED_STREAM',
+                    chat_id: data.chat_id,
+                });
+            }
+            break;
+        case 'unmute_stream':
+            if (connection) {
+                connection.tgcalls.unmute();
+                await binding.sendUpdate({
+                    action: 'update_request',
+                    result: 'UNMUTED_STREAM',
+                    chat_id: data.chat_id,
+                });
             }
             break;
     }

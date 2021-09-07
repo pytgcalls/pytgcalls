@@ -1,6 +1,6 @@
 {
     "name": "tgcalls",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "",
     "main": "dist",
     "scripts": {
@@ -21,7 +21,7 @@
     "homepage": "https://github.com/tgcallsjs/tgcalls#readme",
     "devDependencies": {
         "@types/node": "^15.14.3",
-        "typescript": "^4.3.5"
+        "typescript": "^4.4.2"
     },
     "dependencies": {
         "@mapbox/node-pre-gyp": "^1.0.5",

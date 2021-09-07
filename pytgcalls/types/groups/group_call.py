@@ -20,16 +20,20 @@ class Status:
 
 
 class PlayingStream(Status):
-    pass
+    def __str__(self):
+        return 'playing'
 
 
 class PausedStream(Status):
-    pass
+    def __str__(self):
+        return 'paused'
 
 
 class NotPlayingStream(Status):
-    pass
+    def __str__(self):
+        return 'not_playing'
 
 
 class UnknownStatus(Status):
-    pass
+    def __str__(self):
+        return 'unknown'

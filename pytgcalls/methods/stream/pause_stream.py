@@ -1,7 +1,7 @@
 import asyncio
 
 from ...exceptions import NodeJSNotRunning
-from ...exceptions import PyrogramNotSet
+from ...exceptions import NoMtProtoClientSet
 from ...scaffold import Scaffold
 from ...types.groups import PlayingStream
 
@@ -26,4 +26,4 @@ class PauseStream(Scaffold):
             else:
                 raise NodeJSNotRunning()
         else:
-            raise PyrogramNotSet()
+            raise NoMtProtoClientSet()
