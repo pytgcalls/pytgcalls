@@ -1,5 +1,7 @@
 import { Stream, TGCalls } from './tgcalls';
 import { Binding } from './binding';
+import {FFmpegReader} from "./ffmpeg_reader";
+import {FileReader} from "./file_reader";
 
 export class RTCConnection {
     tgcalls: TGCalls<any>;
@@ -17,8 +19,36 @@ export class RTCConnection {
         this.tgcalls = new TGCalls({ chatId: this.chatId });
         const fileAudioPath = audioParams.path;
         const fileVideoPath = videoParams === undefined ? undefined:videoParams.path;
-        this.audioStream = new Stream(fileAudioPath, 16, audioParams.bitrate, 1, bufferLength);
-        this.videoStream = new Stream(fileVideoPath);
+        let audioReadable;
+        if(fileAudioPath.includes('fifo://')){
+            audioReadable = new FFmpegReader();
+            audioReadable.convert_audio(
+                fileAudioPath,
+                audioParams.bitrate,
+            );
+        }else{
+            audioReadable = new FileReader(
+                fileAudioPath,
+            );
+        }
+        let videoReadable;
+        if(videoParams !== undefined){
+            if(fileVideoPath.includes('fifo://')){
+                videoReadable = new FFmpegReader();
+                videoReadable.convert_video(
+                    fileVideoPath,
+                    videoParams.width,
+                    videoParams.framerate,
+                );
+            }else{
+                videoReadable = new FileReader(
+                    fileVideoPath,
+                );
+            }
+        }
+
+        this.audioStream = new Stream(audioReadable, 16, audioParams.bitrate, 1, bufferLength);
+        this.videoStream = new Stream(videoReadable);
 
         this.tgcalls.joinVoiceCall = async (payload: any) => {
             payload = {
@@ -163,7 +193,36 @@ export class RTCConnection {
     }
 
     async changeStream(audioParams: any, videoParams?: any,) {
-        this.audioStream.setReadable(audioParams.path);
+        let audioReadable;
+        if(audioParams.path.includes('fifo://')){
+            audioReadable = new FFmpegReader();
+            audioReadable.convert_audio(
+                audioParams.path,
+                audioParams.bitrate,
+            );
+        }else{
+            audioReadable = new FileReader(
+                audioParams.path,
+            );
+        }
+        let videoReadable;
+        if(videoParams !== undefined){
+            if(videoParams.path.includes('fifo://')){
+                videoReadable = new FFmpegReader();
+                videoReadable.convert_video(
+                    videoParams.path,
+                    videoParams.width,
+                    videoParams.framerate,
+                );
+                console.log('TEST', videoReadable);
+
+            }else{
+                videoReadable = new FileReader(
+                    videoParams.path,
+                );
+            }
+        }
+        this.audioStream.setReadable(audioReadable);
         this.audioParams = audioParams;
         this.audioStream.setAudioParams(audioParams.bitrate);
         if(
@@ -184,6 +243,6 @@ export class RTCConnection {
                 this.videoParams.framerate,
             )
         }
-        this.videoStream.setReadable(this.videoParams == undefined ? undefined:this.videoParams.path);
+        this.videoStream.setReadable(videoReadable);
     }
 }

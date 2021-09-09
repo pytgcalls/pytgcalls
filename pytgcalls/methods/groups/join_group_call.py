@@ -8,16 +8,16 @@ from ...exceptions import NoMtProtoClientSet
 from ...file_manager import FileManager
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
-from ...types.input_stream import InputAudioStream
-from ...types.input_stream import InputVideoStream
+from ...types.input_stream import InputStream
+from ...types.input_stream import AudioVideoPiped
+from ...types.input_stream import AudioPiped
 
 
 class JoinGroupCall(Scaffold):
     async def join_group_call(
         self,
         chat_id: int,
-        stream_audio: InputAudioStream,
-        stream_video: InputVideoStream = None,
+        stream: InputStream,
         invite_hash: str = None,
         join_as=None,
         stream_type: StreamType = None,
@@ -29,9 +29,17 @@ class JoinGroupCall(Scaffold):
         if stream_type.stream_mode == 0:
             raise InvalidStreamMode()
         self._cache_user_peer.put(chat_id, join_as)
-        if stream_video is not None:
-            FileManager.check_file_exist(stream_video.path)
-        FileManager.check_file_exist(stream_audio.path)
+        if stream.stream_video is not None:
+            FileManager.check_file_exist(
+                stream.stream_video.path.replace('fifo://', ''),
+            )
+        if isinstance(stream, AudioPiped) or \
+                isinstance(stream, AudioVideoPiped):
+            await stream.check_pipe()
+
+        FileManager.check_file_exist(
+            stream.stream_audio.path.replace('fifo://', ''),
+        )
         if self._app is not None:
             if self._wait_until_run is not None:
                 if not self._wait_until_run.done():
@@ -45,21 +53,21 @@ class JoinGroupCall(Scaffold):
                             'action': 'join_call',
                             'chat_id': chat_id,
                             'stream_audio': {
-                                'path': stream_audio.path,
-                                'bitrate': stream_audio.parameters.bitrate,
+                                'path': stream.stream_audio.path,
+                                'bitrate': stream.stream_audio.parameters.bitrate,
                             },
                             'invite_hash': invite_hash,
                             'buffer_long': stream_type.stream_mode,
                         }
-                        if stream_video is not None:
-                            video_parameters = stream_video.parameters
+                        if stream.stream_video is not None:
+                            video_parameters = stream.stream_video.parameters
                             if video_parameters.frame_rate % 5 != 0:
                                 logging.warning(
                                     'For better experience the '
                                     'video frame rate must be a multiple of 5',
                                 )
                             request['stream_video'] = {
-                                'path': stream_video.path,
+                                'path': stream.stream_video.path,
                                 'width': video_parameters.width,
                                 'height': video_parameters.height,
                                 'framerate': video_parameters.frame_rate,

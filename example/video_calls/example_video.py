@@ -6,7 +6,7 @@ from pyrogram import Client
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
-from pytgcalls.types.input_stream import AudioParameters
+from pytgcalls.types.input_stream import AudioParameters, InputStream
 from pytgcalls.types.input_stream import InputAudioStream
 from pytgcalls.types.input_stream import InputVideoStream
 from pytgcalls.types.input_stream import VideoParameters
@@ -27,18 +27,20 @@ if __name__ == '__main__':
         time.sleep(0.125)
     call_py.join_group_call(
         -1001234567890,
-        InputAudioStream(
-            audio_file,
-            AudioParameters(
-                bitrate=48000,
+        InputStream(
+            InputAudioStream(
+                audio_file,
+                AudioParameters(
+                    bitrate=48000,
+                ),
             ),
-        ),
-        InputVideoStream(
-            video_file,
-            VideoParameters(
-                width=640,
-                height=360,
-                frame_rate=24,
+            InputVideoStream(
+                video_file,
+                VideoParameters(
+                    width=640,
+                    height=360,
+                    frame_rate=24,
+                ),
             ),
         ),
         stream_type=StreamType().local_stream,

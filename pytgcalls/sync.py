@@ -3,7 +3,7 @@ import functools
 import inspect
 import threading
 
-from pyrogram.methods.utilities import idle as idle_module
+from .methods.utilities import idle as idle_module
 
 from .custom_api import CustomApi
 from .methods import Methods

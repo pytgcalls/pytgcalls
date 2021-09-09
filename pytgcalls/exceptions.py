@@ -111,3 +111,31 @@ class InvalidMtProtoClient(Exception):
         super().__init__(
             'Invalid MtProto Client',
         )
+
+
+class NoVideoSourceFound(Exception):
+    def __init__(self, path: str):
+        super().__init__(
+            f'No video source found on {path}',
+        )
+
+
+class InvalidVideoProportion(Exception):
+    def __init__(self):
+        super().__init__(
+            f'Needed 16:9 video proportion',
+        )
+
+
+class NoAudioSourceFound(Exception):
+    def __init__(self, path: str):
+        super().__init__(
+            f'No audio source found on {path}',
+        )
+
+
+class FFmpegNotInstalled(Exception):
+    def __init__(self, path: str):
+        super().__init__(
+            f'FFmpeg ins\'t installed on your server',
+        )

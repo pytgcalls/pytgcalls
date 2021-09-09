@@ -43,3 +43,6 @@ class Scaffold:
 
     async def _set_video_call_status(self, params: dict):
         pass
+
+    async def start(self):
+        pass

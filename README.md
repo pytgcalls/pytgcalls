@@ -83,6 +83,7 @@ From YouTube Live stream to Video
 > - Invalid FFMPEG command
 > - The video quality specified to convert is higher than the original video one
 > - Invalid PyTgCalls video parameters
+> - If you're using fifo, the Fifo max buffer size is too low and this cause the lag problem.
 
 ## Conversion commands
 
