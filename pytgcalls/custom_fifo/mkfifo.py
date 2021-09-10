@@ -33,21 +33,25 @@ async def main():
                 elif data['request'] == 'RESUME':
                     await ffmpeg.resume()
                 elif data['request'] == 'GET_FILE_SIZE':
-                    sys.stderr.buffer.write(json.dumps({
-                        'result': data['request'],
-                        'data': ffmpeg.total_bytes,
-                        'uid': data['uid'],
-                    }).encode())
+                    sys.stderr.buffer.write(
+                        json.dumps({
+                            'result': data['request'],
+                            'data': ffmpeg.total_bytes,
+                            'uid': data['uid'],
+                        }).encode(),
+                    )
                     sys.stderr.buffer.flush()
             except JSONDecodeError:
                 pass
 
     asyncio.ensure_future(commands_handler())
     await fifo.mkfifo(ffmpeg)
-    sys.stderr.buffer.write(json.dumps({
-        'result': 'ENDED',
-        'file_size': ffmpeg.total_bytes,
-    }).encode())
+    sys.stderr.buffer.write(
+        json.dumps({
+            'result': 'ENDED',
+            'file_size': ffmpeg.total_bytes,
+        }).encode(),
+    )
     sys.stderr.buffer.flush()
 
 asyncio.get_event_loop().run_until_complete(main())

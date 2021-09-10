@@ -1,9 +1,9 @@
-from .video_parameters import VideoParameters
-from .input_audio_stream import InputAudioStream
-from .input_video_stream import InputVideoStream
-from .audio_parameters import AudioParameters
-from .input_stream import InputStream
 from ...custom_fifo.ffprobe import FFprobe
+from .audio_parameters import AudioParameters
+from .input_audio_stream import InputAudioStream
+from .input_stream import InputStream
+from .input_video_stream import InputVideoStream
+from .video_parameters import VideoParameters
 
 
 class AudioVideoPiped(InputStream):
@@ -20,7 +20,7 @@ class AudioVideoPiped(InputStream):
             ),
             InputVideoStream(
                 f'fifo://{path}',
-            )
+            ),
         )
 
     async def check_pipe(self):

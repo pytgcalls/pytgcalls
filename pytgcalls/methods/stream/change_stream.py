@@ -4,7 +4,9 @@ from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
 from ...file_manager import FileManager
 from ...scaffold import Scaffold
-from ...types.input_stream import InputStream, AudioPiped, AudioVideoPiped
+from ...types.input_stream import AudioPiped
+from ...types.input_stream import AudioVideoPiped
+from ...types.input_stream import InputStream
 
 
 class ChangeStream(Scaffold):

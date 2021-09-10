@@ -9,7 +9,8 @@ from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 from pytgcalls.types import Update
-from pytgcalls.types.input_stream import InputAudioStream, InputStream
+from pytgcalls.types.input_stream import InputAudioStream
+from pytgcalls.types.input_stream import InputStream
 
 app = Client(
     'py-tgcalls',

@@ -1,7 +1,8 @@
 import asyncio
 import sys
 
-from .ffmpeg_async import FFmpegAsync, WaitingBytes
+from .ffmpeg_async import FFmpegAsync
+from .ffmpeg_async import WaitingBytes
 
 
 class Fifo:
@@ -10,7 +11,7 @@ class Fifo:
 
     async def mkfifo(
         self,
-        ffmpeg: FFmpegAsync
+        ffmpeg: FFmpegAsync,
     ):
         self.is_running = True
         while True:

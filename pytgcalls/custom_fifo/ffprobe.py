@@ -2,10 +2,10 @@ import asyncio
 import re
 import subprocess
 
-from ..exceptions import NoVideoSourceFound
 from ..exceptions import FFmpegNotInstalled
-from ..exceptions import NoAudioSourceFound
 from ..exceptions import InvalidVideoProportion
+from ..exceptions import NoAudioSourceFound
+from ..exceptions import NoVideoSourceFound
 
 
 class FFprobe:

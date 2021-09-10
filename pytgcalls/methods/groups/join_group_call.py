@@ -8,9 +8,9 @@ from ...exceptions import NoMtProtoClientSet
 from ...file_manager import FileManager
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
-from ...types.input_stream import InputStream
-from ...types.input_stream import AudioVideoPiped
 from ...types.input_stream import AudioPiped
+from ...types.input_stream import AudioVideoPiped
+from ...types.input_stream import InputStream
 
 
 class JoinGroupCall(Scaffold):

@@ -3,7 +3,8 @@ import atexit
 import signal
 import subprocess
 from asyncio.subprocess import Process
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 
 class WaitingBytes(Exception):
@@ -43,20 +44,22 @@ class FFmpegAsync:
         path: str,
         bitrate: int,
     ):
-        asyncio.ensure_future(self._ffmpeg_runner([
-            'ffmpeg',
-            '-y',
-            '-nostdin',
-            '-i',
-            path,
-            '-f',
-            's16le',
-            '-ac',
-            '1',
-            '-ar',
-            str(bitrate),
-            'pipe:1',
-        ]))
+        asyncio.ensure_future(
+            self._ffmpeg_runner([
+                'ffmpeg',
+                '-y',
+                '-nostdin',
+                '-i',
+                path,
+                '-f',
+                's16le',
+                '-ac',
+                '1',
+                '-ar',
+                str(bitrate),
+                'pipe:1',
+            ]),
+        )
 
     async def convert_video_async(
         self,
@@ -64,20 +67,22 @@ class FFmpegAsync:
         width: int,
         framerate: int,
     ):
-        asyncio.ensure_future(self._ffmpeg_runner([
-            'ffmpeg',
-            '-y',
-            '-nostdin',
-            '-i',
-            path,
-            '-f',
-            'rawvideo',
-            '-r',
-            str(framerate),
-            '-vf',
-            f'scale={width}:-1',
-            'pipe:1',
-        ]))
+        asyncio.ensure_future(
+            self._ffmpeg_runner([
+                'ffmpeg',
+                '-y',
+                '-nostdin',
+                '-i',
+                path,
+                '-f',
+                'rawvideo',
+                '-r',
+                str(framerate),
+                '-vf',
+                f'scale={width}:-1',
+                'pipe:1',
+            ]),
+        )
 
     async def _ffmpeg_runner(self, cmd: List):
         self._ffmpeg_async = await asyncio.create_subprocess_exec(
