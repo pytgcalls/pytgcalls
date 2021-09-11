@@ -1,8 +1,8 @@
 from pyrogram import Client
 
+from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
-from pytgcalls import idle
 from pytgcalls.types.input_stream import AudioPiped
 
 app = Client(

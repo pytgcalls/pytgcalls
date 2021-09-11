@@ -1,5 +1,5 @@
-from .idle import idle
 from ...scaffold import Scaffold
+from .idle import idle
 
 
 class Run(Scaffold):

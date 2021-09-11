@@ -51,6 +51,11 @@ export class Stream extends EventEmitter {
     }
 
     setReadable(readable?: any) {
+        if (this.readable !== readable) {
+            this.readable.stop();
+            this.readable.removeListener('data', this.dataListener);
+            this.readable.removeListener('end', this.endListener);
+        }
         this.bytesLoaded = 0;
         this.bytesSpeed = 0;
         this.lastLag = 0;
@@ -60,23 +65,15 @@ export class Stream extends EventEmitter {
         this.lastByteCheck = 0;
         this.lastByte = 0;
         this.playedBytes = 0;
-        if(this.readable !== readable){
-            this.readable.stop();
-        }
         this.readable = readable;
-
-        if (this.readable) {
-            this.readable.removeListener('data', this.dataListener);
-            this.readable.removeListener('end', this.endListener);
-        }
+        this.cache = Buffer.alloc(0);
+        this.readable.resume();
 
         if (this.stopped) {
             throw new Error('Cannot set readable when stopped');
         }
 
-        this.cache = Buffer.alloc(0);
-
-        if (this.readable !== undefined) {
+        if (this.readable != undefined) {
             this.finished = false;
             this.finishedLoading = false;
 
@@ -125,7 +122,7 @@ export class Stream extends EventEmitter {
     }).bind(this);
 
     private needed_time(){
-        return this.isVideo ? 0.25:50;
+        return this.isVideo ? 0.30:50;
     }
 
     private async needsBuffering(withPulseCheck = true) {

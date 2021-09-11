@@ -1,7 +1,10 @@
 import asyncio
 import logging
 import signal
-from signal import signal as signal_fn, SIGINT, SIGTERM, SIGABRT
+from signal import SIGABRT
+from signal import SIGINT
+from signal import signal as signal_fn
+from signal import SIGTERM
 
 
 log = logging.getLogger(__name__)

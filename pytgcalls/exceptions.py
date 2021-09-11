@@ -123,7 +123,7 @@ class NoVideoSourceFound(Exception):
 class InvalidVideoProportion(Exception):
     def __init__(self):
         super().__init__(
-            f'Needed 16:9 video proportion',
+            'Needed 16:9 video proportion',
         )
 
 
@@ -137,5 +137,5 @@ class NoAudioSourceFound(Exception):
 class FFmpegNotInstalled(Exception):
     def __init__(self, path: str):
         super().__init__(
-            f'FFmpeg ins\'t installed on your server',
+            'FFmpeg ins\'t installed on your server',
         )

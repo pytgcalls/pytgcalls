@@ -4,6 +4,8 @@ from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 from pytgcalls.types.input_stream import AudioVideoPiped
+from pytgcalls.types.input_stream.quality import HighQualityAudio
+from pytgcalls.types.input_stream.quality import HighQualityVideo
 
 app = Client(
     'py-tgcalls',
@@ -14,11 +16,13 @@ app = Client(
 call_py = PyTgCalls(app)
 if __name__ == '__main__':
     call_py.start()
-    video_file = 'test.mkv'
+    remote = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
     call_py.join_group_call(
         -1001234567890,
         AudioVideoPiped(
-            video_file,
+            remote,
+            HighQualityAudio(),
+            HighQualityVideo(),
         ),
         stream_type=StreamType().local_stream,
     )
