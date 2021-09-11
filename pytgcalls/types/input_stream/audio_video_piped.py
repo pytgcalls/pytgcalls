@@ -1,3 +1,4 @@
+from ...exceptions import InvalidVideoProportion
 from ...ffprobe import FFprobe
 from .audio_parameters import AudioParameters
 from .input_audio_stream import InputAudioStream
@@ -26,4 +27,12 @@ class AudioVideoPiped(InputStream):
         )
 
     async def check_pipe(self):
-        await FFprobe.check_file(self._path)
+        dest_width, dest_height = await FFprobe.check_file(self._path, True)
+        height = self.stream_video.parameters.height
+        if dest_height < height:
+            raise InvalidVideoProportion(
+                'Destination height is greater than the original height',
+            )
+        ratio = (dest_width / dest_height)
+        self.stream_video.parameters.width = height * ratio
+        self.stream_video.parameters.height = height

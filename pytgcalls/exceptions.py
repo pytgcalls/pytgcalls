@@ -121,9 +121,9 @@ class NoVideoSourceFound(Exception):
 
 
 class InvalidVideoProportion(Exception):
-    def __init__(self):
+    def __init__(self, message: str):
         super().__init__(
-            'Needed 16:9 video proportion',
+            message,
         )
 
 

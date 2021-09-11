@@ -37,20 +37,32 @@ class FFprobe:
                 pass
             stream_list = re.compile(r'Stream #.*:.*').findall(result)
             have_video = False
-            have_valid_video = False
             have_audio = False
+            have_valid_video = False
+            original_width = 0
+            original_height = 0
             for stream in stream_list:
                 if 'Video' in stream:
                     have_video = True
-                    have_valid_video = '16:9' in stream
+                    video_params = re.compile(
+                        r'\d{2,5}x\d{2,5}',
+                    ).findall(stream)
+                    if video_params:
+                        have_valid_video = True
+                        original_width = int(video_params[0].split('x')[0])
+                        original_height = int(video_params[0].split('x')[1])
                 elif 'Audio' in stream:
                     have_audio = True
             if needed_video:
                 if not have_video:
                     raise NoVideoSourceFound(path)
                 if not have_valid_video:
-                    raise InvalidVideoProportion()
+                    raise InvalidVideoProportion(
+                        'Video proportion not found',
+                    )
             if not have_audio:
                 raise NoAudioSourceFound(path)
+            if have_video:
+                return original_width, original_height
         except FileNotFoundError:
             raise FFmpegNotInstalled(path)

@@ -8,12 +8,12 @@ export class FileReader extends EventEmitter {
     ) {
         super();
         this.readable = createReadStream(path);
-         this.readable.on('data', (data: any) => {
-             this.emit('data', data);
-         });
-         this.readable.on('end', () => {
-             this.emit('end');
-         });
+        this.readable.on('data', (data: any) => {
+            this.emit('data', data);
+        });
+        this.readable.on('end', () => {
+            this.emit('end');
+        });
     }
     public pause(){
         this.readable?.pause();
