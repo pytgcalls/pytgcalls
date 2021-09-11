@@ -20,6 +20,6 @@ if __name__ == '__main__':
         AudioPiped(
             audio_file,
         ),
-        stream_type=StreamType().local_stream,
+        stream_type=StreamType().pulse_stream,
     )
     idle()

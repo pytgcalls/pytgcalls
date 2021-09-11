@@ -24,6 +24,6 @@ if __name__ == '__main__':
             HighQualityAudio(),
             HighQualityVideo(),
         ),
-        stream_type=StreamType().local_stream,
+        stream_type=StreamType().pulse_stream,
     )
     idle()

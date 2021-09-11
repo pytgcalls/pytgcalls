@@ -1,3 +1,5 @@
+from math import ceil
+
 from ...exceptions import InvalidVideoProportion
 from ...ffprobe import FFprobe
 from .audio_parameters import AudioParameters
@@ -34,5 +36,5 @@ class AudioVideoPiped(InputStream):
                 'Destination height is greater than the original height',
             )
         ratio = (dest_width / dest_height)
-        self.stream_video.parameters.width = height * ratio
+        self.stream_video.parameters.width = ceil(height * ratio)
         self.stream_video.parameters.height = height
