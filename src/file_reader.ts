@@ -1,18 +1,24 @@
 import {createReadStream, ReadStream, statSync} from "fs";
-import {EventEmitter} from "events";
+import {onData, onEnd} from "./types";
 
-export class FileReader extends EventEmitter {
+export class FileReader {
     private readable?:ReadStream;
+    onData?: onData;
+    onEnd?: onEnd;
+
     constructor(
         readonly path: string,
     ) {
-        super();
         this.readable = createReadStream(path);
         this.readable.on('data', (data: any) => {
-            this.emit('data', data);
+            if(this.onData != undefined){
+                 this.onData(data);
+            }
         });
         this.readable.on('end', () => {
-            this.emit('end');
+            if(this.onEnd != undefined){
+                 this.onEnd();
+            }
         });
     }
     public pause(){

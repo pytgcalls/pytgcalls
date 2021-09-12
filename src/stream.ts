@@ -53,8 +53,6 @@ export class Stream extends EventEmitter {
     setReadable(readable?: any) {
         if (this.readable !== readable) {
             this.readable.stop();
-            this.readable.removeListener('data', this.dataListener);
-            this.readable.removeListener('end', this.endListener);
         }
         this.bytesLoaded = 0;
         this.bytesSpeed = 0;
@@ -77,8 +75,8 @@ export class Stream extends EventEmitter {
             this.finished = false;
             this.finishedLoading = false;
 
-            this.readable.on('data', this.dataListener);
-            this.readable.on('end', this.endListener);
+            this.readable.onData = this.dataListener;
+            this.readable.onEnd = this.endListener;
         }
     }
 
@@ -309,7 +307,7 @@ export class Stream extends EventEmitter {
 
             if (!this.finishedLoading) {
                 if (fileSize === this.lastBytesLoaded) {
-                    if (this.equalCount >= 8) {
+                    if (this.equalCount >= 4) {
                         this.equalCount = 0;
                         Binding.log(
                             'NOT_ENOUGH_BYTES -> ' + oldTime +

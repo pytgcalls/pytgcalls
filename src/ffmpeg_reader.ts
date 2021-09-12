@@ -1,18 +1,19 @@
 import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
-import {EventEmitter} from "events";
+import { onData, onEnd } from './types';
 
-export class FFmpegReader extends EventEmitter {
+export class FFmpegReader {
     private fifo_reader?: ChildProcessWithoutNullStreams;
     private total_size: number = 0;
     private bytes_read: Buffer;
-    private MAX_READ_BUFFER: number = 65536;
-    private MAX_SIZE_BUFFERED: number = 24 * this.MAX_READ_BUFFER;
+    private MAX_READ_BUFFER: number = 65536 * 2;
+    private MAX_SIZE_BUFFERED: number = 12 * this.MAX_READ_BUFFER;
     private paused: boolean = true;
     private stopped: boolean = false;
     private almostFinished: boolean = false;
+    onData?: onData;
+    onEnd?: onEnd;
 
     constructor() {
-        super();
         this.bytes_read = Buffer.alloc(0);
     }
     public convert_audio(path: string, bitrate: string){
@@ -44,6 +45,7 @@ export class FFmpegReader extends EventEmitter {
     private start_conversion(params: Array<string>) {
         this.fifo_reader = spawn('ffmpeg', params);
         this.fifo_reader.stdout.on('data', this.dataListener);
+        this.fifo_reader.stderr.on('data', async () => {});
         this.fifo_reader.on('close', this.endListener);
         this.processBytes();
     }
@@ -68,17 +70,21 @@ export class FFmpegReader extends EventEmitter {
                 }
                 const buffer_length = this.bytes_read.length < this.MAX_READ_BUFFER ? this.bytes_read.length:this.MAX_READ_BUFFER;
                 const buffer = this.bytes_read.slice(0, buffer_length);
-                this.emit('data', buffer);
+                if(this.onData != undefined){
+                    this.onData(buffer);
+                }
                 this.bytes_read = this.bytes_read.slice(buffer_length);
             }else if(this.almostFinished){
-                this.emit('end')
+                if(this.onEnd != undefined){
+                    this.onEnd();
+                }
                 this.fifo_reader?.kill()
                 return;
             }
         }
         setTimeout(
             async () => this.processBytes(),
-            1,
+            2,
         );
     }
     public pause(){

@@ -69,3 +69,10 @@ export interface RemotePlayingTimeResponse {
 
 export type RemotePlayingTimeCallback = (
 ) => RemotePlayingTimeResponse;
+
+export type onData = (
+    data: any,
+) => null;
+
+export type onEnd = (
+) => null;
