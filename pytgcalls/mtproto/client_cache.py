@@ -5,6 +5,8 @@ from typing import Optional
 from ..types import Cache
 from .bridged_client import BridgedClient
 
+py_logger = logging.getLogger('pytgcalls')
+
 
 class ClientCache:
     def __init__(
@@ -22,12 +24,12 @@ class ClientCache:
     ) -> Optional[Any]:
         full_chat = self._full_chat_cache.get(chat_id)
         if full_chat is not None:
-            logging.debug('FullChat cache hit for %d', chat_id)
+            py_logger.debug('FullChat cache hit for %d', chat_id)
             return full_chat
         else:
             # noinspection PyBroadException
             try:
-                logging.debug('FullChat cache miss for %d', chat_id)
+                py_logger.debug('FullChat cache miss for %d', chat_id)
                 full_chat = await self._app.get_call(chat_id)
                 self.set_cache(
                     chat_id,

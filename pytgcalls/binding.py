@@ -7,12 +7,13 @@ import signal
 import subprocess
 import sys
 from asyncio import Future
-from asyncio.log import logger
 from json import JSONDecodeError
 from time import time
 from typing import Callable
 
 from .exceptions import WaitPreviousPingRequest
+
+py_logger = logging.getLogger('pytgcalls')
 
 
 class Binding:
@@ -38,7 +39,7 @@ class Binding:
                             self._js_process.kill()
                             await self._js_process.communicate()
                 except subprocess.TimeoutExpired:
-                    logger.warning(
+                    py_logger.warning(
                         'Node.js did not terminate cleanly, '
                         'killing process...',
                     )
@@ -46,7 +47,8 @@ class Binding:
                     await self._js_process.communicate()
                 except ProcessLookupError:
                     pass
-                logger.info('Node.js stopped')
+                py_logger.info('Node.js stopped')
+
             asyncio.get_event_loop().run_until_complete(async_cleanup())
 
         atexit.register(cleanup)
@@ -89,9 +91,9 @@ class Binding:
         return f'{__file__.replace("binding.py", "")}'
 
     async def connect(
-        self,
-        event: Future,
-        user_id: int,
+            self,
+            event: Future,
+            user_id: int,
     ):
         if self._js_process is None:
             sep = os.path.sep
@@ -106,7 +108,7 @@ class Binding:
                 try:
                     if self._js_process.stdout is None:
                         break
-                    out = (await self._js_process.stdout.readline())\
+                    out = (await self._js_process.stdout.readline()) \
                         .decode().replace('\r', '')
                     if not out:
                         break
@@ -154,13 +156,13 @@ class Binding:
                             elif 'log_message' in json_out \
                                     and 'verbose_mode' in json_out:
                                 if json_out['verbose_mode'] == 1:
-                                    logging.debug(json_out['log_message'])
+                                    py_logger.debug(json_out['log_message'])
                                 elif json_out['verbose_mode'] == 2:
-                                    logging.info(json_out['log_message'])
+                                    py_logger.info(json_out['log_message'])
                                 elif json_out['verbose_mode'] == 3:
-                                    logging.warning(json_out['log_message'])
+                                    py_logger.warning(json_out['log_message'])
                                 elif json_out['verbose_mode'] == 4:
-                                    logging.error(json_out['log_message'])
+                                    py_logger.error(json_out['log_message'])
                         except JSONDecodeError:
                             if update:
                                 if ':replace_line:' in update:

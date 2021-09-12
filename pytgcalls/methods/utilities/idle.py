@@ -7,7 +7,7 @@ from signal import signal as signal_fn
 from signal import SIGTERM
 
 
-log = logging.getLogger(__name__)
+py_logger = logging.getLogger('pytgcalls')
 
 is_idling = False
 
@@ -23,7 +23,7 @@ async def idle():
 
     def signal_handler(signum, __):
         global is_idling
-        logging.info(f'Stop signal received ({signals[signum]}). Exiting...')
+        py_logger.info(f'Stop signal received ({signals[signum]}). Exiting...')
         is_idling = False
     for s in (SIGINT, SIGTERM, SIGABRT):
         signal_fn(s, signal_handler)

@@ -1,5 +1,6 @@
 import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import { onData, onEnd } from './types';
+import {Binding} from "./binding";
 
 export class FFmpegReader {
     private fifo_reader?: ChildProcessWithoutNullStreams;
@@ -45,7 +46,9 @@ export class FFmpegReader {
     private start_conversion(params: Array<string>) {
         this.fifo_reader = spawn('ffmpeg', params);
         this.fifo_reader.stdout.on('data', this.dataListener);
-        this.fifo_reader.stderr.on('data', async () => {});
+        this.fifo_reader.stderr.on('data', async (chuck: any) => {
+            Binding.log(chuck.toString(), Binding.DEBUG);
+        });
         this.fifo_reader.on('close', this.endListener);
         this.processBytes();
     }

@@ -12,6 +12,8 @@ from ...types.input_stream import AudioPiped
 from ...types.input_stream import AudioVideoPiped
 from ...types.input_stream import InputStream
 
+py_logger = logging.getLogger('pytgcalls')
+
 
 class JoinGroupCall(Scaffold):
     async def join_group_call(
@@ -63,7 +65,7 @@ class JoinGroupCall(Scaffold):
                         if stream_video is not None:
                             video_parameters = stream_video.parameters
                             if video_parameters.frame_rate % 5 != 0:
-                                logging.warning(
+                                py_logger.warning(
                                     'For better experience the '
                                     'video frame rate must be a multiple of 5',
                                 )
