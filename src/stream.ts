@@ -344,7 +344,7 @@ export class Stream extends EventEmitter {
         const timeoutWait = this.frameTime() - toSubtract - this.lastDifferenceRemote;
         setTimeout(
             async () => await this.processData(),
-            timeoutWait > 0 ? timeoutWait:1,
+            timeoutWait > 0 ? timeoutWait:0,
         );
     }
 
@@ -372,7 +372,7 @@ export class Stream extends EventEmitter {
         if(this.readable === undefined || this.playedBytes <= this.bytesLength() || this.finished){
             return undefined;
         }else{
-            return Math.floor((this.playedBytes/this.bytesLength()) / (0.00001 / this.frameTime()))
+            return Math.ceil((this.playedBytes/this.bytesLength()) / (0.00001 / this.frameTime()))
         }
     }
 }

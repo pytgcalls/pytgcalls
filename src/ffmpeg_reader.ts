@@ -6,8 +6,8 @@ export class FFmpegReader {
     private fifo_reader?: ChildProcessWithoutNullStreams;
     private total_size: number = 0;
     private bytes_read: Buffer;
-    private MAX_READ_BUFFER: number = 65536 * 2;
-    private MAX_SIZE_BUFFERED: number = 12 * this.MAX_READ_BUFFER;
+    private MAX_READ_BUFFER: number = 65536 * 4;
+    private MAX_SIZE_BUFFERED: number = 5 * this.MAX_READ_BUFFER;
     private paused: boolean = true;
     private stopped: boolean = false;
     private almostFinished: boolean = false;
@@ -46,8 +46,11 @@ export class FFmpegReader {
     private start_conversion(params: Array<string>) {
         this.fifo_reader = spawn('ffmpeg', params);
         this.fifo_reader.stdout.on('data', this.dataListener);
-        this.fifo_reader.stderr.on('data', async (chuck: any) => {
-            Binding.log(chuck.toString(), Binding.DEBUG);
+        this.fifo_reader.stderr.on('data', async (chunk: any) => {
+            const message = chunk.toString();
+            if(message.includes('] Opening')){
+                Binding.log('OPENING_M3U8_SOURCE -> ' + (new Date().getTime()), Binding.DEBUG);
+            }
         });
         this.fifo_reader.on('close', this.endListener);
         this.processBytes();
@@ -63,6 +66,7 @@ export class FFmpegReader {
         this.almostFinished = true;
     });
     private processBytes(){
+        const oldTime = new Date().getTime();
         if(this.stopped){
             return;
         }
@@ -75,8 +79,8 @@ export class FFmpegReader {
                 const buffer = this.bytes_read.slice(0, buffer_length);
                 if(this.onData != undefined){
                     this.onData(buffer);
+                    this.bytes_read = this.bytes_read.slice(buffer_length);
                 }
-                this.bytes_read = this.bytes_read.slice(buffer_length);
             }else if(this.almostFinished){
                 if(this.onEnd != undefined){
                     this.onEnd();
@@ -85,9 +89,10 @@ export class FFmpegReader {
                 return;
             }
         }
+        const toSubtract = new Date().getTime() - oldTime;
         setTimeout(
             async () => this.processBytes(),
-            2,
+            5 - toSubtract,
         );
     }
     public pause(){

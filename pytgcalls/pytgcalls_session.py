@@ -1,8 +1,7 @@
 import re
 import sys
 
-import httpx
-from httpx import Response
+from aiohttp import ClientResponse, ClientSession
 
 from .__version__ import __version__
 from .version_manager import VersionManager
@@ -42,9 +41,13 @@ class PyTgCallsSession:
 
     @staticmethod
     async def _remote_version(branch: str):
-        async def get_async(url) -> Response:
-            async with httpx.AsyncClient() as client:
-                return await client.get(url)
+        async def get_async(url) -> str:
+            session = ClientSession()
+            response: ClientResponse = await session.get(url, timeout=5)
+            result_text = await response.text()
+            response.close()
+            await session.close()
+            return result_text
         result = re.findall(
             '__version__ = \'(.*?)\'', (
                 await get_async(
@@ -52,6 +55,6 @@ class PyTgCallsSession:
                     f'pytgcalls/pytgcalls/{branch}'
                     f'/pytgcalls/__version__.py',
                 )
-            ).text,
+            ),
         )
         return result[0] if len(result) > 0 else __version__

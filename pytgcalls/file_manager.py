@@ -1,8 +1,11 @@
+import logging
 import os
 from stat import S_ISFIFO
 
-import httpx
-from httpx import Response
+from asyncio import TimeoutError
+from aiohttp import ClientSession, ClientResponse, ClientConnectorError
+
+py_logger = logging.getLogger('pytgcalls')
 
 
 class FileManager:
@@ -10,11 +13,26 @@ class FileManager:
     async def check_file_exist(
         path: str,
     ):
-        if 'http' in path:
-            async with httpx.AsyncClient() as client:
-                response: Response = await client.head(path)
-                if response.status_code == 200:
+        try:
+            if 'http' in path:
+                session = ClientSession()
+                response: ClientResponse = await session.get(
+                    path,
+                    timeout=5,
+                )
+                response.close()
+                await session.close()
+                if response.status == 200 or \
+                        response.status == 403:
                     return
+                else:
+                    py_logger.info(
+                        f'{path} returned with {response.status} code',
+                    )
+        except ClientConnectorError:
+            pass
+        except TimeoutError:
+            pass
         if S_ISFIFO(os.stat(path).st_mode):
             return
         if not os.path.isfile(path):
