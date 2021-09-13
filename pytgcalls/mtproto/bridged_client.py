@@ -1,5 +1,6 @@
-from typing import Any, Optional
+from typing import Any
 from typing import Callable
+from typing import Optional
 
 
 class BridgedClient:
