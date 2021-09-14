@@ -49,7 +49,7 @@ if __name__ == '__main__':
         await call_py.join_group_call(
             message.chat.id,
             InputAudioStream(
-                file,
+                output_file,
             ),
             stream_type=StreamType().pulse_stream,
         )
