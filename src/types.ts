@@ -72,7 +72,7 @@ export type RemotePlayingTimeCallback = (
 
 export type onData = (
     data: any,
-) => null;
+) => void;
 
 export type onEnd = (
-) => null;
+) => void;

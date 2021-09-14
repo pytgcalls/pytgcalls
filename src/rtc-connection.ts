@@ -8,7 +8,10 @@ export class RTCConnection {
     audioStream: Stream;
     videoStream: Stream;
     private almostFinished: number = 0;
+    private almostRestarted: number = 0;
     private almostMaxFinished: number = 0;
+    private waitingAudioReadable?: FFmpegReader | FileReader = undefined;
+    private waitingVideoReadable?: FFmpegReader | FileReader = undefined;
 
     constructor(
         public chatId: number,
@@ -84,6 +87,7 @@ export class RTCConnection {
             return joinCallResult;
         };
         this.almostFinished = 0;
+        this.almostRestarted = 0;
         this.almostMaxFinished = 0;
         if(audioReadable != undefined){
             this.almostMaxFinished += 1;
@@ -94,6 +98,7 @@ export class RTCConnection {
         this.audioStream.on('finish', async () => {
             this.almostFinished += 1;
             if(this.almostFinished === this.almostMaxFinished){
+                this.almostFinished = 0;
                 await this.binding.sendUpdate({
                     action: 'stream_audio_ended',
                     chat_id: chatId,
@@ -109,6 +114,7 @@ export class RTCConnection {
         this.videoStream.on('finish', async () => {
             this.almostFinished += 1;
             if(this.almostFinished === this.almostMaxFinished){
+                this.almostFinished = 0;
                 await this.binding.sendUpdate({
                     action: 'stream_video_ended',
                     chat_id: chatId,
@@ -119,6 +125,24 @@ export class RTCConnection {
                         chat_id: chatId,
                     });
                 }
+            }
+        });
+        this.audioStream.on('restarted', async (readable?: FFmpegReader | FileReader) => {
+            this.almostRestarted += 1;
+            this.waitingAudioReadable = readable;
+            if(this.almostRestarted === 2){
+                this.almostRestarted = 0;
+                this.audioStream.setReadable(this.waitingAudioReadable);
+                this.videoStream.setReadable(this.waitingVideoReadable);
+            }
+        });
+        this.videoStream.on('restarted', async (readable?: FFmpegReader | FileReader) => {
+            this.almostRestarted += 1;
+            this.waitingVideoReadable = readable;
+            if(this.almostRestarted === 2){
+                this.almostRestarted = 0;
+                this.audioStream.setReadable(this.waitingAudioReadable);
+                this.videoStream.setReadable(this.waitingVideoReadable);
             }
         });
         this.audioStream.on('stream_deleted', async () => {
@@ -223,6 +247,7 @@ export class RTCConnection {
     async changeStream(audioParams: any, videoParams?: any,) {
         let audioReadable;
         this.almostFinished = 0;
+        this.almostRestarted = 0;
         this.almostMaxFinished = 0;
         if(audioParams != undefined){
             this.almostMaxFinished += 1;
@@ -257,7 +282,6 @@ export class RTCConnection {
                 );
             }
         }
-        this.audioStream.setReadable(audioReadable);
         this.audioParams = audioParams;
         this.audioStream.setAudioParams(audioParams.bitrate);
         if(
@@ -278,6 +302,11 @@ export class RTCConnection {
                 this.videoParams.framerate,
             )
         }
-        this.videoStream.setReadable(videoReadable);
+        this.videoStream.readable?.stop();
+        this.videoStream.readable = undefined;
+        this.audioStream.readable?.stop();
+        this.audioStream.readable = undefined;
+        this.videoStream.restart(videoReadable);
+        this.audioStream.restart(audioReadable);
     }
 }

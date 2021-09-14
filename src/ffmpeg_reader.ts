@@ -108,6 +108,7 @@ export class FFmpegReader {
         this.fifo_reader?.stdout.removeListener('data', this.dataListener);
         this.fifo_reader?.removeListener('close', this.endListener);
         this.stopped = true;
-        this.fifo_reader?.kill()
+        this.fifo_reader?.stdout.pause();
+        this.fifo_reader?.kill('SIGKILL');
     }
 }

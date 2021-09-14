@@ -2,6 +2,8 @@ import { EventEmitter } from 'events';
 import {RTCAudioSource, nonstandard, RTCVideoSource} from 'wrtc';
 import { Binding } from './binding';
 import {RemotePlayingTimeCallback} from "./types";
+import {FFmpegReader} from "./ffmpeg_reader";
+import {FileReader} from "./file_reader";
 
 export class Stream extends EventEmitter {
     private readonly audioSource: RTCAudioSource;
@@ -10,6 +12,7 @@ export class Stream extends EventEmitter {
     public paused: boolean = false;
     public finished: boolean = true;
     public stopped: boolean = false;
+    public stopped_done: boolean = false;
     private finishedLoading = false;
     private bytesLoaded: number = 0;
     private playedBytes: number = 0;
@@ -29,7 +32,7 @@ export class Stream extends EventEmitter {
     remotePlayingTime?: RemotePlayingTimeCallback;
 
     constructor(
-        public readable?: any,
+        public readable?: FFmpegReader | FileReader,
         readonly bitsPerSample: number = 16,
         public sampleRate: number = 48000,
         readonly channelCount: number = 1,
@@ -50,11 +53,11 @@ export class Stream extends EventEmitter {
         );
     }
 
-    setReadable(readable?: any) {
-        if (this.readable !== readable) {
-            this.readable.stop();
-        }
+    setReadable(readable?: FFmpegReader | FileReader) {
+        this.finished = true;
+        this.finishedLoading = false;
         this.bytesLoaded = 0;
+        this.playedBytes = 0;
         this.bytesSpeed = 0;
         this.lastLag = 0;
         this.equalCount = 0;
@@ -62,10 +65,11 @@ export class Stream extends EventEmitter {
         this.finishedBytes = false;
         this.lastByteCheck = 0;
         this.lastByte = 0;
-        this.playedBytes = 0;
+        this.runningPulse = false;
+        this.lastDifferenceRemote = 0;
         this.readable = readable;
         this.cache = Buffer.alloc(0);
-        this.readable.resume();
+        this.readable?.resume();
 
         if (this.stopped) {
             throw new Error('Cannot set readable when stopped');
@@ -74,13 +78,12 @@ export class Stream extends EventEmitter {
         if (this.readable != undefined) {
             this.finished = false;
             this.finishedLoading = false;
-
             this.readable.onData = this.dataListener;
             this.readable.onEnd = this.endListener;
         }
     }
 
-    private endListener = (async () => {
+    private endListener = (() => {
         this.finishedLoading = true;
         if(this.readable !== undefined){
             Binding.log(
@@ -95,20 +98,20 @@ export class Stream extends EventEmitter {
             );
             Binding.log(
                 'BYTES_LOADED -> ' +
-                    this.bytesLoaded +
-                    'OF -> ' +
-                    await this.readable.fileSize() +
-                            ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
+                this.bytesLoaded +
+                'OF -> ' +
+                this.readable.fileSize() +
+                ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
                 Binding.DEBUG,
             );
         }
-    }).bind(this);
+    });
 
-    private dataListener = (async (data: any) => {
+    private dataListener = ((data: any) => {
         this.bytesLoaded += data.length;
         this.bytesSpeed = data.length;
         try {
-            if (!(await this.needsBuffering())) {
+            if (!(this.needsBuffering())) {
                 this.readable?.pause();
                 this.runningPulse = false;
             }
@@ -123,7 +126,7 @@ export class Stream extends EventEmitter {
         return this.isVideo ? 0.30:50;
     }
 
-    private async needsBuffering(withPulseCheck = true) {
+    private needsBuffering(withPulseCheck = true) {
         if (this.finishedLoading || this.readable === undefined) {
             return false;
         }
@@ -132,9 +135,10 @@ export class Stream extends EventEmitter {
         result =
             result &&
             (this.bytesLoaded <
-                await this.readable.fileSize() -
-                    this.bytesSpeed * 2 ||
-                this.finishedBytes);
+                this.readable.fileSize() -
+                this.bytesSpeed * 2 ||
+                this.finishedBytes
+            );
 
         if (this.timePulseBuffer > 0 && withPulseCheck) {
             result = result && this.runningPulse;
@@ -170,13 +174,26 @@ export class Stream extends EventEmitter {
     }
 
     finish() {
-        this.readable.stop();
+        this.readable?.stop();
         this.finished = true;
     }
 
     stop() {
         this.finish();
         this.stopped = true;
+    }
+    restart(readable?: FFmpegReader | FileReader) {
+        this.stopped = true;
+        setTimeout(() => {
+            if(this.stopped_done){
+                this.stopped = false;
+                this.stopped_done = false;
+                this.emit('restarted', readable);
+                this.processData();
+            }else{
+                this.restart(readable);
+            }
+        }, 10);
     }
 
     createAudioTrack() {
@@ -209,14 +226,19 @@ export class Stream extends EventEmitter {
         }
     }
 
-    private async processData() {
+    private processData() {
         const oldTime = new Date().getTime();
         if (this.stopped) {
+            this.stopped_done = true;
             return;
         }
+        const lagging_remote = this.isLaggingRemote();
         const byteLength = this.bytesLength();
-        this.lastDifferenceRemote = 0;
-
+        const timeoutWait = this.frameTime()  - this.lastDifferenceRemote;
+        setTimeout(
+            () => this.processData(),
+            timeoutWait > 0 ? timeoutWait:0,
+        );
         if (
             !(
                 !this.finished &&
@@ -225,7 +247,7 @@ export class Stream extends EventEmitter {
             ) && this.readable !== undefined
         ) {
             try {
-                if ((await this.needsBuffering(false))) {
+                if ((this.needsBuffering(false))) {
                     let checkBuff = true;
                     if (this.timePulseBuffer > 0) {
                         this.runningPulse =
@@ -239,6 +261,7 @@ export class Stream extends EventEmitter {
                 }
             } catch (e) {
                 this.emit('stream_deleted');
+                this.stopped = true;
                 return;
             }
 
@@ -246,7 +269,7 @@ export class Stream extends EventEmitter {
             let fileSize: number;
             try {
                 if (oldTime - this.lastByteCheck > 1000) {
-                    fileSize = await this.readable.fileSize();
+                    fileSize = this.readable.fileSize();
                     this.lastByte = fileSize;
                     this.lastByteCheck = oldTime;
                 } else {
@@ -254,9 +277,9 @@ export class Stream extends EventEmitter {
                 }
             } catch (e) {
                 this.emit('stream_deleted');
+                this.stopped = true;
                 return;
             }
-            const lagging_remote = this.isLaggingRemote();
             if (
                 !this.paused &&
                 !this.finished &&
@@ -297,10 +320,10 @@ export class Stream extends EventEmitter {
                 );
                 Binding.log(
                     'BYTES_LOADED -> ' +
-                        this.bytesLoaded +
-                        'OF -> ' +
-                        await this.readable.fileSize() +
-                        ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
+                    this.bytesLoaded +
+                    'OF -> ' +
+                    this.readable.fileSize() +
+                    ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
                     Binding.DEBUG,
                 );
             }
@@ -339,13 +362,6 @@ export class Stream extends EventEmitter {
             this.finish();
             this.emit('finish');
         }
-
-        const toSubtract = new Date().getTime() - oldTime;
-        const timeoutWait = this.frameTime() - toSubtract - this.lastDifferenceRemote;
-        setTimeout(
-            async () => await this.processData(),
-            timeoutWait > 0 ? timeoutWait:0,
-        );
     }
 
     private isLaggingRemote(){
@@ -369,7 +385,7 @@ export class Stream extends EventEmitter {
     }
 
     currentPlayedTime(): number | undefined{
-        if(this.readable === undefined || this.playedBytes <= this.bytesLength() || this.finished){
+        if(this.readable === undefined || this.finished){
             return undefined;
         }else{
             return Math.ceil((this.playedBytes/this.bytesLength()) / (0.00001 / this.frameTime()))

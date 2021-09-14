@@ -51,7 +51,7 @@ if __name__ == '__main__':
             message.chat.id,
             InputStream(
                 InputAudioStream(
-                    file,
+                    output_file,
                 ),
             ),
             stream_type=StreamType().pulse_stream,
