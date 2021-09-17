@@ -1,4 +1,6 @@
 from math import ceil
+from typing import Dict
+from typing import Optional
 
 from ...exceptions import InvalidVideoProportion
 from ...ffprobe import FFprobe
@@ -18,10 +20,12 @@ class AudioVideoPiped(InputStream):
         path: str,
         audio_parameters: AudioParameters = AudioParameters(),
         video_parameters: VideoParameters = VideoParameters(),
+        headers: Optional[Dict[str, str]] = None,
         additional_ffmpeg_parameters: str = '',
     ):
         self._path = path
         self.ffmpeg_parameters = additional_ffmpeg_parameters
+        self.raw_headers = headers
         super().__init__(
             InputAudioStream(
                 f'fifo://{path}',
@@ -33,8 +37,16 @@ class AudioVideoPiped(InputStream):
             ),
         )
 
+    @property
+    def headers(self):
+        return FFprobe.ffmpeg_headers(self.raw_headers)
+
     async def check_pipe(self):
-        dest_width, dest_height = await FFprobe.check_file(self._path, True)
+        dest_width, dest_height = await FFprobe.check_file(
+            self._path,
+            True,
+            self.raw_headers,
+        )
         height = self.stream_video.parameters.height
         if isinstance(
             self.stream_video.parameters,

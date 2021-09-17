@@ -1,3 +1,6 @@
+from typing import Dict
+from typing import Optional
+
 from ...ffprobe import FFprobe
 from .audio_parameters import AudioParameters
 from .input_audio_stream import InputAudioStream
@@ -9,10 +12,12 @@ class AudioPiped(InputStream):
         self,
         path: str,
         audio_parameters: AudioParameters = AudioParameters(),
+        headers: Optional[Dict[str, str]] = None,
         additional_ffmpeg_parameters: str = '',
     ):
         self._path = path
         self.ffmpeg_parameters = additional_ffmpeg_parameters
+        self.raw_headers = headers
         super().__init__(
             InputAudioStream(
                 f'fifo://{path}',
@@ -20,5 +25,12 @@ class AudioPiped(InputStream):
             ),
         )
 
+    @property
+    def headers(self):
+        return FFprobe.ffmpeg_headers(self.raw_headers)
+
     async def check_pipe(self):
-        await FFprobe.check_file(self._path)
+        await FFprobe.check_file(
+            self._path,
+            headers=self.raw_headers,
+        )

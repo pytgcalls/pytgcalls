@@ -48,7 +48,8 @@ export class FFmpegReader {
         ]).concat(this.parse_cmdline(list_cmd[1])));
     }
     private start_conversion(params: Array<string>) {
-        params = params.filter(e =>  e);
+        params = params.filter(e => e);
+        Binding.log('RUNNING_FFMPEG_COMMAND -> ffmpeg ' + params.join(' '), Binding.INFO);
         this.fifo_reader = spawn('ffmpeg', params);
         this.fifo_reader.stdout.on('data', this.dataListener);
         this.fifo_reader.stderr.on('data', async (chunk: any) => {

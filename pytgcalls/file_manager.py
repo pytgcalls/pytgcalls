@@ -2,6 +2,8 @@ import logging
 import os
 from asyncio import TimeoutError
 from stat import S_ISFIFO
+from typing import Dict
+from typing import Optional
 
 from aiohttp import ClientConnectorError
 from aiohttp import ClientResponse
@@ -14,6 +16,7 @@ class FileManager:
     @staticmethod
     async def check_file_exist(
         path: str,
+        headers: Optional[Dict[str, str]] = None,
     ):
         try:
             if 'http' in path:
@@ -21,6 +24,7 @@ class FileManager:
                 response: ClientResponse = await session.get(
                     path,
                     timeout=5,
+                    headers=headers,
                 )
                 response.close()
                 await session.close()

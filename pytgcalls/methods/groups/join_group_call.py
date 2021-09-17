@@ -31,18 +31,25 @@ class JoinGroupCall(Scaffold):
         if stream_type.stream_mode == 0:
             raise InvalidStreamMode()
         self._cache_user_peer.put(chat_id, join_as)
+        headers = None
+        if isinstance(stream, AudioPiped) or \
+                isinstance(stream, AudioVideoPiped):
+            headers = stream.raw_headers
         if stream.stream_video is not None:
             await FileManager.check_file_exist(
                 stream.stream_video.path.replace('fifo://', ''),
+                headers,
             )
         await FileManager.check_file_exist(
             stream.stream_audio.path.replace('fifo://', ''),
+            headers,
         )
         ffmpeg_parameters = ''
         if isinstance(stream, AudioPiped) or \
                 isinstance(stream, AudioVideoPiped):
             await stream.check_pipe()
-            ffmpeg_parameters = stream.ffmpeg_parameters
+            ffmpeg_parameters = stream.headers
+            ffmpeg_parameters += stream.ffmpeg_parameters
         if self._app is not None:
             if self._wait_until_run is not None:
                 if not self._wait_until_run.done():

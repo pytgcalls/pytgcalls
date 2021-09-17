@@ -23,9 +23,11 @@ if __name__ == '__main__':
             remote,
             HighQualityAudio(),
             HighQualityVideo(),
-            additional_ffmpeg_parameters='EVERYTHING BEFORE THE INPUT (-i) '
-                                         '-atend '
-                                         'EVERYTHING AFTER ALL ARGUMENTS',
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) '
+                              'AppleWebKit/537.36 (KHTML, like Gecko) '
+                              'Chrome/46.0.2490.80 Safari/537.36',
+            },
         ),
         stream_type=StreamType().pulse_stream,
     )
