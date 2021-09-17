@@ -38,9 +38,11 @@ class JoinGroupCall(Scaffold):
         await FileManager.check_file_exist(
             stream.stream_audio.path.replace('fifo://', ''),
         )
+        ffmpeg_parameters = ''
         if isinstance(stream, AudioPiped) or \
                 isinstance(stream, AudioVideoPiped):
             await stream.check_pipe()
+            ffmpeg_parameters = stream.ffmpeg_parameters
         if self._app is not None:
             if self._wait_until_run is not None:
                 if not self._wait_until_run.done():
@@ -59,6 +61,7 @@ class JoinGroupCall(Scaffold):
                                 'path': stream_audio.path,
                                 'bitrate': stream_audio.parameters.bitrate,
                             },
+                            'ffmpeg_parameters': ffmpeg_parameters,
                             'invite_hash': invite_hash,
                             'buffer_long': stream_type.stream_mode,
                         }

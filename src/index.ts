@@ -25,6 +25,7 @@ binding.on('request', async function (data: any) {
                     binding,
                     data.buffer_length,
                     data.invite_hash,
+                    data.ffmpeg_parameters,
                     data.stream_audio,
                     data.stream_video,
                 );
@@ -100,6 +101,7 @@ binding.on('request', async function (data: any) {
             if (connection) {
                 try {
                     await connection.changeStream(
+                        data.ffmpeg_parameters,
                         data.stream_audio,
                         data.stream_video,
                     );

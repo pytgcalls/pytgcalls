@@ -24,9 +24,11 @@ class ChangeStream(Scaffold):
                 await FileManager.check_file_exist(
                     stream.stream_audio.path.replace('fifo://', ''),
                 )
+                ffmpeg_parameters = ''
                 if isinstance(stream, AudioPiped) or \
                         isinstance(stream, AudioVideoPiped):
                     await stream.check_pipe()
+                    ffmpeg_parameters = stream.ffmpeg_parameters
 
                 async def internal_sender():
                     if not self._wait_until_run.done():
@@ -40,6 +42,7 @@ class ChangeStream(Scaffold):
                             'path': stream_audio.path,
                             'bitrate': stream_audio.parameters.bitrate,
                         },
+                        'ffmpeg_parameters': ffmpeg_parameters,
                     }
                     if stream.stream_video is not None:
                         request['stream_video'] = {

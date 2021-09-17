@@ -18,6 +18,7 @@ export class RTCConnection {
         public binding: Binding,
         public bufferLength: number,
         public inviteHash: string,
+        additional_parameters: string,
         public audioParams: any,
         public videoParams?: any,
     ) {
@@ -26,7 +27,7 @@ export class RTCConnection {
         const fileVideoPath = videoParams === undefined ? undefined:videoParams.path;
         let audioReadable;
         if(fileAudioPath.includes('fifo://')){
-            audioReadable = new FFmpegReader();
+            audioReadable = new FFmpegReader(additional_parameters);
             audioReadable.convert_audio(
                 fileAudioPath,
                 audioParams.bitrate,
@@ -39,7 +40,7 @@ export class RTCConnection {
         let videoReadable;
         if(videoParams !== undefined){
             if(fileVideoPath.includes('fifo://')){
-                videoReadable = new FFmpegReader();
+                videoReadable = new FFmpegReader(additional_parameters);
                 videoReadable.convert_video(
                     fileVideoPath,
                     videoParams.width,
@@ -244,7 +245,7 @@ export class RTCConnection {
         }
     }
 
-    async changeStream(audioParams: any, videoParams?: any,) {
+    async changeStream(additional_parameters: string, audioParams: any, videoParams?: any) {
         let audioReadable;
         this.almostFinished = 0;
         this.almostRestarted = 0;
@@ -256,7 +257,7 @@ export class RTCConnection {
             this.almostMaxFinished += 1;
         }
         if(audioParams.path.includes('fifo://')){
-            audioReadable = new FFmpegReader();
+            audioReadable = new FFmpegReader(additional_parameters);
             audioReadable.convert_audio(
                 audioParams.path,
                 audioParams.bitrate,
@@ -269,7 +270,7 @@ export class RTCConnection {
         let videoReadable;
         if(videoParams != undefined){
             if(videoParams.path.includes('fifo://')){
-                videoReadable = new FFmpegReader();
+                videoReadable = new FFmpegReader(additional_parameters);
                 videoReadable.convert_video(
                     videoParams.path,
                     videoParams.width,

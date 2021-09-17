@@ -1,9 +1,11 @@
 import logging
 import os
+from asyncio import TimeoutError
 from stat import S_ISFIFO
 
-from asyncio import TimeoutError
-from aiohttp import ClientSession, ClientResponse, ClientConnectorError
+from aiohttp import ClientConnectorError
+from aiohttp import ClientResponse
+from aiohttp import ClientSession
 
 py_logger = logging.getLogger('pytgcalls')
 

@@ -1,7 +1,8 @@
 import re
 import sys
 
-from aiohttp import ClientResponse, ClientSession
+from aiohttp import ClientResponse
+from aiohttp import ClientSession
 
 from .__version__ import __version__
 from .version_manager import VersionManager

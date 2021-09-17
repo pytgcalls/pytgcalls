@@ -9,8 +9,10 @@ class AudioPiped(InputStream):
         self,
         path: str,
         audio_parameters: AudioParameters = AudioParameters(),
+        additional_ffmpeg_parameters: str = '',
     ):
         self._path = path
+        self.ffmpeg_parameters = additional_ffmpeg_parameters
         super().__init__(
             InputAudioStream(
                 f'fifo://{path}',
