@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import shlex
 
 from ...exceptions import InvalidStreamMode
 from ...exceptions import NoActiveGroupCall
@@ -49,7 +50,9 @@ class JoinGroupCall(Scaffold):
                 isinstance(stream, AudioVideoPiped):
             await stream.check_pipe()
             ffmpeg_parameters = stream.headers
-            ffmpeg_parameters += stream.ffmpeg_parameters
+            ffmpeg_parameters += ':_cmd_:'.join(
+                shlex.split(stream.ffmpeg_parameters),
+            )
         if self._app is not None:
             if self._wait_until_run is not None:
                 if not self._wait_until_run.done():

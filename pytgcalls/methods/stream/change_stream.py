@@ -1,4 +1,5 @@
 import asyncio
+import shlex
 
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
@@ -35,7 +36,9 @@ class ChangeStream(Scaffold):
                         isinstance(stream, AudioVideoPiped):
                     await stream.check_pipe()
                     ffmpeg_parameters = stream.headers
-                    ffmpeg_parameters += stream.ffmpeg_parameters
+                    ffmpeg_parameters += ':_cmd_:'.join(
+                        shlex.split(stream.ffmpeg_parameters),
+                    )
 
                 async def internal_sender():
                     if not self._wait_until_run.done():

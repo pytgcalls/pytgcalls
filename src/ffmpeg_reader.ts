@@ -21,7 +21,7 @@ export class FFmpegReader {
     }
     public convert_audio(path: string, bitrate: string){
         let list_cmd = this.additional_parameters.split('-atend');
-        this.start_conversion(this.parse_cmdline(list_cmd[0]).concat([
+        this.start_conversion(list_cmd[0].split(':_cmd_:').concat([
             '-i',
             path.replace('fifo://', ''),
             '-f',
@@ -31,11 +31,11 @@ export class FFmpegReader {
             '-ar',
             bitrate,
             'pipe:1',
-        ]).concat(this.parse_cmdline(list_cmd[1])));
+        ]).concat(list_cmd[1].split(':_cmd_:')));
     }
     public convert_video(path: string, resolution: string, framerate: string){
        let list_cmd = this.additional_parameters.split('-atend');
-       this.start_conversion(this.parse_cmdline(list_cmd[0]).concat([
+       this.start_conversion(list_cmd[0].split(':_cmd_:').concat([
             '-i',
             path.replace('fifo://', ''),
             '-f',
@@ -45,7 +45,7 @@ export class FFmpegReader {
             '-vf',
             'scale=' + resolution + ':-1',
             'pipe:1',
-        ]).concat(this.parse_cmdline(list_cmd[1])));
+        ]).concat(list_cmd[1].split(':_cmd_:')));
     }
     private start_conversion(params: Array<string>) {
         params = params.filter(e => e);
@@ -76,43 +76,6 @@ export class FFmpegReader {
             this.fifo_reader?.stdout.pause();
         }
     });
-    parse_cmdline(cmdline: string) {
-        let re_next_arg = /^\s*((?:(?:"(?:\\.|[^"])*")|(?:'[^']*')|\\.|\S)+)\s*(.*)$/;
-        let next_arg = ['', '', cmdline];
-        let args = [];
-        // @ts-ignore
-        while (next_arg = re_next_arg.exec(next_arg[2])) {
-            let quoted_arg = next_arg[1];
-            let unquoted_arg = "";
-            while (quoted_arg.length > 0) {
-                if (/^"/.test(quoted_arg)) {
-                    let quoted_part = /^"((?:\\.|[^"])*)"(.*)$/.exec(quoted_arg);
-                    if (quoted_part) {
-                        unquoted_arg += quoted_part[1].replace(/\\(.)/g, "$1");
-                    }
-                    if (quoted_part) {
-                        quoted_arg = quoted_part[2];
-                    }
-                } else if (/^'/.test(quoted_arg)) {
-                    let quoted_part = /^'([^']*)'(.*)$/.exec(quoted_arg);
-                    if (quoted_part) {
-                        unquoted_arg += quoted_part[1];
-                    }
-                    if (quoted_part) {
-                        quoted_arg = quoted_part[2];
-                    }
-                } else if (/^\\/.test(quoted_arg)) {
-                    unquoted_arg += quoted_arg[1];
-                    quoted_arg = quoted_arg.substring(2);
-                } else {
-                    unquoted_arg += quoted_arg[0];
-                    quoted_arg = quoted_arg.substring(1);
-                }
-            }
-            args[args.length] = unquoted_arg;
-        }
-        return args;
-    }
     private endListener = (async () => {
         this.almostFinished = true;
     });

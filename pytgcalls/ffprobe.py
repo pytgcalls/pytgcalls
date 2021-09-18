@@ -1,5 +1,6 @@
 import asyncio
 import re
+import shlex
 import subprocess
 from typing import Dict
 from typing import List
@@ -16,11 +17,16 @@ class FFprobe:
     def ffmpeg_headers(
         headers: Optional[Dict[str, str]] = None,
     ):
-        ffmpeg_params = ''
+        ffmpeg_params: List[str] = []
         if headers is not None:
+            ffmpeg_params.append('-headers')
+            built_header = ''
             for i in headers:
-                ffmpeg_params += f'-headers "{i}: {headers[i]}"'
-        return ffmpeg_params
+                built_header += f'{i}: {headers[i]}\r\n'
+            ffmpeg_params.append(built_header)
+        return ':_cmd_:'.join(
+            ffmpeg_params,
+        )
 
     @staticmethod
     async def check_file(
@@ -30,9 +36,11 @@ class FFprobe:
     ):
         ffmpeg_params: List[str] = []
         if headers is not None:
+            ffmpeg_params.append('-headers')
+            built_header = ''
             for i in headers:
-                ffmpeg_params.append('-headers')
-                ffmpeg_params.append(f'{i}: {headers[i]}')
+                built_header += f'{i}: {headers[i]}\r\n'
+            ffmpeg_params.append(built_header)
         try:
             ffprobe = await asyncio.create_subprocess_exec(
                 'ffprobe',
