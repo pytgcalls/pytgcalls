@@ -1,6 +1,5 @@
-from math import ceil
-from typing import Dict
-from typing import Optional
+from math import gcd
+from typing import Optional, Dict
 
 from ...exceptions import InvalidVideoProportion
 from ...ffprobe import FFprobe
@@ -47,29 +46,39 @@ class AudioVideoPiped(InputStream):
             True,
             self.raw_headers,
         )
+
+        def resize_ratio(w, h, factor):
+            if w > h:
+                rescaling = ((1280 if w > 1280 else w) * 100) / w
+            else:
+                rescaling = ((720 if h > 720 else h) * 100) / h
+            h = round((h * rescaling) / 100)
+            w = round((w * rescaling) / 100)
+            divisor = gcd(w, h)
+            ratio_w = w / divisor
+            ratio_h = h / divisor
+            factor = (divisor * factor) / 100
+            return round(ratio_w * factor), round(ratio_h * factor)
         height = self.stream_video.parameters.height
+        width = self.stream_video.parameters.width
         if isinstance(
             self.stream_video.parameters,
             HighQualityVideo,
         ):
-            calculated_height = 720 if dest_height > 720 else dest_height
-            height = calculated_height
+            width, height = resize_ratio(dest_width, dest_height, 100)
         if isinstance(
             self.stream_video.parameters,
             MediumQualityVideo,
         ):
-            calculated_height = 720 if dest_height > 720 else dest_height
-            height = round((calculated_height * 66.66) / 100)
+            width, height = resize_ratio(dest_width, dest_height, 66.69)
         if isinstance(
             self.stream_video.parameters,
             LowQualityVideo,
         ):
-            calculated_height = 720 if dest_height > 720 else dest_height
-            height = round((calculated_height * 50) / 100)
+            width, height = resize_ratio(dest_width, dest_height, 50)
         if dest_height < height:
             raise InvalidVideoProportion(
                 'Destination height is greater than the original height',
             )
-        ratio = (dest_width / dest_height)
-        self.stream_video.parameters.width = ceil(height * ratio)
+        self.stream_video.parameters.width = width - 1 if width % 2 else width
         self.stream_video.parameters.height = height
