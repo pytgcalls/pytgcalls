@@ -27,10 +27,11 @@ class ChangeStream(Scaffold):
                         stream.stream_video.path.replace('fifo://', ''),
                         headers,
                     )
-                await FileManager.check_file_exist(
-                    stream.stream_audio.path.replace('fifo://', ''),
-                    headers,
-                )
+                if stream.stream_audio is not None:
+                    await FileManager.check_file_exist(
+                        stream.stream_audio.path.replace('fifo://', ''),
+                        headers,
+                    )
                 ffmpeg_parameters = ''
                 if isinstance(stream, AudioPiped) or \
                         isinstance(stream, AudioVideoPiped):
@@ -48,12 +49,14 @@ class ChangeStream(Scaffold):
                     request = {
                         'action': 'change_stream',
                         'chat_id': chat_id,
-                        'stream_audio': {
+                        'ffmpeg_parameters': ffmpeg_parameters,
+                        'lip_sync': stream.lip_sync,
+                    }
+                    if stream_audio is not None:
+                        request['stream_audio'] = {
                             'path': stream_audio.path,
                             'bitrate': stream_audio.parameters.bitrate,
-                        },
-                        'ffmpeg_parameters': ffmpeg_parameters,
-                    }
+                        }
                     if stream.stream_video is not None:
                         request['stream_video'] = {
                             'path': stream_video.path,

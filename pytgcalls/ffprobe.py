@@ -1,6 +1,5 @@
 import asyncio
 import re
-import shlex
 import subprocess
 from typing import Dict
 from typing import List
@@ -31,6 +30,7 @@ class FFprobe:
     @staticmethod
     async def check_file(
         path: str,
+        needed_audio=False,
         needed_video=False,
         headers: Optional[Dict[str, str]] = None,
     ):
@@ -88,8 +88,9 @@ class FFprobe:
                     raise InvalidVideoProportion(
                         'Video proportion not found',
                     )
-            if not have_audio:
-                raise NoAudioSourceFound(path)
+            if needed_audio:
+                if not have_audio:
+                    raise NoAudioSourceFound(path)
             if have_video:
                 return original_width, original_height
         except FileNotFoundError:

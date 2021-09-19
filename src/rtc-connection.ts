@@ -1,7 +1,149 @@
 import { Stream, TGCalls } from './tgcalls';
-import { Binding } from './binding';
+import {Binding, MultiCoreBinding} from './binding';
 import {FFmpegReader} from "./ffmpeg_reader";
 import {FileReader} from "./file_reader";
+import * as cluster from "cluster";
+import {Worker} from "cluster";
+import * as process from "process";
+
+export class MultiCoreRTCConnection {
+    private readonly process_multicore?: Worker;
+    private readonly promises = new Map<string, CallableFunction>();
+    constructor(
+        chatId: number,
+        binding: Binding,
+        bufferLength: number,
+        inviteHash: string,
+        additional_parameters: string,
+        audioParams?: any,
+        videoParams?: any,
+        lipSync: boolean = false,
+    ) {
+        this.process_multicore = cluster.fork();
+        this.process_multicore?.send({
+            action: '__init__',
+            chatId,
+            bufferLength,
+            inviteHash,
+            additional_parameters,
+            audioParams,
+            videoParams,
+            lipSync,
+        });
+        this.process_multicore?.on('message', async (data: any) => {
+            switch (data.action) {
+                case 'binding_update':
+                    this.process_multicore?.send({
+                        action: 'binding_update',
+                        uid: data.uid,
+                        result: await binding.sendUpdate(
+                            data.update,
+                        ),
+                    })
+                    break;
+                case 'response_request':
+                    const promise = this.promises.get(data.uid);
+                    if (promise) {
+                        if (data.data !== undefined) {
+                            promise(data.data);
+                        }
+                    }
+                    break;
+                case 'stop_process':
+                    this.process_multicore?.kill();
+                    break;
+            }
+        });
+    }
+    async joinCall(): Promise<boolean>{
+        if(this.process_multicore){
+            const uid = MultiCoreRTCConnection.makeID(12);
+            this.process_multicore?.send({
+                action: 'joinCall',
+                uid: uid,
+            });
+            return new Promise(resolve => {
+                this.promises.set(uid, (data: any) => {
+                    resolve(data);
+                    this.promises.delete(uid);
+                });
+            });
+        }
+        throw 'NoMultiCoreProcess';
+    }
+    stop(){
+        if(this.process_multicore){
+            this.process_multicore?.send({
+                action: 'stop',
+            });
+        }
+    }
+    pause(){
+        if(this.process_multicore){
+            this.process_multicore?.send({
+                action: 'pause',
+            });
+        }
+    }
+    resume(){
+        if(this.process_multicore){
+            this.process_multicore?.send({
+                action: 'resume',
+            });
+        }
+    }
+    mute(){
+        if(this.process_multicore){
+            this.process_multicore?.send({
+                action: 'mute',
+            });
+        }
+    }
+    unmute(){
+        if(this.process_multicore){
+            this.process_multicore?.send({
+                action: 'unmute',
+            });
+        }
+    }
+    changeStream(additional_parameters: string, audioParams: any, videoParams?: any, lipSync: boolean = false){
+        if(this.process_multicore){
+            this.process_multicore?.send({
+                action: 'changeStream',
+                additional_parameters,
+                audioParams,
+                videoParams,
+                lipSync,
+            })
+        }
+    }
+    async leave_call(): Promise<any>{
+        if(this.process_multicore){
+            const uid = MultiCoreRTCConnection.makeID(12);
+            this.process_multicore?.send({
+                action: 'leave_call',
+                uid: uid,
+            });
+            return new Promise(resolve => {
+                this.promises.set(uid, (data: any) => {
+                    resolve(data);
+                    this.promises.delete(uid);
+                });
+            });
+        }
+        throw 'NoMultiCoreProcess';
+    }
+    private static makeID(length: number): string {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(
+                Math.floor(Math.random() * characters.length),
+            );
+        }
+        return result;
+    }
+}
 
 export class RTCConnection {
     tgcalls: TGCalls<any>;
@@ -15,27 +157,30 @@ export class RTCConnection {
 
     constructor(
         public chatId: number,
-        public binding: Binding,
+        public binding: MultiCoreBinding,
         public bufferLength: number,
         public inviteHash: string,
         additional_parameters: string,
-        public audioParams: any,
+        public audioParams?: any,
         public videoParams?: any,
+        lipSync: boolean = false,
     ) {
         this.tgcalls = new TGCalls({ chatId: this.chatId });
-        const fileAudioPath = audioParams.path;
+        const fileAudioPath = audioParams === undefined ? undefined:audioParams.path;
         const fileVideoPath = videoParams === undefined ? undefined:videoParams.path;
         let audioReadable;
-        if(fileAudioPath.includes('fifo://')){
-            audioReadable = new FFmpegReader(additional_parameters);
-            audioReadable.convert_audio(
-                fileAudioPath,
-                audioParams.bitrate,
-            );
-        }else{
-            audioReadable = new FileReader(
-                fileAudioPath,
-            );
+        if(audioParams !== undefined){
+            if(fileAudioPath.includes('fifo://')){
+                audioReadable = new FFmpegReader(additional_parameters);
+                audioReadable.convert_audio(
+                    fileAudioPath,
+                    audioParams.bitrate,
+                );
+            }else{
+                audioReadable = new FileReader(
+                    fileAudioPath,
+                );
+            }
         }
         let videoReadable;
         if(videoParams !== undefined){
@@ -53,8 +198,10 @@ export class RTCConnection {
             }
         }
 
-        this.audioStream = new Stream(audioReadable, 16, audioParams.bitrate, 1, bufferLength);
+        this.audioStream = new Stream(audioReadable, 16, audioParams ? audioParams.bitrate:0, 1, bufferLength);
         this.videoStream = new Stream(videoReadable);
+        this.audioStream.setLipSyncStatus(lipSync);
+        this.videoStream.setLipSyncStatus(lipSync);
 
         this.tgcalls.joinVoiceCall = async (payload: any) => {
             payload = {
@@ -245,7 +392,15 @@ export class RTCConnection {
         }
     }
 
-    async changeStream(additional_parameters: string, audioParams: any, videoParams?: any) {
+    mute() {
+        this.tgcalls.mute();
+    }
+
+    unmute() {
+        this.tgcalls.unmute();
+    }
+
+    async changeStream(additional_parameters: string, audioParams?: any, videoParams?: any, lipSync: boolean = false) {
         let audioReadable;
         this.almostFinished = 0;
         this.almostRestarted = 0;
@@ -256,16 +411,18 @@ export class RTCConnection {
         if(videoParams != undefined){
             this.almostMaxFinished += 1;
         }
-        if(audioParams.path.includes('fifo://')){
-            audioReadable = new FFmpegReader(additional_parameters);
-            audioReadable.convert_audio(
-                audioParams.path,
-                audioParams.bitrate,
-            );
-        }else{
-            audioReadable = new FileReader(
-                audioParams.path,
-            );
+        if(audioParams != undefined){
+            if(audioParams.path.includes('fifo://')){
+                audioReadable = new FFmpegReader(additional_parameters);
+                audioReadable.convert_audio(
+                    audioParams.path,
+                    audioParams.bitrate,
+                );
+            }else{
+                audioReadable = new FileReader(
+                    audioParams.path,
+                );
+            }
         }
         let videoReadable;
         if(videoParams != undefined){
@@ -284,7 +441,9 @@ export class RTCConnection {
             }
         }
         this.audioParams = audioParams;
-        this.audioStream.setAudioParams(audioParams.bitrate);
+        if(this.audioParams != undefined){
+            this.audioStream.setAudioParams(this.audioParams.bitrate);
+        }
         if(
             !(this.videoParams == undefined && videoParams == undefined) ||
             !(this.videoParams != undefined && videoParams != undefined)
@@ -307,7 +466,75 @@ export class RTCConnection {
         this.videoStream.readable = undefined;
         this.audioStream.readable?.stop();
         this.audioStream.readable = undefined;
+        this.audioStream.setLipSyncStatus(lipSync);
+        this.videoStream.setLipSyncStatus(lipSync);
         this.videoStream.restart(videoReadable);
         this.audioStream.restart(audioReadable);
     }
+}
+if (cluster.isWorker) {
+    let rtc_connection: RTCConnection;
+    const multicore_binding = new MultiCoreBinding(<any> process);
+    process?.on('message', async (data: any) => {
+         switch (data.action) {
+             case '__init__':
+                 rtc_connection = new RTCConnection(
+                     data.chatId,
+                     multicore_binding,
+                     data.bufferLength,
+                     data.inviteHash,
+                     data.additional_parameters,
+                     data.audioParams,
+                     data.videoParams,
+                     data.lipSync,
+                 );
+                 break;
+             case 'binding_update':
+                 multicore_binding.resolveUpdate(data);
+                 break;
+             case 'pause':
+                 await rtc_connection.pause();
+                 break;
+             case 'resume':
+                 await rtc_connection.resume();
+                 break;
+             case 'mute':
+                 rtc_connection.mute();
+                 break;
+             case 'unmute':
+                 rtc_connection.unmute();
+                 break;
+             case 'stop':
+                 rtc_connection.stop();
+                 (<any> process).send({
+                    action: 'stop_process',
+                 });
+                 break;
+             case 'leave_call':
+                 (<any> process).send({
+                     action: 'response_request',
+                     data: await rtc_connection.leave_call(),
+                     uid: data.uid,
+                 });
+                 (<any> process).send({
+                    action: 'stop_process',
+                 });
+                 break;
+             case 'joinCall':
+                 (<any> process).send({
+                     action: 'response_request',
+                     data: await rtc_connection.joinCall(),
+                     uid: data.uid,
+                 });
+                 break;
+             case 'changeStream':
+                 await rtc_connection.changeStream(
+                     data.additional_parameters,
+                     data.audioParams,
+                     data.videoParams,
+                     data.lipSync,
+                 )
+                 break;
+         }
+    });
 }

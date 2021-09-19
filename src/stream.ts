@@ -29,6 +29,7 @@ export class Stream extends EventEmitter {
     private videoHeight: number = 0;
     private videoFramerate: number = 0;
     private lastDifferenceRemote: number = 0;
+    private lipSync: boolean = false;
     remotePlayingTime?: RemotePlayingTimeCallback;
 
     constructor(
@@ -51,6 +52,10 @@ export class Stream extends EventEmitter {
             () => this.processData(),
             1,
         );
+    }
+
+    public setLipSyncStatus(status: boolean){
+        this.lipSync = status;
     }
 
     setReadable(readable?: FFmpegReader | FileReader) {
@@ -365,7 +370,7 @@ export class Stream extends EventEmitter {
     }
 
     private isLaggingRemote(){
-        if(this.remotePlayingTime != undefined) {
+        if(this.remotePlayingTime != undefined && !this.paused && this.lipSync) {
             const remote_play_time = this.remotePlayingTime().time;
             const local_play_time = this.currentPlayedTime();
             if (remote_play_time != undefined && local_play_time != undefined) {

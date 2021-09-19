@@ -103,3 +103,41 @@ export class Binding extends EventEmitter {
         console.log(JSON.stringify(update));
     }
 }
+export class MultiCoreBinding{
+    private readonly promises = new Map<string, CallableFunction>();
+    constructor(private process_multicore: any) {}
+    resolveUpdate(data: any){
+        const promise = this.promises.get(data.uid);
+        if (promise) {
+            if (data.result !== undefined) {
+                promise(data.result);
+            } else {
+                promise(null);
+            }
+        }
+    }
+    async sendUpdate(update: any): Promise<any> {
+        const uid = MultiCoreBinding.makeID(12);
+        this.process_multicore.send({
+            action: 'binding_update',
+            uid: uid,
+            update: update,
+        });
+        return new Promise(resolve => {
+            this.promises.set(uid, (data: any) => {
+                resolve(data);
+                this.promises.delete(uid);
+            });
+        });
+    }
+    private static makeID(length: number): string {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(
+                Math.floor(Math.random() * characters.length),
+            );
+        }
+        return result;
+    }
+}
