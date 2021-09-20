@@ -12,6 +12,7 @@ export class FFmpegReader {
     private stopped: boolean = false;
     private readonly additional_parameters: string = '';
     private almostFinished: boolean = false;
+    public haveEnd: boolean = true;
     onData?: onData;
     onEnd?: onEnd;
 
@@ -35,11 +36,17 @@ export class FFmpegReader {
     }
     public convert_video(path: string, resolution: string, framerate: string){
        let list_cmd = this.additional_parameters.split('-atend');
+       if(path.includes('image:')){
+            list_cmd[0] = list_cmd[0] + ':_cmd_:-loop:_cmd_:1:_cmd_:-framerate:_cmd_:1';
+            this.haveEnd = false;
+       }
        this.start_conversion(list_cmd[0].split(':_cmd_:').concat([
             '-i',
-            path.replace('fifo://', ''),
+            path.replace('fifo://', '').replace('image:', ''),
             '-f',
             'rawvideo',
+            '-pix_fmt',
+            'yuv420p',
             '-r',
             framerate,
             '-vf',

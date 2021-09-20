@@ -1,3 +1,4 @@
+from .audio_image_piped import AudioImagePiped
 from .audio_parameters import AudioParameters
 from .audio_piped import AudioPiped
 from .audio_video_piped import AudioVideoPiped
@@ -9,6 +10,7 @@ from .video_piped import VideoPiped
 
 __all__ = (
     'AudioParameters',
+    'AudioImagePiped',
     'AudioPiped',
     'AudioVideoPiped',
     'InputAudioStream',

@@ -1,9 +1,10 @@
 import { EventEmitter } from 'events';
 import {RTCAudioSource, nonstandard, RTCVideoSource} from 'wrtc';
 import { Binding } from './binding';
-import {RemotePlayingTimeCallback} from "./types";
+import {RemoteLaggingCallback, RemotePlayingTimeCallback} from "./types";
 import {FFmpegReader} from "./ffmpeg_reader";
 import {FileReader} from "./file_reader";
+import * as os from "os";
 
 export class Stream extends EventEmitter {
     private readonly audioSource: RTCAudioSource;
@@ -31,6 +32,7 @@ export class Stream extends EventEmitter {
     private lastDifferenceRemote: number = 0;
     private lipSync: boolean = false;
     remotePlayingTime?: RemotePlayingTimeCallback;
+    remoteLagging?: RemoteLaggingCallback;
 
     constructor(
         public readable?: FFmpegReader | FileReader,
@@ -152,11 +154,10 @@ export class Stream extends EventEmitter {
         return result;
     }
 
-    private checkLag() {
+    public checkLag() {
         if (this.finishedLoading) {
             return false;
         }
-
         return this.cache.length < this.bytesLength() * this.needed_time();
     }
 
@@ -181,6 +182,7 @@ export class Stream extends EventEmitter {
     finish() {
         this.readable?.stop();
         this.finished = true;
+        this.finishedLoading = true;
     }
 
     stop() {
@@ -313,24 +315,34 @@ export class Stream extends EventEmitter {
                 }
                 this.cache = this.cache.slice(byteLength);
             } else if (checkLag) {
-                Binding.log(
-                    'STREAM_LAG -> ' + new Date().getTime() +
+                this.notifyOverloadCpu((cpuPercentage: Number) => {
+                    if(cpuPercentage >= 90){
+                        Binding.log(
+                            'CPU_OVERLOAD_DETECTED -> ' + new Date().getTime() +
+                            ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
+                            Binding.WARNING,
+                        );
+                    }else{
+                        Binding.log(
+                            'STREAM_LAG -> ' + new Date().getTime() +
+                            ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
+                            Binding.DEBUG,
+                        );
+                    }
+                    Binding.log(
+                        'BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length +
                         ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                    Binding.DEBUG,
-                );
-                Binding.log(
-                    'BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length +
+                        Binding.DEBUG,
+                    );
+                    Binding.log(
+                        'BYTES_LOADED -> ' +
+                        this.bytesLoaded +
+                        'OF -> ' +
+                        this.readable?.fileSize() +
                         ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                    Binding.DEBUG,
-                );
-                Binding.log(
-                    'BYTES_LOADED -> ' +
-                    this.bytesLoaded +
-                    'OF -> ' +
-                    this.readable.fileSize() +
-                    ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                    Binding.DEBUG,
-                );
+                        Binding.DEBUG,
+                    );
+                });
             }
 
             if (!this.finishedLoading) {
@@ -369,18 +381,51 @@ export class Stream extends EventEmitter {
         }
     }
 
+    public haveEnd(){
+        if(this.readable != undefined){
+            return this.readable.haveEnd;
+        }else{
+            return true;
+        }
+    }
+
     private isLaggingRemote(){
-        if(this.remotePlayingTime != undefined && !this.paused && this.lipSync) {
+        if(this.remotePlayingTime != undefined && !this.paused && this.lipSync && this.remoteLagging != undefined) {
             const remote_play_time = this.remotePlayingTime().time;
             const local_play_time = this.currentPlayedTime();
             if (remote_play_time != undefined && local_play_time != undefined) {
                 if(local_play_time > remote_play_time){
                     this.lastDifferenceRemote = (local_play_time - remote_play_time) * 100000;
                     return true;
+                }else if(this.remoteLagging().isLagging && remote_play_time > local_play_time){
+                    this.lastDifferenceRemote = 0;
+                    return true;
                 }
             }
         }
         return false;
+    }
+    private notifyOverloadCpu(action: (cpuPercentage: Number) => void){
+        function cpuAverage() {
+            let totalIdle = 0, totalTick = 0;
+            const cpus = os.cpus();
+            for(let i = 0, len = cpus.length; i < len; i++) {
+                const cpu = cpus[i];
+                for(let type in cpu.times) {
+                    totalTick += (<any> cpu).times[type];
+                }
+                totalIdle += cpu.times.idle;
+            }
+            return {idle: totalIdle / cpus.length,  total: totalTick / cpus.length};
+        }
+        const startMeasure = cpuAverage();
+        setTimeout(function() {
+            const endMeasure = cpuAverage();
+            const idleDifference = endMeasure.idle - startMeasure.idle;
+            const totalDifference = endMeasure.total - startMeasure.total;
+            const percentageCPU = 100 - ~~(100 * idleDifference / totalDifference);
+            action(percentageCPU);
+        }, 100);
     }
 
     private frameTime(): number{

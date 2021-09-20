@@ -245,6 +245,10 @@ export class RTCConnection {
         }
         this.audioStream.on('finish', async () => {
             this.almostFinished += 1;
+            if(!this.videoStream.haveEnd()){
+                this.almostFinished += 1;
+                this.videoStream.finish();
+            }
             if(this.almostFinished === this.almostMaxFinished){
                 this.almostFinished = 0;
                 await this.binding.sendUpdate({
@@ -319,6 +323,16 @@ export class RTCConnection {
         this.videoStream.remotePlayingTime = () => {
             return {
                 time: this.audioStream.currentPlayedTime()
+            }
+        };
+        this.audioStream.remoteLagging = () => {
+            return {
+                isLagging: this.videoStream.checkLag()
+            }
+        };
+        this.videoStream.remoteLagging = () => {
+            return {
+                isLagging: this.audioStream.checkLag()
             }
         };
     }

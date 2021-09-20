@@ -3,6 +3,7 @@ import {onData, onEnd} from "./types";
 
 export class FileReader {
     private readable?:ReadStream;
+    public haveEnd: boolean = true;
     onData?: onData;
     onEnd?: onEnd;
 
