@@ -29,6 +29,7 @@ export class MultiCoreRTCConnection {
             audioParams,
             videoParams,
             lipSync,
+            overloadQuiet: binding.overload_quiet,
         });
         this.process_multicore?.on('message', async (data: any) => {
             switch (data.action) {
@@ -164,6 +165,7 @@ export class RTCConnection {
         public audioParams?: any,
         public videoParams?: any,
         lipSync: boolean = false,
+        overloadQuiet: boolean = false,
     ) {
         this.tgcalls = new TGCalls({ chatId: this.chatId });
         const fileAudioPath = audioParams === undefined ? undefined:audioParams.path;
@@ -189,6 +191,7 @@ export class RTCConnection {
                 videoReadable.convert_video(
                     fileVideoPath,
                     videoParams.width,
+                    videoParams.height,
                     videoParams.framerate,
                 );
             }else{
@@ -202,6 +205,8 @@ export class RTCConnection {
         this.videoStream = new Stream(videoReadable);
         this.audioStream.setLipSyncStatus(lipSync);
         this.videoStream.setLipSyncStatus(lipSync);
+        this.audioStream.setOverloadQuietStatus(overloadQuiet);
+        this.videoStream.setOverloadQuietStatus(overloadQuiet);
 
         this.tgcalls.joinVoiceCall = async (payload: any) => {
             payload = {
@@ -445,6 +450,7 @@ export class RTCConnection {
                 videoReadable.convert_video(
                     videoParams.path,
                     videoParams.width,
+                    videoParams.height,
                     videoParams.framerate,
                 );
 
@@ -501,6 +507,7 @@ if (cluster.isWorker) {
                      data.audioParams,
                      data.videoParams,
                      data.lipSync,
+                     data.overloadQuiet,
                  );
                  break;
              case 'binding_update':

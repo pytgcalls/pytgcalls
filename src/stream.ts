@@ -31,6 +31,7 @@ export class Stream extends EventEmitter {
     private videoFramerate: number = 0;
     private lastDifferenceRemote: number = 0;
     private lipSync: boolean = false;
+    private overloadQuiet: boolean = false;
     remotePlayingTime?: RemotePlayingTimeCallback;
     remoteLagging?: RemoteLaggingCallback;
 
@@ -58,6 +59,10 @@ export class Stream extends EventEmitter {
 
     public setLipSyncStatus(status: boolean){
         this.lipSync = status;
+    }
+
+    public setOverloadQuietStatus(status: boolean){
+        this.overloadQuiet = status;
     }
 
     setReadable(readable?: FFmpegReader | FileReader) {
@@ -320,7 +325,7 @@ export class Stream extends EventEmitter {
                         Binding.log(
                             'CPU_OVERLOAD_DETECTED -> ' + new Date().getTime() +
                             ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                            Binding.WARNING,
+                            !this.overloadQuiet ? Binding.WARNING:Binding.DEBUG,
                         );
                     }else{
                         Binding.log(

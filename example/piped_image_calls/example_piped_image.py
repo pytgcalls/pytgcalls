@@ -4,6 +4,7 @@ from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 from pytgcalls.types.input_stream import AudioImagePiped
+from pytgcalls.types.input_stream.quality import HighQualityVideo
 
 app = Client(
     'py-tgcalls',
@@ -20,6 +21,7 @@ if __name__ == '__main__':
         AudioImagePiped(
             audio_file,
             'test.png',
+            video_parameters=HighQualityVideo(),
         ),
         stream_type=StreamType().pulse_stream,
     )

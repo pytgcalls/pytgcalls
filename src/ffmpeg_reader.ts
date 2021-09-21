@@ -34,7 +34,7 @@ export class FFmpegReader {
             'pipe:1',
         ]).concat(list_cmd[1].split(':_cmd_:')));
     }
-    public convert_video(path: string, resolution: string, framerate: string){
+    public convert_video(path: string, width: string, height: string, framerate: string){
        let list_cmd = this.additional_parameters.split('-atend');
        if(path.includes('image:')){
             list_cmd[0] = list_cmd[0] + ':_cmd_:-loop:_cmd_:1:_cmd_:-framerate:_cmd_:1';
@@ -50,7 +50,7 @@ export class FFmpegReader {
             '-r',
             framerate,
             '-vf',
-            'scale=' + resolution + ':-1',
+            'scale=' + width + ':' + height,
             'pipe:1',
         ]).concat(list_cmd[1].split(':_cmd_:')));
     }

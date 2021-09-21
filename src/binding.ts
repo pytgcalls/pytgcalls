@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 
 export class Binding extends EventEmitter {
     private connected = false;
+    public overload_quiet = false;
     private readonly ssid: string;
     private readonly promises = new Map<string, CallableFunction>();
     static DEBUG = 1;
@@ -19,6 +20,7 @@ export class Binding extends EventEmitter {
                     const data = JSON.parse(list_data[i]);
                     if (data.try_connect == 'connected') {
                         this.connected = true;
+                        this.overload_quiet = data.overload_quiet;
                         Binding.sendInternalUpdate({
                             ping: true,
                         });

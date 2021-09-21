@@ -16,6 +16,7 @@ class PyTgCalls(Methods, Scaffold):
         self,
         app: Any,
         cache_duration: int = 120,
+        overload_quiet_mode: bool = False,
     ):
         super().__init__()
         self._app = MtProtoClient(
@@ -32,7 +33,7 @@ class PyTgCalls(Methods, Scaffold):
         self._call_holder = CallHolder()
         self._cache_user_peer = Cache()
         self._on_event_update = HandlersHolder()
-        self._binding = Binding()
+        self._binding = Binding(overload_quiet_mode)
 
         def cleanup():
             if self._async_core is not None:
