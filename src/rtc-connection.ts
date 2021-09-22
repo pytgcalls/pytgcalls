@@ -2,9 +2,7 @@ import { Stream, TGCalls } from './tgcalls';
 import {Binding, MultiCoreBinding} from './binding';
 import {FFmpegReader} from "./ffmpeg_reader";
 import {FileReader} from "./file_reader";
-import * as cluster from "cluster";
-import {Worker} from "cluster";
-import * as process from "process";
+import {Worker, isMainThread, parentPort} from "worker_threads";
 
 export class MultiCoreRTCConnection {
     private readonly process_multicore?: Worker;
@@ -19,8 +17,9 @@ export class MultiCoreRTCConnection {
         videoParams?: any,
         lipSync: boolean = false,
     ) {
-        this.process_multicore = cluster.fork();
-        this.process_multicore?.send({
+        // @ts-ignore
+        this.process_multicore = new Worker(__filename);
+        this.process_multicore?.postMessage({
             action: '__init__',
             chatId,
             bufferLength,
@@ -34,7 +33,7 @@ export class MultiCoreRTCConnection {
         this.process_multicore?.on('message', async (data: any) => {
             switch (data.action) {
                 case 'binding_update':
-                    this.process_multicore?.send({
+                    this.process_multicore?.postMessage({
                         action: 'binding_update',
                         uid: data.uid,
                         result: await binding.sendUpdate(
@@ -51,7 +50,7 @@ export class MultiCoreRTCConnection {
                     }
                     break;
                 case 'stop_process':
-                    this.process_multicore?.kill();
+                    this.process_multicore?.terminate();
                     break;
             }
         });
@@ -59,7 +58,7 @@ export class MultiCoreRTCConnection {
     async joinCall(): Promise<boolean>{
         if(this.process_multicore){
             const uid = MultiCoreRTCConnection.makeID(12);
-            this.process_multicore?.send({
+            this.process_multicore?.postMessage({
                 action: 'joinCall',
                 uid: uid,
             });
@@ -74,42 +73,42 @@ export class MultiCoreRTCConnection {
     }
     stop(){
         if(this.process_multicore){
-            this.process_multicore?.send({
+            this.process_multicore?.postMessage({
                 action: 'stop',
             });
         }
     }
     pause(){
         if(this.process_multicore){
-            this.process_multicore?.send({
+            this.process_multicore?.postMessage({
                 action: 'pause',
             });
         }
     }
     resume(){
         if(this.process_multicore){
-            this.process_multicore?.send({
+            this.process_multicore?.postMessage({
                 action: 'resume',
             });
         }
     }
     mute(){
         if(this.process_multicore){
-            this.process_multicore?.send({
+            this.process_multicore?.postMessage({
                 action: 'mute',
             });
         }
     }
     unmute(){
         if(this.process_multicore){
-            this.process_multicore?.send({
+            this.process_multicore?.postMessage({
                 action: 'unmute',
             });
         }
     }
     changeStream(additional_parameters: string, audioParams: any, videoParams?: any, lipSync: boolean = false){
         if(this.process_multicore){
-            this.process_multicore?.send({
+            this.process_multicore?.postMessage({
                 action: 'changeStream',
                 additional_parameters,
                 audioParams,
@@ -121,7 +120,7 @@ export class MultiCoreRTCConnection {
     async leave_call(): Promise<any>{
         if(this.process_multicore){
             const uid = MultiCoreRTCConnection.makeID(12);
-            this.process_multicore?.send({
+            this.process_multicore?.postMessage({
                 action: 'leave_call',
                 uid: uid,
             });
@@ -492,10 +491,10 @@ export class RTCConnection {
         this.audioStream.restart(audioReadable);
     }
 }
-if (cluster.isWorker) {
+if (!isMainThread) {
     let rtc_connection: RTCConnection;
-    const multicore_binding = new MultiCoreBinding(<any> process);
-    process?.on('message', async (data: any) => {
+    const multicore_binding = new MultiCoreBinding(parentPort);
+    parentPort?.on('message', async (data: any) => {
          switch (data.action) {
              case '__init__':
                  rtc_connection = new RTCConnection(
@@ -527,22 +526,22 @@ if (cluster.isWorker) {
                  break;
              case 'stop':
                  rtc_connection.stop();
-                 (<any> process).send({
+                 parentPort?.postMessage({
                     action: 'stop_process',
                  });
                  break;
              case 'leave_call':
-                 (<any> process).send({
+                 parentPort?.postMessage({
                      action: 'response_request',
                      data: await rtc_connection.leave_call(),
                      uid: data.uid,
                  });
-                 (<any> process).send({
+                 parentPort?.postMessage({
                     action: 'stop_process',
                  });
                  break;
              case 'joinCall':
-                 (<any> process).send({
+                 parentPort?.postMessage({
                      action: 'response_request',
                      data: await rtc_connection.joinCall(),
                      uid: data.uid,

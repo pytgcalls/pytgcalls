@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import * as process from "process";
 
 export class Binding extends EventEmitter {
     private connected = false;
@@ -120,7 +121,7 @@ export class MultiCoreBinding{
     }
     async sendUpdate(update: any): Promise<any> {
         const uid = MultiCoreBinding.makeID(12);
-        this.process_multicore.send({
+        this.process_multicore.postMessage({
             action: 'binding_update',
             uid: uid,
             update: update,

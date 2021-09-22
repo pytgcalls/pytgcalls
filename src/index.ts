@@ -1,9 +1,9 @@
 import { MultiCoreRTCConnection } from './rtc-connection';
 import { Binding } from './binding';
-import * as cluster from "cluster";
 import * as process from "process";
+import {isMainThread} from "worker_threads";
 
-if (cluster.isMaster) {
+if (isMainThread) {
     const binding = new Binding();
     const connections = new Map<number, MultiCoreRTCConnection>();
     binding.on('connect', async (userId: number) => {
