@@ -4,6 +4,7 @@ import * as process from "process";
 export class Binding extends EventEmitter {
     private connected = false;
     public overload_quiet = false;
+    public multi_thread = false;
     private readonly ssid: string;
     private readonly promises = new Map<string, CallableFunction>();
     static DEBUG = 1;
@@ -22,6 +23,7 @@ export class Binding extends EventEmitter {
                     if (data.try_connect == 'connected') {
                         this.connected = true;
                         this.overload_quiet = data.overload_quiet;
+                        this.multi_thread = data.multi_thread;
                         Binding.sendInternalUpdate({
                             ping: true,
                         });

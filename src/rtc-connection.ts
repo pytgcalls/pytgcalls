@@ -157,7 +157,7 @@ export class RTCConnection {
 
     constructor(
         public chatId: number,
-        public binding: MultiCoreBinding,
+        public binding: MultiCoreBinding | Binding,
         public bufferLength: number,
         public inviteHash: string,
         additional_parameters: string,

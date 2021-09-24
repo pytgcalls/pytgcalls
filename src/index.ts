@@ -1,11 +1,11 @@
-import { MultiCoreRTCConnection } from './rtc-connection';
+import {MultiCoreRTCConnection, RTCConnection} from './rtc-connection';
 import { Binding } from './binding';
 import * as process from "process";
 import {isMainThread} from "worker_threads";
 
 if (isMainThread) {
     const binding = new Binding();
-    const connections = new Map<number, MultiCoreRTCConnection>();
+    const connections = new Map<number, any>();
     binding.on('connect', async (userId: number) => {
         let text = `[${userId}] Started Node.js core!`;
         if (process.platform === 'win32') {
@@ -21,16 +21,29 @@ if (isMainThread) {
         switch (data.action) {
             case 'join_call':
                 if (!connection) {
-                    connection = new MultiCoreRTCConnection(
-                        data.chat_id,
-                        binding,
-                        data.buffer_length,
-                        data.invite_hash,
-                        data.ffmpeg_parameters,
-                        data.stream_audio,
-                        data.stream_video,
-                        data.lip_sync,
-                    );
+                    if(binding.multi_thread){
+                        connection = new MultiCoreRTCConnection(
+                            data.chat_id,
+                            binding,
+                            data.buffer_length,
+                            data.invite_hash,
+                            data.ffmpeg_parameters,
+                            data.stream_audio,
+                            data.stream_video,
+                            data.lip_sync,
+                        );
+                    }else{
+                        connection = new RTCConnection(
+                            data.chat_id,
+                            binding,
+                            data.buffer_length,
+                            data.invite_hash,
+                            data.ffmpeg_parameters,
+                            data.stream_audio,
+                            data.stream_video,
+                            data.lip_sync,
+                        );
+                    }
                     connections.set(data.chat_id, connection);
                     const result = await connection.joinCall();
                     if (result) {

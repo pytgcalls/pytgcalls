@@ -20,6 +20,7 @@ class Binding:
     def __init__(
         self,
         overload_quiet_mode: bool,
+        multi_thread: bool,
     ):
         self._js_process = None
         self._ssid = ''
@@ -27,6 +28,7 @@ class Binding:
         self._on_connect = None
         self._last_ping = 0
         self._waiting_ping = None
+        self._multi_thread = multi_thread
         self._overload_quiet = overload_quiet_mode
 
         def cleanup():
@@ -132,6 +134,7 @@ class Binding:
                                         'try_connect': 'connected',
                                         'user_id': user_id,
                                         'overload_quiet': self._overload_quiet,
+                                        'multi_thread': self._multi_thread,
                                     }),
                                 )
                                 asyncio.ensure_future(self._on_connect())
