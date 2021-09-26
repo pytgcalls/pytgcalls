@@ -13,14 +13,15 @@ export class FileReader {
         this.readable = createReadStream(path);
         this.readable.on('data', (data: any) => {
             if(this.onData != undefined){
-                 this.onData(data);
+                this.onData(data);
             }
         });
         this.readable.on('end', () => {
             if(this.onEnd != undefined){
-                 this.onEnd();
+                this.onEnd();
             }
         });
+        this.readable?.pause();
     }
     public pause(){
         this.readable?.pause();

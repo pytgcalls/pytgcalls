@@ -6,10 +6,13 @@ import os
 import signal
 import subprocess
 import sys
+from asyncio import Event
 from asyncio import Future
+from asyncio.subprocess import Process
 from json import JSONDecodeError
 from time import time
 from typing import Callable
+from typing import Optional
 
 from .exceptions import WaitPreviousPingRequest
 
@@ -22,12 +25,12 @@ class Binding:
         overload_quiet_mode: bool,
         multi_thread: bool,
     ):
-        self._js_process = None
+        self._js_process: Optional[Process] = None
         self._ssid = ''
-        self._on_request = None
-        self._on_connect = None
+        self._on_request: Optional[Callable] = None
+        self._on_connect: Optional[Callable] = None
         self._last_ping = 0
-        self._waiting_ping = None
+        self._waiting_ping: Optional[Event] = None
         self._multi_thread = multi_thread
         self._overload_quiet = overload_quiet_mode
 
@@ -137,13 +140,16 @@ class Binding:
                                         'multi_thread': self._multi_thread,
                                     }),
                                 )
-                                asyncio.ensure_future(self._on_connect())
+                                if self._on_connect is not None:
+                                    asyncio.ensure_future(self._on_connect())
                             elif 'ssid' in json_out and 'uid' in json_out:
                                 if json_out['ssid'] == self._ssid:
                                     if self._on_request is not None:
                                         async def future_response(
-                                                future_json_out: dict,
+                                            future_json_out: dict,
                                         ):
+                                            if self._on_request is None:
+                                                return
                                             result = await self._on_request(
                                                 future_json_out['data'],
                                             )
@@ -209,7 +215,11 @@ class Binding:
 
     async def _send(self, json_data: dict):
         try:
-            self._js_process.stdin.write(json.dumps(json_data).encode())
-            await self._js_process.stdin.drain()
+            if self._js_process is not None:
+                if self._js_process.stdin is not None:
+                    self._js_process.stdin.write(
+                        json.dumps(json_data).encode(),
+                    )
+                    await self._js_process.stdin.drain()
         except ConnectionResetError:
             pass

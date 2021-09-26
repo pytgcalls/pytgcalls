@@ -65,7 +65,6 @@ if (isMainThread) {
                 if (connection) {
                     if (data.type !== 'kicked_from_group') {
                         let result = await connection.leave_call();
-
                         if (result['result'] === 'OK') {
                             connections.delete(data.chat_id);
                             await binding.sendUpdate({
@@ -119,6 +118,7 @@ if (isMainThread) {
                             data.ffmpeg_parameters,
                             data.stream_audio,
                             data.stream_video,
+                            data.lip_sync,
                         );
                         await binding.sendUpdate({
                             action: 'update_request',
