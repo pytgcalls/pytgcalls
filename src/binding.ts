@@ -38,6 +38,7 @@ export class Binding extends EventEmitter {
                     } else if (data.ping_with_response) {
                         Binding.sendInternalUpdate({
                             ping_with_response: true,
+                            sid: data.sid,
                         });
                     } else if (data.ssid == this.ssid) {
                         if (data.uid !== undefined) {

@@ -9,10 +9,10 @@ from telethon.events import Raw
 from telethon.events import StopPropagation
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetFullChatRequest
-from telethon.tl.functions.phone import EditGroupCallParticipantRequest
+from telethon.tl.functions.phone import EditGroupCallParticipantRequest, GetGroupParticipantsRequest
 from telethon.tl.functions.phone import JoinGroupCallRequest
 from telethon.tl.functions.phone import LeaveGroupCallRequest
-from telethon.tl.types import ChatForbidden
+from telethon.tl.types import ChatForbidden, UpdateGroupCallParticipants
 from telethon.tl.types import DataJSON
 from telethon.tl.types import GroupCall
 from telethon.tl.types import GroupCallDiscarded
@@ -50,6 +50,30 @@ class TelethonClient(BridgedClient):
 
         @self._app.on(Raw())
         async def on_update(update):
+            if isinstance(
+                update,
+                UpdateGroupCallParticipants,
+            ):
+                participants = update.participants
+                for participant in participants:
+                    result = self._cache.set_participants_cache(
+                        update.call.id,
+                        participant.peer.user_id,
+                        participant.muted,
+                        participant.volume,
+                        participant.can_self_unmute,
+                        participant.video_joined,
+                        participant.raise_hand_rating,
+                        participant.left,
+                    )
+                    if result is not None:
+                        if 'PARTICIPANTS_HANDLER' in self._handler:
+                            await self._handler['PARTICIPANTS_HANDLER'](
+                                self._cache.get_chat_id(update.call.id),
+                                result,
+                                participant.just_joined,
+                                participant.left,
+                            )
             if isinstance(
                 update,
                 UpdateGroupCall,
@@ -138,7 +162,6 @@ class TelethonClient(BridgedClient):
                                     await self._handler['KICK_HANDLER'](
                                         chat_id,
                                     )
-            raise StopPropagation()
 
     async def get_call(
         self,
@@ -163,6 +186,39 @@ class TelethonClient(BridgedClient):
                 )
             ).full_chat.call
 
+    async def get_group_call_participants(
+        self,
+        chat_id: int,
+    ):
+        return await self._cache.get_participant_list(
+            chat_id,
+        )
+
+    async def get_participants(
+        self,
+        input_call: InputGroupCall,
+    ):
+        return [{
+            'user_id': participant.peer.user_id,
+            'muted': participant.muted,
+            'volume': participant.volume,
+            'can_self_unmute': participant.can_self_unmute,
+            'video_joined': participant.video_joined,
+            'raise_hand_rating': participant.raise_hand_rating,
+            'left': participant.left,
+        } for participant in (
+            await self._app(
+                GetGroupParticipantsRequest(
+                    call=input_call,
+                    ids=[],
+                    sources=[],
+                    offset='',
+                    limit=500,
+                ),
+            )
+        ).participants
+        ]
+
     async def join_group_call(
         self,
         chat_id: int,
@@ -184,6 +240,22 @@ class TelethonClient(BridgedClient):
                 ),
             )
             for update in result.updates:
+                if isinstance(
+                    update,
+                    UpdateGroupCallParticipants,
+                ):
+                    participants = update.participants
+                    for participant in participants:
+                        self._cache.set_participants_cache(
+                            update.call.id,
+                            participant.peer.user_id,
+                            participant.muted,
+                            participant.volume,
+                            participant.can_self_unmute,
+                            participant.video_joined,
+                            participant.raise_hand_rating,
+                            participant.left,
+                        )
                 if isinstance(update, UpdateGroupCallConnection):
                     transport = json.loads(update.params.data)[
                         'transport'
@@ -223,6 +295,13 @@ class TelethonClient(BridgedClient):
         def decorator(func: Callable) -> Callable:
             if self is not None:
                 self._handler['LEFT_HANDLER'] = func
+            return func
+        return decorator
+
+    def on_participants_change(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self._handler['PARTICIPANTS_HANDLER'] = func
             return func
         return decorator
 

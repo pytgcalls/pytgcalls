@@ -91,5 +91,9 @@ if __name__ == '__main__':
     async def stream_end_handler(client: PyTgCalls, update: Update):
         print(f'Stream ended in {update.chat_id}', update)
 
+    @call_py.on_participants_change()
+    async def participant_handler(client: PyTgCalls, update: Update):
+        print(update)
+
     call_py.start()
     idle()

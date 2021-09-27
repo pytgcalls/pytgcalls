@@ -1,7 +1,8 @@
 from .video_parameters import VideoParameters
+from ..py_object import PyObject
 
 
-class InputVideoStream:
+class InputVideoStream(PyObject):
     def __init__(
         self,
         path: str,

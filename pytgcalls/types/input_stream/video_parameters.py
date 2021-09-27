@@ -1,4 +1,7 @@
-class VideoParameters:
+from ..py_object import PyObject
+
+
+class VideoParameters(PyObject):
     def __init__(
         self,
         width: int = 640,

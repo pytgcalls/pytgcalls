@@ -75,13 +75,6 @@ class NoActiveGroupCall(Exception):
         )
 
 
-class WaitPreviousPingRequest(Exception):
-    def __init__(self):
-        super().__init__(
-            'Wait previous ping request before do a new ping request',
-        )
-
-
 class PyTgCallsAlreadyRunning(Exception):
     def __init__(self):
         super().__init__(

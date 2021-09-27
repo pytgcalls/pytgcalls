@@ -1,4 +1,7 @@
-class GroupCall:
+from pytgcalls.types.py_object import PyObject
+
+
+class GroupCall(PyObject):
     def __init__(
             self,
             chat_id: int,

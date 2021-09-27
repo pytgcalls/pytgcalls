@@ -2,9 +2,10 @@ from typing import Optional
 
 from .input_audio_stream import InputAudioStream
 from .input_video_stream import InputVideoStream
+from ..py_object import PyObject
 
 
-class InputStream:
+class InputStream(PyObject):
     def __init__(
         self,
         stream_audio: Optional[InputAudioStream] = None,

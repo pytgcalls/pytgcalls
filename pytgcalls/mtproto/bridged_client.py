@@ -27,6 +27,12 @@ class BridgedClient:
     ):
         pass
 
+    async def get_group_call_participants(
+        self,
+        chat_id: int,
+    ):
+        pass
+
     async def change_volume(
         self,
         chat_id: int,
@@ -41,6 +47,12 @@ class BridgedClient:
         stopped_status: Optional[bool],
         paused_status: Optional[bool],
         participant: Any,
+    ):
+        pass
+
+    async def get_participants(
+        self,
+        input_call: Any,
     ):
         pass
 
@@ -83,6 +95,9 @@ class BridgedClient:
         pass
 
     def on_left_group(self) -> Callable:
+        pass
+
+    def on_participants_change(self) -> Callable:
         pass
 
     async def get_full_chat(self, chat_id: int):

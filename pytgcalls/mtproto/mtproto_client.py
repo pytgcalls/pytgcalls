@@ -1,9 +1,10 @@
-from typing import Any
+from typing import Any, List
 from typing import Callable
 from typing import Optional
 
 from ..exceptions import InvalidMtProtoClient
 from .bridged_client import BridgedClient
+from ..types.groups.group_call_participant import GroupCallParticipant
 
 
 class MtProtoClient:
@@ -37,6 +38,17 @@ class MtProtoClient:
             return 'telethon'
         else:
             return 'unknown'
+
+    async def get_group_call_participants(
+        self,
+        chat_id: int,
+    ) -> Optional[List[GroupCallParticipant]]:
+        if self._bind_client is not None:
+            return await self._bind_client.get_group_call_participants(
+                chat_id,
+            )
+        else:
+            raise InvalidMtProtoClient()
 
     async def join_group_call(
         self,
@@ -155,4 +167,9 @@ class MtProtoClient:
     def on_left_group(self) -> Callable:
         if self._bind_client is not None:
             return self._bind_client.on_left_group()
+        raise InvalidMtProtoClient()
+
+    def on_participants_change(self) -> Callable:
+        if self._bind_client is not None:
+            return self._bind_client.on_participants_change()
         raise InvalidMtProtoClient()

@@ -8,10 +8,10 @@ from pyrogram import ContinuePropagation
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.functions.channels import GetFullChannel
 from pyrogram.raw.functions.messages import GetFullChat
-from pyrogram.raw.functions.phone import EditGroupCallParticipant
+from pyrogram.raw.functions.phone import EditGroupCallParticipant, GetGroupParticipants
 from pyrogram.raw.functions.phone import JoinGroupCall
 from pyrogram.raw.functions.phone import LeaveGroupCall
-from pyrogram.raw.types import Channel
+from pyrogram.raw.types import Channel, UpdateGroupCallParticipants
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import Chat
 from pyrogram.raw.types import ChatForbidden
@@ -51,6 +51,30 @@ class PyrogramClient(BridgedClient):
 
         @self._app.on_raw_update()
         async def on_update(_, update, __, data2):
+            if isinstance(
+                update,
+                UpdateGroupCallParticipants,
+            ):
+                participants = update.participants
+                for participant in participants:
+                    result = self._cache.set_participants_cache(
+                        update.call.id,
+                        participant.peer.user_id,
+                        participant.muted,
+                        participant.volume,
+                        participant.can_self_unmute,
+                        participant.video_joined,
+                        participant.raise_hand_rating,
+                        participant.left,
+                    )
+                    if result is not None:
+                        if 'PARTICIPANTS_HANDLER' in self._handler:
+                            await self._handler['PARTICIPANTS_HANDLER'](
+                                self._cache.get_chat_id(update.call.id),
+                                result,
+                                participant.just_joined,
+                                participant.left,
+                            )
             if isinstance(
                 update,
                 UpdateGroupCall,
@@ -190,6 +214,13 @@ class PyrogramClient(BridgedClient):
             return func
         return decorator
 
+    def on_participants_change(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self._handler['PARTICIPANTS_HANDLER'] = func
+            return func
+        return decorator
+
     async def get_call(
         self,
         chat_id: int,
@@ -213,6 +244,39 @@ class PyrogramClient(BridgedClient):
                 )
             ).full_chat.call
 
+    async def get_group_call_participants(
+        self,
+        chat_id: int,
+    ):
+        return await self._cache.get_participant_list(
+            chat_id,
+        )
+
+    async def get_participants(
+        self,
+        input_call: InputGroupCall,
+    ):
+        return [{
+            'user_id': participant.peer.user_id,
+            'muted': participant.muted,
+            'volume': participant.volume,
+            'can_self_unmute': participant.can_self_unmute,
+            'video_joined': participant.video_joined,
+            'raise_hand_rating': participant.raise_hand_rating,
+            'left': participant.left,
+        } for participant in (
+            await self._app.send(
+                GetGroupParticipants(
+                    call=input_call,
+                    ids=[],
+                    sources=[],
+                    offset='',
+                    limit=500,
+                ),
+            )
+        ).participants
+        ]
+
     async def join_group_call(
         self,
         chat_id: int,
@@ -220,7 +284,7 @@ class PyrogramClient(BridgedClient):
         invite_hash: str,
         have_video: bool,
         join_as: InputPeer,
-    ):
+    ) -> dict:
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
             result: Updates = await self._app.send(
@@ -234,6 +298,22 @@ class PyrogramClient(BridgedClient):
                 ),
             )
             for update in result.updates:
+                if isinstance(
+                    update,
+                    UpdateGroupCallParticipants,
+                ):
+                    participants = update.participants
+                    for participant in participants:
+                        self._cache.set_participants_cache(
+                            update.call.id,
+                            participant.peer.user_id,
+                            participant.muted,
+                            participant.volume,
+                            participant.can_self_unmute,
+                            participant.video_joined,
+                            participant.raise_hand_rating,
+                            participant.left,
+                        )
                 if isinstance(update, UpdateGroupCallConnection):
                     transport = json.loads(update.params.data)[
                         'transport'

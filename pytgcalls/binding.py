@@ -11,10 +11,10 @@ from asyncio import Future
 from asyncio.subprocess import Process
 from json import JSONDecodeError
 from time import time
-from typing import Callable
+from typing import Callable, Dict
 from typing import Optional
 
-from .exceptions import WaitPreviousPingRequest
+from pytgcalls.types.session import Session
 
 py_logger = logging.getLogger('pytgcalls')
 
@@ -30,7 +30,7 @@ class Binding:
         self._on_request: Optional[Callable] = None
         self._on_connect: Optional[Callable] = None
         self._last_ping = 0
-        self._waiting_ping: Optional[Event] = None
+        self._waiting_ping: Dict[str, Event] = {}
         self._multi_thread = multi_thread
         self._overload_quiet = overload_quiet_mode
 
@@ -83,17 +83,16 @@ class Binding:
 
     @property
     async def ping(self) -> float:
-        if self._waiting_ping is None:
-            start_time = time()
-            self._waiting_ping = asyncio.Event()
-            await self._send({
-                'ping_with_response': True,
-            })
-            await self._waiting_ping.wait()
-            self._waiting_ping = None
-            return (time() - start_time) * 1000.0
-        else:
-            raise WaitPreviousPingRequest()
+        start_time = time()
+        session = Session.generate_session_id(15)
+        self._waiting_ping[session] = asyncio.Event()
+        await self._send({
+            'ping_with_response': True,
+            'sid': session,
+        })
+        await self._waiting_ping[session].wait()
+        del self._waiting_ping[session]
+        return (time() - start_time) * 1000.0
 
     @property
     def _run_folder(self):
@@ -125,9 +124,10 @@ class Binding:
                     for update in list_data:
                         try:
                             json_out = json.loads(update)
-                            if 'ping_with_response' and \
-                                    self._waiting_ping is not None:
-                                self._waiting_ping.set()
+                            if 'ping_with_response' in json_out:
+                                session_id = json_out['sid']
+                                if session_id in self._waiting_ping:
+                                    self._waiting_ping[session_id].set()
                             if 'ping' in json_out:
                                 self._last_ping = int(time())
                             if 'try_connect' in json_out:

@@ -7,6 +7,3 @@ class JoinedVoiceChat(Update):
         chat_id: int,
     ):
         super().__init__(chat_id)
-
-    def __str__(self):
-        return 'JOINED_VOICE_CHAT'
