@@ -1,12 +1,14 @@
 import logging
+from math import floor
 from time import time
-from typing import Any, List
+from typing import Any
+from typing import List
 from typing import Optional
 
 from ..types import Cache
-from .bridged_client import BridgedClient
 from ..types.groups import GroupCallParticipant
 from ..types.participant_list import ParticipantList
+from .bridged_client import BridgedClient
 
 py_logger = logging.getLogger('pytgcalls')
 
@@ -51,7 +53,9 @@ class ClientCache:
         muted: Optional[bool],
         volume: Optional[int],
         can_self_unmute: Optional[bool],
-        video_joined: Optional[bool],
+        video: Optional[bool],
+        screen_sharing: Optional[bool],
+        video_camera: Optional[bool],
         raised_hand: Optional[int],
         left: Optional[int],
     ) -> Optional[GroupCallParticipant]:
@@ -66,23 +70,36 @@ class ClientCache:
                 if not left:
                     return participants.set_participant(
                         user_id,
-                        muted,
+                        muted if muted is not None
+                        else False,
                         muted != can_self_unmute,
-                        video_joined,
+                        video if video is not None
+                        else False,
+                        screen_sharing if screen_sharing is not None
+                        else False,
+                        video_camera if video_camera is not None
+                        else False,
                         raised_hand is not None,
-                        volume / 100 if volume is not None
+                        floor(volume / 100) if volume is not None
                         else 100,
                     )
                 else:
                     return participants.remove_participant(
                         user_id,
-                        muted,
+                        muted if muted is not None
+                        else False,
                         muted != can_self_unmute,
-                        video_joined,
+                        video if video is not None
+                        else False,
+                        screen_sharing if screen_sharing is not None
+                        else False,
+                        video_camera if video_camera is not None
+                        else False,
                         raised_hand is not None,
-                        volume / 100 if volume is not None
+                        floor(volume / 100) if volume is not None
                         else 100,
                     )
+        return None
 
     async def get_participant_list(
         self,
@@ -101,7 +118,9 @@ class ClientCache:
                 last_update = participants.last_mtproto_update
                 curr_time = int(time())
                 if not (last_update - curr_time > 0):
-                    py_logger.debug('GetParticipant cache miss for %d', chat_id)
+                    py_logger.debug(
+                        'GetParticipant cache miss for %d', chat_id,
+                    )
                     try:
                         list_participants = await self._app.get_participants(
                             input_call,
@@ -113,7 +132,10 @@ class ClientCache:
                                 participant['muted'],
                                 participant['volume'],
                                 participant['can_self_unmute'],
-                                participant['video_joined'],
+                                participant['video'] is not None or
+                                participant['presentation'] is not None,
+                                participant['presentation'],
+                                participant['video'],
                                 participant['raise_hand_rating'],
                                 participant['left'],
                             )
@@ -130,10 +152,12 @@ class ClientCache:
         self,
         input_group_call_id: int,
     ) -> Optional[int]:
-        for key in self._full_chat_cache.keys():
-            input_id = self._full_chat_cache.get(key).id
-            if input_id == input_group_call_id:
-                return key
+        for key in self._call_participants_cache.keys():
+            participants = self._call_participants_cache.get(key)
+            if participants is not None:
+                if participants.input_id == input_group_call_id:
+                    return key
+        return None
 
     def set_cache(
         self,
@@ -147,7 +171,9 @@ class ClientCache:
         )
         self._call_participants_cache.put(
             chat_id,
-            ParticipantList(),
+            ParticipantList(
+                input_call.id,
+            ),
         )
 
     def drop_cache(

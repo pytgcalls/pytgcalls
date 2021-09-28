@@ -1,5 +1,5 @@
-from ...types.update import Update
 from ...types.groups.group_call_participant import GroupCallParticipant
+from ...types.update import Update
 
 
 class JoinedGroupCallParticipant(Update):

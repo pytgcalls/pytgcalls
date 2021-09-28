@@ -1,8 +1,8 @@
 from typing import Optional
 
+from ..py_object import PyObject
 from .input_audio_stream import InputAudioStream
 from .input_video_stream import InputVideoStream
-from ..py_object import PyObject
 
 
 class InputStream(PyObject):

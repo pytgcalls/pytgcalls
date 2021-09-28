@@ -1,5 +1,6 @@
-from typing import Union, Dict
 from json import dumps
+from typing import Dict
+from typing import Union
 
 
 class PyObject:
@@ -8,11 +9,11 @@ class PyObject:
         if isinstance(obj, bytes):
             return repr(obj)
         return {
-            "_": obj.__class__.__name__,
+            '_': obj.__class__.__name__,
             **{
                 attr: vars(obj)[attr]
                 for attr in vars(obj)
-            }
+            },
         }
 
     def __str__(self) -> str:

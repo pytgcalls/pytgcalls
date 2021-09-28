@@ -1,10 +1,11 @@
-from typing import Any, List
+from typing import Any
 from typing import Callable
+from typing import List
 from typing import Optional
 
 from ..exceptions import InvalidMtProtoClient
-from .bridged_client import BridgedClient
 from ..types.groups.group_call_participant import GroupCallParticipant
+from .bridged_client import BridgedClient
 
 
 class MtProtoClient:

@@ -1,4 +1,5 @@
-from typing import Optional, List
+from typing import List
+from typing import Optional
 
 from ...scaffold import Scaffold
 from ...types.groups.group_call_participant import GroupCallParticipant

@@ -1,19 +1,25 @@
-from typing import List, Dict, Optional
+from typing import Dict
 
 from pytgcalls.types.groups import GroupCallParticipant
 
 
 class ParticipantList:
-    def __init__(self):
+    def __init__(
+        self,
+        input_id: int,
+    ):
         self._list_participants: Dict[int, GroupCallParticipant] = {}
-        self.last_mtproto_update = 0
+        self.last_mtproto_update: int = 0
+        self.input_id: int = input_id
 
     def set_participant(
         self,
         user_id: int,
         muted: bool,
         muted_by_admin: bool,
-        have_video: bool,
+        video: bool,
+        screen_sharing: bool,
+        video_camera: bool,
         raised_hand: bool,
         volume: int,
     ):
@@ -21,7 +27,9 @@ class ParticipantList:
             user_id,
             muted,
             muted_by_admin,
-            have_video,
+            video,
+            screen_sharing,
+            video_camera,
             raised_hand,
             volume,
         )
@@ -31,17 +39,21 @@ class ParticipantList:
     def remove_participant(
         self,
         user_id: int,
-        muted,
-        muted_by_admin,
-        have_video,
-        raised_hand,
-        volume,
+        muted: bool,
+        muted_by_admin: bool,
+        video: bool,
+        screen_sharing: bool,
+        video_camera: bool,
+        raised_hand: bool,
+        volume: int,
     ):
         participant = GroupCallParticipant(
             user_id,
             muted,
             muted_by_admin,
-            have_video,
+            video,
+            screen_sharing,
+            video_camera,
             raised_hand,
             volume,
         )

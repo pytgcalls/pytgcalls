@@ -1,5 +1,5 @@
-from .audio_parameters import AudioParameters
 from ..py_object import PyObject
+from .audio_parameters import AudioParameters
 
 
 class InputAudioStream(PyObject):

@@ -6,13 +6,13 @@ from typing import Optional
 from telethon import TelegramClient
 from telethon.errors import ChannelPrivateError
 from telethon.events import Raw
-from telethon.events import StopPropagation
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetFullChatRequest
-from telethon.tl.functions.phone import EditGroupCallParticipantRequest, GetGroupParticipantsRequest
+from telethon.tl.functions.phone import EditGroupCallParticipantRequest
+from telethon.tl.functions.phone import GetGroupParticipantsRequest
 from telethon.tl.functions.phone import JoinGroupCallRequest
 from telethon.tl.functions.phone import LeaveGroupCallRequest
-from telethon.tl.types import ChatForbidden, UpdateGroupCallParticipants
+from telethon.tl.types import ChatForbidden
 from telethon.tl.types import DataJSON
 from telethon.tl.types import GroupCall
 from telethon.tl.types import GroupCallDiscarded
@@ -27,6 +27,7 @@ from telethon.tl.types import TypeInputPeer
 from telethon.tl.types import UpdateChannel
 from telethon.tl.types import UpdateGroupCall
 from telethon.tl.types import UpdateGroupCallConnection
+from telethon.tl.types import UpdateGroupCallParticipants
 from telethon.tl.types import UpdateNewChannelMessage
 from telethon.tl.types import UpdateNewMessage
 from telethon.tl.types import Updates
@@ -62,7 +63,10 @@ class TelethonClient(BridgedClient):
                         participant.muted,
                         participant.volume,
                         participant.can_self_unmute,
-                        participant.video_joined,
+                        participant.video is not None or
+                        participant.presentation is not None,
+                        participant.presentation is not None,
+                        participant.video is not None,
                         participant.raise_hand_rating,
                         participant.left,
                     )
@@ -198,25 +202,27 @@ class TelethonClient(BridgedClient):
         self,
         input_call: InputGroupCall,
     ):
-        return [{
-            'user_id': participant.peer.user_id,
-            'muted': participant.muted,
-            'volume': participant.volume,
-            'can_self_unmute': participant.can_self_unmute,
-            'video_joined': participant.video_joined,
-            'raise_hand_rating': participant.raise_hand_rating,
-            'left': participant.left,
-        } for participant in (
-            await self._app(
-                GetGroupParticipantsRequest(
-                    call=input_call,
-                    ids=[],
-                    sources=[],
-                    offset='',
-                    limit=500,
-                ),
-            )
-        ).participants
+        return [
+            {
+                'user_id': participant.peer.user_id,
+                'muted': participant.muted,
+                'volume': participant.volume,
+                'can_self_unmute': participant.can_self_unmute,
+                'video': participant.video,
+                'presentation': participant.presentation,
+                'raise_hand_rating': participant.raise_hand_rating,
+                'left': participant.left,
+            } for participant in (
+                await self._app(
+                    GetGroupParticipantsRequest(
+                        call=input_call,
+                        ids=[],
+                        sources=[],
+                        offset='',
+                        limit=500,
+                    ),
+                )
+            ).participants
         ]
 
     async def join_group_call(
@@ -252,7 +258,10 @@ class TelethonClient(BridgedClient):
                             participant.muted,
                             participant.volume,
                             participant.can_self_unmute,
-                            participant.video_joined,
+                            participant.video is not None or
+                            participant.presentation is not None,
+                            participant.presentation is not None,
+                            participant.video is not None,
                             participant.raise_hand_rating,
                             participant.left,
                         )

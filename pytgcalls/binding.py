@@ -11,7 +11,8 @@ from asyncio import Future
 from asyncio.subprocess import Process
 from json import JSONDecodeError
 from time import time
-from typing import Callable, Dict
+from typing import Callable
+from typing import Dict
 from typing import Optional
 
 from pytgcalls.types.session import Session

@@ -8,10 +8,11 @@ from pyrogram import ContinuePropagation
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.functions.channels import GetFullChannel
 from pyrogram.raw.functions.messages import GetFullChat
-from pyrogram.raw.functions.phone import EditGroupCallParticipant, GetGroupParticipants
+from pyrogram.raw.functions.phone import EditGroupCallParticipant
+from pyrogram.raw.functions.phone import GetGroupParticipants
 from pyrogram.raw.functions.phone import JoinGroupCall
 from pyrogram.raw.functions.phone import LeaveGroupCall
-from pyrogram.raw.types import Channel, UpdateGroupCallParticipants
+from pyrogram.raw.types import Channel
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import Chat
 from pyrogram.raw.types import ChatForbidden
@@ -28,6 +29,7 @@ from pyrogram.raw.types import PeerChat
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateGroupCallConnection
+from pyrogram.raw.types import UpdateGroupCallParticipants
 from pyrogram.raw.types import UpdateNewChannelMessage
 from pyrogram.raw.types import UpdateNewMessage
 from pyrogram.raw.types import Updates
@@ -63,7 +65,10 @@ class PyrogramClient(BridgedClient):
                         participant.muted,
                         participant.volume,
                         participant.can_self_unmute,
-                        participant.video_joined,
+                        participant.video is not None or
+                        participant.presentation is not None,
+                        participant.presentation is not None,
+                        participant.video is not None,
                         participant.raise_hand_rating,
                         participant.left,
                     )
@@ -256,25 +261,27 @@ class PyrogramClient(BridgedClient):
         self,
         input_call: InputGroupCall,
     ):
-        return [{
-            'user_id': participant.peer.user_id,
-            'muted': participant.muted,
-            'volume': participant.volume,
-            'can_self_unmute': participant.can_self_unmute,
-            'video_joined': participant.video_joined,
-            'raise_hand_rating': participant.raise_hand_rating,
-            'left': participant.left,
-        } for participant in (
-            await self._app.send(
-                GetGroupParticipants(
-                    call=input_call,
-                    ids=[],
-                    sources=[],
-                    offset='',
-                    limit=500,
-                ),
-            )
-        ).participants
+        return [
+            {
+                'user_id': participant.peer.user_id,
+                'muted': participant.muted,
+                'volume': participant.volume,
+                'can_self_unmute': participant.can_self_unmute,
+                'video': participant.video,
+                'presentation': participant.presentation,
+                'raise_hand_rating': participant.raise_hand_rating,
+                'left': participant.left,
+            } for participant in (
+                await self._app.send(
+                    GetGroupParticipants(
+                        call=input_call,
+                        ids=[],
+                        sources=[],
+                        offset='',
+                        limit=500,
+                    ),
+                )
+            ).participants
         ]
 
     async def join_group_call(
@@ -310,7 +317,10 @@ class PyrogramClient(BridgedClient):
                             participant.muted,
                             participant.volume,
                             participant.can_self_unmute,
-                            participant.video_joined,
+                            participant.video is not None or
+                            participant.presentation is not None,
+                            participant.presentation is not None,
+                            participant.video is not None,
                             participant.raise_hand_rating,
                             participant.left,
                         )

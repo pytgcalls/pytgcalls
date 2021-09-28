@@ -1,8 +1,9 @@
 from ...scaffold import Scaffold
-from ...types.groups.group_call_participant import GroupCallParticipant
-from ...types.groups.joined_group_call_participant import JoinedGroupCallParticipant
-from ...types.groups.left_group_call_participant import LeftGroupCallParticipant
-from ...types.groups.updated_group_call_participant import UpdatedGroupCallParticipant
+from ...types import Update
+from ...types.groups import GroupCallParticipant
+from ...types.groups import JoinedGroupCallParticipant
+from ...types.groups import LeftGroupCallParticipant
+from ...types.groups import UpdatedGroupCallParticipant
 
 
 class MtProtoHandler(Scaffold):
@@ -69,6 +70,10 @@ class MtProtoHandler(Scaffold):
             just_joined: bool,
             just_left: bool,
         ):
+            update_participant: Update = UpdatedGroupCallParticipant(
+                chat_id,
+                participant,
+            )
             if just_joined:
                 update_participant = JoinedGroupCallParticipant(
                     chat_id,
@@ -76,11 +81,6 @@ class MtProtoHandler(Scaffold):
                 )
             elif just_left:
                 update_participant = LeftGroupCallParticipant(
-                    chat_id,
-                    participant,
-                )
-            else:
-                update_participant = UpdatedGroupCallParticipant(
                     chat_id,
                     participant,
                 )
