@@ -13,7 +13,7 @@ base_path = os.path.abspath(os.path.dirname(__file__))
 
 class NodeJsExtension(Extension):
     def __init__(self, name, source_dir=''):
-        Extension.__init__(self, name, sources=[])
+        super().__init__(name, sources=[])
         self.source_dir = os.path.abspath(source_dir)
         if not self.source_dir.endswith(os.path.sep):
             self.source_dir += os.path.sep
@@ -96,7 +96,7 @@ class SetupHelper:
 
 class NodeJsBuilder(build_ext):
     def run(self):
-        build_ext.run(self)
+        super().run()
 
     def build_extension(self, ext):
         ext_dir = os.path.abspath(
