@@ -61,7 +61,9 @@ class PyrogramClient(BridgedClient):
                 for participant in participants:
                     result = self._cache.set_participants_cache(
                         update.call.id,
-                        participant.peer.user_id if hasattr(participant.peer,'user_id') else  participant.peer.channel_id,
+                        participant.peer.user_id if hasattr(
+                            participant.peer, 'user_id',
+                        ) else participant.peer.channel_id,
                         participant.muted,
                         participant.volume,
                         participant.can_self_unmute,
