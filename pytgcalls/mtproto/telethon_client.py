@@ -59,7 +59,7 @@ class TelethonClient(BridgedClient):
                 for participant in participants:
                     result = self._cache.set_participants_cache(
                         update.call.id,
-                        participant.peer.user_id,
+                        self.chat_id(participant.peer),
                         participant.muted,
                         participant.volume,
                         participant.can_self_unmute,
@@ -204,7 +204,7 @@ class TelethonClient(BridgedClient):
     ):
         return [
             {
-                'user_id': participant.peer.user_id,
+                'user_id': self.chat_id(participant.peer),
                 'muted': participant.muted,
                 'volume': participant.volume,
                 'can_self_unmute': participant.can_self_unmute,
@@ -254,7 +254,7 @@ class TelethonClient(BridgedClient):
                     for participant in participants:
                         self._cache.set_participants_cache(
                             update.call.id,
-                            participant.peer.user_id,
+                            self.chat_id(participant.peer),
                             participant.muted,
                             participant.volume,
                             participant.can_self_unmute,

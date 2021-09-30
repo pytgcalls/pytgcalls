@@ -1,6 +1,7 @@
 from typing import Dict
 
 from pytgcalls.types.groups import GroupCallParticipant
+from pytgcalls.types.list import List
 
 
 class ParticipantList:
@@ -64,7 +65,7 @@ class ParticipantList:
     def get_participants(
         self,
     ):
-        return [
+        return List([
             self._list_participants[user_id]
             for user_id in self._list_participants
-        ]
+        ])

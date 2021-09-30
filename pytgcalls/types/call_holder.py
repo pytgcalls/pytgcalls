@@ -2,6 +2,7 @@ from typing import Dict
 
 from ..exceptions import GroupCallNotFound
 from .groups import GroupCall
+from .list import List
 
 
 class CallHolder:
@@ -21,16 +22,16 @@ class CallHolder:
 
     @property
     def active_calls(self):
-        return [
+        return List([
             GroupCall(x, self._calls[x]) for x in self._calls
             if self._calls[x] != self.IDLE
-        ]
+        ])
 
     @property
     def calls(self):
-        return [
+        return List([
             GroupCall(x, self._calls[x]) for x in self._calls
-        ]
+        ])
 
     def get_active_call(
         self,

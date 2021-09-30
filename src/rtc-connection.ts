@@ -373,11 +373,15 @@ export class RTCConnection {
 
     async leave_call() {
         try {
-            this.stop();
-            return await this.binding.sendUpdate({
-                action: 'leave_call_request',
-                chat_id: this.chatId,
-            });
+            if(!this.tgcalls.isClosed()){
+                this.stop();
+                return await this.binding.sendUpdate({
+                    action: 'leave_call_request',
+                    chat_id: this.chatId,
+                });
+            }else{
+                return null;
+            }
         } catch (e: any) {
             return {
                 action: 'REQUEST_ERROR',

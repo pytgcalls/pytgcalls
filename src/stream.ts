@@ -83,6 +83,10 @@ export class Stream extends EventEmitter {
         this.cache = Buffer.alloc(0);
         this.readable?.resume();
 
+        if (this.stopped) {
+            throw new Error('Cannot set readable when stopped');
+        }
+
         if (this.readable != undefined) {
             this.finished = false;
             this.finishedLoading = false;

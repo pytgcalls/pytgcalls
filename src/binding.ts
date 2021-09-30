@@ -7,6 +7,8 @@ export class Binding extends EventEmitter {
     public multi_thread = false;
     private readonly ssid: string;
     private readonly promises = new Map<string, CallableFunction>();
+    private readonly listPendingUpdates = new Map<number, Map<string, any>>();
+    private readonly activeUpdates = new Map<number, boolean>();
     static DEBUG = 1;
     static INFO = 2;
     static WARNING = 3;
@@ -14,7 +16,6 @@ export class Binding extends EventEmitter {
 
     constructor() {
         super();
-
         process.stdin.on('data', (chunk: boolean) => {
             try {
                 const list_data = chunk.toString().split('}{').join('}\n{').split('\n');
@@ -34,6 +35,22 @@ export class Binding extends EventEmitter {
                                 }),
                             10000,
                         );
+                        setInterval(
+                            () => {
+                                this.listPendingUpdates.forEach((value, chat_id) => {
+                                        value.forEach((update_saved, update_id) => {
+                                            if(!this.activeUpdates.get(chat_id)){
+                                                this.activeUpdates.set(
+                                                    chat_id,
+                                                    true,
+                                                );
+                                                this.emit('request', update_saved, update_id);
+                                            }
+                                        });
+                                    }
+                                );
+                            }, 50
+                        );
                         this.emit('connect', data.user_id);
                     } else if (data.ping_with_response) {
                         Binding.sendInternalUpdate({
@@ -51,7 +68,7 @@ export class Binding extends EventEmitter {
                                 }
                             }
                         } else {
-                            this.emit('request', data.data);
+                            this.appendUpdate(data.data);
                         }
                     }
                 }
@@ -65,6 +82,45 @@ export class Binding extends EventEmitter {
         Binding.sendInternalUpdate({
             try_connect: this.ssid,
         });
+    }
+
+    private appendUpdate(update: any){
+        const chat_id = update.chat_id;
+        let pending_updates = this.listPendingUpdates.get(
+            chat_id,
+        )
+        const updateID = Binding.makeID(12);
+        if(!pending_updates){
+            pending_updates = new Map<string, any>();
+            pending_updates.set(
+                updateID,
+                update,
+            )
+            this.listPendingUpdates.set(
+                chat_id,
+                pending_updates,
+            )
+        }else{
+            pending_updates.set(
+                updateID,
+                update,
+            )
+        }
+    }
+
+    resolveUpdate(chat_id: number, update_id: string){
+        let pending_updates = this.listPendingUpdates.get(
+            chat_id,
+        )
+        pending_updates?.delete(update_id);
+        if(pending_updates?.size == 0){
+            this.listPendingUpdates.delete(
+                chat_id,
+            )
+        }
+        this.activeUpdates.delete(
+            chat_id,
+        );
     }
 
     async sendUpdate(update: any): Promise<any> {

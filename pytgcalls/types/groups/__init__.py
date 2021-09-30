@@ -1,8 +1,5 @@
 from .error_during_join import ErrorDuringJoin
 from .group_call import GroupCall
-from .group_call import NotPlayingStream
-from .group_call import PausedStream
-from .group_call import PlayingStream
 from .group_call_participant import GroupCallParticipant
 from .joined_group_call_participant import JoinedGroupCallParticipant
 from .joined_voice_chat import JoinedVoiceChat
@@ -13,9 +10,6 @@ from .updated_group_call_participant import UpdatedGroupCallParticipant
 __all__ = (
     'ErrorDuringJoin',
     'GroupCall',
-    'NotPlayingStream',
-    'PausedStream',
-    'PlayingStream',
     'GroupCallParticipant',
     'JoinedGroupCallParticipant',
     'JoinedVoiceChat',
