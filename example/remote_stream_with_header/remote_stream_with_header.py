@@ -3,6 +3,7 @@ from pyrogram import Client
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
+from pytgcalls.types import Browsers
 from pytgcalls.types.input_stream import AudioVideoPiped
 from pytgcalls.types.input_stream.quality import HighQualityAudio
 from pytgcalls.types.input_stream.quality import HighQualityVideo
@@ -24,9 +25,7 @@ if __name__ == '__main__':
             HighQualityAudio(),
             HighQualityVideo(),
             headers={
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) '
-                              'AppleWebKit/537.36 (KHTML, like Gecko) '
-                              'Chrome/46.0.2490.80 Safari/537.36',
+                'User-Agent': Browsers().chrome_windows,
             },
         ),
         stream_type=StreamType().pulse_stream,

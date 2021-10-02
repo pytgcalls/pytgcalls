@@ -9,6 +9,7 @@ from .exceptions import FFmpegNotInstalled
 from .exceptions import InvalidVideoProportion
 from .exceptions import NoAudioSourceFound
 from .exceptions import NoVideoSourceFound
+from .types.input_stream.video_tools import check_support
 
 
 class FFprobe:
@@ -35,9 +36,12 @@ class FFprobe:
         headers: Optional[Dict[str, str]] = None,
     ):
         ffmpeg_params: List[str] = []
-        if headers is not None:
+        have_header = False
+        if headers is not None and \
+                check_support(path):
             ffmpeg_params.append('-headers')
             built_header = ''
+            have_header = True
             for i in headers:
                 built_header += f'{i}: {headers[i]}\r\n'
             ffmpeg_params.append(built_header)
@@ -91,7 +95,8 @@ class FFprobe:
             if needed_audio:
                 if not have_audio:
                     raise NoAudioSourceFound(path)
+                return have_header
             if have_video:
-                return original_width, original_height
+                return original_width, original_height, have_header
         except FileNotFoundError:
             raise FFmpegNotInstalled(path)

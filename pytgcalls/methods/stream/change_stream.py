@@ -17,16 +17,16 @@ py_logger = logging.getLogger('pytgcalls')
 
 class ChangeStream(Scaffold):
     async def change_stream(
-            self,
-            chat_id: int,
-            stream: InputStream,
+        self,
+        chat_id: int,
+        stream: InputStream,
     ):
         if self._app is not None:
             if self._wait_until_run is not None:
                 headers = None
                 if isinstance(
-                        stream,
-                        AudioImagePiped,
+                    stream,
+                    AudioImagePiped,
                 ) or isinstance(
                     stream,
                     AudioPiped,
@@ -60,10 +60,11 @@ class ChangeStream(Scaffold):
                         ),
                         headers,
                     )
-                ffmpeg_parameters = ''
+                audio_f_parameters = ''
+                video_f_parameters = ''
                 if isinstance(
-                        stream,
-                        AudioImagePiped,
+                    stream,
+                    AudioImagePiped,
                 ) or isinstance(
                     stream,
                     AudioPiped,
@@ -75,8 +76,16 @@ class ChangeStream(Scaffold):
                     VideoPiped,
                 ):
                     await stream.check_pipe()
-                    ffmpeg_parameters = stream.headers
-                    ffmpeg_parameters += ':_cmd_:'.join(
+                    if stream.stream_audio:
+                        if stream.stream_audio.header_enabled:
+                            audio_f_parameters = stream.headers
+                    audio_f_parameters += ':_cmd_:'.join(
+                        shlex.split(stream.ffmpeg_parameters),
+                    )
+                    if stream.stream_video:
+                        if stream.stream_video.header_enabled:
+                            video_f_parameters = stream.headers
+                    video_f_parameters += ':_cmd_:'.join(
                         shlex.split(stream.ffmpeg_parameters),
                     )
 
@@ -88,13 +97,13 @@ class ChangeStream(Scaffold):
                     request = {
                         'action': 'change_stream',
                         'chat_id': chat_id,
-                        'ffmpeg_parameters': ffmpeg_parameters,
                         'lip_sync': stream.lip_sync,
                     }
                     if stream_audio is not None:
                         request['stream_audio'] = {
                             'path': stream_audio.path,
                             'bitrate': stream_audio.parameters.bitrate,
+                            'ffmpeg_parameters': audio_f_parameters,
                         }
                     if stream.stream_video is not None:
                         video_parameters = stream_video.parameters
@@ -109,6 +118,7 @@ class ChangeStream(Scaffold):
                             'width': video_parameters.width,
                             'height': video_parameters.height,
                             'framerate': video_parameters.frame_rate,
+                            'ffmpeg_parameters': video_f_parameters,
                         }
                     await self._binding.send(request)
 

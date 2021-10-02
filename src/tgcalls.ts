@@ -12,7 +12,9 @@ export class TGCalls<T> extends EventEmitter {
     readonly #params: any;
     private audioTrack?: MediaStreamTrack;
     private videoTrack?: MediaStreamTrack;
-    private readonly defaultMaxRetries: number = 10;
+    private readonly defaultMaxClientRetries: number = 10;
+    private readonly defaultMaxIceRetries: number = 5;
+    private iceRetries: number = 10;
     joinVoiceCall?: JoinVoiceCallCallback<T>;
 
     constructor(params: T) {
@@ -20,7 +22,12 @@ export class TGCalls<T> extends EventEmitter {
         this.#params = params;
     }
 
-    async start(audioTrack: MediaStreamTrack, videoTrack: MediaStreamTrack, maxRetries: number = this.defaultMaxRetries): Promise<boolean> {
+    async sleep(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async start(audioTrack: MediaStreamTrack, videoTrack: MediaStreamTrack, maxRetries: number = this.defaultMaxClientRetries): Promise<boolean> {
+        this.iceRetries = this.defaultMaxIceRetries;
         if (this.#connection) {
             throw new Error('Connection already started');
         } else if (!this.joinVoiceCall) {
@@ -39,8 +46,17 @@ export class TGCalls<T> extends EventEmitter {
                     'iceConnectionState',
                     connection_status,
                 );
-                const isConnected = connection_status == 'completed';
+                const isConnected = connection_status == 'completed' || connection_status == 'connected';
                 if(connection_status != 'checking'){
+                    if(connection_status == 'failed'){
+                        if(this.iceRetries > 0){
+                            this.iceRetries -= 1;
+                            await this.sleep(125);
+                            this.#connection?.restartIce();
+                            Binding.log('WebRTC Connection failed! Retrying ' + ((this.defaultMaxIceRetries + 1) - this.iceRetries) + ' of ' + this.defaultMaxIceRetries, Binding.INFO);
+                            return;
+                        }
+                    }
                     if(resolveConnection){
                         resolveConnection(isConnected);
                     }else{
@@ -130,8 +146,12 @@ export class TGCalls<T> extends EventEmitter {
             return result_connection;
         }else{
             if(maxRetries > 0){
+                try{
+                    this.#connection.close();
+                }catch (e){}
                 this.#connection = undefined;
-                Binding.log('Connection failed! Retrying ' + ((this.defaultMaxRetries + 1) - maxRetries) + ' of ' + this.defaultMaxRetries, Binding.INFO);
+                await this.sleep(125);
+                Binding.log('Telegram is having some internal server problems! Retrying ' + ((this.defaultMaxClientRetries + 1) - maxRetries) + ' of ' + this.defaultMaxClientRetries, Binding.WARNING);
                 return await this.start(audioTrack, videoTrack, maxRetries - 1);
             }else{
                 return result_connection;

@@ -71,7 +71,8 @@ class JoinGroupCall(Scaffold):
                 ),
                 headers,
             )
-        ffmpeg_parameters = ''
+        audio_f_parameters = ''
+        video_f_parameters = ''
         if isinstance(
             stream,
             AudioImagePiped,
@@ -86,8 +87,16 @@ class JoinGroupCall(Scaffold):
             VideoPiped,
         ):
             await stream.check_pipe()
-            ffmpeg_parameters = stream.headers
-            ffmpeg_parameters += ':_cmd_:'.join(
+            if stream.stream_audio:
+                if stream.stream_audio.header_enabled:
+                    audio_f_parameters = stream.headers
+            audio_f_parameters += ':_cmd_:'.join(
+                shlex.split(stream.ffmpeg_parameters),
+            )
+            if stream.stream_video:
+                if stream.stream_video.header_enabled:
+                    video_f_parameters = stream.headers
+            video_f_parameters += ':_cmd_:'.join(
                 shlex.split(stream.ffmpeg_parameters),
             )
         if self._app is not None:
@@ -104,7 +113,6 @@ class JoinGroupCall(Scaffold):
                         request = {
                             'action': 'join_call',
                             'chat_id': chat_id,
-                            'ffmpeg_parameters': ffmpeg_parameters,
                             'invite_hash': invite_hash,
                             'buffer_long': stream_type.stream_mode,
                             'lip_sync': stream.lip_sync,
@@ -113,6 +121,7 @@ class JoinGroupCall(Scaffold):
                             request['stream_audio'] = {
                                 'path': stream_audio.path,
                                 'bitrate': stream_audio.parameters.bitrate,
+                                'ffmpeg_parameters': audio_f_parameters,
                             }
                         if stream_video is not None:
                             video_parameters = stream_video.parameters
@@ -127,6 +136,7 @@ class JoinGroupCall(Scaffold):
                                 'width': video_parameters.width,
                                 'height': video_parameters.height,
                                 'framerate': video_parameters.frame_rate,
+                                'ffmpeg_parameters': video_f_parameters,
                             }
                         await self._binding.send(request)
                     asyncio.ensure_future(internal_sender())

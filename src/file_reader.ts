@@ -33,6 +33,7 @@ export class FileReader {
          return statSync(this.path).size;
     }
     public stop(){
+        this.readable?.pause();
         this.readable?.destroy();
     }
 }

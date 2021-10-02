@@ -134,8 +134,8 @@ class ClientCache:
                                 participant['can_self_unmute'],
                                 participant['video'] is not None or
                                 participant['presentation'] is not None,
-                                participant['presentation'],
-                                participant['video'],
+                                participant['presentation'] is not None,
+                                participant['video'] is not None,
                                 participant['raise_hand_rating'],
                                 participant['left'],
                             )

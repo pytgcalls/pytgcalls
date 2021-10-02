@@ -9,6 +9,8 @@ from aiohttp import ClientConnectorError
 from aiohttp import ClientResponse
 from aiohttp import ClientSession
 
+from .types.input_stream.video_tools import check_support
+
 py_logger = logging.getLogger('pytgcalls')
 
 
@@ -19,7 +21,7 @@ class FileManager:
         headers: Optional[Dict[str, str]] = None,
     ):
         try:
-            if 'http' in path:
+            if check_support(path):
                 session = ClientSession()
                 response: ClientResponse = await session.get(
                     path,

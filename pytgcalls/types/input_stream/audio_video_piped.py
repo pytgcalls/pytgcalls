@@ -39,7 +39,7 @@ class AudioVideoPiped(InputStream):
         return FFprobe.ffmpeg_headers(self.raw_headers)
 
     async def check_pipe(self):
-        dest_width, dest_height = await FFprobe.check_file(
+        dest_width, dest_height, header = await FFprobe.check_file(
             self._path,
             needed_audio=True,
             needed_video=True,
@@ -50,5 +50,7 @@ class AudioVideoPiped(InputStream):
             dest_width,
             dest_height,
         )
+        self.stream_video.header_enabled = header
+        self.stream_audio.header_enabled = header
         self.stream_video.parameters.width = width
         self.stream_video.parameters.height = height

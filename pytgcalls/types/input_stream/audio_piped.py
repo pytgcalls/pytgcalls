@@ -30,9 +30,10 @@ class AudioPiped(InputStream):
         return FFprobe.ffmpeg_headers(self.raw_headers)
 
     async def check_pipe(self):
-        await FFprobe.check_file(
+        header = await FFprobe.check_file(
             self._path,
             needed_audio=True,
             needed_video=False,
             headers=self.raw_headers,
         )
+        self.stream_audio.header_enabled = header

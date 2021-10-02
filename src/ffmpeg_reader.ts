@@ -1,11 +1,12 @@
 import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import { onData, onEnd } from './types';
 import {Binding} from "./binding";
+import {BufferOptimized} from "./buffer_optimized";
 
 export class FFmpegReader {
     private fifo_reader?: ChildProcessWithoutNullStreams;
     private total_size: number = 0;
-    private bytes_read: Buffer;
+    private bytes_read: BufferOptimized;
     private MAX_READ_BUFFER: number = 65536 * 4;
     private MAX_SIZE_BUFFERED: number = 5 * this.MAX_READ_BUFFER;
     private paused: boolean = true;
@@ -17,7 +18,7 @@ export class FFmpegReader {
     onEnd?: onEnd;
 
     constructor(additional_parameters: string) {
-        this.bytes_read = Buffer.alloc(0);
+        this.bytes_read = new BufferOptimized(this.MAX_READ_BUFFER);
         this.additional_parameters = additional_parameters.includes('-atend') ? additional_parameters:additional_parameters + '-atend';
     }
     public convert_audio(path: string, bitrate: string){
@@ -78,7 +79,7 @@ export class FFmpegReader {
     }
     private dataListener = (async (chunk: any) => {
         this.total_size += chunk.length;
-        this.bytes_read = Buffer.concat([this.bytes_read, chunk]);
+        this.bytes_read.push(chunk);
         if(this.bytes_read.length >= this.MAX_SIZE_BUFFERED){
             this.fifo_reader?.stdout.pause();
         }
@@ -96,11 +97,9 @@ export class FFmpegReader {
                 if(this.bytes_read.length < this.MAX_SIZE_BUFFERED){
                     this.fifo_reader?.stdout.resume();
                 }
-                const buffer_length = this.bytes_read.length < this.MAX_READ_BUFFER ? this.bytes_read.length:this.MAX_READ_BUFFER;
-                const buffer = this.bytes_read.slice(0, buffer_length);
                 if(this.onData != undefined){
+                    const buffer = this.bytes_read.readBytes();
                     this.onData(buffer);
-                    this.bytes_read = this.bytes_read.slice(buffer_length);
                 }
             }else if(this.almostFinished){
                 if(this.onEnd != undefined){

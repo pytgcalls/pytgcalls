@@ -70,6 +70,8 @@ class MtProtoHandler(Scaffold):
             just_joined: bool,
             just_left: bool,
         ):
+            if participant.user_id == self._my_id:
+                return
             update_participant: Update = UpdatedGroupCallParticipant(
                 chat_id,
                 participant,

@@ -4,12 +4,13 @@ import { Binding } from './binding';
 import {RemoteLaggingCallback, RemotePlayingTimeCallback} from "./types";
 import {FFmpegReader} from "./ffmpeg_reader";
 import {FileReader} from "./file_reader";
+import {BufferOptimized} from "./buffer_optimized";
 import * as os from "os";
 
 export class Stream extends EventEmitter {
     private readonly audioSource: RTCAudioSource;
     private readonly videoSource: RTCVideoSource;
-    private cache: Buffer;
+    private cache: BufferOptimized;
     public paused: boolean = false;
     public finished: boolean = true;
     public stopped: boolean = false;
@@ -31,6 +32,7 @@ export class Stream extends EventEmitter {
     private videoFramerate: number = 0;
     private lastDifferenceRemote: number = 0;
     private lipSync: boolean = false;
+    private bytesLength: number = 0;
     private overloadQuiet: boolean = false;
     remotePlayingTime?: RemotePlayingTimeCallback;
     remoteLagging?: RemoteLaggingCallback;
@@ -46,8 +48,8 @@ export class Stream extends EventEmitter {
         super();
         this.audioSource = new nonstandard.RTCAudioSource();
         this.videoSource = new nonstandard.RTCVideoSource();
-        this.cache = Buffer.alloc(0);
         this.paused = true;
+        this.cache = new BufferOptimized(this.bytesLength);
         if(this.readable !== undefined){
             this.setReadable(this.readable);
         }
@@ -80,7 +82,8 @@ export class Stream extends EventEmitter {
         this.runningPulse = false;
         this.lastDifferenceRemote = 0;
         this.readable = readable;
-        this.cache = Buffer.alloc(0);
+        this.bytesLength = this.bytesLengthCalculated();
+        this.cache = new BufferOptimized(this.bytesLength);
         this.readable?.resume();
 
         if (this.stopped) {
@@ -131,7 +134,7 @@ export class Stream extends EventEmitter {
             this.emit('stream_deleted');
             return;
         }
-        this.cache = Buffer.concat([this.cache, data]);
+        this.cache.push(data);
     }).bind(this);
 
     private needed_time(){
@@ -143,7 +146,7 @@ export class Stream extends EventEmitter {
             return false;
         }
 
-        let result = this.cache.length < this.bytesLength() * this.needed_time() * this.buffer_length;
+        let result = this.cache.length < this.bytesLength * this.needed_time() * this.buffer_length;
         result =
             result &&
             (this.bytesLoaded <
@@ -163,7 +166,7 @@ export class Stream extends EventEmitter {
         if (this.finishedLoading) {
             return false;
         }
-        return this.cache.length < this.bytesLength() * this.needed_time();
+        return this.cache.length < this.bytesLength * this.needed_time();
     }
 
     pause() {
@@ -217,6 +220,8 @@ export class Stream extends EventEmitter {
         this.videoHeight = height;
         this.isVideo = true;
         this.videoFramerate = 1000 / framerate;
+        this.bytesLength = this.bytesLengthCalculated();
+        this.cache.byteLength = this.bytesLength;
         return this.videoSource.createTrack();
     }
 
@@ -224,13 +229,17 @@ export class Stream extends EventEmitter {
         this.videoWidth = width;
         this.videoHeight = height;
         this.videoFramerate = 1000 / framerate;
+        this.bytesLength = this.bytesLengthCalculated();
+        this.cache.byteLength = this.bytesLength;
     }
 
     setAudioParams(bitrate: number) {
         this.sampleRate = bitrate;
+        this.bytesLength = this.bytesLengthCalculated();
+        this.cache.byteLength = this.bytesLength;
     }
 
-    private bytesLength(): number{
+    private bytesLengthCalculated(): number{
         if(this.isVideo) {
             return 1.5 * this.videoWidth * this.videoHeight;
         }else{
@@ -245,7 +254,7 @@ export class Stream extends EventEmitter {
             return;
         }
         const lagging_remote = this.isLaggingRemote();
-        const byteLength = this.bytesLength();
+        const byteLength = this.bytesLength;
         const timeoutWait = this.frameTime()  - this.lastDifferenceRemote;
         setTimeout(
             () => this.processData(),
@@ -300,7 +309,7 @@ export class Stream extends EventEmitter {
                 !checkLag
             ) {
                 this.playedBytes += byteLength;
-                const buffer = this.cache.slice(0, byteLength);
+                const buffer = this.cache.readBytes();
                 if(this.isVideo) {
                     const i420Frame = {
                         width: this.videoWidth,
@@ -318,9 +327,8 @@ export class Stream extends EventEmitter {
                         samples,
                     });
                 }
-                this.cache = this.cache.slice(byteLength);
             } else if (checkLag) {
-                this.notifyOverloadCpu((cpuPercentage: Number) => {
+                this.notifyOverloadCpu((cpuPercentage: number) => {
                     if(cpuPercentage >= 90){
                         Binding.log(
                             'CPU_OVERLOAD_DETECTED -> ' + new Date().getTime() +
@@ -410,7 +418,7 @@ export class Stream extends EventEmitter {
         }
         return false;
     }
-    private notifyOverloadCpu(action: (cpuPercentage: Number) => void){
+    private notifyOverloadCpu(action: (cpuPercentage: number) => void){
         function cpuAverage() {
             let totalIdle = 0, totalTick = 0;
             const cpus = os.cpus();
@@ -430,7 +438,7 @@ export class Stream extends EventEmitter {
             const totalDifference = endMeasure.total - startMeasure.total;
             const percentageCPU = 100 - ~~(100 * idleDifference / totalDifference);
             action(percentageCPU);
-        }, 100);
+        }, 500);
     }
 
     private frameTime(): number{
@@ -443,7 +451,7 @@ export class Stream extends EventEmitter {
         if(this.readable === undefined || this.finished){
             return undefined;
         }else{
-            return Math.ceil((this.playedBytes/this.bytesLength()) / (0.00001 / this.frameTime()))
+            return Math.ceil((this.playedBytes/this.bytesLength) / (0.00001 / this.frameTime()))
         }
     }
 }

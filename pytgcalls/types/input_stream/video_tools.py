@@ -7,6 +7,18 @@ from pytgcalls.types.input_stream.quality import MediumQualityVideo
 from pytgcalls.types.input_stream.video_parameters import VideoParameters
 
 
+def check_support(link: str):
+    supported_protocols = [
+        'https://',
+        'http://',
+        'rtmp://',
+    ]
+    return any(
+        protocol in link
+        for protocol in supported_protocols
+    )
+
+
 def check_video_params(
     video_params: VideoParameters,
     dest_width: int,

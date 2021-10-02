@@ -12,7 +12,6 @@ export class MultiCoreRTCConnection {
         binding: Binding,
         bufferLength: number,
         inviteHash: string,
-        additional_parameters: string,
         audioParams?: any,
         videoParams?: any,
         lipSync: boolean = false,
@@ -24,7 +23,6 @@ export class MultiCoreRTCConnection {
             chatId,
             bufferLength,
             inviteHash,
-            additional_parameters,
             audioParams,
             videoParams,
             lipSync,
@@ -106,11 +104,10 @@ export class MultiCoreRTCConnection {
             });
         }
     }
-    changeStream(additional_parameters: string, audioParams: any, videoParams?: any, lipSync: boolean = false){
+    changeStream(audioParams: any, videoParams?: any, lipSync: boolean = false){
         if(this.process_multicore){
             this.process_multicore?.postMessage({
                 action: 'changeStream',
-                additional_parameters,
                 audioParams,
                 videoParams,
                 lipSync,
@@ -160,7 +157,6 @@ export class RTCConnection {
         public binding: MultiCoreBinding | Binding,
         public bufferLength: number,
         public inviteHash: string,
-        additional_parameters: string,
         public audioParams?: any,
         public videoParams?: any,
         lipSync: boolean = false,
@@ -172,7 +168,7 @@ export class RTCConnection {
         let audioReadable;
         if(audioParams !== undefined){
             if(fileAudioPath.includes('fifo://')){
-                audioReadable = new FFmpegReader(additional_parameters);
+                audioReadable = new FFmpegReader(audioParams.ffmpeg_parameters);
                 audioReadable.convert_audio(
                     fileAudioPath,
                     audioParams.bitrate,
@@ -186,7 +182,7 @@ export class RTCConnection {
         let videoReadable;
         if(videoParams !== undefined){
             if(fileVideoPath.includes('fifo://')){
-                videoReadable = new FFmpegReader(additional_parameters);
+                videoReadable = new FFmpegReader(videoParams.ffmpeg_parameters);
                 videoReadable.convert_video(
                     fileVideoPath,
                     videoParams.width,
@@ -422,7 +418,7 @@ export class RTCConnection {
         this.tgcalls.unmute();
     }
 
-    async changeStream(additional_parameters: string, audioParams?: any, videoParams?: any, lipSync: boolean = false) {
+    async changeStream(audioParams?: any, videoParams?: any, lipSync: boolean = false) {
         let audioReadable;
         this.almostFinished = 0;
         this.almostRestarted = 0;
@@ -435,7 +431,7 @@ export class RTCConnection {
         }
         if(audioParams != undefined){
             if(audioParams.path.includes('fifo://')){
-                audioReadable = new FFmpegReader(additional_parameters);
+                audioReadable = new FFmpegReader(audioParams.ffmpeg_parameters);
                 audioReadable.convert_audio(
                     audioParams.path,
                     audioParams.bitrate,
@@ -449,14 +445,13 @@ export class RTCConnection {
         let videoReadable;
         if(videoParams != undefined){
             if(videoParams.path.includes('fifo://')){
-                videoReadable = new FFmpegReader(additional_parameters);
+                videoReadable = new FFmpegReader(videoParams.ffmpeg_parameters);
                 videoReadable.convert_video(
                     videoParams.path,
                     videoParams.width,
                     videoParams.height,
                     videoParams.framerate,
                 );
-
             }else{
                 videoReadable = new FileReader(
                     videoParams.path,
@@ -506,7 +501,6 @@ if (!isMainThread) {
                      multicore_binding,
                      data.bufferLength,
                      data.inviteHash,
-                     data.additional_parameters,
                      data.audioParams,
                      data.videoParams,
                      data.lipSync,
@@ -553,7 +547,6 @@ if (!isMainThread) {
                  break;
              case 'changeStream':
                  await rtc_connection.changeStream(
-                     data.additional_parameters,
                      data.audioParams,
                      data.videoParams,
                      data.lipSync,
