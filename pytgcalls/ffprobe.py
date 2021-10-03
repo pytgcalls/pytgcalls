@@ -95,7 +95,8 @@ class FFprobe:
             if needed_audio:
                 if not have_audio:
                     raise NoAudioSourceFound(path)
-                return have_header
+                if not needed_video:
+                    return have_header
             if have_video:
                 return original_width, original_height, have_header
         except FileNotFoundError:

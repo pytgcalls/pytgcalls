@@ -18,7 +18,7 @@ export class FFmpegReader {
     onEnd?: onEnd;
 
     constructor(additional_parameters: string) {
-        this.bytes_read = new BufferOptimized(this.MAX_READ_BUFFER);
+        this.bytes_read = new BufferOptimized(0);
         this.additional_parameters = additional_parameters.includes('-atend') ? additional_parameters:additional_parameters + '-atend';
     }
     public convert_audio(path: string, bitrate: string){
@@ -97,6 +97,7 @@ export class FFmpegReader {
                 if(this.bytes_read.length < this.MAX_SIZE_BUFFERED){
                     this.fifo_reader?.stdout.resume();
                 }
+                this.bytes_read.byteLength = this.bytes_read.length < this.MAX_READ_BUFFER ? this.bytes_read.length:this.MAX_READ_BUFFER;
                 if(this.onData != undefined){
                     const buffer = this.bytes_read.readBytes();
                     this.onData(buffer);
