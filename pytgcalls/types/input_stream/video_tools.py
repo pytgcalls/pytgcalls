@@ -58,4 +58,6 @@ def check_video_params(
         raise InvalidVideoProportion(
             'Destination height is greater than the original height',
         )
-    return width - 1 if width % 2 else width, height
+    width = width - 1 if width % 2 else width
+    height = height - 1 if height % 2 else height
+    return width, height

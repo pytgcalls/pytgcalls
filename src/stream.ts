@@ -87,7 +87,7 @@ export class Stream extends EventEmitter {
         this.readable?.resume();
 
         if (this.stopped) {
-            throw new Error('Cannot set readable when stopped');
+            return;
         }
 
         if (this.readable != undefined) {
@@ -408,7 +408,7 @@ export class Stream extends EventEmitter {
             const local_play_time = this.currentPlayedTime();
             if (remote_play_time != undefined && local_play_time != undefined) {
                 if(local_play_time > remote_play_time){
-                    this.lastDifferenceRemote = (local_play_time - remote_play_time) * 100000;
+                    this.lastDifferenceRemote = (local_play_time - remote_play_time) * 10000;
                     return true;
                 }else if(this.remoteLagging().isLagging && remote_play_time > local_play_time){
                     this.lastDifferenceRemote = 0;
@@ -451,7 +451,7 @@ export class Stream extends EventEmitter {
         if(this.readable === undefined || this.finished){
             return undefined;
         }else{
-            return Math.ceil((this.playedBytes/this.bytesLength) / (0.00001 / this.frameTime()))
+            return Math.ceil((this.playedBytes/this.bytesLength) / (0.0001 / this.frameTime()))
         }
     }
 }
