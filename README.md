@@ -76,13 +76,14 @@ From YouTube Live stream to Video
 > The max resolution allowed by Telegram is of 720p at 30 fps
 > Here also listed the scaling format
 > - 360p = 640
-> - 480p = 864
+> - 480p = 854
 > - 720p = 1280
 >
 > If you have any problem with green screen or un-synchronized video, it can be one of these problems:
 > - Invalid FFMPEG command
 > - The video quality specified to convert is higher than the original video one
 > - Invalid PyTgCalls video parameters
+> - If you're using fifo, the Fifo max buffer size is too low and this cause the lag problem.
 
 ## Conversion commands
 

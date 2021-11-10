@@ -13,6 +13,7 @@ class HandlersHolder:
             'KICK_HANDLER': [],
             'CLOSED_HANDLER': [],
             'LEFT_HANDLER': [],
+            'PARTICIPANTS_LIST': [],
         }
 
     async def propagate(

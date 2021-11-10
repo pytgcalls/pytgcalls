@@ -1,4 +1,9 @@
 from ...scaffold import Scaffold
+from ...types import Update
+from ...types.groups import GroupCallParticipant
+from ...types.groups import JoinedGroupCallParticipant
+from ...types.groups import LeftGroupCallParticipant
+from ...types.groups import UpdatedGroupCallParticipant
 
 
 class MtProtoHandler(Scaffold):
@@ -56,4 +61,33 @@ class MtProtoHandler(Scaffold):
                 'LEFT_HANDLER',
                 self,
                 chat_id,
+            )
+
+        @self._app.on_participants_change()
+        async def participants_handler(
+            chat_id: int,
+            participant: GroupCallParticipant,
+            just_joined: bool,
+            just_left: bool,
+        ):
+            if participant.user_id == self._my_id:
+                return
+            update_participant: Update = UpdatedGroupCallParticipant(
+                chat_id,
+                participant,
+            )
+            if just_joined:
+                update_participant = JoinedGroupCallParticipant(
+                    chat_id,
+                    participant,
+                )
+            elif just_left:
+                update_participant = LeftGroupCallParticipant(
+                    chat_id,
+                    participant,
+                )
+            await self._on_event_update.propagate(
+                'PARTICIPANTS_LIST',
+                self,
+                update_participant,
             )

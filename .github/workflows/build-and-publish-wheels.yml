@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        arch-image-names: [ 'amd64', 'arm64v8' ]
+        arch-image-names: [ 'amd64', 'arm64v8', 'arm32v7' ]
         include:
           - arch-image-names: 'amd64'
             arch-run-names: 'linux/amd64'
@@ -31,7 +31,11 @@ jobs:
           - arch-image-names: 'arm64v8'
             arch-run-names: 'linux/arm64/v8'
             build-plat-names: 'manylinux2014_aarch64'
-        python-version: [ '3.6', '3.7', '3.8', '3.9' ]
+
+          - arch-image-names: 'arm32v7'
+            arch-run-names: 'linux/arm32/v7'
+            build-plat-names: 'manylinux2014_armv7l'
+        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10' ]
     steps:
       - name: Get Branch Name
         run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
@@ -67,7 +71,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        python-version: [ '3.6', '3.7', '3.8', '3.9' ]
+        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10' ]
     steps:
       - name: Get Branch Name
         run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
@@ -100,7 +104,7 @@ jobs:
     runs-on: macos-11
     strategy:
       matrix:
-        python-version: [ '3.6', '3.7', '3.8', '3.9' ]
+        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10' ]
     steps:
       - name: Get Branch Name
         run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"

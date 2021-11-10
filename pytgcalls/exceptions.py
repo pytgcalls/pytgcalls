@@ -75,13 +75,6 @@ class NoActiveGroupCall(Exception):
         )
 
 
-class WaitPreviousPingRequest(Exception):
-    def __init__(self):
-        super().__init__(
-            'Wait previous ping request before do a new ping request',
-        )
-
-
 class PyTgCallsAlreadyRunning(Exception):
     def __init__(self):
         super().__init__(
@@ -110,4 +103,32 @@ class InvalidMtProtoClient(Exception):
     def __init__(self):
         super().__init__(
             'Invalid MtProto Client',
+        )
+
+
+class NoVideoSourceFound(Exception):
+    def __init__(self, path: str):
+        super().__init__(
+            f'No video source found on {path}',
+        )
+
+
+class InvalidVideoProportion(Exception):
+    def __init__(self, message: str):
+        super().__init__(
+            message,
+        )
+
+
+class NoAudioSourceFound(Exception):
+    def __init__(self, path: str):
+        super().__init__(
+            f'No audio source found on {path}',
+        )
+
+
+class FFmpegNotInstalled(Exception):
+    def __init__(self, path: str):
+        super().__init__(
+            'FFmpeg ins\'t installed on your server',
         )

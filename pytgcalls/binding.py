@@ -6,23 +6,34 @@ import os
 import signal
 import subprocess
 import sys
+from asyncio import Event
 from asyncio import Future
-from asyncio.log import logger
+from asyncio.subprocess import Process
 from json import JSONDecodeError
 from time import time
 from typing import Callable
+from typing import Dict
+from typing import Optional
 
-from .exceptions import WaitPreviousPingRequest
+from pytgcalls.types.session import Session
+
+py_logger = logging.getLogger('pytgcalls')
 
 
 class Binding:
-    def __init__(self):
-        self._js_process = None
+    def __init__(
+        self,
+        overload_quiet_mode: bool,
+        multi_thread: bool,
+    ):
+        self._js_process: Optional[Process] = None
         self._ssid = ''
-        self._on_request = None
-        self._on_connect = None
+        self._on_request: Optional[Callable] = None
+        self._on_connect: Optional[Callable] = None
         self._last_ping = 0
-        self._waiting_ping = None
+        self._waiting_ping: Dict[str, Event] = {}
+        self._multi_thread = multi_thread
+        self._overload_quiet = overload_quiet_mode
 
         def cleanup():
             async def async_cleanup():
@@ -38,7 +49,7 @@ class Binding:
                             self._js_process.kill()
                             await self._js_process.communicate()
                 except subprocess.TimeoutExpired:
-                    logger.warning(
+                    py_logger.warning(
                         'Node.js did not terminate cleanly, '
                         'killing process...',
                     )
@@ -46,7 +57,8 @@ class Binding:
                     await self._js_process.communicate()
                 except ProcessLookupError:
                     pass
-                logger.info('Node.js stopped')
+                py_logger.info('Node.js stopped')
+
             asyncio.get_event_loop().run_until_complete(async_cleanup())
 
         atexit.register(cleanup)
@@ -72,17 +84,16 @@ class Binding:
 
     @property
     async def ping(self) -> float:
-        if self._waiting_ping is None:
-            start_time = time()
-            self._waiting_ping = asyncio.Event()
-            await self._send({
-                'ping_with_response': True,
-            })
-            await self._waiting_ping.wait()
-            self._waiting_ping = None
-            return (time() - start_time) * 1000.0
-        else:
-            raise WaitPreviousPingRequest()
+        start_time = time()
+        session = Session.generate_session_id(15)
+        self._waiting_ping[session] = asyncio.Event()
+        await self._send({
+            'ping_with_response': True,
+            'sid': session,
+        })
+        await self._waiting_ping[session].wait()
+        del self._waiting_ping[session]
+        return (time() - start_time) * 1000.0
 
     @property
     def _run_folder(self):
@@ -106,7 +117,7 @@ class Binding:
                 try:
                     if self._js_process.stdout is None:
                         break
-                    out = (await self._js_process.stdout.readline())\
+                    out = (await self._js_process.stdout.readline()) \
                         .decode().replace('\r', '')
                     if not out:
                         break
@@ -114,9 +125,10 @@ class Binding:
                     for update in list_data:
                         try:
                             json_out = json.loads(update)
-                            if 'ping_with_response' and \
-                                    self._waiting_ping is not None:
-                                self._waiting_ping.set()
+                            if 'ping_with_response' in json_out:
+                                session_id = json_out['sid']
+                                if session_id in self._waiting_ping:
+                                    self._waiting_ping[session_id].set()
                             if 'ping' in json_out:
                                 self._last_ping = int(time())
                             if 'try_connect' in json_out:
@@ -125,15 +137,20 @@ class Binding:
                                     self._send({
                                         'try_connect': 'connected',
                                         'user_id': user_id,
+                                        'overload_quiet': self._overload_quiet,
+                                        'multi_thread': self._multi_thread,
                                     }),
                                 )
-                                asyncio.ensure_future(self._on_connect())
+                                if self._on_connect is not None:
+                                    asyncio.ensure_future(self._on_connect())
                             elif 'ssid' in json_out and 'uid' in json_out:
                                 if json_out['ssid'] == self._ssid:
                                     if self._on_request is not None:
                                         async def future_response(
-                                                future_json_out: dict,
+                                            future_json_out: dict,
                                         ):
+                                            if self._on_request is None:
+                                                return
                                             result = await self._on_request(
                                                 future_json_out['data'],
                                             )
@@ -154,13 +171,13 @@ class Binding:
                             elif 'log_message' in json_out \
                                     and 'verbose_mode' in json_out:
                                 if json_out['verbose_mode'] == 1:
-                                    logging.debug(json_out['log_message'])
+                                    py_logger.debug(json_out['log_message'])
                                 elif json_out['verbose_mode'] == 2:
-                                    logging.info(json_out['log_message'])
+                                    py_logger.info(json_out['log_message'])
                                 elif json_out['verbose_mode'] == 3:
-                                    logging.warning(json_out['log_message'])
+                                    py_logger.warning(json_out['log_message'])
                                 elif json_out['verbose_mode'] == 4:
-                                    logging.error(json_out['log_message'])
+                                    py_logger.error(json_out['log_message'])
                         except JSONDecodeError:
                             if update:
                                 if ':replace_line:' in update:
@@ -199,7 +216,11 @@ class Binding:
 
     async def _send(self, json_data: dict):
         try:
-            self._js_process.stdin.write(json.dumps(json_data).encode())
-            await self._js_process.stdin.drain()
+            if self._js_process is not None:
+                if self._js_process.stdin is not None:
+                    self._js_process.stdin.write(
+                        json.dumps(json_data).encode(),
+                    )
+                    await self._js_process.stdin.drain()
         except ConnectionResetError:
             pass

@@ -13,7 +13,7 @@ base_path = os.path.abspath(os.path.dirname(__file__))
 
 class NodeJsExtension(Extension):
     def __init__(self, name, source_dir=''):
-        Extension.__init__(self, name, sources=[])
+        super().__init__(name, sources=[])
         self.source_dir = os.path.abspath(source_dir)
         if not self.source_dir.endswith(os.path.sep):
             self.source_dir += os.path.sep
@@ -96,7 +96,7 @@ class SetupHelper:
 
 class NodeJsBuilder(build_ext):
     def run(self):
-        build_ext.run(self)
+        super().run()
 
     def build_extension(self, ext):
         ext_dir = os.path.abspath(
@@ -120,7 +120,7 @@ with open(os.path.join(base_path, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='py-tgcalls',
-    version='0.8.0',
+    version='0.8.1',
     long_description=readme,
     long_description_content_type='text/markdown',
     url='https://github.com/pytgcalls/pytgcalls',
@@ -144,9 +144,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'aiohttp',
-        'httpx',
         'psutil',
-        'tgcrypto',
     ],
     python_requires='>=3.6.1',
     include_package_data=True,

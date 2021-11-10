@@ -10,6 +10,7 @@ from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
 from pytgcalls.types import Update
 from pytgcalls.types.input_stream import InputAudioStream
+from pytgcalls.types.input_stream import InputStream
 
 app = Client(
     'py-tgcalls',
@@ -25,8 +26,10 @@ if __name__ == '__main__':
             await asyncio.sleep(0.125)
         await call_py.join_group_call(
             message.chat.id,
-            InputAudioStream(
-                file,
+            InputStream(
+                InputAudioStream(
+                    file,
+                ),
             ),
             stream_type=StreamType().local_stream,
         )
@@ -36,8 +39,10 @@ if __name__ == '__main__':
         file = '../input.raw'
         await call_py.change_stream(
             message.chat.id,
-            InputAudioStream(
-                file,
+            InputStream(
+                InputAudioStream(
+                    file,
+                ),
             ),
         )
 
@@ -85,6 +90,10 @@ if __name__ == '__main__':
     @call_py.on_stream_end()
     async def stream_end_handler(client: PyTgCalls, update: Update):
         print(f'Stream ended in {update.chat_id}', update)
+
+    @call_py.on_participants_change()
+    async def participant_handler(client: PyTgCalls, update: Update):
+        print(update)
 
     call_py.start()
     idle()

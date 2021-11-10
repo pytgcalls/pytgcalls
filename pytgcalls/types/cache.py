@@ -8,6 +8,7 @@ from typing import Optional
 @dataclass
 class CacheEntry:
     time: int
+    expiry_time: int
     data: Any
 
 
@@ -27,8 +28,12 @@ class Cache:
     def put(self, chat_id: int, data: Any, expiry_time: int = 0) -> None:
         self._store[chat_id] = CacheEntry(
             time=0 if expiry_time == 0 else (int(time()) + expiry_time),
+            expiry_time=expiry_time,
             data=data,
         )
+
+    def keys(self):
+        return [key for key in self._store]
 
     def pop(self, chat_id: int) -> Optional[Any]:
         return self._store.pop(chat_id, None)

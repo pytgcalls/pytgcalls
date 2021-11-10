@@ -1,5 +1,6 @@
-from typing import Any, Optional
+from typing import Any
 from typing import Callable
+from typing import Optional
 
 
 class BridgedClient:
@@ -26,6 +27,12 @@ class BridgedClient:
     ):
         pass
 
+    async def get_group_call_participants(
+        self,
+        chat_id: int,
+    ):
+        pass
+
     async def change_volume(
         self,
         chat_id: int,
@@ -40,6 +47,12 @@ class BridgedClient:
         stopped_status: Optional[bool],
         paused_status: Optional[bool],
         participant: Any,
+    ):
+        pass
+
+    async def get_participants(
+        self,
+        input_call: Any,
     ):
         pass
 
@@ -60,7 +73,10 @@ class BridgedClient:
         is_channel = hasattr(input_peer, 'channel_id')
         is_channel_update = input_peer.__class__.__name__ == 'Channel'
         is_chat = input_peer.__class__.__name__ == 'Chat'
-        if is_channel:
+        is_user = input_peer.__class__.__name__ == 'PeerUser'
+        if is_user:
+            return input_peer.user_id
+        elif is_channel:
             return -1000000000000 - input_peer.channel_id
         elif is_channel_update:
             return -1000000000000 - input_peer.id
@@ -82,6 +98,9 @@ class BridgedClient:
         pass
 
     def on_left_group(self) -> Callable:
+        pass
+
+    def on_participants_change(self) -> Callable:
         pass
 
     async def get_full_chat(self, chat_id: int):

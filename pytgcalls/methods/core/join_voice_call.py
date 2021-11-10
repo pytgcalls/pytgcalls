@@ -2,6 +2,8 @@ import logging
 
 from ...scaffold import Scaffold
 
+py_logger = logging.getLogger('pytgcalls')
+
 
 class JoinVoiceCall(Scaffold):
     async def _join_voice_call(
@@ -37,5 +39,5 @@ class JoinVoiceCall(Scaffold):
         except Exception as e:
             if 'GROUPCALL_FORBIDDEN' in str(e):
                 self._cache_user_peer.pop(chat_id)
-            logging.error(f'JOIN_VOICE_CALL_ERROR -> {e}')
+            py_logger.error(f'JOIN_VOICE_CALL_ERROR -> {e}')
         return {'transport': None}

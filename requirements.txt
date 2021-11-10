@@ -1,4 +1,2 @@
 aiohttp
-httpx
 psutil
-tgcrypto

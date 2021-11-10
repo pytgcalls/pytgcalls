@@ -12,6 +12,9 @@ export class TGCalls<T> extends EventEmitter {
     readonly #params: any;
     private audioTrack?: MediaStreamTrack;
     private videoTrack?: MediaStreamTrack;
+    private readonly defaultMaxClientRetries: number = 10;
+    private readonly defaultMaxIceRetries: number = 5;
+    private iceRetries: number = 10;
     joinVoiceCall?: JoinVoiceCallCallback<T>;
 
     constructor(params: T) {
@@ -19,7 +22,12 @@ export class TGCalls<T> extends EventEmitter {
         this.#params = params;
     }
 
-    async start(audioTrack: MediaStreamTrack, videoTrack: MediaStreamTrack): Promise<boolean> {
+    async sleep(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async start(audioTrack: MediaStreamTrack, videoTrack: MediaStreamTrack, maxRetries: number = this.defaultMaxClientRetries): Promise<boolean> {
+        this.iceRetries = this.defaultMaxIceRetries;
         if (this.#connection) {
             throw new Error('Connection already started');
         } else if (!this.joinVoiceCall) {
@@ -27,19 +35,41 @@ export class TGCalls<T> extends EventEmitter {
                 'Please set the `joinVoiceCall` callback before calling `start()`',
             );
         }
-
+        let resolveConnection: CallableFunction;
+        let alreadySolved: boolean = false;
+        let resultSolve: boolean = false;
         this.#connection = new RTCPeerConnection();
         this.#connection.oniceconnectionstatechange = async () => {
-            this.emit(
-                'iceConnectionState',
-                this.#connection?.iceConnectionState,
-            );
-
-            switch (this.#connection?.iceConnectionState) {
-                case 'closed':
-                case 'failed':
-                    this.emit('hangUp');
-                    break;
+            const connection_status = this.#connection?.iceConnectionState;
+            if(connection_status){
+                this.emit(
+                    'iceConnectionState',
+                    connection_status,
+                );
+                const isConnected = connection_status == 'completed' || connection_status == 'connected';
+                if(connection_status != 'checking'){
+                    if(connection_status == 'failed'){
+                        if(this.iceRetries > 0){
+                            this.iceRetries -= 1;
+                            await this.sleep(125);
+                            this.#connection?.restartIce();
+                            Binding.log('WebRTC Connection failed! Retrying ' + ((this.defaultMaxIceRetries + 1) - this.iceRetries) + ' of ' + this.defaultMaxIceRetries, Binding.INFO);
+                            return;
+                        }
+                    }
+                    if(resolveConnection){
+                        resolveConnection(isConnected);
+                    }else{
+                        alreadySolved = true;
+                        resultSolve = isConnected;
+                    }
+                }
+                switch (connection_status) {
+                    case 'closed':
+                    case 'failed':
+                        this.emit('hangUp');
+                       break;
+                }
             }
         };
 
@@ -104,7 +134,29 @@ export class TGCalls<T> extends EventEmitter {
             type: 'answer',
             sdp: SdpBuilder.fromConference(conference),
         });
-        return true;
+        let result_connection: boolean;
+        if(alreadySolved){
+            result_connection = resultSolve;
+        }else{
+            result_connection = await new Promise<boolean>(resolve => {
+                resolveConnection = resolve;
+            });
+        }
+        if(result_connection){
+            return result_connection;
+        }else{
+            if(maxRetries > 0){
+                try{
+                    this.#connection.close();
+                }catch (e){}
+                this.#connection = undefined;
+                await this.sleep(125);
+                Binding.log('Telegram is having some internal server problems! Retrying ' + ((this.defaultMaxClientRetries + 1) - maxRetries) + ' of ' + this.defaultMaxClientRetries, Binding.WARNING);
+                return await this.start(audioTrack, videoTrack, maxRetries - 1);
+            }else{
+                return result_connection;
+            }
+        }
     }
 
     mute() {
@@ -123,6 +175,10 @@ export class TGCalls<T> extends EventEmitter {
         }
 
         return false;
+    }
+
+    isClosed(){
+        return this.#connection?.connectionState == 'closed';
     }
 
     close() {

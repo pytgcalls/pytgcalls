@@ -3,7 +3,6 @@ import asyncio
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
 from ...scaffold import Scaffold
-from ...types.groups import PlayingStream
 
 
 class PauseStream(Scaffold):
@@ -22,7 +21,7 @@ class PauseStream(Scaffold):
                     })
                 active_call = self._call_holder.get_active_call(chat_id)
                 asyncio.ensure_future(internal_sender())
-                return isinstance(active_call.status, PlayingStream)
+                return active_call.status == 'playing'
             else:
                 raise NodeJSNotRunning()
         else:
