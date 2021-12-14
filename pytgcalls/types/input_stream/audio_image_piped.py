@@ -11,6 +11,41 @@ from .video_tools import check_video_params
 
 
 class AudioImagePiped(InputStream):
+    """The audio/image stream piped descriptor
+
+    Attributes:
+        ffmpeg_parameters (``str``):
+            FFMpeg additional parameters
+        lip_sync (``bool``):
+            Lip Sync mode
+        raw_headers (``str``):
+            Headers of http the connection
+        stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
+            Input Audio Stream Descriptor
+        stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
+            Input Video Stream Descriptor
+
+    Parameters:
+        audio_path (``str``):
+            The audio file path
+        image_path (``str``):
+            The image file path
+        audio_parameters (:obj:`~pytgcalls.types.AudioParameters()`):
+            The audio parameters of the stream, can be used also
+            :obj:`~pytgcalls.types.HighQualityAudio()`,
+            :obj:`~pytgcalls.types.MediumQualityAudio()` or
+            :obj:`~pytgcalls.types.LowQualityAudio()`
+        video_parameters (:obj:`~pytgcalls.types.VideoParameters()`):
+            The video parameters of the stream, can be used also
+            :obj:`~pytgcalls.types.HighQualityVideo()`,
+            :obj:`~pytgcalls.types.MediumQualityVideo()` or
+            :obj:`~pytgcalls.types.LowQualityVideo()`
+        headers (``Dict[str, str]``, **optional**):
+            Headers of http the connection
+        additional_ffmpeg_parameters (``str``, **optional**):
+            FFMpeg additional parameters
+    """
+
     def __init__(
         self,
         audio_path: str,

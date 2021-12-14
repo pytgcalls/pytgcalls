@@ -16,18 +16,17 @@ app = TelegramClient(
 )
 
 call_py = PyTgCalls(app)
-if __name__ == '__main__':
-    call_py.start()
-    file = '../input.raw'
-    while not os.path.exists(file):
-        time.sleep(0.125)
-    call_py.join_group_call(
-        -1001234567890,
-        InputStream(
-            InputAudioStream(
-                file,
-            ),
+call_py.start()
+file = '../input.raw'
+while not os.path.exists(file):
+    time.sleep(0.125)
+call_py.join_group_call(
+    -1001234567890,
+    InputStream(
+        InputAudioStream(
+            file,
         ),
-        stream_type=StreamType().local_stream,
-    )
-    idle()
+    ),
+    stream_type=StreamType().local_stream,
+)
+idle()

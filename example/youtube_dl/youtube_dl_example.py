@@ -36,16 +36,15 @@ app = Client(
 )
 
 call_py = PyTgCalls(app)
-if __name__ == '__main__':
-    call_py.start()
-    remote = get_youtube_stream()
-    call_py.join_group_call(
-        -1001234567890,
-        AudioVideoPiped(
-            remote,
-            HighQualityAudio(),
-            HighQualityVideo(),
-        ),
-        stream_type=StreamType().pulse_stream,
-    )
-    idle()
+call_py.start()
+remote = get_youtube_stream()
+call_py.join_group_call(
+    -1001234567890,
+    AudioVideoPiped(
+        remote,
+        HighQualityAudio(),
+        HighQualityVideo(),
+    ),
+    stream_type=StreamType().pulse_stream,
+)
+idle()

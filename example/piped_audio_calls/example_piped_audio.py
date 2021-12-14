@@ -12,14 +12,13 @@ app = Client(
 )
 
 call_py = PyTgCalls(app)
-if __name__ == '__main__':
-    call_py.start()
-    audio_file = 'input.webm'
-    call_py.join_group_call(
-        -1001234567890,
-        AudioPiped(
-            audio_file,
-        ),
-        stream_type=StreamType().pulse_stream,
-    )
-    idle()
+call_py.start()
+audio_file = 'input.webm'
+call_py.join_group_call(
+    -1001234567890,
+    AudioPiped(
+        audio_file,
+    ),
+    stream_type=StreamType().pulse_stream,
+)
+idle()

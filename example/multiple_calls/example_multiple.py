@@ -27,49 +27,52 @@ app2 = Client(
 call_py = PyTgCalls(app)
 call_py2 = PyTgCalls(app2)
 
-if __name__ == '__main__':
-    @app.on_message(filters.regex('!p1'))
-    async def play_handler(client: Client, message: Message):
-        file = '../input.raw'
-        while not os.path.exists(file):
-            time.sleep(0.125)
-        await call_py.join_group_call(
-            message.chat.id,
-            InputStream(
-                InputAudioStream(
-                    file,
-                ),
+
+@app.on_message(filters.regex('!p1'))
+async def play_handler(client: Client, message: Message):
+    file = '../input.raw'
+    while not os.path.exists(file):
+        time.sleep(0.125)
+    await call_py.join_group_call(
+        message.chat.id,
+        InputStream(
+            InputAudioStream(
+                file,
             ),
-            stream_type=StreamType().local_stream,
-        )
+        ),
+        stream_type=StreamType().local_stream,
+    )
 
-    @app.on_message(filters.regex('!p2'))
-    async def play_handler2(client: Client, message: Message):
-        file = '../input.raw'
-        while not os.path.exists(file):
-            await asyncio.sleep(0.125)
-        await call_py2.join_group_call(
-            message.chat.id,
-            InputStream(
-                InputAudioStream(
-                    file,
-                ),
+
+@app.on_message(filters.regex('!p2'))
+async def play_handler2(client: Client, message: Message):
+    file = '../input.raw'
+    while not os.path.exists(file):
+        await asyncio.sleep(0.125)
+    await call_py2.join_group_call(
+        message.chat.id,
+        InputStream(
+            InputAudioStream(
+                file,
             ),
-            stream_type=StreamType().local_stream,
-        )
+        ),
+        stream_type=StreamType().local_stream,
+    )
 
-    @app.on_message(filters.regex('!s1'))
-    async def stop_handler(client: Client, message: Message):
-        await call_py.leave_group_call(
-            message.chat.id,
-        )
 
-    @app.on_message(filters.regex('!s2'))
-    async def stop_handler2(client: Client, message: Message):
-        await call_py2.leave_group_call(
-            message.chat.id,
-        )
+@app.on_message(filters.regex('!s1'))
+async def stop_handler(client: Client, message: Message):
+    await call_py.leave_group_call(
+        message.chat.id,
+    )
 
-    call_py.start()
-    call_py2.start()
-    idle()
+
+@app.on_message(filters.regex('!s2'))
+async def stop_handler2(client: Client, message: Message):
+    await call_py2.leave_group_call(
+        message.chat.id,
+    )
+
+call_py.start()
+call_py2.start()
+idle()

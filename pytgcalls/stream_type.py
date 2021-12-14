@@ -1,4 +1,19 @@
 class StreamType:
+    """StreamType, the main means for setting
+    the streaming mode.
+
+    Attributes:
+        live_stream (``self``):
+            Streaming mode for Live Video, or HTTP online video
+        local_stream (``self``):
+            Streaming mode for Downloaded Video
+        pulse_stream (``self``):
+            Streaming mode for Live Video, HTTP online video,
+            or Local Video
+        stream_mode (``int``):
+            Get the int value of stream mode
+    """
+
     def __init__(self):
         self._stream_type = 0
 

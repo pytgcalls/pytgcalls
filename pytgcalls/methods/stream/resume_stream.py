@@ -10,6 +10,44 @@ class ResumeStream(Scaffold):
         self,
         chat_id: int,
     ):
+        """Resume the paused stream
+
+        This method allow to resume the paused streaming file
+
+        Parameters:
+            chat_id (``int``):
+                Unique identifier (int) of the target chat.
+
+        Raises:
+            NoMtProtoClientSet: In case you try
+                to call this method without any MtProto client
+            NodeJSNotRunning: In case you try
+                to call this method without do
+                :meth:`~pytgcalls.PyTgCalls.start` before
+
+        Returns:
+            ``bool``:
+            On success, true is returned if was resumed
+
+        Example:
+            .. code-block:: python
+                :emphasize-lines: 10-12
+
+                from pytgcalls import Client
+                from pytgcalls import idle
+                ...
+
+                app = PyTgCalls(client)
+                app.start()
+
+                ...  # Call API methods
+
+                app.resume_stream(
+                    -1001185324811,
+                )
+
+                idle()
+        """
         if self._app is not None:
             if self._wait_until_run is not None:
                 async def internal_sender():

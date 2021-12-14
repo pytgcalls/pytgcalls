@@ -14,19 +14,18 @@ app = Client(
 )
 
 call_py = PyTgCalls(app)
-if __name__ == '__main__':
-    call_py.start()
-    remote = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
-    call_py.join_group_call(
-        -1001234567890,
-        AudioVideoPiped(
-            remote,
-            HighQualityAudio(),
-            HighQualityVideo(),
-            additional_ffmpeg_parameters='EVERYTHING BEFORE THE INPUT (-i) '
-                                         '-atend '
-                                         'EVERYTHING AFTER ALL ARGUMENTS',
-        ),
-        stream_type=StreamType().pulse_stream,
-    )
-    idle()
+call_py.start()
+remote = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+call_py.join_group_call(
+    -1001234567890,
+    AudioVideoPiped(
+        remote,
+        HighQualityAudio(),
+        HighQualityVideo(),
+        additional_ffmpeg_parameters='EVERYTHING BEFORE THE INPUT (-i) '
+                                     '-atend '
+                                     'EVERYTHING AFTER ALL ARGUMENTS',
+    ),
+    stream_type=StreamType().pulse_stream,
+)
+idle()

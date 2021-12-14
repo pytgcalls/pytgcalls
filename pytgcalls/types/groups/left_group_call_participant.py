@@ -3,6 +3,21 @@ from ...types.update import Update
 
 
 class LeftGroupCallParticipant(Update):
+    """A participant left the Group Call
+
+    Attributes:
+        chat_id (``int``):
+            Unique identifier of chat.
+        participant (:obj:`~pytgcalls.types.GroupCallParticipant()`):
+            Info about a group call participant
+
+    Parameters:
+        chat_id (``int``):
+            Unique identifier of chat.
+        participant (:obj:`~pytgcalls.types.GroupCallParticipant()`):
+            Info about a group call participant
+    """
+
     def __init__(
         self,
         chat_id: int,

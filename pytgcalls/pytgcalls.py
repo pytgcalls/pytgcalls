@@ -12,6 +12,41 @@ from .types.call_holder import CallHolder
 
 
 class PyTgCalls(Methods, Scaffold):
+    """PyTgCalls Client, the main means
+    for interacting with Group Calls.
+
+    Attributes:
+        active_calls (List of :obj:`~pytgcalls.types.GroupCall`):
+            Get a list of active (Playing / Paused) group calls
+        calls (List of :obj:`~pytgcalls.types.GroupCall`):
+            Get a list of existent group calls
+        cache_peer (`InputPeer (P)`_ | `InputPeer (T)`_):
+            Get current Telegram user
+        ping (``int``):
+            Ping of NodeJS core
+        is_connected (``bool``):
+            Check if is alive the NodeJS connection
+
+    Parameters:
+        app (`Client`_ | `TelegramClient`_):
+            Pass the MtProto Client
+
+        cache_duration (``int``):
+            Cache duration of Full Chat query
+
+        overload_quiet_mode (``bool``):
+            Disable overload cpu messages by setting true
+
+        multi_thread (``bool``):
+            This will use NodeJS on Multi Thread mode, not
+            suggested on production code (Is really buggy,
+            is just an experimental mode)
+
+    Raises:
+        InvalidMtProtoClient: You set an invalid MtProto client
+
+    """
+
     def __init__(
         self,
         app: Any,

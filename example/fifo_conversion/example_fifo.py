@@ -22,51 +22,53 @@ app = Client(
 )
 
 call_py = PyTgCalls(app)
-if __name__ == '__main__':
-    proc = {}
+proc = {}
 
-    @app.on_message(filters.regex('!test'))
-    async def test_handler(client: Client, message: Message):
-        global proc
-        file = 'input.webm'
-        output_file = 'input_fifo.raw'
-        os.mkfifo(output_file)
-        proc[message.chat.id] = await asyncio.create_subprocess_shell(
-            cmd=(
-                'ffmpeg '
-                '-y -i '
-                f'{file} '
-                '-f s16le '
-                '-ac 1 '
-                '-ar 48000 '
-                '-acodec pcm_s16le '
-                f'{output_file}'
+
+@app.on_message(filters.regex('!test'))
+async def test_handler(client: Client, message: Message):
+    global proc
+    file = 'input.webm'
+    output_file = 'input_fifo.raw'
+    os.mkfifo(output_file)
+    proc[message.chat.id] = await asyncio.create_subprocess_shell(
+        cmd=(
+            'ffmpeg '
+            '-y -i '
+            f'{file} '
+            '-f s16le '
+            '-ac 1 '
+            '-ar 48000 '
+            '-acodec pcm_s16le '
+            f'{output_file}'
+        ),
+        stdin=asyncio.subprocess.PIPE,
+    )
+
+    while not os.path.exists(output_file):
+        time.sleep(0.125)
+    await call_py.join_group_call(
+        message.chat.id,
+        InputStream(
+            InputAudioStream(
+                output_file,
             ),
-            stdin=asyncio.subprocess.PIPE,
-        )
+        ),
+        stream_type=StreamType().pulse_stream,
+    )
 
-        while not os.path.exists(output_file):
-            time.sleep(0.125)
-        await call_py.join_group_call(
-            message.chat.id,
-            InputStream(
-                InputAudioStream(
-                    output_file,
-                ),
-            ),
-            stream_type=StreamType().pulse_stream,
-        )
 
-    def close_all_process():
-        global proc
-        for i in proc:
-            try:
-                proc[i].send_signal(signal.SIGINT)
-                proc[i].wait(timeout=3)
-            except subprocess.TimeoutExpired:
-                proc[i].kill()
+def close_all_process():
+    global proc
+    for i in proc:
+        try:
+            proc[i].send_signal(signal.SIGINT)
+            proc[i].wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            proc[i].kill()
 
-    # AVOID ZOMBIE FFMPEG PROCESS
-    atexit.register(close_all_process)
-    call_py.start()
-    idle()
+
+# AVOID ZOMBIE FFMPEG PROCESS
+atexit.register(close_all_process)
+call_py.start()
+idle()

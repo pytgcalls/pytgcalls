@@ -6,6 +6,25 @@ from .input_video_stream import InputVideoStream
 
 
 class InputStream(PyObject):
+    """The streams descriptor
+
+    Attributes:
+        lip_sync (``bool``):
+            Lip Sync mode
+        stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
+            Input Audio Stream Descriptor
+        stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
+            Input Video Stream Descriptor
+
+    Parameters:
+        stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
+            Audio File Descriptor
+        stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
+            Video File Descriptor
+        lip_sync (``bool``, **optional**):
+            Lip Sync mode
+    """
+
     def __init__(
         self,
         stream_audio: Optional[InputAudioStream] = None,

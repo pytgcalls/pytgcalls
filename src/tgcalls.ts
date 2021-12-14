@@ -68,7 +68,7 @@ export class TGCalls<T> extends EventEmitter {
                     case 'closed':
                     case 'failed':
                         this.emit('hangUp');
-                       break;
+                        break;
                 }
             }
         };

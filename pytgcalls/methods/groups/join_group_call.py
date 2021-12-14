@@ -27,6 +27,75 @@ class JoinGroupCall(Scaffold):
         join_as=None,
         stream_type: StreamType = None,
     ):
+        """Join a group call to stream a file
+
+        This method allow to stream a file to Telegram
+        Group Calls
+
+        Parameters:
+            chat_id (``int``):
+                Unique identifier (int) of the target chat.
+            stream (:obj:`~pytgcalls.types.InputStream()`):
+                Input Streams descriptor, can be used also
+                :obj:`~pytgcalls.types.AudioPiped()`,
+                :obj:`~pytgcalls.types.AudioImagePiped()`,
+                :obj:`~pytgcalls.types.AudioVideoPiped()` or
+                :obj:`~pytgcalls.types.VideoPiped()`
+            invite_hash (``str``):
+                Unique identifier for the invite in a group call
+                in form of a t.me link
+            join_as (`InputPeer (P)`_ | `InputPeer (T)`_, **optional**):
+                InputPeer of join as channel or profile
+            stream_type (:obj:`~pytgcalls.StreamType`, **optional**)
+                The type of Stream
+
+        Raises:
+            NoMtProtoClientSet: In case you try
+                to call this method without any MtProto client
+            NodeJSNotRunning: In case you try
+                to call this method without do
+                :meth:`~pytgcalls.PyTgCalls.start` before
+            NoActiveGroupCall: In case you try
+                to edit a not started group call
+            FileNotFoundError: In case you try
+                a non existent file
+            InvalidStreamMode: In case you try
+                to set a void stream mode
+            FFmpegNotInstalled: In case you try
+                to use the Piped input stream and
+                you don't have ffmpeg installed
+            NoAudioSourceFound: In case you try
+                to play an audio file from a file
+                without the sound
+            NoVideoSourceFound: In case you try
+                to play an video file from a file
+                without the video
+            InvalidVideoProportion: In case you try
+                to play an video without correct
+                proportions
+
+        Example:
+            .. code-block:: python
+                :emphasize-lines: 10-15
+
+                from pytgcalls import Client
+                from pytgcalls import idle
+                ...
+
+                app = PyTgCalls(client)
+                app.start()
+
+                ...  # Call API methods
+
+                app.join_group_call(
+                    -1001185324811,
+                    AudioPiped(
+                        'test.mp4',
+                    )
+                )
+
+                idle()
+        """
         if join_as is None:
             join_as = self._cache_local_peer
         if stream_type is None:

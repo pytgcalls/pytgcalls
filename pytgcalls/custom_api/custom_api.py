@@ -9,6 +9,13 @@ from ..exceptions import TooManyCustomApiDecorators
 
 
 class CustomApi:
+    """CustomAPI, the main means host the local http api server.
+
+    Parameters:
+        port (``int``, **optional**):
+            CustomApi port to bind the API http server
+    """
+
     def __init__(
         self,
         port: int = 24859,
@@ -19,6 +26,33 @@ class CustomApi:
         self._port = port
 
     def on_update_custom_api(self) -> Callable:
+        """Decorator for handling when received http call
+        to api backend
+
+        Raises:
+            TooManyCustomApiDecorators: In case you try
+                to add to much decorators to a single
+                CustomApi instance
+
+        Example:
+            .. code-block:: python
+                :emphasize-lines: 4-5
+
+                ...
+                webserver = CustomApi(client)
+                ...
+                @webserver.on_update_custom_api()
+                async def handler(request: dict):
+                    print(update)
+                    ... # Add Your Code here, switch or etc
+                    return {
+                        'result': 'OK',
+                    }
+                webserver.start()
+                idle()
+
+        """
+
         if self._handler is None:
             def decorator(func: Callable) -> Callable:
                 if self is not None:
@@ -30,6 +64,23 @@ class CustomApi:
             raise TooManyCustomApiDecorators()
 
     async def start(self):
+        """Start the Custom Api.
+
+        This method start the internal http webserver,
+        this is helpful if you need an API interface to PyTgCalls.
+
+        Example:
+            .. code-block:: python
+                :emphasize-lines: 5
+
+                from pytgcalls import CustomApi
+                from pytgcalls import idle
+
+                webserver = CustomApi()
+                webserver.start()
+
+                idle()
+        """
         async def on_update(request: BaseRequest):
             try:
                 params = await request.json()

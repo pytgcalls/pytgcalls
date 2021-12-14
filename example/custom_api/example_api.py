@@ -14,27 +14,30 @@ app = Client(
     api_hash='abcdef12345',
 )
 
-if __name__ == '__main__':
-    ca = CustomApi()
+ca = CustomApi()
 
-    # Useful for making requests for bots in PHP
-    # with Webhooks or bots in different programming language
-    @ca.on_update_custom_api()
-    async def custom_api_request(request: dict):
-        print(request)
-        return {
-            'response': 'BYE',
-        }
 
-    @app.on_message(filters.regex('!test'))
-    def test_handler(client: Client, message: Message):
-        print(
-            requests.post(
-                'http://localhost:24859/', json.dumps({
-                    'answer': 'HI',
-                }),
-            ).json(),
-        )
-    app.start()
-    ca.start()
-    idle()
+# Useful for making requests for bots in PHP
+# with Webhooks or bots in different programming language
+@ca.on_update_custom_api()
+async def custom_api_request(request: dict):
+    print(request)
+    return {
+        'response': 'BYE',
+    }
+
+
+@app.on_message(filters.regex('!test'))
+def test_handler(client: Client, message: Message):
+    print(
+        requests.post(
+            'http://localhost:24859/', json.dumps({
+                'answer': 'HI',
+            }),
+        ).json(),
+    )
+
+
+app.start()
+ca.start()
+idle()

@@ -9,6 +9,34 @@ from .video_tools import check_video_params
 
 
 class VideoPiped(InputStream):
+    """The video only stream piped descriptor
+
+    Attributes:
+        ffmpeg_parameters (``str``):
+            FFMpeg additional parameters
+        lip_sync (``bool``):
+            Lip Sync mode
+        raw_headers (``str``):
+            Headers of http the connection
+        stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
+            Input Audio Stream Descriptor
+        stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
+            Input Video Stream Descriptor
+
+    Parameters:
+        path (``str``):
+            The video file path
+        video_parameters (:obj:`~pytgcalls.types.VideoParameters()`):
+            The video parameters of the stream, can be used also
+            :obj:`~pytgcalls.types.HighQualityVideo()`,
+            :obj:`~pytgcalls.types.MediumQualityVideo()` or
+            :obj:`~pytgcalls.types.LowQualityVideo()`
+        headers (``Dict[str, str]``, **optional**):
+            Headers of http the connection
+        additional_ffmpeg_parameters (``str``, **optional**):
+            FFMpeg additional parameters
+    """
+
     def __init__(
         self,
         path: str,
