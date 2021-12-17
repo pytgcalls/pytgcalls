@@ -41,7 +41,7 @@ class JoinGroupCall(Scaffold):
                 :obj:`~pytgcalls.types.AudioImagePiped()`,
                 :obj:`~pytgcalls.types.AudioVideoPiped()` or
                 :obj:`~pytgcalls.types.VideoPiped()`
-            invite_hash (``str``):
+            invite_hash (``str``, **optional**):
                 Unique identifier for the invite in a group call
                 in form of a t.me link
             join_as (`InputPeer (P)`_ | `InputPeer (T)`_, **optional**):
