@@ -1,4 +1,4 @@
-from ...types import Update
+from ...types.update import Update
 
 
 class StreamAudioEnded(Update):

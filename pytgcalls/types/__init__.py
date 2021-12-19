@@ -23,7 +23,6 @@ from .input_stream.quality import LowQualityAudio
 from .input_stream.quality import LowQualityVideo
 from .input_stream.quality import MediumQualityAudio
 from .input_stream.quality import MediumQualityVideo
-from .update import Update
 from .stream import ChangedStream
 from .stream import MutedStream
 from .stream import PausedStream
@@ -32,6 +31,7 @@ from .stream import StreamAudioEnded
 from .stream import StreamDeleted
 from .stream import StreamVideoEnded
 from .stream import UnMutedStream
+from .update import Update
 
 __all__ = (
     'AudioParameters',
