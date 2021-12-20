@@ -6,7 +6,6 @@ import os
 import signal
 import subprocess
 import sys
-from asyncio import Event
 from asyncio import Future
 from asyncio.subprocess import Process
 from json import JSONDecodeError
@@ -15,7 +14,7 @@ from typing import Callable
 from typing import Dict
 from typing import Optional
 
-from pytgcalls.types.session import Session
+from .types.session import Session
 
 py_logger = logging.getLogger('pytgcalls')
 
@@ -31,7 +30,7 @@ class Binding:
         self._on_request: Optional[Callable] = None
         self._on_connect: Optional[Callable] = None
         self._last_ping = 0
-        self._waiting_ping: Dict[str, Event] = {}
+        self._waiting_ping: Dict[str, Future] = {}
         self._multi_thread = multi_thread
         self._overload_quiet = overload_quiet_mode
 
@@ -86,12 +85,13 @@ class Binding:
     async def ping(self) -> float:
         start_time = time()
         session = Session.generate_session_id(15)
-        self._waiting_ping[session] = asyncio.Event()
+        loop = asyncio.get_event_loop()
+        self._waiting_ping[session] = loop.create_future()
         await self._send({
             'ping_with_response': True,
             'sid': session,
         })
-        await self._waiting_ping[session].wait()
+        await self._waiting_ping[session]
         del self._waiting_ping[session]
         return (time() - start_time) * 1000.0
 
@@ -128,7 +128,11 @@ class Binding:
                             if 'ping_with_response' in json_out:
                                 session_id = json_out['sid']
                                 if session_id in self._waiting_ping:
-                                    self._waiting_ping[session_id].set()
+                                    self._waiting_ping[
+                                        session_id
+                                    ].set_result(
+                                        None,
+                                    )
                             if 'ping' in json_out:
                                 self._last_ping = int(time())
                             if 'try_connect' in json_out:

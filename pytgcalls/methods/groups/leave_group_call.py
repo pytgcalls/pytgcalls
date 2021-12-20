@@ -3,7 +3,10 @@ import asyncio
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
+from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
+from ...types import NotInGroupCall
+from ...types.session import Session
 
 
 class LeaveGroupCall(Scaffold):
@@ -27,6 +30,8 @@ class LeaveGroupCall(Scaffold):
                 :meth:`~pytgcalls.PyTgCalls.start` before
             NoActiveGroupCall: In case you try
                 to edit a not started group call
+            NotInGroupCallError: In case you try
+                to leave a non-joined group call
 
         Example:
             .. code-block:: python
@@ -53,6 +58,8 @@ class LeaveGroupCall(Scaffold):
                     chat_id,
                 )
                 if chat_call is not None:
+                    solver_id = Session.generate_session_id(24)
+
                     async def internal_sender():
                         if not self._wait_until_run.done():
                             await self._wait_until_run
@@ -60,8 +67,14 @@ class LeaveGroupCall(Scaffold):
                             'action': 'leave_call',
                             'chat_id': chat_id,
                             'type': 'requested',
+                            'solver_id': solver_id,
                         })
                     asyncio.ensure_future(internal_sender())
+                    result = await self._wait_join_result.wait_future_update(
+                        solver_id,
+                    )
+                    if isinstance(result, NotInGroupCall):
+                        raise NotInGroupCallError()
                 else:
                     raise NoActiveGroupCall()
             else:

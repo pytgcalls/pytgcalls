@@ -1,6 +1,8 @@
+from .groups import AlreadyJoined
 from .groups import ErrorDuringJoin
 from .groups import JoinedVoiceChat
 from .groups import LeftVoiceChat
+from .groups import NotInGroupCall
 from .stream import ChangedStream
 from .stream import MutedStream
 from .stream import PausedStream
@@ -24,8 +26,12 @@ class Object:
             return ChangedStream(chat_id)
         elif event_name == 'JOINED_VOICE_CHAT':
             return JoinedVoiceChat(chat_id)
+        elif event_name == 'NOT_IN_GROUP_CALL':
+            return NotInGroupCall(chat_id)
         elif event_name == 'JOIN_ERROR':
             return ErrorDuringJoin(chat_id)
+        elif event_name == 'ALREADY_JOINED':
+            return AlreadyJoined(chat_id)
         elif event_name == 'LEFT_VOICE_CHAT':
             return LeftVoiceChat(chat_id)
         elif event_name == 'STREAM_DELETED':

@@ -4,13 +4,17 @@ import shlex
 
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
+from ...exceptions import NotInGroupCallError
 from ...file_manager import FileManager
 from ...scaffold import Scaffold
+from ...types import NotInGroupCall
+from ...types import StreamDeleted
 from ...types.input_stream import AudioPiped
 from ...types.input_stream import AudioVideoPiped
 from ...types.input_stream import InputStream
 from ...types.input_stream import VideoPiped
 from ...types.input_stream.audio_image_piped import AudioImagePiped
+from ...types.session import Session
 
 py_logger = logging.getLogger('pytgcalls')
 
@@ -60,6 +64,8 @@ class ChangeStream(Scaffold):
             InvalidVideoProportion: In case you try
                 to play an video without correct
                 proportions
+            NotInGroupCallError: In case you try
+                to leave a non-joined group call
 
         Example:
             .. code-block:: python
@@ -150,6 +156,7 @@ class ChangeStream(Scaffold):
                     video_f_parameters += ':_cmd_:'.join(
                         shlex.split(stream.ffmpeg_parameters),
                     )
+                solver_id = Session.generate_session_id(24)
 
                 async def internal_sender():
                     if not self._wait_until_run.done():
@@ -160,6 +167,7 @@ class ChangeStream(Scaffold):
                         'action': 'change_stream',
                         'chat_id': chat_id,
                         'lip_sync': stream.lip_sync,
+                        'solver_id': solver_id,
                     }
                     if stream_audio is not None:
                         request['stream_audio'] = {
@@ -183,8 +191,14 @@ class ChangeStream(Scaffold):
                             'ffmpeg_parameters': video_f_parameters,
                         }
                     await self._binding.send(request)
-
                 asyncio.ensure_future(internal_sender())
+                result = await self._wait_join_result.wait_future_update(
+                    solver_id,
+                )
+                if isinstance(result, NotInGroupCall):
+                    raise NotInGroupCallError()
+                elif isinstance(result, StreamDeleted):
+                    raise FileNotFoundError()
             else:
                 raise NodeJSNotRunning()
         else:

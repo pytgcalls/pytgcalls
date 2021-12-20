@@ -1,5 +1,6 @@
 from .browsers import Browsers
 from .cache import Cache
+from .groups import AlreadyJoined
 from .groups import ErrorDuringJoin
 from .groups import GroupCall
 from .groups import GroupCallParticipant
@@ -7,6 +8,7 @@ from .groups import JoinedGroupCallParticipant
 from .groups import JoinedVoiceChat
 from .groups import LeftGroupCallParticipant
 from .groups import LeftVoiceChat
+from .groups import NotInGroupCall
 from .groups import UpdatedGroupCallParticipant
 from .input_stream import AudioImagePiped
 from .input_stream import AudioParameters
@@ -34,6 +36,7 @@ from .stream import UnMutedStream
 from .update import Update
 
 __all__ = (
+    'AlreadyJoined',
     'AudioParameters',
     'AudioImagePiped',
     'AudioPiped',
@@ -58,6 +61,7 @@ __all__ = (
     'MutedStream',
     'MediumQualityAudio',
     'MediumQualityVideo',
+    'NotInGroupCall',
     'PausedStream',
     'ResumedStream',
     'StreamAudioEnded',

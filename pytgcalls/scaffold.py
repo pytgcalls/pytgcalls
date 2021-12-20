@@ -16,6 +16,7 @@ class Scaffold:
         self._env_checker = None
         self._call_holder = None
         self._cache_user_peer = None
+        self._wait_join_result = None
         self._cache_local_peer = None
         self._on_event_update = None
         self._binding = None

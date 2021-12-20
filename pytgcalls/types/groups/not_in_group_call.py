@@ -1,7 +1,7 @@
 from ...types.update import Update
 
 
-class ErrorDuringJoin(Update):
+class NotInGroupCall(Update):
     def __init__(
         self,
         chat_id: int,

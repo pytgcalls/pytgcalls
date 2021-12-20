@@ -2,18 +2,23 @@ import asyncio
 import logging
 import shlex
 
+from ...exceptions import AlreadyJoinedError
 from ...exceptions import InvalidStreamMode
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
+from ...exceptions import TelegramServerError
 from ...file_manager import FileManager
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
+from ...types import AlreadyJoined
+from ...types import ErrorDuringJoin
 from ...types.input_stream import AudioPiped
 from ...types.input_stream import AudioVideoPiped
 from ...types.input_stream import InputStream
 from ...types.input_stream import VideoPiped
 from ...types.input_stream.audio_image_piped import AudioImagePiped
+from ...types.session import Session
 
 py_logger = logging.getLogger('pytgcalls')
 
@@ -73,6 +78,12 @@ class JoinGroupCall(Scaffold):
             InvalidVideoProportion: In case you try
                 to play an video without correct
                 proportions
+            AlreadyJoinedError: In case you try
+                to join in already joined group
+                call
+            TelegramServerError: Error occurred when
+                joining to a group call (
+                Telegram Server Side)
 
         Example:
             .. code-block:: python
@@ -178,6 +189,8 @@ class JoinGroupCall(Scaffold):
                 stream_audio = stream.stream_audio
                 stream_video = stream.stream_video
                 if chat_call is not None:
+                    solver_id = Session.generate_session_id(24)
+
                     async def internal_sender():
                         request = {
                             'action': 'join_call',
@@ -185,6 +198,7 @@ class JoinGroupCall(Scaffold):
                             'invite_hash': invite_hash,
                             'buffer_long': stream_type.stream_mode,
                             'lip_sync': stream.lip_sync,
+                            'solver_id': solver_id,
                         }
                         if stream_audio is not None:
                             request['stream_audio'] = {
@@ -209,6 +223,13 @@ class JoinGroupCall(Scaffold):
                             }
                         await self._binding.send(request)
                     asyncio.ensure_future(internal_sender())
+                    result = await self._wait_join_result.wait_future_update(
+                        solver_id,
+                    )
+                    if isinstance(result, AlreadyJoined):
+                        raise AlreadyJoinedError()
+                    elif isinstance(result, ErrorDuringJoin):
+                        raise TelegramServerError()
                 else:
                     raise NoActiveGroupCall()
             else:

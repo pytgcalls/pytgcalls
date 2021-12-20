@@ -48,14 +48,24 @@ if (isMainThread) {
                             action: 'update_request',
                             result: 'JOINED_VOICE_CHAT',
                             chat_id: data.chat_id,
+                            solver_id: data.solver_id,
                         });
                     } else {
                         connections.delete(data.chat_id);
                         await binding.sendUpdate({
+                            action: 'update_request',
                             result: 'JOIN_ERROR',
                             chat_id: data.chat_id,
+                            solver_id: data.solver_id,
                         });
                     }
+                } else {
+                    await binding.sendUpdate({
+                        action: 'update_request',
+                        result: 'ALREADY_JOINED',
+                        chat_id: data.chat_id,
+                        solver_id: data.solver_id,
+                    });
                 }
                 break;
             case 'leave_call':
@@ -69,6 +79,7 @@ if (isMainThread) {
                                     action: 'update_request',
                                     result: 'LEFT_VOICE_CHAT',
                                     chat_id: data.chat_id,
+                                    solver_id: data.solver_id,
                                 });
                             } else {
                                 connections.delete(data.chat_id);
@@ -77,6 +88,7 @@ if (isMainThread) {
                                     result: 'LEFT_VOICE_CHAT',
                                     error: result['result'],
                                     chat_id: data.chat_id,
+                                    solver_id: data.solver_id,
                                 });
                             }
                         }
@@ -84,6 +96,13 @@ if (isMainThread) {
                         connection.stop();
                         connections.delete(data.chat_id);
                     }
+                } else {
+                    await binding.sendUpdate({
+                        action: 'update_request',
+                        result: 'NOT_IN_GROUP_CALL',
+                        chat_id: data.chat_id,
+                        solver_id: data.solver_id,
+                    });
                 }
                 break;
             case 'pause':
@@ -94,8 +113,16 @@ if (isMainThread) {
                             action: 'update_request',
                             result: 'PAUSED_STREAM',
                             chat_id: data.chat_id,
+                            solver_id: data.solver_id,
                         });
                     } catch (e) {}
+                } else {
+                    await binding.sendUpdate({
+                        action: 'update_request',
+                        result: 'NOT_IN_GROUP_CALL',
+                        chat_id: data.chat_id,
+                        solver_id: data.solver_id,
+                    });
                 }
                 break;
             case 'resume':
@@ -106,8 +133,16 @@ if (isMainThread) {
                             action: 'update_request',
                             result: 'RESUMED_STREAM',
                             chat_id: data.chat_id,
+                            solver_id: data.solver_id,
                         });
                     } catch (e) {}
+                } else {
+                    await binding.sendUpdate({
+                        action: 'update_request',
+                        result: 'NOT_IN_GROUP_CALL',
+                        chat_id: data.chat_id,
+                        solver_id: data.solver_id,
+                    });
                 }
                 break;
             case 'change_stream':
@@ -122,8 +157,23 @@ if (isMainThread) {
                             action: 'update_request',
                             result: 'CHANGED_STREAM',
                             chat_id: data.chat_id,
+                            solver_id: data.solver_id,
                         });
-                    } catch (e) {}
+                    } catch (e) {
+                        await binding.sendUpdate({
+                            action: 'update_request',
+                            result: 'STREAM_DELETED',
+                            chat_id: data.chat_id,
+                            solver_id: data.solver_id,
+                        });
+                    }
+                } else {
+                    await binding.sendUpdate({
+                        action: 'update_request',
+                        result: 'NOT_IN_GROUP_CALL',
+                        chat_id: data.chat_id,
+                        solver_id: data.solver_id,
+                    });
                 }
                 break;
             case 'mute_stream':
@@ -133,6 +183,14 @@ if (isMainThread) {
                         action: 'update_request',
                         result: 'MUTED_STREAM',
                         chat_id: data.chat_id,
+                        solver_id: data.solver_id,
+                    });
+                } else {
+                    await binding.sendUpdate({
+                        action: 'update_request',
+                        result: 'NOT_IN_GROUP_CALL',
+                        chat_id: data.chat_id,
+                        solver_id: data.solver_id,
                     });
                 }
                 break;
@@ -143,6 +201,14 @@ if (isMainThread) {
                         action: 'update_request',
                         result: 'UNMUTED_STREAM',
                         chat_id: data.chat_id,
+                        solver_id: data.solver_id,
+                    });
+                } else {
+                    await binding.sendUpdate({
+                        action: 'update_request',
+                        result: 'NOT_IN_GROUP_CALL',
+                        chat_id: data.chat_id,
+                        solver_id: data.solver_id,
                     });
                 }
                 break;

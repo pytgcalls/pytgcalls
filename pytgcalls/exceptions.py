@@ -127,6 +127,40 @@ class NoActiveGroupCall(Exception):
         )
 
 
+class NotInGroupCallError(Exception):
+    """The userbot there isn't in a group call, raised by
+    :meth:`~pytgcalls.PyTgCalls.leave_group_call`
+    """
+
+    def __init__(self):
+        super().__init__(
+            'The userbot there isn\'t in a group call',
+        )
+
+
+class AlreadyJoinedError(Exception):
+    """Already joined into group call, raised by
+    :meth:`~pytgcalls.PyTgCalls.join_group_call`
+    """
+
+    def __init__(self):
+        super().__init__(
+            'Already joined into group call',
+        )
+
+
+class TelegramServerError(Exception):
+    """Telegram Server is having some
+    internal problems, raised by
+    :meth:`~pytgcalls.PyTgCalls.join_group_call`
+    """
+
+    def __init__(self):
+        super().__init__(
+            'Already joined into group call',
+        )
+
+
 class PyTgCallsAlreadyRunning(Exception):
     """PyTgCalls client is already running, raised by
     :meth:`~pytgcalls.PyTgCalls.start`,

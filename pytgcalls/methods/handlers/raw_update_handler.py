@@ -17,6 +17,12 @@ class RawUpdateHandler(Scaffold):
         data: dict,
     ):
         obj = Object.from_dict(data)
+        solved_update = False
+        if 'solver_id' in data:
+            solved_update = self._wait_join_result.resolve_future_update(
+                data['solver_id'],
+                obj,
+            )
         if isinstance(obj, PausedStream):
             self._call_holder.set_status(
                 obj.chat_id,
@@ -44,12 +50,12 @@ class RawUpdateHandler(Scaffold):
                     'type': 'file_deleted',
                 }),
             )
-
-        await self._on_event_update.propagate(
-            'RAW_UPDATE_HANDLER',
-            self,
-            obj,
-        )
+        if not solved_update:
+            await self._on_event_update.propagate(
+                'RAW_UPDATE_HANDLER',
+                self,
+                obj,
+            )
         return {
             'result': 'OK',
         }

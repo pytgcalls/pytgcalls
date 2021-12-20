@@ -13,8 +13,6 @@ export class TGCalls<T> extends EventEmitter {
     private audioTrack?: MediaStreamTrack;
     private videoTrack?: MediaStreamTrack;
     private readonly defaultMaxClientRetries: number = 10;
-    private readonly defaultMaxIceRetries: number = 5;
-    private iceRetries: number = 10;
     joinVoiceCall?: JoinVoiceCallCallback<T>;
 
     constructor(params: T) {
@@ -27,7 +25,6 @@ export class TGCalls<T> extends EventEmitter {
     }
 
     async start(audioTrack: MediaStreamTrack, videoTrack: MediaStreamTrack, maxRetries: number = this.defaultMaxClientRetries): Promise<boolean> {
-        this.iceRetries = this.defaultMaxIceRetries;
         if (this.#connection) {
             throw new Error('Connection already started');
         } else if (!this.joinVoiceCall) {
@@ -48,15 +45,6 @@ export class TGCalls<T> extends EventEmitter {
                 );
                 const isConnected = connection_status == 'completed' || connection_status == 'connected';
                 if(connection_status != 'checking'){
-                    if(connection_status == 'failed'){
-                        if(this.iceRetries > 0){
-                            this.iceRetries -= 1;
-                            await this.sleep(125);
-                            this.#connection?.restartIce();
-                            Binding.log('WebRTC Connection failed! Retrying ' + ((this.defaultMaxIceRetries + 1) - this.iceRetries) + ' of ' + this.defaultMaxIceRetries, Binding.INFO);
-                            return;
-                        }
-                    }
                     if(resolveConnection){
                         resolveConnection(isConnected);
                     }else{
