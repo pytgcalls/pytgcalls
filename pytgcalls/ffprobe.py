@@ -1,5 +1,6 @@
 import asyncio
 import json
+from json.decoder import JSONDecodeError
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -10,7 +11,6 @@ from .exceptions import NoAudioSourceFound
 from .exceptions import NoVideoSourceFound
 from .types.input_stream.video_tools import check_support
 
-from json.decoder import JSONDecodeError
 
 class FFprobe:
     @staticmethod
@@ -80,7 +80,7 @@ class FFprobe:
                     original_height = int(stream.get('height', 0))
                     if original_height and original_width:
                         have_valid_video = True
-                elif stream.get('codec_type', '') == "audio":
+                elif stream.get('codec_type', '') == 'audio':
                     have_audio = True
             if needed_video:
                 if not have_video:
