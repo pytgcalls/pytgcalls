@@ -20,16 +20,15 @@ class FileManager:
         path: str,
         headers: Optional[Dict[str, str]] = None,
     ):
-        try:
-            if check_support(path):
-                session = ClientSession()
+        if check_support(path):
+            session = ClientSession()
+            try:
                 response: ClientResponse = await session.get(
                     path,
                     timeout=5,
                     headers=headers,
                 )
                 response.close()
-                await session.close()
                 if response.status == 200 or \
                         response.status == 403:
                     return
@@ -37,10 +36,12 @@ class FileManager:
                     py_logger.info(
                         f'{path} returned with {response.status} code',
                     )
-        except ClientConnectorError:
-            pass
-        except TimeoutError:
-            pass
+            except ClientConnectorError:
+                pass
+            except TimeoutError:
+                pass
+            finally:
+                await session.close()
         if S_ISFIFO(os.stat(path).st_mode):
             return
         if not os.path.isfile(path):

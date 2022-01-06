@@ -1,6 +1,8 @@
 import asyncio
+import json
 import re
 import subprocess
+from json import JSONDecodeError
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -48,42 +50,44 @@ class FFprobe:
         try:
             ffprobe = await asyncio.create_subprocess_exec(
                 'ffprobe',
+                '-v',
+                'error',
+                '-show_entries',
+                'stream=width,height,codec_type,codec_name',
+                '-of',
+                'json',
                 path,
                 *tuple(ffmpeg_params),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
-            result = ''
+            stream_list = []
             try:
-                while True:
-                    try:
-                        if ffprobe.stderr is None:
-                            break
-                        out = (await ffprobe.stderr.read())
-                        result += out.decode()
-                        if not out:
-                            break
-                    except TimeoutError:
-                        pass
-            except KeyboardInterrupt:
+                stdout, stderr = await asyncio.wait_for(
+                    ffprobe.communicate(),
+                    timeout=3,
+                )
+                result = json.loads(stdout.decode('utf-8')) or {}
+                stream_list = result.get('streams', [])
+            except (subprocess.TimeoutExpired, JSONDecodeError):
                 pass
-            stream_list = re.compile(r'Stream #.*:.*').findall(result)
             have_video = False
             have_audio = False
             have_valid_video = False
             original_width = 0
             original_height = 0
             for stream in stream_list:
-                if 'Video' in stream:
+                codec_type = stream.get('codec_type', '')
+                codec_name = stream.get('codec_name', '')
+                image_codecs = ['png', 'jpeg', 'jpg']
+                if codec_type == 'video' and \
+                        codec_name not in image_codecs:
                     have_video = True
-                    video_params = re.compile(
-                        r'\d{2,5}x\d{2,5}',
-                    ).findall(stream)
-                    if video_params:
+                    original_width = int(stream.get('width', 0))
+                    original_height = int(stream.get('height', 0))
+                    if original_height and original_width:
                         have_valid_video = True
-                        original_width = int(video_params[0].split('x')[0])
-                        original_height = int(video_params[0].split('x')[1])
-                elif 'Audio' in stream:
+                elif codec_type == 'audio':
                     have_audio = True
             if needed_video:
                 if not have_video:

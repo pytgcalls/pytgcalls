@@ -24,7 +24,7 @@
         "typescript": "^4.4.2"
     },
     "dependencies": {
-        "@mapbox/node-pre-gyp": "^1.0.5",
+        "@mapbox/node-pre-gyp": "^1.0.8",
         "wrtc": "^0.4.7"
     }
 }
