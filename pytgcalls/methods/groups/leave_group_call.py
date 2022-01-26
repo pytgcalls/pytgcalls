@@ -70,7 +70,7 @@ class LeaveGroupCall(Scaffold):
                             'solver_id': solver_id,
                         })
                     asyncio.ensure_future(internal_sender())
-                    result = await self._wait_join_result.wait_future_update(
+                    result = await self._wait_result.wait_future_update(
                         solver_id,
                     )
                     if isinstance(result, NotInGroupCall):

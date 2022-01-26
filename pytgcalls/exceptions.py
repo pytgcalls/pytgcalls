@@ -157,7 +157,8 @@ class TelegramServerError(Exception):
 
     def __init__(self):
         super().__init__(
-            'Already joined into group call',
+            'Telegram Server is having some '
+            'internal problems',
         )
 
 

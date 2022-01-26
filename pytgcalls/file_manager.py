@@ -1,6 +1,6 @@
+import asyncio
 import logging
 import os
-from asyncio import TimeoutError
 from stat import S_ISFIFO
 from typing import Dict
 from typing import Optional
@@ -38,7 +38,7 @@ class FileManager:
                     )
             except ClientConnectorError:
                 pass
-            except TimeoutError:
+            except asyncio.exceptions.TimeoutError:
                 pass
             finally:
                 await session.close()

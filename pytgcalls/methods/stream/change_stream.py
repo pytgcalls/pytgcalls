@@ -192,7 +192,7 @@ class ChangeStream(Scaffold):
                         }
                     await self._binding.send(request)
                 asyncio.ensure_future(internal_sender())
-                result = await self._wait_join_result.wait_future_update(
+                result = await self._wait_result.wait_future_update(
                     solver_id,
                 )
                 if isinstance(result, NotInGroupCall):

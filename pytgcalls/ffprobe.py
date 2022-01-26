@@ -1,6 +1,5 @@
 import asyncio
 import json
-import re
 import subprocess
 from json import JSONDecodeError
 from typing import Dict
