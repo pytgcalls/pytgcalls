@@ -34,6 +34,7 @@ class FFprobe:
         path: str,
         needed_audio=False,
         needed_video=False,
+        needed_image=False,
         headers: Optional[Dict[str, str]] = None,
     ):
         ffmpeg_params: List[str] = []
@@ -79,8 +80,8 @@ class FFprobe:
                 codec_type = stream.get('codec_type', '')
                 codec_name = stream.get('codec_name', '')
                 image_codecs = ['png', 'jpeg', 'jpg']
-                if codec_type == 'video' or \
-                        codec_name in image_codecs:
+                is_valid = not needed_image and codec_name in image_codecs
+                if codec_type == 'video' and not is_valid:
                     have_video = True
                     original_width = int(stream.get('width', 0))
                     original_height = int(stream.get('height', 0))

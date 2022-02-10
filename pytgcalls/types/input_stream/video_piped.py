@@ -63,6 +63,7 @@ class VideoPiped(InputStream):
             self._path,
             needed_audio=False,
             needed_video=True,
+            needed_image=False,
             headers=self.raw_headers,
         )
         width, height = check_video_params(

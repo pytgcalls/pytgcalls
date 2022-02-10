@@ -80,12 +80,14 @@ class AudioImagePiped(InputStream):
             self._image_path,
             needed_audio=False,
             needed_video=True,
+            needed_image=True,
             headers=self.raw_headers,
         )
         header2 = await FFprobe.check_file(
             self._audio_path,
             needed_audio=True,
             needed_video=False,
+            needed_image=False,
             headers=self.raw_headers,
         )
         width, height = check_video_params(
