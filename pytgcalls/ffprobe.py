@@ -79,8 +79,8 @@ class FFprobe:
                 codec_type = stream.get('codec_type', '')
                 codec_name = stream.get('codec_name', '')
                 image_codecs = ['png', 'jpeg', 'jpg']
-                if codec_type == 'video' and \
-                        codec_name not in image_codecs:
+                if codec_type == 'video' or \
+                        codec_name in image_codecs:
                     have_video = True
                     original_width = int(stream.get('width', 0))
                     original_height = int(stream.get('height', 0))
