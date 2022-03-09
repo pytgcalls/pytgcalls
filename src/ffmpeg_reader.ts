@@ -14,6 +14,7 @@ export class FFmpegReader {
     private readonly additional_parameters: string = '';
     private almostFinished: boolean = false;
     public haveEnd: boolean = true;
+    private isLiveSharing: boolean = false;
     onData?: onData;
     onEnd?: onEnd;
 
@@ -23,9 +24,10 @@ export class FFmpegReader {
     }
     public convert_audio(path: string, bitrate: string){
         let list_cmd = this.additional_parameters.split('-atend');
+        this.isLiveSharing = path.startsWith('device://');
         this.start_conversion(list_cmd[0].split(':_cmd_:').concat([
             '-i',
-            path.replace('fifo://', ''),
+            path.replace('fifo://', '').replace('device://', ''),
             '-f',
             's16le',
             '-ac',
@@ -41,9 +43,10 @@ export class FFmpegReader {
             list_cmd[0] = list_cmd[0] + ':_cmd_:-loop:_cmd_:1:_cmd_:-framerate:_cmd_:1';
             this.haveEnd = false;
        }
+       this.isLiveSharing = path.startsWith('screen://');
        this.start_conversion(list_cmd[0].split(':_cmd_:').concat([
             '-i',
-            path.replace('fifo://', '').replace('image:', ''),
+            path.replace('fifo://', '').replace('screen://', '').replace('image:', ''),
             '-f',
             'rawvideo',
             '-pix_fmt',
@@ -62,9 +65,9 @@ export class FFmpegReader {
         this.fifo_reader.stdout.on('data', this.dataListener);
         this.fifo_reader.stderr.on('data', async (chunk: any) => {
             const message = chunk.toString();
-            if(message.includes('] Opening')){
+            if (message.includes('] Opening')){
                 Binding.log('OPENING_M3U8_SOURCE -> ' + (new Date().getTime()), Binding.DEBUG);
-            }else if (message.includes('] Unable')) {
+            } else if (message.includes('] Unable')) {
                 let list_err = message.split('\n');
                 for(let i = 0; i < list_err.length; i++){
                     if(list_err[i].includes('] Unable')){
@@ -80,7 +83,7 @@ export class FFmpegReader {
     private dataListener = (async (chunk: any) => {
         this.total_size += chunk.length;
         this.bytes_read.push(chunk);
-        if(this.bytes_read.length >= this.MAX_SIZE_BUFFERED){
+        if(this.bytes_read.length >= this.MAX_SIZE_BUFFERED && !this.isLiveSharing){
             this.fifo_reader?.stdout.pause();
         }
     });
@@ -94,7 +97,7 @@ export class FFmpegReader {
         }
         if(!this.paused){
             if(this.bytes_read.length > 0){
-                if(this.bytes_read.length < this.MAX_SIZE_BUFFERED){
+                if(this.bytes_read.length < this.MAX_SIZE_BUFFERED && !this.isLiveSharing){
                     this.fifo_reader?.stdout.resume();
                 }
                 this.bytes_read.byteLength = this.bytes_read.length < this.MAX_READ_BUFFER ? this.bytes_read.length:this.MAX_READ_BUFFER;

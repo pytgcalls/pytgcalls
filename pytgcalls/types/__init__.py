@@ -14,6 +14,10 @@ from .input_stream import AudioImagePiped
 from .input_stream import AudioParameters
 from .input_stream import AudioPiped
 from .input_stream import AudioVideoPiped
+from .input_stream import CaptureAudioDevice
+from .input_stream import CaptureAVDesktop
+from .input_stream import CaptureAVDeviceDesktop
+from .input_stream import CaptureVideoDesktop
 from .input_stream import InputAudioStream
 from .input_stream import InputStream
 from .input_stream import InputVideoStream
@@ -70,6 +74,10 @@ __all__ = (
     'UnMutedStream',
     'UpdatedGroupCallParticipant',
     'Update',
+    'CaptureAudioDevice',
+    'CaptureAVDesktop',
+    'CaptureAVDeviceDesktop',
+    'CaptureVideoDesktop',
     'VideoParameters',
     'VideoPiped',
 )

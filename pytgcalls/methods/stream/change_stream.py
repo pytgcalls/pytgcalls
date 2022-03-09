@@ -7,6 +7,10 @@ from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...file_manager import FileManager
 from ...scaffold import Scaffold
+from ...types import CaptureAudioDevice
+from ...types import CaptureAVDesktop
+from ...types import CaptureAVDeviceDesktop
+from ...types import CaptureVideoDesktop
 from ...types import NotInGroupCall
 from ...types import StreamDeleted
 from ...types.input_stream import AudioPiped
@@ -107,27 +111,29 @@ class ChangeStream(Scaffold):
                 ):
                     headers = stream.raw_headers
                 if stream.stream_video is not None:
-                    await FileManager.check_file_exist(
-                        stream.stream_video.path.replace(
-                            'fifo://',
-                            '',
-                        ).replace(
-                            'image:',
-                            '',
-                        ),
-                        headers,
-                    )
+                    if not stream.stream_video.path.startswith('screen://'):
+                        await FileManager.check_file_exist(
+                            stream.stream_video.path.replace(
+                                'fifo://',
+                                '',
+                            ).replace(
+                                'image:',
+                                '',
+                            ),
+                            headers,
+                        )
                 if stream.stream_audio is not None:
-                    await FileManager.check_file_exist(
-                        stream.stream_audio.path.replace(
-                            'fifo://',
-                            '',
-                        ).replace(
-                            'image:',
-                            '',
-                        ),
-                        headers,
-                    )
+                    if not stream.stream_audio.path.startswith('device://'):
+                        await FileManager.check_file_exist(
+                            stream.stream_audio.path.replace(
+                                'fifo://',
+                                '',
+                            ).replace(
+                                'image:',
+                                '',
+                            ),
+                            headers,
+                        )
                 audio_f_parameters = ''
                 video_f_parameters = ''
                 if isinstance(
@@ -142,6 +148,12 @@ class ChangeStream(Scaffold):
                 ) or isinstance(
                     stream,
                     VideoPiped,
+                ) or isinstance(
+                    stream,
+                    CaptureVideoDesktop,
+                ) or isinstance(
+                    stream,
+                    CaptureAudioDevice,
                 ):
                     await stream.check_pipe()
                     if stream.stream_audio:
@@ -155,6 +167,30 @@ class ChangeStream(Scaffold):
                             video_f_parameters = stream.headers
                     video_f_parameters += ':_cmd_:'.join(
                         shlex.split(stream.ffmpeg_parameters),
+                    )
+                elif isinstance(
+                    stream,
+                    CaptureAVDeviceDesktop,
+                ):
+                    audio_f_parameters += ':_cmd_:'.join(
+                        shlex.split(stream.audio_ffmpeg),
+                    )
+                    video_f_parameters += ':_cmd_:'.join(
+                        shlex.split(stream.video_ffmpeg),
+                    )
+                elif isinstance(
+                    stream,
+                    CaptureAVDesktop,
+                ):
+                    await stream.check_pipe()
+                    if stream.stream_audio:
+                        if stream.stream_audio.header_enabled:
+                            audio_f_parameters = stream.headers
+                    audio_f_parameters += ':_cmd_:'.join(
+                        shlex.split(stream.audio_ffmpeg),
+                    )
+                    video_f_parameters += ':_cmd_:'.join(
+                        shlex.split(stream.video_ffmpeg),
                     )
                 solver_id = Session.generate_session_id(24)
 

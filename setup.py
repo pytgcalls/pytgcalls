@@ -120,7 +120,7 @@ with open(os.path.join(base_path, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='py-tgcalls',
-    version='0.8.6',
+    version='0.9.0b1',
     long_description=readme,
     long_description_content_type='text/markdown',
     url='https://github.com/pytgcalls/pytgcalls',
@@ -145,6 +145,7 @@ setup(
     install_requires=[
         'aiohttp',
         'psutil',
+        'screeninfo',
     ],
     python_requires='>=3.6.1',
     include_package_data=True,

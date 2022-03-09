@@ -42,6 +42,8 @@ class FileManager:
                 pass
             finally:
                 await session.close()
+        if path.startswith('udp://'):
+            return
         if S_ISFIFO(os.stat(path).st_mode):
             return
         if not os.path.isfile(path):

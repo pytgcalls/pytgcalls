@@ -65,7 +65,7 @@ class FFprobe:
             try:
                 stdout, stderr = await asyncio.wait_for(
                     ffprobe.communicate(),
-                    timeout=3,
+                    timeout=30,
                 )
                 result = json.loads(stdout.decode('utf-8')) or {}
                 stream_list = result.get('streams', [])
