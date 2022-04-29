@@ -411,7 +411,7 @@ class PyrogramClient(BridgedClient):
         return await self._app.resolve_peer(user_id)
 
     async def get_id(self) -> int:
-        return (await self._app.get_me())['id']
+        return (await self._app.get_me()).id
 
     def is_connected(self) -> bool:
         return self._app.is_connected
