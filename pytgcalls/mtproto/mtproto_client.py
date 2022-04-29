@@ -16,13 +16,19 @@ class MtProtoClient:
     ):
         self._bind_client: Optional[BridgedClient] = None
         if client.__class__.__module__ == 'pyrogram.client':
+            import pyrogram
+
             from .pyrogram_client import PyrogramClient
+
+            if int(pyrogram.__version__.split('.')[0]) >= 2:
+                client.send = client.invoke
             self._bind_client = PyrogramClient(
                 cache_duration,
                 client,
             )
         elif client.__class__.__module__ == 'telethon.client.telegramclient':
             from .telethon_client import TelethonClient
+
             self._bind_client = TelethonClient(
                 cache_duration,
                 client,
