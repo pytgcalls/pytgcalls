@@ -21,7 +21,8 @@ class MtProtoClient:
             from .pyrogram_client import PyrogramClient
 
             if int(pyrogram.__version__.split('.')[0]) >= 2:
-                client.send = client.invoke
+                if not hasattr(client, 'send'):
+                    setattr(client, 'send', client.invoke)
             self._bind_client = PyrogramClient(
                 cache_duration,
                 client,
