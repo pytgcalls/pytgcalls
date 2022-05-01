@@ -167,7 +167,7 @@ export class RTCConnection {
         const fileVideoPath = videoParams === undefined ? undefined:videoParams.path;
         let audioReadable;
         if(audioParams !== undefined){
-            if(fileAudioPath.includes('fifo://')){
+            if(fileAudioPath.startsWith('fifo://') || fileAudioPath.startsWith('device://')){
                 audioReadable = new FFmpegReader(audioParams.ffmpeg_parameters);
                 audioReadable.convert_audio(
                     fileAudioPath,
@@ -181,7 +181,7 @@ export class RTCConnection {
         }
         let videoReadable;
         if(videoParams !== undefined){
-            if(fileVideoPath.includes('fifo://')){
+            if(fileVideoPath.startsWith('fifo://') || fileVideoPath.startsWith('screen://')){
                 videoReadable = new FFmpegReader(videoParams.ffmpeg_parameters);
                 videoReadable.convert_video(
                     fileVideoPath,
@@ -430,7 +430,7 @@ export class RTCConnection {
             this.almostMaxFinished += 1;
         }
         if(audioParams != undefined){
-            if(audioParams.path.includes('fifo://')){
+            if(audioParams.path.startsWith('fifo://') || audioParams.path.startsWith('device://')){
                 audioReadable = new FFmpegReader(audioParams.ffmpeg_parameters);
                 audioReadable.convert_audio(
                     audioParams.path,
@@ -444,7 +444,7 @@ export class RTCConnection {
         }
         let videoReadable;
         if(videoParams != undefined){
-            if(videoParams.path.includes('fifo://')){
+            if(videoParams.path.startsWith('fifo://') || videoParams.path.startsWith('screen://')){
                 videoReadable = new FFmpegReader(videoParams.ffmpeg_parameters);
                 videoReadable.convert_video(
                     videoParams.path,

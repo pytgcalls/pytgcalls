@@ -70,7 +70,7 @@ class PyTgCalls(Methods, Scaffold):
         )
         self._call_holder = CallHolder()
         self._cache_user_peer = Cache()
-        self._wait_join_result = UpdateSolver()
+        self._wait_result = UpdateSolver()
         self._on_event_update = HandlersHolder()
         self._binding = Binding(
             overload_quiet_mode,

@@ -19,7 +19,7 @@ class RawUpdateHandler(Scaffold):
         obj = Object.from_dict(data)
         solved_update = False
         if 'solver_id' in data:
-            solved_update = self._wait_join_result.resolve_future_update(
+            solved_update = self._wait_result.resolve_future_update(
                 data['solver_id'],
                 obj,
             )

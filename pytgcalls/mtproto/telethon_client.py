@@ -9,6 +9,7 @@ from telethon.events import Raw
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetFullChatRequest
 from telethon.tl.functions.phone import EditGroupCallParticipantRequest
+from telethon.tl.functions.phone import GetGroupCallRequest
 from telethon.tl.functions.phone import GetGroupParticipantsRequest
 from telethon.tl.functions.phone import JoinGroupCallRequest
 from telethon.tl.functions.phone import LeaveGroupCallRequest
@@ -89,13 +90,14 @@ class TelethonClient(BridgedClient):
                     update.call,
                     GroupCall,
                 ):
-                    self._cache.set_cache(
-                        chat_id,
-                        InputGroupCall(
-                            access_hash=update.call.access_hash,
-                            id=update.call.id,
-                        ),
-                    )
+                    if update.call.schedule_date is None:
+                        self._cache.set_cache(
+                            chat_id,
+                            InputGroupCall(
+                                access_hash=update.call.access_hash,
+                                id=update.call.id,
+                            ),
+                        )
                 if isinstance(
                     update.call,
                     GroupCallDiscarded,
@@ -173,7 +175,7 @@ class TelethonClient(BridgedClient):
     ) -> Optional[InputGroupCall]:
         chat = await self._app.get_input_entity(chat_id)
         if isinstance(chat, InputPeerChannel):
-            return (
+            input_call = (
                 await self._app(
                     GetFullChannelRequest(
                         InputChannel(
@@ -184,11 +186,26 @@ class TelethonClient(BridgedClient):
                 )
             ).full_chat.call
         else:
-            return (
+            input_call = (
                 await self._app(
                     GetFullChatRequest(chat_id),
                 )
             ).full_chat.call
+        if input_call is not None:
+            try:
+                call: GroupCall = (
+                    await self._app(
+                        GetGroupCallRequest(
+                            call=input_call,
+                            limit=-1,
+                        ),
+                    )
+                ).call
+                if call.schedule_date is not None:
+                    return None
+            except Exception as e:
+                print(e)
+        return input_call
 
     async def get_group_call_participants(
         self,

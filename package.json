@@ -20,11 +20,11 @@
     },
     "homepage": "https://github.com/tgcallsjs/tgcalls#readme",
     "devDependencies": {
-        "@types/node": "^15.14.3",
-        "typescript": "^4.4.2"
+        "@types/node": "^17.0.30",
+        "typescript": "^4.6.4"
     },
     "dependencies": {
-        "@mapbox/node-pre-gyp": "^1.0.8",
+        "@mapbox/node-pre-gyp": "^1.0.9",
         "wrtc": "^0.4.7"
     }
 }

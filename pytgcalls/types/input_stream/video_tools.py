@@ -12,6 +12,7 @@ def check_support(link: str):
         'https://',
         'http://',
         'rtmp://',
+        'udp://',
     ]
     return any(
         protocol in link

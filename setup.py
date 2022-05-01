@@ -120,7 +120,7 @@ with open(os.path.join(base_path, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='py-tgcalls',
-    version='0.8.4',
+    version='0.9.0',
     long_description=readme,
     long_description_content_type='text/markdown',
     url='https://github.com/pytgcalls/pytgcalls',
@@ -133,10 +133,10 @@ setup(
         'GNU Lesser General Public License v3 (LGPLv3)',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
@@ -145,6 +145,7 @@ setup(
     install_requires=[
         'aiohttp',
         'psutil',
+        'screeninfo',
     ],
     python_requires='>=3.6.1',
     include_package_data=True,

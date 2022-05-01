@@ -3,12 +3,14 @@ from typing import Callable
 from typing import Dict
 from typing import Optional
 
+import pyrogram
 from pyrogram import Client
 from pyrogram import ContinuePropagation
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.functions.channels import GetFullChannel
 from pyrogram.raw.functions.messages import GetFullChat
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
+from pyrogram.raw.functions.phone import GetGroupCall
 from pyrogram.raw.functions.phone import GetGroupParticipants
 from pyrogram.raw.functions.phone import JoinGroupCall
 from pyrogram.raw.functions.phone import LeaveGroupCall
@@ -34,6 +36,7 @@ from pyrogram.raw.types import UpdateNewChannelMessage
 from pyrogram.raw.types import UpdateNewMessage
 from pyrogram.raw.types import Updates
 
+from ..version_manager import VersionManager
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
@@ -45,6 +48,12 @@ class PyrogramClient(BridgedClient):
         client: Client,
     ):
         self._app: Client = client
+        if VersionManager.version_tuple(
+            pyrogram.__version__,
+        ) > VersionManager.version_tuple(
+            '2.0.0',
+        ):
+            self._app.send = self._app.invoke
         self._handler: Dict[str, Callable] = {}
         self._cache: ClientCache = ClientCache(
             cache_duration,
@@ -89,13 +98,14 @@ class PyrogramClient(BridgedClient):
                     update.call,
                     GroupCall,
                 ):
-                    self._cache.set_cache(
-                        chat_id,
-                        InputGroupCall(
-                            access_hash=update.call.access_hash,
-                            id=update.call.id,
-                        ),
-                    )
+                    if update.call.schedule_date is None:
+                        self._cache.set_cache(
+                            chat_id,
+                            InputGroupCall(
+                                access_hash=update.call.access_hash,
+                                id=update.call.id,
+                            ),
+                        )
                 if isinstance(
                     update.call,
                     GroupCallDiscarded,
@@ -232,7 +242,7 @@ class PyrogramClient(BridgedClient):
     ) -> Optional[InputGroupCall]:
         chat = await self._app.resolve_peer(chat_id)
         if isinstance(chat, InputPeerChannel):
-            return (
+            input_call = (
                 await self._app.send(
                     GetFullChannel(
                         channel=InputChannel(
@@ -243,11 +253,24 @@ class PyrogramClient(BridgedClient):
                 )
             ).full_chat.call
         else:
-            return (
+            input_call = (
                 await self._app.send(
                     GetFullChat(chat_id=chat.chat_id),
                 )
             ).full_chat.call
+        print('TEST', input_call)
+        if input_call is not None:
+            call: GroupCall = (
+                await self._app.send(
+                    GetGroupCall(
+                        call=input_call,
+                        limit=-1,
+                    ),
+                )
+            ).call
+            if call.schedule_date is not None:
+                return None
+        return input_call
 
     async def get_group_call_participants(
         self,
@@ -397,7 +420,7 @@ class PyrogramClient(BridgedClient):
         return await self._app.resolve_peer(user_id)
 
     async def get_id(self) -> int:
-        return (await self._app.get_me())['id']
+        return (await self._app.get_me()).id
 
     def is_connected(self) -> bool:
         return self._app.is_connected

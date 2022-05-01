@@ -22,7 +22,12 @@ call_py.join_group_call(
         remote,
         HighQualityAudio(),
         HighQualityVideo(),
+
+        # You can add --video or --audio to the ffmpeg
+        # command line to specify to what you want to add these parameters
         additional_ffmpeg_parameters='EVERYTHING BEFORE THE INPUT (-i) '
+                                     '-atmid '
+                                     'EVERYTHING AFTER THE INPUT (-i) '
                                      '-atend '
                                      'EVERYTHING AFTER ALL ARGUMENTS',
     ),

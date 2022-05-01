@@ -2,6 +2,7 @@ import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import { onData, onEnd } from './types';
 import {Binding} from "./binding";
 import {BufferOptimized} from "./buffer_optimized";
+import {getBuiltCommands} from "./utils";
 
 export class FFmpegReader {
     private fifo_reader?: ChildProcessWithoutNullStreams;
@@ -14,18 +15,21 @@ export class FFmpegReader {
     private readonly additional_parameters: string = '';
     private almostFinished: boolean = false;
     public haveEnd: boolean = true;
+    private isLiveSharing: boolean = false;
     onData?: onData;
     onEnd?: onEnd;
 
     constructor(additional_parameters: string) {
         this.bytes_read = new BufferOptimized(0);
-        this.additional_parameters = additional_parameters.includes('-atend') ? additional_parameters:additional_parameters + '-atend';
+        this.additional_parameters = additional_parameters;
     }
     public convert_audio(path: string, bitrate: string){
-        let list_cmd = this.additional_parameters.split('-atend');
-        this.start_conversion(list_cmd[0].split(':_cmd_:').concat([
+        let cmds = getBuiltCommands(this.additional_parameters);
+        this.isLiveSharing = path.startsWith('device://');
+        this.start_conversion(cmds.audio.before.concat([
             '-i',
-            path.replace('fifo://', ''),
+            path.replace('fifo://', '').replace('device://', ''),
+        ]).concat(cmds.audio.middle).concat([
             '-f',
             's16le',
             '-ac',
@@ -33,27 +37,34 @@ export class FFmpegReader {
             '-ar',
             bitrate,
             'pipe:1',
-        ]).concat(list_cmd[1].split(':_cmd_:')));
+        ]).concat(cmds.audio.after));
     }
     public convert_video(path: string, width: string, height: string, framerate: string){
-       let list_cmd = this.additional_parameters.split('-atend');
+       let cmds = getBuiltCommands(this.additional_parameters);
        if(path.includes('image:')){
-            list_cmd[0] = list_cmd[0] + ':_cmd_:-loop:_cmd_:1:_cmd_:-framerate:_cmd_:1';
-            this.haveEnd = false;
+           cmds.video.before.concat([
+               '-loop',
+               '1',
+               '-framerate',
+               '1'
+           ])
+           this.haveEnd = false;
        }
-       this.start_conversion(list_cmd[0].split(':_cmd_:').concat([
-            '-i',
-            path.replace('fifo://', '').replace('image:', ''),
-            '-f',
-            'rawvideo',
-            '-pix_fmt',
-            'yuv420p',
-            '-r',
-            framerate,
-            '-vf',
-            'scale=' + width + ':' + height,
-            'pipe:1',
-        ]).concat(list_cmd[1].split(':_cmd_:')));
+       this.isLiveSharing = path.startsWith('screen://');
+       this.start_conversion(cmds.video.before.concat([
+           '-i',
+           path.replace('fifo://', '').replace('screen://', '').replace('image:', ''),
+       ]).concat(cmds.video.middle).concat([
+           '-f',
+           'rawvideo',
+           '-pix_fmt',
+           'yuv420p',
+           '-r',
+           framerate,
+           '-vf',
+           'scale=' + width + ':' + height,
+           'pipe:1',
+       ]).concat(cmds.video.after));
     }
     private start_conversion(params: Array<string>) {
         params = params.filter(e => e);
@@ -62,9 +73,9 @@ export class FFmpegReader {
         this.fifo_reader.stdout.on('data', this.dataListener);
         this.fifo_reader.stderr.on('data', async (chunk: any) => {
             const message = chunk.toString();
-            if(message.includes('] Opening')){
+            if (message.includes('] Opening')){
                 Binding.log('OPENING_M3U8_SOURCE -> ' + (new Date().getTime()), Binding.DEBUG);
-            }else if (message.includes('] Unable')) {
+            } else if (message.includes('] Unable')) {
                 let list_err = message.split('\n');
                 for(let i = 0; i < list_err.length; i++){
                     if(list_err[i].includes('] Unable')){
@@ -80,7 +91,7 @@ export class FFmpegReader {
     private dataListener = (async (chunk: any) => {
         this.total_size += chunk.length;
         this.bytes_read.push(chunk);
-        if(this.bytes_read.length >= this.MAX_SIZE_BUFFERED){
+        if(this.bytes_read.length >= this.MAX_SIZE_BUFFERED && !this.isLiveSharing){
             this.fifo_reader?.stdout.pause();
         }
     });
@@ -94,7 +105,7 @@ export class FFmpegReader {
         }
         if(!this.paused){
             if(this.bytes_read.length > 0){
-                if(this.bytes_read.length < this.MAX_SIZE_BUFFERED){
+                if(this.bytes_read.length < this.MAX_SIZE_BUFFERED && !this.isLiveSharing){
                     this.fifo_reader?.stdout.resume();
                 }
                 this.bytes_read.byteLength = this.bytes_read.length < this.MAX_READ_BUFFER ? this.bytes_read.length:this.MAX_READ_BUFFER;

@@ -44,6 +44,17 @@ export interface Sdp {
     source_groups: Array<number> | null;
 }
 
+export interface CommandsInfo {
+    before: Array<string>;
+    middle: Array<string>;
+    after: Array<string>;
+}
+
+export interface Commands {
+    audio: CommandsInfo;
+    video: CommandsInfo;
+}
+
 export interface JoinVoiceCallParams<T> {
     ufrag: string;
     pwd: string;

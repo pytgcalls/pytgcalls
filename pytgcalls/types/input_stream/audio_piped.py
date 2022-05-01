@@ -62,6 +62,7 @@ class AudioPiped(InputStream):
             self._path,
             needed_audio=True,
             needed_video=False,
+            needed_image=False,
             headers=self.raw_headers,
         )
         self.stream_audio.header_enabled = header

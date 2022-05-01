@@ -12,6 +12,10 @@ from ...file_manager import FileManager
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
 from ...types import AlreadyJoined
+from ...types import CaptureAudioDevice
+from ...types import CaptureAVDesktop
+from ...types import CaptureAVDeviceDesktop
+from ...types import CaptureVideoDesktop
 from ...types import ErrorDuringJoin
 from ...types.input_stream import AudioPiped
 from ...types.input_stream import AudioVideoPiped
@@ -130,27 +134,29 @@ class JoinGroupCall(Scaffold):
         ):
             headers = stream.raw_headers
         if stream.stream_video is not None:
-            await FileManager.check_file_exist(
-                stream.stream_video.path.replace(
-                    'fifo://',
-                    '',
-                ).replace(
-                    'image:',
-                    '',
-                ),
-                headers,
-            )
+            if not stream.stream_video.path.startswith('screen://'):
+                await FileManager.check_file_exist(
+                    stream.stream_video.path.replace(
+                        'fifo://',
+                        '',
+                    ).replace(
+                        'image:',
+                        '',
+                    ),
+                    headers,
+                )
         if stream.stream_audio is not None:
-            await FileManager.check_file_exist(
-                stream.stream_audio.path.replace(
-                    'fifo://',
-                    '',
-                ).replace(
-                    'image:',
-                    '',
-                ),
-                headers,
-            )
+            if not stream.stream_audio.path.startswith('device://'):
+                await FileManager.check_file_exist(
+                    stream.stream_audio.path.replace(
+                        'fifo://',
+                        '',
+                    ).replace(
+                        'image:',
+                        '',
+                    ),
+                    headers,
+                )
         audio_f_parameters = ''
         video_f_parameters = ''
         if isinstance(
@@ -165,6 +171,12 @@ class JoinGroupCall(Scaffold):
         ) or isinstance(
             stream,
             VideoPiped,
+        ) or isinstance(
+            stream,
+            CaptureVideoDesktop,
+        ) or isinstance(
+            stream,
+            CaptureAudioDevice,
         ):
             await stream.check_pipe()
             if stream.stream_audio:
@@ -178,6 +190,30 @@ class JoinGroupCall(Scaffold):
                     video_f_parameters = stream.headers
             video_f_parameters += ':_cmd_:'.join(
                 shlex.split(stream.ffmpeg_parameters),
+            )
+        elif isinstance(
+            stream,
+            CaptureAVDeviceDesktop,
+        ):
+            audio_f_parameters += ':_cmd_:'.join(
+                shlex.split(stream.audio_ffmpeg),
+            )
+            video_f_parameters += ':_cmd_:'.join(
+                shlex.split(stream.video_ffmpeg),
+            )
+        elif isinstance(
+            stream,
+            CaptureAVDesktop,
+        ):
+            await stream.check_pipe()
+            if stream.stream_audio:
+                if stream.stream_audio.header_enabled:
+                    audio_f_parameters = stream.headers
+            audio_f_parameters += ':_cmd_:'.join(
+                shlex.split(stream.audio_ffmpeg),
+            )
+            video_f_parameters += ':_cmd_:'.join(
+                shlex.split(stream.video_ffmpeg),
             )
         if self._app is not None:
             if self._wait_until_run is not None:
@@ -223,7 +259,7 @@ class JoinGroupCall(Scaffold):
                             }
                         await self._binding.send(request)
                     asyncio.ensure_future(internal_sender())
-                    result = await self._wait_join_result.wait_future_update(
+                    result = await self._wait_result.wait_future_update(
                         solver_id,
                     )
                     if isinstance(result, AlreadyJoined):

@@ -2,32 +2,29 @@ from typing import Dict
 from typing import Optional
 
 from ...ffprobe import FFprobe
+from ...media_devices.screen_info import ScreenInfo
 from .audio_parameters import AudioParameters
-from .input_audio_stream import InputAudioStream
+from .input_stream import InputAudioStream
 from .input_stream import InputStream
-from .input_video_stream import InputVideoStream
+from .input_stream import InputVideoStream
 from .video_parameters import VideoParameters
-from .video_tools import check_video_params
 
 
-class AudioVideoPiped(InputStream):
-    """The audio/video stream piped descriptor
+class CaptureAVDesktop(InputStream):
+    """Capture video from Screen and Audio from file
 
     Attributes:
-        ffmpeg_parameters (``str``):
-            FFMpeg additional parameters
-        lip_sync (``bool``):
-            Lip Sync mode
-        raw_headers (``str``):
-            Headers of http the connection
         stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
             Input Audio Stream Descriptor
         stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
             Input Video Stream Descriptor
-
     Parameters:
-        path (``str``):
-            The audio-video (Like MP4 or etc) file path
+        audio_path (``str``):
+            The audio file path
+        screen_info (:obj: `~pytgcalls.media_devices.ScreenManager()`):
+            The screen video capturing params
+        headers (``Dict[str, str]``, **optional**):
+            Headers of http the connection
         audio_parameters (:obj:`~pytgcalls.types.AudioParameters()`):
             The audio parameters of the stream, can be used also
             :obj:`~pytgcalls.types.HighQualityAudio()`,
@@ -38,53 +35,45 @@ class AudioVideoPiped(InputStream):
             :obj:`~pytgcalls.types.HighQualityVideo()`,
             :obj:`~pytgcalls.types.MediumQualityVideo()` or
             :obj:`~pytgcalls.types.LowQualityVideo()`
-        headers (``Dict[str, str]``, **optional**):
-            Headers of http the connection
-        additional_ffmpeg_parameters (``str``, **optional**):
-            FFMpeg additional parameters
     """
 
     def __init__(
         self,
-        path: str,
-        audio_parameters: AudioParameters = AudioParameters(),
-        video_parameters: VideoParameters = VideoParameters(),
+        audio_path: str,
+        screen_info: ScreenInfo,
         headers: Optional[Dict[str, str]] = None,
         additional_ffmpeg_parameters: str = '',
+        audio_parameters: AudioParameters = AudioParameters(),
+        video_parameters: VideoParameters = VideoParameters(),
     ):
-        self._path = path
-        self.ffmpeg_parameters = additional_ffmpeg_parameters
+        self._audio_path = audio_path
+        self.audio_ffmpeg: str = additional_ffmpeg_parameters
+        self._video_path = screen_info.buildFFMpegCommand(
+            video_parameters.frame_rate,
+        )
+        self.video_ffmpeg: str = screen_info.ffmpeg_parameters
         self.raw_headers = headers
         super().__init__(
             InputAudioStream(
-                f'fifo://{path}',
+                f'fifo://{self._audio_path}',
                 audio_parameters,
             ),
             InputVideoStream(
-                f'fifo://{path}',
+                f'screen://{self._video_path}',
                 video_parameters,
             ),
         )
-        self.lip_sync = True
 
     @property
     def headers(self):
         return FFprobe.ffmpeg_headers(self.raw_headers)
 
     async def check_pipe(self):
-        dest_width, dest_height, header = await FFprobe.check_file(
-            self._path,
+        header = await FFprobe.check_file(
+            self._audio_path,
             needed_audio=True,
-            needed_video=True,
+            needed_video=False,
             needed_image=False,
             headers=self.raw_headers,
         )
-        width, height = check_video_params(
-            self.stream_video.parameters,
-            dest_width,
-            dest_height,
-        )
-        self.stream_video.header_enabled = header
         self.stream_audio.header_enabled = header
-        self.stream_video.parameters.width = width
-        self.stream_video.parameters.height = height

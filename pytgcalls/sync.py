@@ -4,6 +4,7 @@ import inspect
 import threading
 
 from .custom_api import CustomApi
+from .media_devices import MediaDevices
 from .methods import Methods
 from .methods.utilities import idle as idle_module
 from .mtproto import MtProtoClient
@@ -81,5 +82,6 @@ def wrap(source):
 wrap(Methods)
 wrap(CustomApi)
 wrap(MtProtoClient)
+wrap(MediaDevices)
 async_to_sync(idle_module, 'idle')
 idle = getattr(idle_module, 'idle')
