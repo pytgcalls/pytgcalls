@@ -258,7 +258,6 @@ class PyrogramClient(BridgedClient):
                     GetFullChat(chat_id=chat.chat_id),
                 )
             ).full_chat.call
-        print('TEST', input_call)
         if input_call is not None:
             call: GroupCall = (
                 await self._app.send(

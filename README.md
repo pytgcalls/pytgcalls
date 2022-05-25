@@ -38,7 +38,7 @@
 ![Architectures](https://img.shields.io/badge/architectures-x86__64%20%7C%20arm64v8%20%7C%20win__amd64%20%7C%20darwin__x64-blue)
 [![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
 
-This project allows to make Telegram group call using MtProto and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library and [@evgeny-nadymov]
+This project allows making Telegram group call using MtProto and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library and [@evgeny-nadymov]
 
 ## What are the supported clients?
 The supported clients for now are Pyrogram and Telethon, but we accept other clients too, you can open a pull request with the edits
@@ -65,7 +65,7 @@ From H264/VP8/VP9 to Audio and Video
 ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale={SCALING}:-1 {OUTPUT_VIDEO_FILE}
 ```
 
-From youtube video/live-stream to Audio and Video
+From YouTube video/live-stream to Audio and Video
 ``` bash
 ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale={SCALING}:-1 {OUTPUT_VIDEO_FILE}
 ```
@@ -97,14 +97,14 @@ From stream link to raw format
 ffmpeg -y -i {STREAM_LINK} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_FILE}
 ```
 
-From youtube video/live-stream to raw format
+From YouTube video/live-stream to raw format
 ``` bash
 ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -ar {BITRATE} {OUTPUT_FILE}
 ```
 
 ## Credits
 
-Big thanks to [@evgeny-nadymov] for allowing us to use their code from [telegram-react] and thanks
+Big thanks to [@evgeny-nadymov] for allowing us to use their code from [telegram-react], and thanks
 to [alemidev] for helping to rebuild this library
 
 This library is based on [tgcallsjs] developed [@AndrewLaneX] and pyservercall by [@Laky-64]

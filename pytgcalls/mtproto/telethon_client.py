@@ -144,8 +144,8 @@ class TelethonClient(BridgedClient):
                             )
                     if isinstance(update.message.out, bool):
                         if update.message.out:
-                            self._cache.drop_cache(update.message.action)
                             chat_id = self.chat_id(update.message.peer_id)
+                            self._cache.drop_cache(chat_id)
                             if 'LEFT_HANDLER' in self._handler:
                                 await self._handler['LEFT_HANDLER'](
                                     chat_id,
