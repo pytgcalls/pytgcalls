@@ -48,7 +48,7 @@ class CaptureAVDesktop(InputStream):
     ):
         self._audio_path = audio_path
         self.audio_ffmpeg: str = additional_ffmpeg_parameters
-        self._video_path = screen_info.buildFFMpegCommand(
+        self._video_path = screen_info.build_ffmpeg_command(
             video_parameters.frame_rate,
         )
         self.video_ffmpeg: str = screen_info.ffmpeg_parameters

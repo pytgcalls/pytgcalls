@@ -41,4 +41,5 @@ repos:
       rev: v0.971
       hooks:
           - id: mypy
+            exclude: ^example/
             additional_dependencies: [types-all]

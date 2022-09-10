@@ -15,7 +15,7 @@ class AudioImagePiped(InputStream):
 
     Attributes:
         ffmpeg_parameters (``str``):
-            FFMpeg additional parameters
+            FFmpeg additional parameters
         lip_sync (``bool``):
             Lip Sync mode
         raw_headers (``str``):
@@ -43,7 +43,7 @@ class AudioImagePiped(InputStream):
         headers (``Dict[str, str]``, **optional**):
             Headers of http the connection
         additional_ffmpeg_parameters (``str``, **optional**):
-            FFMpeg additional parameters
+            FFmpeg additional parameters
     """
 
     def __init__(

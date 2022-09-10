@@ -6,6 +6,7 @@ import {FFmpegReader} from "./ffmpeg_reader";
 import {FileReader} from "./file_reader";
 import {BufferOptimized} from "./buffer_optimized";
 import * as os from "os";
+import {LogLevel} from "./utils";
 
 export class Stream extends EventEmitter {
     private readonly audioSource: RTCAudioSource;
@@ -104,12 +105,12 @@ export class Stream extends EventEmitter {
             Binding.log(
                 'COMPLETED_BUFFERING -> ' + new Date().getTime() +
                             ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                Binding.DEBUG,
+                LogLevel.DEBUG,
             );
             Binding.log(
                 'BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length +
                             ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                Binding.DEBUG,
+                LogLevel.DEBUG,
             );
             Binding.log(
                 'BYTES_LOADED -> ' +
@@ -117,7 +118,7 @@ export class Stream extends EventEmitter {
                 'OF -> ' +
                 this.readable.fileSize() +
                 ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                Binding.DEBUG,
+                LogLevel.DEBUG,
             );
         }
     });
@@ -211,11 +212,11 @@ export class Stream extends EventEmitter {
         }, 10);
     }
 
-    createAudioTrack() {
+    createAudioTrack(): MediaStreamTrack{
         return this.audioSource.createTrack();
     }
 
-    createVideoTrack(width: number, height: number, framerate: number) {
+    createVideoTrack(width: number, height: number, framerate: number): MediaStreamTrack {
         this.videoWidth = width;
         this.videoHeight = height;
         this.isVideo = true;
@@ -333,19 +334,19 @@ export class Stream extends EventEmitter {
                         Binding.log(
                             'CPU_OVERLOAD_DETECTED -> ' + new Date().getTime() +
                             ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                            !this.overloadQuiet ? Binding.WARNING:Binding.DEBUG,
+                            !this.overloadQuiet ? LogLevel.WARNING:LogLevel.DEBUG,
                         );
                     }else{
                         Binding.log(
                             'STREAM_LAG -> ' + new Date().getTime() +
                             ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                            Binding.DEBUG,
+                            LogLevel.DEBUG,
                         );
                     }
                     Binding.log(
                         'BYTES_STREAM_CACHE_LENGTH -> ' + this.cache.length +
                         ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                        Binding.DEBUG,
+                        LogLevel.DEBUG,
                     );
                     Binding.log(
                         'BYTES_LOADED -> ' +
@@ -353,7 +354,7 @@ export class Stream extends EventEmitter {
                         'OF -> ' +
                         this.readable?.fileSize() +
                         ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                        Binding.DEBUG,
+                        LogLevel.DEBUG,
                     );
                 });
             }
@@ -365,7 +366,7 @@ export class Stream extends EventEmitter {
                         Binding.log(
                             'NOT_ENOUGH_BYTES -> ' + oldTime +
                         ' -> ' + (this.isVideo ? 'VIDEO':'AUDIO'),
-                            Binding.DEBUG,
+                            LogLevel.DEBUG,
                         );
                         this.finishedBytes = true;
                         this.readable?.resume();
@@ -418,6 +419,7 @@ export class Stream extends EventEmitter {
         }
         return false;
     }
+
     private notifyOverloadCpu(action: (cpuPercentage: number) => void){
         function cpuAverage() {
             let totalIdle = 0, totalTick = 0;
@@ -447,11 +449,15 @@ export class Stream extends EventEmitter {
         );
     }
 
+    getCurrentPlayedTime(): number{
+        return Math.ceil((this.playedBytes/this.bytesLength) / (0.0001 / this.frameTime()))
+    }
+
     currentPlayedTime(): number | undefined{
         if(this.readable === undefined || this.finished){
             return undefined;
         }else{
-            return Math.ceil((this.playedBytes/this.bytesLength) / (0.0001 / this.frameTime()))
+            return this.getCurrentPlayedTime();
         }
     }
 }

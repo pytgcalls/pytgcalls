@@ -2,6 +2,7 @@ import json
 from typing import Callable
 from typing import Dict
 from typing import Optional
+from typing import Union
 
 from telethon import TelegramClient
 from telethon.errors import ChannelPrivateError
@@ -283,9 +284,12 @@ class TelethonClient(BridgedClient):
                             participant.left,
                         )
                 if isinstance(update, UpdateGroupCallConnection):
-                    transport = json.loads(update.params.data)[
-                        'transport'
-                    ]
+                    data_json = json.loads(update.params.data)
+                    if 'rtmp' in data_json:
+                        raise Exception('APP_UPGRADE_NEEDED')
+                    elif 'transport' not in data_json:
+                        raise Exception('No transport in update')
+                    transport = data_json['transport']
                     return {
                         'transport': {
                             'ufrag': transport['ufrag'],
@@ -385,7 +389,7 @@ class TelethonClient(BridgedClient):
 
     async def resolve_peer(
         self,
-        user_id: int,
+        user_id: Union[int, str],
     ) -> TypeInputPeer:
         return await self._app.get_input_entity(user_id)
 

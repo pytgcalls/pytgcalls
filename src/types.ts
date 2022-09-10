@@ -68,6 +68,7 @@ export interface JoinVoiceCallParams<T> {
 
 export interface JoinVoiceCallResponse {
     transport: Transport | null;
+    error: string | null;
 }
 
 export type JoinVoiceCallCallback<T> = (

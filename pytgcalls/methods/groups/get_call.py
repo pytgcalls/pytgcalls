@@ -1,19 +1,23 @@
+from typing import Union
+
+from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 
 
 class GetCall(Scaffold):
-    def get_call(
+    async def get_call(
         self,
-        chat_id: int,
+        chat_id: Union[int, str],
     ):
         """Check/Get an existent group call
 
-        This method check if exist an Group Call,
+        This method check if exist a Group Call,
         if not, this can raise an error
 
         Parameters:
-            chat_id (``int``):
-                Unique identifier (int) of the target chat.
+            chat_id (``int`` | ``str``):
+                Unique identifier of the target chat.
+                Can be a direct id (int) or a username (str)
 
         Raises:
             GroupCallNotFound: In case you try
@@ -42,6 +46,9 @@ class GetCall(Scaffold):
 
                 idle()
         """
+        chat_id = BridgedClient.chat_id(
+            await self._app.resolve_peer(chat_id),
+        )
         return self._call_holder.get_call(
             chat_id,
         )

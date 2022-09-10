@@ -21,7 +21,7 @@ class ScreenInfo(PyObject):
         self.title = title
         self.ffmpeg_parameters = ''
 
-    def buildFFMpegCommand(self, frame_rate: int):
+    def build_ffmpeg_command(self, frame_rate: int):
         if platform == 'win32':
             path = 'desktop'
             self.ffmpeg_parameters = '-f gdigrab '

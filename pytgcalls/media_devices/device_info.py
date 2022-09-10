@@ -11,7 +11,7 @@ class DeviceInfo:
         self.title = title
         self.ffmpeg_parameters = ''
 
-    def buildFFMpegCommand(self):
+    def build_ffmpeg_command(self):
         if platform == 'win32':
             self.ffmpeg_parameters = '-f dshow'
             return f'audio={self.identifier}'

@@ -15,8 +15,6 @@ class NodeJsExtension(Extension):
     def __init__(self, name, source_dir=''):
         super().__init__(name, sources=[])
         self.source_dir = os.path.abspath(source_dir)
-        if not self.source_dir.endswith(os.path.sep):
-            self.source_dir += os.path.sep
 
 
 class SetupHelper:
@@ -34,49 +32,52 @@ class SetupHelper:
         self._source_dir = source_dir
         self._ext_dir = ext_dir
         self._tmp_dir = tmp_dir
-        if not self._tmp_dir.endswith(os.path.sep):
-            self._tmp_dir += os.path.sep
         self._folder_package = folder_package
 
     def clean_old_installation(self):
         # CHECK IF IS INSTALLATION FROM PYPI
-        sep = os.path.sep
-        if os.path.isdir(f'{self._source_dir}src{sep}'):
+        if os.path.isdir(os.path.join(self._source_dir, 'src')):
             try:
                 shutil.rmtree(
-                    f'{self._folder_package}{sep}pytgcalls{sep}node_modules',
+                    os.path.join(
+                        self._folder_package,
+                        'pytgcalls', 'node_modules',
+                    ),
                 )
             except OSError:
                 pass
             try:
-                shutil.rmtree(f'{self._folder_package}{sep}pytgcalls{sep}dist')
+                shutil.rmtree(
+                    os.path.join(
+                        self._folder_package, 'pytgcalls', 'dist',
+                    ),
+                ),
             except OSError:
                 pass
             try:
-                shutil.rmtree(f'{self._tmp_dir}')
+                shutil.rmtree(os.path.join(self._tmp_dir))
             except OSError:
                 pass
 
     def run_installation(self):
         # CHECK IF IS INSTALLATION FROM PYPI
-        sep = os.path.sep
-        if os.path.isdir(f'{self._source_dir}src{sep}'):
+        if os.path.isdir(os.path.join(self._source_dir, 'src')):
             # COPY NEEDED FILES
             shutil.copytree(
-                f'{self._source_dir}src{sep}',
-                f'{self._tmp_dir}src{sep}',
+                os.path.join(self._source_dir, 'src'),
+                os.path.join(self._tmp_dir, 'src'),
             )
             shutil.copyfile(
-                f'{self._source_dir}package.json',
-                f'{self._tmp_dir}package.json',
+                os.path.join(self._source_dir, 'package.json'),
+                os.path.join(self._tmp_dir, 'package.json'),
             )
             shutil.copyfile(
-                f'{self._source_dir}tsconfig.json',
-                f'{self._tmp_dir}tsconfig.json',
+                os.path.join(self._source_dir, 'tsconfig.json'),
+                os.path.join(self._tmp_dir, 'tsconfig.json'),
             )
             shutil.copyfile(
-                f'{self._source_dir}.npmignore',
-                f'{self._tmp_dir}.npmignore',
+                os.path.join(self._source_dir, '.npmignore'),
+                os.path.join(self._tmp_dir, '.npmignore'),
             )
             # START COMPILATION
             subprocess.check_call(
@@ -85,12 +86,12 @@ class SetupHelper:
                 cwd=self._tmp_dir,
             )
             shutil.copytree(
-                f'{self._tmp_dir}node_modules{sep}',
-                f'{self._ext_dir}pytgcalls{sep}node_modules{sep}',
+                os.path.join(self._tmp_dir, 'node_modules'),
+                os.path.join(self._ext_dir, 'pytgcalls', 'node_modules'),
             )
             shutil.copytree(
-                f'{self._tmp_dir}dist{sep}',
-                f'{self._ext_dir}pytgcalls{sep}dist{sep}',
+                os.path.join(self._tmp_dir, 'dist'),
+                os.path.join(self._ext_dir, 'pytgcalls', 'dist'),
             )
 
 
@@ -102,8 +103,6 @@ class NodeJsBuilder(build_ext):
         ext_dir = os.path.abspath(
             os.path.dirname(self.get_ext_fullpath(ext.name)),
         )
-        if not ext_dir.endswith(os.path.sep):
-            ext_dir += os.path.sep
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         sh = SetupHelper(
@@ -120,7 +119,7 @@ with open(os.path.join(base_path, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='py-tgcalls',
-    version='0.9.1',
+    version='0.9.2',
     long_description=readme,
     long_description_content_type='text/markdown',
     url='https://github.com/pytgcalls/pytgcalls',

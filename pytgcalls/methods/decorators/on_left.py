@@ -8,7 +8,7 @@ class OnLeft(Scaffold):
         """Decorator for handling when the userbot
         left a group/channel
 
-        When your userbot leave a a group/channel,
+        When your userbot leave a group/channel,
         this decorator will be raised
 
         Example:

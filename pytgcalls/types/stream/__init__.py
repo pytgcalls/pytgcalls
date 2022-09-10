@@ -4,6 +4,7 @@ from .paused_stream import PausedStream
 from .resumed_stream import ResumedStream
 from .stream_audio_endend import StreamAudioEnded
 from .stream_deleted import StreamDeleted
+from .stream_time import StreamTime
 from .stream_video_endend import StreamVideoEnded
 from .unmuted_stream import UnMutedStream
 
@@ -16,4 +17,5 @@ __all__ = (
     'StreamDeleted',
     'StreamVideoEnded',
     'UnMutedStream',
+    'StreamTime',
 )

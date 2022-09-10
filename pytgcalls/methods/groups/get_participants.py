@@ -1,6 +1,8 @@
 from typing import List
 from typing import Optional
+from typing import Union
 
+from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...types.groups.group_call_participant import GroupCallParticipant
 
@@ -8,7 +10,7 @@ from ...types.groups.group_call_participant import GroupCallParticipant
 class GetParticipants(Scaffold):
     async def get_participants(
         self,
-        chat_id: int,
+        chat_id: Union[int, str],
     ) -> Optional[List[GroupCallParticipant]]:
         """Get list of participants from a group call
 
@@ -16,8 +18,8 @@ class GetParticipants(Scaffold):
         using MtProto APIs
 
         Parameters:
-            chat_id (``int``):
-                Unique identifier (int) of the target chat.
+            chat_id (``int`` | ``str``):
+                Can be a direct id (int) or a username (str)
 
         Returns:
             List of :obj:`~pytgcalls.types.GroupCallParticipant()`:
@@ -42,6 +44,9 @@ class GetParticipants(Scaffold):
 
                 idle()
         """
+        chat_id = BridgedClient.chat_id(
+            await self._app.resolve_peer(chat_id),
+        )
         self._call_holder.get_call(
             chat_id,
         )

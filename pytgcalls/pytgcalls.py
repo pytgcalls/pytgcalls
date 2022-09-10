@@ -38,11 +38,6 @@ class PyTgCalls(Methods, Scaffold):
         overload_quiet_mode (``bool``):
             Disable overload cpu messages by setting true
 
-        multi_thread (``bool``):
-            This will use NodeJS on Multi Thread mode, not
-            suggested on production code (Is really buggy,
-            is just an experimental mode)
-
     Raises:
         InvalidMtProtoClient: You set an invalid MtProto client
 
@@ -53,8 +48,6 @@ class PyTgCalls(Methods, Scaffold):
         app: Any,
         cache_duration: int = 120,
         overload_quiet_mode: bool = False,
-        # BETA SUPPORT, BY DEFAULT IS DISABLED
-        multi_thread: bool = False,
     ):
         super().__init__()
         self._app = MtProtoClient(
@@ -74,7 +67,6 @@ class PyTgCalls(Methods, Scaffold):
         self._on_event_update = HandlersHolder()
         self._binding = Binding(
             overload_quiet_mode,
-            multi_thread,
         )
 
         def cleanup():

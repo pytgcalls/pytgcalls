@@ -1,4 +1,9 @@
 import {Commands, CommandsInfo, Sdp} from './types';
+import {getRandomValues} from 'crypto';
+
+export const second = <T>(_: any, s: T) => s;
+
+export const uuid = (t=21) => getRandomValues(new Uint8Array(t)).reduce(((t,e)=>t+=(e&=63)<36?e.toString(36):e<62?(e-26).toString(36).toUpperCase():e>62?"-":"_"),"");
 
 export function parseSdp(sdp: string): Sdp {
     let lines = sdp.split('\r\n');
@@ -6,7 +11,7 @@ export function parseSdp(sdp: string): Sdp {
     let lookup = (prefix: string) => {
         for (let line of lines) {
             if (line.startsWith(prefix)) {
-                return line.substr(prefix.length);
+                return line.substring(prefix.length);
             }
         }
         return null;
@@ -59,7 +64,7 @@ export function getBuiltCommands(stringCommand: string): Commands {
 }
 
 export function getBuiltSingleCommands(stringCommand: string): CommandsInfo {
-    let beforeCmd = stringCommand.split('-atmid')[0].split('-atend')[0];
+    const beforeCmd = stringCommand.split('-atmid')[0].split('-atend')[0];
     let middleCmd = '';
     let afterCmd = '';
     if (stringCommand.includes('-atmid')) {
@@ -68,12 +73,25 @@ export function getBuiltSingleCommands(stringCommand: string): CommandsInfo {
     if (stringCommand.includes('-atend')) {
         afterCmd = stringCommand.split('-atend')[1].split('-atmid')[0];
     }
-    let listBeforeCmd = beforeCmd.split(':_cmd_:').filter(e =>  e);
-    let listMiddleCmd = middleCmd.split(':_cmd_:').filter(e =>  e);
-    let listAfterCmd = afterCmd.split(':_cmd_:').filter(e =>  e);
     return {
-        before: listBeforeCmd,
-        middle: listMiddleCmd,
-        after: listAfterCmd,
+        before: beforeCmd.split(':_cmd_:').filter(e =>  e),
+        middle: middleCmd.split(':_cmd_:').filter(e =>  e),
+        after: afterCmd.split(':_cmd_:').filter(e =>  e),
     };
+}
+
+export function getErrorMessage(error: string): string {
+    if (error.includes('APP_UPGRADE_NEEDED')) {
+        return 'APP_UPGRADE_NEEDED';
+    } else if (error.includes('No transport') || error.includes('UNMUTE_NEEDED')) {
+        return 'UNMUTE_NEEDED';
+    }
+    return 'JOIN_ERROR';
+}
+
+export enum LogLevel {
+    DEBUG = 1,
+    INFO,
+    WARNING,
+    ERROR,
 }

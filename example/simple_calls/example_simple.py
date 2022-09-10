@@ -88,6 +88,14 @@ async def change_volume_handler(client: Client, message: Message):
     )
 
 
+@app.on_message(filters.regex('!status'))
+async def get_play_status(client: Client, message: Message):
+    await client.send_message(
+        message.chat.id,
+        f'Current seconds {await call_py.played_time(message.chat.id)}',
+    )
+
+
 @call_py.on_kicked()
 async def kicked_handler(client: PyTgCalls, chat_id: int):
     print(f'Kicked from {chat_id}')

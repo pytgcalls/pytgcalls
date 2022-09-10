@@ -2,6 +2,7 @@ import json
 from typing import Callable
 from typing import Dict
 from typing import Optional
+from typing import Union
 
 import pyrogram
 from pyrogram import Client
@@ -347,9 +348,12 @@ class PyrogramClient(BridgedClient):
                             participant.left,
                         )
                 if isinstance(update, UpdateGroupCallConnection):
-                    transport = json.loads(update.params.data)[
-                        'transport'
-                    ]
+                    data_json = json.loads(update.params.data)
+                    if 'rtmp' in data_json:
+                        raise Exception('APP_UPGRADE_NEEDED')
+                    elif 'transport' not in data_json:
+                        raise Exception('No transport in update')
+                    transport = data_json['transport']
                     return {
                         'transport': {
                             'ufrag': transport['ufrag'],
@@ -414,7 +418,7 @@ class PyrogramClient(BridgedClient):
 
     async def resolve_peer(
         self,
-        user_id: int,
+        user_id: Union[int, str],
     ) -> InputPeer:
         return await self._app.resolve_peer(user_id)
 

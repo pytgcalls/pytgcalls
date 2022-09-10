@@ -2,7 +2,7 @@ import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import { onData, onEnd } from './types';
 import {Binding} from "./binding";
 import {BufferOptimized} from "./buffer_optimized";
-import {getBuiltCommands} from "./utils";
+import {getBuiltCommands, LogLevel} from "./utils";
 
 export class FFmpegReader {
     private fifo_reader?: ChildProcessWithoutNullStreams;
@@ -68,18 +68,18 @@ export class FFmpegReader {
     }
     private start_conversion(params: Array<string>) {
         params = params.filter(e => e);
-        Binding.log('RUNNING_FFMPEG_COMMAND -> ffmpeg ' + params.join(' '), Binding.INFO);
+        Binding.log('RUNNING_FFMPEG_COMMAND -> ffmpeg ' + params.join(' '), LogLevel.INFO);
         this.fifo_reader = spawn('ffmpeg', params);
         this.fifo_reader.stdout.on('data', this.dataListener);
         this.fifo_reader.stderr.on('data', async (chunk: any) => {
             const message = chunk.toString();
             if (message.includes('] Opening')){
-                Binding.log('OPENING_M3U8_SOURCE -> ' + (new Date().getTime()), Binding.DEBUG);
+                Binding.log('OPENING_M3U8_SOURCE -> ' + (new Date().getTime()), LogLevel.DEBUG);
             } else if (message.includes('] Unable')) {
                 let list_err = message.split('\n');
                 for(let i = 0; i < list_err.length; i++){
                     if(list_err[i].includes('] Unable')){
-                        Binding.log(list_err[i], Binding.ERROR);
+                        Binding.log(list_err[i], LogLevel.ERROR);
                         break;
                     }
                 }

@@ -40,4 +40,4 @@ class JoinVoiceCall(Scaffold):
             if 'GROUPCALL_FORBIDDEN' in str(e):
                 self._cache_user_peer.pop(chat_id)
             py_logger.error(f'JOIN_VOICE_CALL_ERROR -> {e}')
-        return {'transport': None}
+            return {'transport': None, 'error': str(e)}

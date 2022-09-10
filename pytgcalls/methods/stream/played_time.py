@@ -8,16 +8,17 @@ from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...types import NotInGroupCall
 from ...types.session import Session
+from ...types.stream import StreamTime
 
 
-class PauseStream(Scaffold):
-    async def pause_stream(
+class PlayedTime(Scaffold):
+    async def played_time(
         self,
         chat_id: Union[int, str],
     ):
-        """Pause the playing stream
+        """Get the played time of the stream
 
-        This method allow to pause the streaming file
+        This method allow to get the played time of the stream
 
         Parameters:
             chat_id (``int`` | ``str``):
@@ -30,31 +31,8 @@ class PauseStream(Scaffold):
             NodeJSNotRunning: In case you try
                 to call this method without do
                 :meth:`~pytgcalls.PyTgCalls.start` before
-            NotInGroupCallError: In case you try
-                to leave a non-joined group call
-
-        Returns:
-            ``bool``:
-            On success, true is returned if was paused
-
-        Example:
-            .. code-block:: python
-                :emphasize-lines: 10-12
-
-                from pytgcalls import Client
-                from pytgcalls import idle
-                ...
-
-                app = PyTgCalls(client)
-                app.start()
-
-                ...  # Call API methods
-
-                app.pause_stream(
-                    -1001185324811,
-                )
-
-                idle()
+            NoActiveGroupCall: In case you try
+                to edit a not started group call
         """
         chat_id = BridgedClient.chat_id(
             await self._app.resolve_peer(chat_id),
@@ -66,19 +44,21 @@ class PauseStream(Scaffold):
                 async def internal_sender():
                     if not self._wait_until_run.done():
                         await self._wait_until_run
-                    await self._binding.send({
-                        'action': 'pause',
+                    request = {
+                        'action': 'played_time',
                         'chat_id': chat_id,
                         'solver_id': solver_id,
-                    })
-                active_call = self._call_holder.get_active_call(chat_id)
+                    }
+                    await self._binding.send(request)
+
                 asyncio.ensure_future(internal_sender())
                 result = await self._wait_result.wait_future_update(
                     solver_id,
                 )
                 if isinstance(result, NotInGroupCall):
                     raise NotInGroupCallError()
-                return active_call.status == 'playing'
+                elif isinstance(result, StreamTime):
+                    return result.time
             else:
                 raise NodeJSNotRunning()
         else:

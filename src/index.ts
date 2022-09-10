@@ -1,7 +1,8 @@
-import {MultiCoreRTCConnection, RTCConnection} from './rtc-connection';
+import {RTCConnection} from './rtc-connection';
 import { Binding } from './binding';
 import * as process from "process";
 import {isMainThread} from "worker_threads";
+import {getErrorMessage, LogLevel} from "./utils";
 
 if (isMainThread) {
     const binding = new Binding();
@@ -15,46 +16,34 @@ if (isMainThread) {
         }
     });
     binding.on('request', async function (data: any, update_id: string) {
-        Binding.log('REQUEST: ' + JSON.stringify(data), Binding.INFO);
-        let connection = connections.get(data.chat_id);
+        Binding.log('REQUEST: ' + JSON.stringify(data), LogLevel.INFO);
+        let connection: RTCConnection = connections.get(data.chat_id);
         switch (data.action) {
             case 'join_call':
                 if (!connection) {
-                    if(binding.multi_thread){
-                        connection = new MultiCoreRTCConnection(
-                            data.chat_id,
-                            binding,
-                            data.buffer_length,
-                            data.invite_hash,
-                            data.stream_audio,
-                            data.stream_video,
-                            data.lip_sync,
-                        );
-                    }else{
-                        connection = new RTCConnection(
-                            data.chat_id,
-                            binding,
-                            data.buffer_length,
-                            data.invite_hash,
-                            data.stream_audio,
-                            data.stream_video,
-                            data.lip_sync,
-                        );
-                    }
+                    connection = new RTCConnection(
+                        data.chat_id,
+                        binding,
+                        data.buffer_length,
+                        data.invite_hash,
+                        data.stream_audio,
+                        data.stream_video,
+                        data.lip_sync,
+                    );
                     connections.set(data.chat_id, connection);
-                    const result = await connection.joinCall();
-                    if (result) {
+                    try {
+                        await connection.joinCall()
                         await binding.sendUpdate({
                             action: 'update_request',
                             result: 'JOINED_VOICE_CHAT',
                             chat_id: data.chat_id,
                             solver_id: data.solver_id,
                         });
-                    } else {
+                    } catch (error: any) {
                         connections.delete(data.chat_id);
                         await binding.sendUpdate({
                             action: 'update_request',
-                            result: 'JOIN_ERROR',
+                            result: getErrorMessage(error.message),
                             chat_id: data.chat_id,
                             solver_id: data.solver_id,
                         });
@@ -205,6 +194,24 @@ if (isMainThread) {
                     });
                 } else {
                     await binding.sendUpdate({
+                        action: 'update_request',
+                        result: 'NOT_IN_GROUP_CALL',
+                        chat_id: data.chat_id,
+                        solver_id: data.solver_id,
+                    });
+                }
+                break;
+            case 'played_time':
+                if (connection) {
+                    await binding.sendUpdate({
+                        action: 'update_request',
+                        result: 'PLAYED_TIME',
+                        time: connection.getTime(),
+                        chat_id: data.chat_id,
+                        solver_id: data.solver_id,
+                    });
+                } else {
+                     await binding.sendUpdate({
                         action: 'update_request',
                         result: 'NOT_IN_GROUP_CALL',
                         chat_id: data.chat_id,

@@ -1,19 +1,23 @@
+from typing import Union
+
+from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 
 
 class GetActiveCall(Scaffold):
-    def get_active_call(
+    async def get_active_call(
         self,
-        chat_id: int,
+        chat_id: Union[int, str],
     ):
         """Check/Get an active call
 
-        This method check if is active an Group Call (Playing / Paused),
+        This method check if is active a Group Call (Playing / Paused),
         if not, this can raise an error
 
         Parameters:
-            chat_id (``int``):
-                Unique identifier (int) of the target chat.
+            chat_id (``int`` | ``str``):
+                Unique identifier of the target chat.
+                Can be a direct id (int) or a username (str)
 
         Raises:
             GroupCallNotFound: In case you try
@@ -42,6 +46,9 @@ class GetActiveCall(Scaffold):
 
                 idle()
         """
+        chat_id = BridgedClient.chat_id(
+            await self._app.resolve_peer(chat_id),
+        )
         return self._call_holder.get_active_call(
             chat_id,
         )

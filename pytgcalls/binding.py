@@ -23,7 +23,6 @@ class Binding:
     def __init__(
         self,
         overload_quiet_mode: bool,
-        multi_thread: bool,
     ):
         self._js_process: Optional[Process] = None
         self._ssid = ''
@@ -31,7 +30,6 @@ class Binding:
         self._on_connect: Optional[Callable] = None
         self._last_ping = 0
         self._waiting_ping: Dict[str, Future] = {}
-        self._multi_thread = multi_thread
         self._overload_quiet = overload_quiet_mode
 
         def cleanup():
@@ -105,10 +103,9 @@ class Binding:
         user_id: int,
     ):
         if self._js_process is None:
-            sep = os.path.sep
             self._js_process = await asyncio.create_subprocess_exec(
                 'node',
-                f'{self._run_folder}dist{sep}index.js',
+                os.path.join(self._run_folder, 'dist', 'index.js'),
                 stdout=subprocess.PIPE,
                 stdin=subprocess.PIPE,
             )
@@ -142,7 +139,6 @@ class Binding:
                                         'try_connect': 'connected',
                                         'user_id': user_id,
                                         'overload_quiet': self._overload_quiet,
-                                        'multi_thread': self._multi_thread,
                                     }),
                                 )
                                 if self._on_connect is not None:

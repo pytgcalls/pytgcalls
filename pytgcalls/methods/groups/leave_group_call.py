@@ -1,9 +1,11 @@
 import asyncio
+from typing import Union
 
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
+from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...types import NotInGroupCall
 from ...types.session import Session
@@ -12,15 +14,16 @@ from ...types.session import Session
 class LeaveGroupCall(Scaffold):
     async def leave_group_call(
         self,
-        chat_id: int,
+        chat_id: Union[int, str],
     ):
         """Leave a group call
 
         This method allow to leave a Group Call
 
         Parameters:
-            chat_id (``int``):
-                Unique identifier (int) of the target chat.
+             chat_id (``int`` | ``str``):
+                Unique identifier of the target chat.
+                Can be a direct id (int) or a username (str)
 
         Raises:
             NoMtProtoClientSet: In case you try
@@ -54,6 +57,9 @@ class LeaveGroupCall(Scaffold):
         """
         if self._app is not None:
             if self._wait_until_run is not None:
+                chat_id = BridgedClient.chat_id(
+                    await self._app.resolve_peer(chat_id),
+                )
                 chat_call = await self._app.get_full_chat(
                     chat_id,
                 )

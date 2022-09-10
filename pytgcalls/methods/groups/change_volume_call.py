@@ -1,19 +1,26 @@
+from typing import Union
+
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
+from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 
 
 class ChangeVolumeCall(Scaffold):
-    async def change_volume_call(self, chat_id: int, volume: int):
+    async def change_volume_call(
+        self,
+        chat_id: Union[int, str],
+        volume: int,
+    ):
         """Change the volume of the playing stream
 
         This method change the output volume of the userbot
         using MtProto APIs
 
         Parameters:
-            chat_id (``int``):
-                Unique identifier (int) of the target chat.
+            chat_id (``int`` | ``str``):
+                Can be a direct id (int) or a username (str)
             volume (``int``)
                 Volume to set to the stream
 
@@ -48,6 +55,9 @@ class ChangeVolumeCall(Scaffold):
         """
         if self._app is not None:
             if self._wait_until_run is not None:
+                chat_id = BridgedClient.chat_id(
+                    await self._app.resolve_peer(chat_id),
+                )
                 if not self._wait_until_run.done():
                     await self._wait_until_run
                 chat_call = await self._app.get_full_chat(

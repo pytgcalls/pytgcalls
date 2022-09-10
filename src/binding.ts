@@ -1,18 +1,14 @@
 import { EventEmitter } from 'events';
 import * as process from "process";
+import {LogLevel, uuid} from "./utils";
 
 export class Binding extends EventEmitter {
     private connected = false;
     public overload_quiet = false;
-    public multi_thread = false;
     private readonly ssid: string;
     private readonly promises = new Map<string, CallableFunction>();
     private readonly listPendingUpdates = new Map<number, Map<string, any>>();
     private readonly activeUpdates = new Map<number, boolean>();
-    static DEBUG = 1;
-    static INFO = 2;
-    static WARNING = 3;
-    static ERROR = 4;
 
     constructor() {
         super();
@@ -24,7 +20,6 @@ export class Binding extends EventEmitter {
                     if (data.try_connect == 'connected') {
                         this.connected = true;
                         this.overload_quiet = data.overload_quiet;
-                        this.multi_thread = data.multi_thread;
                         Binding.sendInternalUpdate({
                             ping: true,
                         });
@@ -75,10 +70,10 @@ export class Binding extends EventEmitter {
 
             } catch (e) {
                 console.log(e);
-                Binding.log('Invalid Binding Update', Binding.ERROR);
+                Binding.log('Invalid Binding Update', LogLevel.ERROR);
             }
         });
-        this.ssid = Binding.makeID(12);
+        this.ssid = uuid(12);
         Binding.sendInternalUpdate({
             try_connect: this.ssid,
         });
@@ -89,7 +84,7 @@ export class Binding extends EventEmitter {
         let pending_updates = this.listPendingUpdates.get(
             chat_id,
         )
-        const updateID = Binding.makeID(12);
+        const updateID = uuid(12);
         if(!pending_updates){
             pending_updates = new Map<string, any>();
             pending_updates.set(
@@ -125,7 +120,7 @@ export class Binding extends EventEmitter {
 
     async sendUpdate(update: any): Promise<any> {
         if (this.connected) {
-            const uid = Binding.makeID(12);
+            const uid = uuid(12);
             Binding.sendInternalUpdate({
                 uid,
                 data: update,
@@ -149,18 +144,6 @@ export class Binding extends EventEmitter {
         });
     }
 
-    private static makeID(length: number): string {
-        const characters =
-            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-            result += characters.charAt(
-                Math.floor(Math.random() * characters.length),
-            );
-        }
-        return result;
-    }
-
     private static sendInternalUpdate(update: any) {
         console.log(JSON.stringify(update));
     }
@@ -178,8 +161,9 @@ export class MultiCoreBinding{
             }
         }
     }
+
     async sendUpdate(update: any): Promise<any> {
-        const uid = MultiCoreBinding.makeID(12);
+        const uid = uuid(12);
         this.process_multicore.postMessage({
             action: 'binding_update',
             uid: uid,
@@ -191,15 +175,5 @@ export class MultiCoreBinding{
                 this.promises.delete(uid);
             });
         });
-    }
-    private static makeID(length: number): string {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-            result += characters.charAt(
-                Math.floor(Math.random() * characters.length),
-            );
-        }
-        return result;
     }
 }

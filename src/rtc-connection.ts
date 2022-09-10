@@ -2,145 +2,7 @@ import { Stream, TGCalls } from './tgcalls';
 import {Binding, MultiCoreBinding} from './binding';
 import {FFmpegReader} from "./ffmpeg_reader";
 import {FileReader} from "./file_reader";
-import {Worker, isMainThread, parentPort} from "worker_threads";
-
-export class MultiCoreRTCConnection {
-    private readonly process_multicore?: Worker;
-    private readonly promises = new Map<string, CallableFunction>();
-    constructor(
-        chatId: number,
-        binding: Binding,
-        bufferLength: number,
-        inviteHash: string,
-        audioParams?: any,
-        videoParams?: any,
-        lipSync: boolean = false,
-    ) {
-        // @ts-ignore
-        this.process_multicore = new Worker(__filename);
-        this.process_multicore?.postMessage({
-            action: '__init__',
-            chatId,
-            bufferLength,
-            inviteHash,
-            audioParams,
-            videoParams,
-            lipSync,
-            overloadQuiet: binding.overload_quiet,
-        });
-        this.process_multicore?.on('message', async (data: any) => {
-            switch (data.action) {
-                case 'binding_update':
-                    this.process_multicore?.postMessage({
-                        action: 'binding_update',
-                        uid: data.uid,
-                        result: await binding.sendUpdate(
-                            data.update,
-                        ),
-                    })
-                    break;
-                case 'response_request':
-                    const promise = this.promises.get(data.uid);
-                    if (promise) {
-                        if (data.data !== undefined) {
-                            promise(data.data);
-                        }
-                    }
-                    break;
-                case 'stop_process':
-                    this.process_multicore?.terminate();
-                    break;
-            }
-        });
-    }
-    async joinCall(): Promise<boolean>{
-        if(this.process_multicore){
-            const uid = MultiCoreRTCConnection.makeID(12);
-            this.process_multicore?.postMessage({
-                action: 'joinCall',
-                uid: uid,
-            });
-            return new Promise(resolve => {
-                this.promises.set(uid, (data: any) => {
-                    resolve(data);
-                    this.promises.delete(uid);
-                });
-            });
-        }
-        throw 'NoMultiCoreProcess';
-    }
-    stop(){
-        if(this.process_multicore){
-            this.process_multicore?.postMessage({
-                action: 'stop',
-            });
-        }
-    }
-    pause(){
-        if(this.process_multicore){
-            this.process_multicore?.postMessage({
-                action: 'pause',
-            });
-        }
-    }
-    resume(){
-        if(this.process_multicore){
-            this.process_multicore?.postMessage({
-                action: 'resume',
-            });
-        }
-    }
-    mute(){
-        if(this.process_multicore){
-            this.process_multicore?.postMessage({
-                action: 'mute',
-            });
-        }
-    }
-    unmute(){
-        if(this.process_multicore){
-            this.process_multicore?.postMessage({
-                action: 'unmute',
-            });
-        }
-    }
-    changeStream(audioParams: any, videoParams?: any, lipSync: boolean = false){
-        if(this.process_multicore){
-            this.process_multicore?.postMessage({
-                action: 'changeStream',
-                audioParams,
-                videoParams,
-                lipSync,
-            })
-        }
-    }
-    async leave_call(): Promise<any>{
-        if(this.process_multicore){
-            const uid = MultiCoreRTCConnection.makeID(12);
-            this.process_multicore?.postMessage({
-                action: 'leave_call',
-                uid: uid,
-            });
-            return new Promise(resolve => {
-                this.promises.set(uid, (data: any) => {
-                    resolve(data);
-                    this.promises.delete(uid);
-                });
-            });
-        }
-        throw 'NoMultiCoreProcess';
-    }
-    private static makeID(length: number): string {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-            result += characters.charAt(
-                Math.floor(Math.random() * characters.length),
-            );
-        }
-        return result;
-    }
-}
+import {LogLevel} from "./utils";
 
 export class RTCConnection {
     tgcalls: TGCalls<any>;
@@ -219,7 +81,7 @@ export class RTCConnection {
 
             Binding.log(
                 'callJoinPayload -> ' + JSON.stringify(payload),
-                Binding.INFO,
+                LogLevel.INFO,
             );
 
             const joinCallResult = await this.binding.sendUpdate({
@@ -229,7 +91,7 @@ export class RTCConnection {
 
             Binding.log(
                 'joinCallRequestResult -> ' + JSON.stringify(joinCallResult),
-                Binding.INFO,
+                LogLevel.INFO,
             );
 
             return joinCallResult;
@@ -337,26 +199,23 @@ export class RTCConnection {
         };
     }
 
-    async joinCall() {
-        try {
-            const video_width = this.videoParams === undefined ? 1:this.videoParams.width;
-            const video_height = this.videoParams === undefined ? 1:this.videoParams.height;
-            const video_framerate = this.videoParams === undefined ? 1:this.videoParams.framerate;
-            const videoTrack = this.videoStream.createVideoTrack(
-                video_width,
-                video_height,
-                video_framerate,
-            );
-            let result = await this.tgcalls.start(this.audioStream.createAudioTrack(), videoTrack);
-            this.videoStream.resume();
-            this.audioStream.resume();
-            return result;
-        } catch (e: any) {
+    async joinCall(): Promise<void> {
+        const setVideoParams = async () => ({
+            width: this.videoParams === undefined ? 1:this.videoParams.width,
+            height: this.videoParams === undefined ? 1:this.videoParams.height,
+            framerate: this.videoParams === undefined ? 1:this.videoParams.framerate,
+        });
+        const createVideoTrack = ({width, height, framerate}: {width: number, height: number, framerate: number}) => this.videoStream.createVideoTrack(width, height, framerate);
+        const startVoiceCall = async (videoTrack: MediaStreamTrack) =>  this.tgcalls.start(this.audioStream.createAudioTrack(), videoTrack).catch(err => {
             this.audioStream.stop();
             this.videoStream.stop();
-            Binding.log('joinCallError -> ' + e.toString(), Binding.ERROR);
-            return false;
-        }
+            Binding.log('joinCallError -> ' + err.toString(), LogLevel.ERROR);
+            throw err;
+        }).then(() => {
+            this.videoStream.resume();
+            this.audioStream.resume();
+        });
+        return setVideoParams().then(createVideoTrack).then(startVoiceCall);
     }
 
     stop() {
@@ -396,6 +255,16 @@ export class RTCConnection {
                 paused_status: true,
             });
         }
+    }
+
+    getTime() {
+        let time = 0;
+        if (this.audioStream != undefined) {
+            time = this.audioStream.getCurrentPlayedTime();
+        } else if (this.videoStream != undefined) {
+            time = this.videoStream.getCurrentPlayedTime();
+        }
+        return Math.round(time / 10000000);
     }
 
     async resume() {
@@ -489,69 +358,4 @@ export class RTCConnection {
         this.videoStream.restart(videoReadable);
         this.audioStream.restart(audioReadable);
     }
-}
-if (!isMainThread) {
-    let rtc_connection: RTCConnection;
-    const multicore_binding = new MultiCoreBinding(parentPort);
-    parentPort?.on('message', async (data: any) => {
-         switch (data.action) {
-             case '__init__':
-                 rtc_connection = new RTCConnection(
-                     data.chatId,
-                     multicore_binding,
-                     data.bufferLength,
-                     data.inviteHash,
-                     data.audioParams,
-                     data.videoParams,
-                     data.lipSync,
-                     data.overloadQuiet,
-                 );
-                 break;
-             case 'binding_update':
-                 multicore_binding.resolveUpdate(data);
-                 break;
-             case 'pause':
-                 await rtc_connection.pause();
-                 break;
-             case 'resume':
-                 await rtc_connection.resume();
-                 break;
-             case 'mute':
-                 rtc_connection.mute();
-                 break;
-             case 'unmute':
-                 rtc_connection.unmute();
-                 break;
-             case 'stop':
-                 rtc_connection.stop();
-                 parentPort?.postMessage({
-                    action: 'stop_process',
-                 });
-                 break;
-             case 'leave_call':
-                 parentPort?.postMessage({
-                     action: 'response_request',
-                     data: await rtc_connection.leave_call(),
-                     uid: data.uid,
-                 });
-                 parentPort?.postMessage({
-                    action: 'stop_process',
-                 });
-                 break;
-             case 'joinCall':
-                 parentPort?.postMessage({
-                     action: 'response_request',
-                     data: await rtc_connection.joinCall(),
-                     uid: data.uid,
-                 });
-                 break;
-             case 'changeStream':
-                 await rtc_connection.changeStream(
-                     data.audioParams,
-                     data.videoParams,
-                     data.lipSync,
-                 )
-                 break;
-         }
-    });
 }

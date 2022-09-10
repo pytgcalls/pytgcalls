@@ -8,8 +8,10 @@ from .groups import JoinedGroupCallParticipant
 from .groups import JoinedVoiceChat
 from .groups import LeftGroupCallParticipant
 from .groups import LeftVoiceChat
+from .groups import MutedCall
 from .groups import NotInGroupCall
 from .groups import UpdatedGroupCallParticipant
+from .groups import UpgradeNeeded
 from .input_stream import AudioImagePiped
 from .input_stream import AudioParameters
 from .input_stream import AudioPiped
@@ -80,4 +82,6 @@ __all__ = (
     'CaptureVideoDesktop',
     'VideoParameters',
     'VideoPiped',
+    'UpgradeNeeded',
+    'MutedCall',
 )

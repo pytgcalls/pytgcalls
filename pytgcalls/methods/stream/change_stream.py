@@ -1,11 +1,13 @@
 import asyncio
 import logging
 import shlex
+from typing import Union
 
 from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...file_manager import FileManager
+from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...types import CaptureAudioDevice
 from ...types import CaptureAVDesktop
@@ -26,7 +28,7 @@ py_logger = logging.getLogger('pytgcalls')
 class ChangeStream(Scaffold):
     async def change_stream(
         self,
-        chat_id: int,
+        chat_id: Union[int, str],
         stream: InputStream,
     ):
         """Change the streaming file
@@ -35,8 +37,9 @@ class ChangeStream(Scaffold):
         to a Group Call
 
         Parameters:
-            chat_id (``int``):
-                Unique identifier (int) of the target chat.
+            chat_id (``int`` | ``str``):
+                Unique identifier of the target chat.
+                Can be a direct id (int) or a username (str)
             stream (:obj:`~pytgcalls.types.InputStream()`):
                 Input Streams descriptor, can be used also
                 :obj:`~pytgcalls.types.AudioPiped()`,
@@ -53,20 +56,20 @@ class ChangeStream(Scaffold):
             NoActiveGroupCall: In case you try
                 to edit a not started group call
             FileNotFoundError: In case you try
-                a non existent file
+                a non-existent file
             InvalidStreamMode: In case you try
                 to set a void stream mode
             FFmpegNotInstalled: In case you try
-                to use the Piped input stream and
+                to use the Piped input stream, and
                 you don't have ffmpeg installed
             NoAudioSourceFound: In case you try
                 to play an audio file from a file
                 without the sound
             NoVideoSourceFound: In case you try
-                to play an video file from a file
+                to play a video file from a file
                 without the video
             InvalidVideoProportion: In case you try
-                to play an video without correct
+                to play a video without correct
                 proportions
             NotInGroupCallError: In case you try
                 to leave a non-joined group call
@@ -93,6 +96,9 @@ class ChangeStream(Scaffold):
 
                 idle()
         """
+        chat_id = BridgedClient.chat_id(
+            await self._app.resolve_peer(chat_id),
+        )
         if self._app is not None:
             if self._wait_until_run is not None:
                 headers = None
