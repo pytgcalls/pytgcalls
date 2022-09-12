@@ -1,9 +1,9 @@
 import {Commands, CommandsInfo, Sdp} from './types';
-import {getRandomValues} from 'crypto';
+import {webcrypto} from 'crypto';
 
 export const second = <T>(_: any, s: T) => s;
 
-export const uuid = (t=21) => getRandomValues(new Uint8Array(t)).reduce(((t,e)=>t+=(e&=63)<36?e.toString(36):e<62?(e-26).toString(36).toUpperCase():e>62?"-":"_"),"");
+export const uuid = (t=21) => webcrypto.getRandomValues(new Uint8Array(t)).reduce(((t,e)=>t+=(e&=63)<36?e.toString(36):e<62?(e-26).toString(36).toUpperCase():e>62?"-":"_"),"");
 
 export function parseSdp(sdp: string): Sdp {
     let lines = sdp.split('\r\n');
