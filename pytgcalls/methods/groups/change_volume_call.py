@@ -55,9 +55,12 @@ class ChangeVolumeCall(Scaffold):
         """
         if self._app is not None:
             if self._wait_until_run is not None:
-                chat_id = BridgedClient.chat_id(
-                    await self._app.resolve_peer(chat_id),
-                )
+                try:
+                    chat_id = int(chat_id)
+                except ValueError:
+                    chat_id = BridgedClient.chat_id(
+                        await self._app.resolve_peer(chat_id),
+                    )
                 if not self._wait_until_run.done():
                     await self._wait_until_run
                 chat_call = await self._app.get_full_chat(

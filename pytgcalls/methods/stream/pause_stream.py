@@ -56,9 +56,12 @@ class PauseStream(Scaffold):
 
                 idle()
         """
-        chat_id = BridgedClient.chat_id(
-            await self._app.resolve_peer(chat_id),
-        )
+        try:
+            chat_id = int(chat_id)
+        except ValueError:
+            chat_id = BridgedClient.chat_id(
+                await self._app.resolve_peer(chat_id),
+            )
         if self._app is not None:
             if self._wait_until_run is not None:
                 solver_id = Session.generate_session_id(24)

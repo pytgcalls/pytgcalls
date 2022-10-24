@@ -119,7 +119,7 @@ with open(os.path.join(base_path, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='py-tgcalls',
-    version='0.9.3',
+    version='0.9.4',
     long_description=readme,
     long_description_content_type='text/markdown',
     url='https://github.com/pytgcalls/pytgcalls',

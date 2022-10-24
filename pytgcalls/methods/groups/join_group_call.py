@@ -129,9 +129,12 @@ class JoinGroupCall(Scaffold):
             stream_type = StreamType().local_stream
         if stream_type.stream_mode == 0:
             raise InvalidStreamMode()
-        chat_id = BridgedClient.chat_id(
-            await self._app.resolve_peer(chat_id),
-        )
+        try:
+            chat_id = int(chat_id)
+        except ValueError:
+            chat_id = BridgedClient.chat_id(
+                await self._app.resolve_peer(chat_id),
+            )
         self._cache_user_peer.put(chat_id, join_as)
         headers = None
         if isinstance(
