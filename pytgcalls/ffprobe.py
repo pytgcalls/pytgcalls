@@ -79,7 +79,7 @@ class FFprobe:
             for stream in stream_list:
                 codec_type = stream.get('codec_type', '')
                 codec_name = stream.get('codec_name', '')
-                image_codecs = ['png', 'jpeg', 'jpg']
+                image_codecs = ['png', 'jpeg', 'jpg', 'mjpeg']
                 is_valid = not needed_image and codec_name in image_codecs
                 if codec_type == 'video' and not is_valid:
                     have_video = True
