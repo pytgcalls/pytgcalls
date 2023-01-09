@@ -2,6 +2,7 @@ import asyncio
 import re
 import sys
 
+from aiohttp import ClientConnectionError
 from aiohttp import ClientResponse
 from aiohttp import ClientSession
 
@@ -44,6 +45,8 @@ class PyTgCallsSession:
                         print(text)
             except asyncio.exceptions.TimeoutError:
                 pass
+            except ClientConnectionError:
+                pass
 
     @staticmethod
     async def _remote_version(branch: str):
@@ -56,6 +59,7 @@ class PyTgCallsSession:
                 return result_text
             finally:
                 await session.close()
+
         result = re.findall(
             '__version__ = \'(.*?)\'', (
                 await get_async(
