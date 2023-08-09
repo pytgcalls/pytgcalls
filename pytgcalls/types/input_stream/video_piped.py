@@ -8,6 +8,7 @@ from .video_parameters import VideoParameters
 from .video_tools import check_video_params
 
 
+# TODO refactor needed
 class VideoPiped(InputStream):
     """The video only stream piped descriptor
 

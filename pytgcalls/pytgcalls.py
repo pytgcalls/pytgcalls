@@ -56,7 +56,6 @@ class PyTgCalls(Methods, Scaffold):
         )
         self._is_running = False
         self._env_checker = Environment(
-            self._REQUIRED_NODEJS_VERSION,
             self._REQUIRED_PYROGRAM_VERSION,
             self._REQUIRED_TELETHON_VERSION,
             self._app.client,

@@ -3,6 +3,7 @@ from asyncio.log import logger
 from pytgcalls.scaffold import Scaffold
 
 
+# TODO refactor needed
 class SetVideoCallStatus(Scaffold):
     async def _set_video_call_status(
         self,

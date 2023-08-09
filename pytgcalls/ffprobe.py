@@ -6,17 +6,17 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from .exceptions import FFmpegNotInstalled
 from .exceptions import InvalidVideoProportion
 from .exceptions import NoAudioSourceFound
 from .exceptions import NoVideoSourceFound
 from .types.input_stream.video_tools import check_support
 
 
+# TODO refactor needed
 class FFprobe:
     @staticmethod
     def ffmpeg_headers(
-        headers: Optional[Dict[str, str]] = None,
+            headers: Optional[Dict[str, str]] = None,
     ):
         ffmpeg_params: List[str] = []
         if headers is not None:
@@ -31,11 +31,11 @@ class FFprobe:
 
     @staticmethod
     async def check_file(
-        path: str,
-        needed_audio=False,
-        needed_video=False,
-        needed_image=False,
-        headers: Optional[Dict[str, str]] = None,
+            path: str,
+            needed_audio=False,
+            needed_video=False,
+            needed_image=False,
+            headers: Optional[Dict[str, str]] = None,
     ):
         ffmpeg_params: List[str] = []
         have_header = False

@@ -7,6 +7,7 @@ from pytgcalls.types.input_stream.quality import MediumQualityVideo
 from pytgcalls.types.input_stream.video_parameters import VideoParameters
 
 
+# TODO refactor needed
 def check_support(link: str):
     supported_protocols = [
         'https://',

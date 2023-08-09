@@ -19,6 +19,7 @@ from .types.session import Session
 py_logger = logging.getLogger('pytgcalls')
 
 
+# TODO refactor needed
 class Binding:
     def __init__(
         self,

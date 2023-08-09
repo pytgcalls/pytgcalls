@@ -1,36 +1,3 @@
-class NodeJSNotInstalled(Exception):
-    """Node.js isn’t installed, raised by
-    :meth:`~pytgcalls.PyTgCalls.start` or
-    :meth:`~pytgcalls.PyTgCalls.run`
-    """
-
-    def __init__(
-        self,
-        version_needed: str,
-    ):
-        super().__init__(
-            f'Please install node ({version_needed}+)',
-        )
-
-
-class TooOldNodeJSVersion(Exception):
-    """Node.js version is too old, raised by
-    :meth:`~pytgcalls.PyTgCalls.start` or
-    :meth:`~pytgcalls.PyTgCalls.run`
-    """
-
-    def __init__(
-        self,
-        version_needed: str,
-        node_version: str,
-    ):
-        super().__init__(
-            f'Needed node {version_needed}+, '
-            'actually installed is '
-            f'{node_version}',
-        )
-
-
 class TooOldPyrogramVersion(Exception):
     """Pyrogram version is too old, raised by
     :meth:`~pytgcalls.PyTgCalls.start` or
@@ -56,9 +23,9 @@ class TooOldTelethonVersion(Exception):
     """
 
     def __init__(
-        self,
-        version_needed: str,
-        telethon_version: str,
+            self,
+            version_needed: str,
+            telethon_version: str,
     ):
         super().__init__(
             f'Needed telethon {version_needed}+, '
@@ -93,24 +60,6 @@ class NoMtProtoClientSet(Exception):
     def __init__(self):
         super().__init__(
             'No MtProto client set',
-        )
-
-
-class NodeJSNotRunning(Exception):
-    """NodeJS core not running, do
-    :meth:`~pytgcalls.PyTgCalls.start`
-    before call these methods, raised by
-    :meth:`~pytgcalls.PyTgCalls.join_group_call`,
-    :meth:`~pytgcalls.PyTgCalls.leave_group_call`,
-    :meth:`~pytgcalls.PyTgCalls.change_volume_call`,
-    :meth:`~pytgcalls.PyTgCalls.change_stream`,
-    :meth:`~pytgcalls.PyTgCalls.pause_stream` and
-    :meth:`~pytgcalls.PyTgCalls.resume_stream`
-    """
-
-    def __init__(self):
-        super().__init__(
-            'Node.js not running',
         )
 
 
@@ -191,8 +140,8 @@ class GroupCallNotFound(Exception):
     """
 
     def __init__(
-        self,
-        chat_id: int,
+            self,
+            chat_id: int,
     ):
         super().__init__(
             f'Group call not found with the chat id {chat_id}',
@@ -244,18 +193,6 @@ class NoAudioSourceFound(Exception):
     def __init__(self, path: str):
         super().__init__(
             f'No audio source found on {path}',
-        )
-
-
-class FFmpegNotInstalled(Exception):
-    """FFmpeg isn't installed, this error is raised by
-    :meth:`~pytgcalls.PyTgCalls.join_group_call` or
-    :meth:`~pytgcalls.PyTgCalls.change_stream`
-    """
-
-    def __init__(self, path: str):
-        super().__init__(
-            'FFmpeg ins\'t installed on your server',
         )
 
 

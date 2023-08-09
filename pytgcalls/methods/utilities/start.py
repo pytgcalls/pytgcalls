@@ -31,10 +31,10 @@ class Start(Scaffold):
         if not self._is_running:
             self._is_running = True
             loop = asyncio.get_running_loop()
-            self._wait_until_run = loop.create_future()
+            self._wait_until_run = loop.create_future()  # TODO must be deleted
             self._env_checker.check_environment()
             await self._init_mtproto()
             self._handle_mtproto()
-            await self._start_binding()
+            await self._start_binding()  # TODO refactor needed
         else:
             raise PyTgCallsAlreadyRunning()

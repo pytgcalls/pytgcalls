@@ -1,6 +1,7 @@
 from ...scaffold import Scaffold
 
 
+# TODO must be deleted
 class IsConnected(Scaffold):
     @property
     def is_connected(self):

@@ -6,6 +6,7 @@ from .resume_stream import ResumeStream
 from .unmute_stream import UnMuteStream
 
 
+# TODO refactor needed
 class Stream(
     ChangeStream,
     MuteStream,

@@ -5,6 +5,7 @@ from .groups import GroupCall
 from .list import List
 
 
+# TODO review needed
 class CallHolder:
     PLAYING = 1
     PAUSED = 2

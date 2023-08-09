@@ -4,6 +4,7 @@ from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
 
 
+# TODO refactor needed
 class BindingRunner(Scaffold):
     async def _start_binding(self):
         @self._binding.on_update()

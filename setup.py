@@ -11,6 +11,7 @@ from setuptools.command.build_ext import build_ext
 base_path = os.path.abspath(os.path.dirname(__file__))
 
 
+# TODO refactor needed
 class NodeJsExtension(Extension):
     def __init__(self, name, source_dir=''):
         super().__init__(name, sources=[])
@@ -19,10 +20,10 @@ class NodeJsExtension(Extension):
 
 class SetupHelper:
     def __init__(
-        self,
-        source_dir: str,
-        ext_dir: str,
-        tmp_dir: str,
+            self,
+            source_dir: str,
+            ext_dir: str,
+            tmp_dir: str,
     ):
         folder_package = ''
         for item in sys.path:

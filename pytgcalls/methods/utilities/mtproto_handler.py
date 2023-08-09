@@ -6,6 +6,7 @@ from ...types.groups import LeftGroupCallParticipant
 from ...types.groups import UpdatedGroupCallParticipant
 
 
+# TODO refactor needed
 class MtProtoHandler(Scaffold):
     async def _init_mtproto(self):
         if not self._app.is_connected:

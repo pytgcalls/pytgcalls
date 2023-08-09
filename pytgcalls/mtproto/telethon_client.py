@@ -38,6 +38,7 @@ from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
 
+# TODO refactor needed
 class TelethonClient(BridgedClient):
     def __init__(
         self,

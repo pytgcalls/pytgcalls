@@ -5,6 +5,7 @@ from ...scaffold import Scaffold
 py_logger = logging.getLogger('pytgcalls')
 
 
+# TODO refactor needed
 class JoinVoiceCall(Scaffold):
     async def _join_voice_call(
         self,

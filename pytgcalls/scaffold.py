@@ -3,7 +3,6 @@ from typing import Optional
 
 
 class Scaffold:
-    _REQUIRED_NODEJS_VERSION = '15.0.0'
     _REQUIRED_PYROGRAM_VERSION = '1.2.20'
     _REQUIRED_TELETHON_VERSION = '1.24.0'
 
