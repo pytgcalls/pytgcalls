@@ -247,17 +247,17 @@ class TelethonClient(BridgedClient):
     async def join_group_call(
         self,
         chat_id: int,
-        json_join: dict,
+        json_join: str,
         invite_hash: str,
         have_video: bool,
         join_as: TypeInputPeer,
-    ) -> dict:
+    ) -> str:
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
             result: Updates = await self._app(
                 JoinGroupCallRequest(
                     call=chat_call,
-                    params=DataJSON(data=json.dumps(json_join)),
+                    params=DataJSON(data=json_join),
                     muted=False,
                     join_as=join_as,
                     video_stopped=have_video,
@@ -285,21 +285,9 @@ class TelethonClient(BridgedClient):
                             participant.left,
                         )
                 if isinstance(update, UpdateGroupCallConnection):
-                    data_json = json.loads(update.params.data)
-                    if 'rtmp' in data_json:
-                        raise Exception('APP_UPGRADE_NEEDED')
-                    elif 'transport' not in data_json:
-                        raise Exception('No transport in update')
-                    transport = data_json['transport']
-                    return {
-                        'transport': {
-                            'ufrag': transport['ufrag'],
-                            'pwd': transport['pwd'],
-                            'fingerprints': transport['fingerprints'],
-                            'candidates': transport['candidates'],
-                        },
-                    }
-        return {'transport': None}
+                    return update.params.data
+
+        return json.dumps({'transport': None})
 
     def on_closed_voice_chat(self) -> Callable:
         def decorator(func: Callable) -> Callable:

@@ -1,7 +1,6 @@
 from typing import Union
 
 from ...exceptions import NoActiveGroupCall
-from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
@@ -54,15 +53,13 @@ class ChangeVolumeCall(Scaffold):
                 idle()
         """
         if self._app is not None:
-            if self._wait_until_run is not None:
-                try:
-                    chat_id = int(chat_id)
-                except ValueError:
-                    chat_id = BridgedClient.chat_id(
-                        await self._app.resolve_peer(chat_id),
-                    )
-                if not self._wait_until_run.done():
-                    await self._wait_until_run
+            try:
+                chat_id = int(chat_id)
+            except ValueError:
+                chat_id = BridgedClient.chat_id(
+                    await self._app.resolve_peer(chat_id),
+                )
+
                 chat_call = await self._app.get_full_chat(
                     chat_id,
                 )
@@ -74,7 +71,5 @@ class ChangeVolumeCall(Scaffold):
                     )
                 else:
                     raise NoActiveGroupCall()
-            else:
-                raise NodeJSNotRunning()
         else:
             raise NoMtProtoClientSet()

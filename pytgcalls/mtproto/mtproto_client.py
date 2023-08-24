@@ -54,11 +54,11 @@ class MtProtoClient:
     async def join_group_call(
         self,
         chat_id: int,
-        json_join: dict,
+        json_join: str,
         invite_hash: str,
         have_video: bool,
         join_as: Any,
-    ) -> dict:
+    ) -> str:
         if self._bind_client is not None:
             return await self._bind_client.join_group_call(
                 chat_id,

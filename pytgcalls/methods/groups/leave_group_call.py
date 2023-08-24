@@ -1,14 +1,11 @@
-import asyncio
 from typing import Union
 
-from ...exceptions import NoActiveGroupCall
-from ...exceptions import NodeJSNotRunning
+from ntgcalls import ConnectionError
+from ...to_async import ToAsync
+from ...exceptions import NoActiveGroupCall, NotInGroupCallError
 from ...exceptions import NoMtProtoClientSet
-from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
-from ...types import NotInGroupCall
-from ...types.session import Session
 
 
 class LeaveGroupCall(Scaffold):
@@ -28,9 +25,6 @@ class LeaveGroupCall(Scaffold):
         Raises:
             NoMtProtoClientSet: In case you try
                 to call this method without any MtProto client
-            NodeJSNotRunning: In case you try
-                to call this method without do
-                :meth:`~pytgcalls.PyTgCalls.start` before
             NoActiveGroupCall: In case you try
                 to edit a not started group call
             NotInGroupCallError: In case you try
@@ -56,37 +50,25 @@ class LeaveGroupCall(Scaffold):
                 idle()
         """
         if self._app is not None:
-            if self._wait_until_run is not None:
-                try:
-                    chat_id = int(chat_id)
-                except ValueError:
-                    chat_id = BridgedClient.chat_id(
-                        await self._app.resolve_peer(chat_id),
-                    )
-                chat_call = await self._app.get_full_chat(
-                    chat_id,
+            try:
+                chat_id = int(chat_id)
+            except ValueError:
+                chat_id = BridgedClient.chat_id(
+                    await self._app.resolve_peer(chat_id),
                 )
-                if chat_call is not None:
-                    solver_id = Session.generate_session_id(24)
 
-                    async def internal_sender():
-                        if not self._wait_until_run.done():
-                            await self._wait_until_run
-                        await self._binding.send({
-                            'action': 'leave_call',
-                            'chat_id': chat_id,
-                            'type': 'requested',
-                            'solver_id': solver_id,
-                        })
-                    asyncio.ensure_future(internal_sender())
-                    result = await self._wait_result.wait_future_update(
-                        solver_id,
+            chat_call = await self._app.get_full_chat(
+                chat_id,
+            )
+
+            if chat_call is not None:
+                try:
+                    await ToAsync(
+                        self._binding.stop(chat_id)
                     )
-                    if isinstance(result, NotInGroupCall):
-                        raise NotInGroupCallError()
+                except ConnectionError:
+                    raise NotInGroupCallError()
                 else:
                     raise NoActiveGroupCall()
             else:
-                raise NodeJSNotRunning()
-        else:
-            raise NoMtProtoClientSet()
+                raise NoMtProtoClientSet()

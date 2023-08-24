@@ -1,7 +1,6 @@
 import asyncio
 from typing import Union
 
-from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
@@ -41,7 +40,7 @@ class PlayedTime(Scaffold):
                 await self._app.resolve_peer(chat_id),
             )
         if self._app is not None:
-            if self._wait_until_run is not None:
+            if self._wait_until_run is not None: #TODO remove this
                 solver_id = Session.generate_session_id(24)
 
                 async def internal_sender():
@@ -62,7 +61,5 @@ class PlayedTime(Scaffold):
                     raise NotInGroupCallError()
                 elif isinstance(result, StreamTime):
                     return result.time
-            else:
-                raise NodeJSNotRunning()
         else:
             raise NoMtProtoClientSet()

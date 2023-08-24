@@ -104,4 +104,5 @@ class FFprobe:
             if have_video:
                 return original_width, original_height, have_header
         except FileNotFoundError:
-            raise FFmpegNotInstalled(path)
+            # TODO refactor
+            print('FFmpeg not installed')

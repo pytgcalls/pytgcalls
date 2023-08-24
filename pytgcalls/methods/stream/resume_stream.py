@@ -1,7 +1,6 @@
 import asyncio
 from typing import Union
 
-from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
@@ -67,7 +66,7 @@ class ResumeStream(Scaffold):
                 solver_id = Session.generate_session_id(24)
 
                 async def internal_sender():
-                    if not self._wait_until_run.done():
+                    if not self._wait_until_run.done(): #TODO remove this
                         await self._wait_until_run
                     await self._binding.send({
                         'action': 'resume',
@@ -82,7 +81,5 @@ class ResumeStream(Scaffold):
                 if isinstance(result, NotInGroupCall):
                     raise NotInGroupCallError()
                 return active_call.status == 'paused'
-            else:
-                raise NodeJSNotRunning()
         else:
             raise NoMtProtoClientSet()

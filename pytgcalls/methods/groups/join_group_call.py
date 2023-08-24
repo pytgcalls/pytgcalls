@@ -1,46 +1,34 @@
-import asyncio
 import logging
-import shlex
+
 from typing import Union
 
-from ...exceptions import AlreadyJoinedError
-from ...exceptions import InvalidStreamMode
+from ntgcalls import MediaDescription, AudioDescription, InvalidParams, ConnectionError, RTMPNeeded, VideoDescription
+from ...to_async import ToAsync
+from ...exceptions import InvalidStreamMode, AlreadyJoinedError, TelegramServerError, RTMPStreamNeeded, UnMuteNeeded
 from ...exceptions import NoActiveGroupCall
-from ...exceptions import NodeJSNotRunning
 from ...exceptions import NoMtProtoClientSet
-from ...exceptions import RTMPStreamNeeded
-from ...exceptions import TelegramServerError
-from ...exceptions import UnMuteNeeded
-from ...file_manager import FileManager
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
-from ...types import AlreadyJoined
 from ...types import CaptureAudioDevice
-from ...types import CaptureAVDesktop
-from ...types import CaptureAVDeviceDesktop
 from ...types import CaptureVideoDesktop
-from ...types import ErrorDuringJoin
-from ...types import MutedCall
-from ...types import UpgradeNeeded
 from ...types.input_stream import AudioPiped
 from ...types.input_stream import AudioVideoPiped
 from ...types.input_stream import InputStream
 from ...types.input_stream import VideoPiped
 from ...types.input_stream.audio_image_piped import AudioImagePiped
-from ...types.session import Session
 
 py_logger = logging.getLogger('pytgcalls')
 
 
 class JoinGroupCall(Scaffold):
     async def join_group_call(
-        self,
-        chat_id: Union[int, str],
-        stream: InputStream,
-        invite_hash: str = None,
-        join_as=None,
-        stream_type: StreamType = None,
+            self,
+            chat_id: Union[int, str],
+            stream: InputStream,
+            invite_hash: str = None,
+            join_as=None,
+            stream_type: StreamType = None,
     ):
         """Join a group call to stream a file
 
@@ -68,27 +56,24 @@ class JoinGroupCall(Scaffold):
         Raises:
             NoMtProtoClientSet: In case you try
                 to call this method without any MtProto client
-            NodeJSNotRunning: In case you try
-                to call this method without do
-                :meth:`~pytgcalls.PyTgCalls.start` before
             NoActiveGroupCall: In case you try
                 to edit a not started group call
             FileNotFoundError: In case you try
-                a non-existent file
+                a non-existent file #TODO
             InvalidStreamMode: In case you try
                 to set a void stream mode
             FFmpegNotInstalled: In case you try
                 to use the Piped input stream, and
-                you don't have ffmpeg installed
+                you don't have ffmpeg installed #TODO
             NoAudioSourceFound: In case you try
                 to play an audio file from a file
-                without the sound
+                without the sound #TODO
             NoVideoSourceFound: In case you try
                 to play a video file from a file
-                without the video
+                without the video #TODO
             InvalidVideoProportion: In case you try
                 to play a video without correct
-                proportions
+                proportions #TODO
             AlreadyJoinedError: In case you try
                 to join in already joined group
                 call
@@ -129,6 +114,7 @@ class JoinGroupCall(Scaffold):
             stream_type = StreamType().local_stream
         if stream_type.stream_mode == 0:
             raise InvalidStreamMode()
+
         try:
             chat_id = int(chat_id)
         except ValueError:
@@ -136,161 +122,78 @@ class JoinGroupCall(Scaffold):
                 await self._app.resolve_peer(chat_id),
             )
         self._cache_user_peer.put(chat_id, join_as)
-        headers = None
-        if isinstance(
-            stream,
-            AudioImagePiped,
-        ) or isinstance(
-            stream,
-            AudioPiped,
-        ) or isinstance(
-            stream,
-            AudioVideoPiped,
-        ) or isinstance(
-            stream,
-            VideoPiped,
-        ):
-            headers = stream.raw_headers
-        if stream.stream_video is not None:
-            if not stream.stream_video.path.startswith('screen://'):
-                await FileManager.check_file_exist(
-                    stream.stream_video.path.replace(
-                        'fifo://',
-                        '',
-                    ).replace(
-                        'image:',
-                        '',
-                    ),
-                    headers,
-                )
-        if stream.stream_audio is not None:
-            if not stream.stream_audio.path.startswith('device://'):
-                await FileManager.check_file_exist(
-                    stream.stream_audio.path.replace(
-                        'fifo://',
-                        '',
-                    ).replace(
-                        'image:',
-                        '',
-                    ),
-                    headers,
-                )
-        audio_f_parameters = ''
-        video_f_parameters = ''
-        if isinstance(
-            stream,
-            AudioImagePiped,
-        ) or isinstance(
-            stream,
-            AudioPiped,
-        ) or isinstance(
-            stream,
-            AudioVideoPiped,
-        ) or isinstance(
-            stream,
-            VideoPiped,
-        ) or isinstance(
-            stream,
-            CaptureVideoDesktop,
-        ) or isinstance(
-            stream,
-            CaptureAudioDevice,
-        ):
-            await stream.check_pipe()
-            if stream.stream_audio:
-                if stream.stream_audio.header_enabled:
-                    audio_f_parameters = stream.headers
-            audio_f_parameters += ':_cmd_:'.join(
-                shlex.split(stream.ffmpeg_parameters),
-            )
-            if stream.stream_video:
-                if stream.stream_video.header_enabled:
-                    video_f_parameters = stream.headers
-            video_f_parameters += ':_cmd_:'.join(
-                shlex.split(stream.ffmpeg_parameters),
-            )
-        elif isinstance(
-            stream,
-            CaptureAVDeviceDesktop,
-        ):
-            audio_f_parameters += ':_cmd_:'.join(
-                shlex.split(stream.audio_ffmpeg),
-            )
-            video_f_parameters += ':_cmd_:'.join(
-                shlex.split(stream.video_ffmpeg),
-            )
-        elif isinstance(
-            stream,
-            CaptureAVDesktop,
-        ):
-            await stream.check_pipe()
-            if stream.stream_audio:
-                if stream.stream_audio.header_enabled:
-                    audio_f_parameters = stream.headers
-            audio_f_parameters += ':_cmd_:'.join(
-                shlex.split(stream.audio_ffmpeg),
-            )
-            video_f_parameters += ':_cmd_:'.join(
-                shlex.split(stream.video_ffmpeg),
-            )
-        if self._app is not None:
-            if self._wait_until_run is not None:
-                if not self._wait_until_run.done():
-                    await self._wait_until_run
-                chat_call = await self._app.get_full_chat(
-                    chat_id,
-                )
-                stream_audio = stream.stream_audio
-                stream_video = stream.stream_video
-                if chat_call is not None:
-                    solver_id = Session.generate_session_id(24)
 
-                    async def internal_sender():
-                        request = {
-                            'action': 'join_call',
-                            'chat_id': chat_id,
-                            'invite_hash': invite_hash,
-                            'buffer_long': stream_type.stream_mode,
-                            'lip_sync': stream.lip_sync,
-                            'solver_id': solver_id,
-                        }
-                        if stream_audio is not None:
-                            request['stream_audio'] = {
-                                'path': stream_audio.path,
-                                'bitrate': stream_audio.parameters.bitrate,
-                                'ffmpeg_parameters': audio_f_parameters,
-                            }
-                        if stream_video is not None:
-                            video_parameters = stream_video.parameters
-                            if video_parameters.frame_rate % 5 != 0 and \
-                                    not isinstance(stream, AudioImagePiped):
-                                py_logger.warning(
-                                    'For better experience the '
-                                    'video frame rate must be a multiple of 5',
-                                )
-                            request['stream_video'] = {
-                                'path': stream_video.path,
-                                'width': video_parameters.width,
-                                'height': video_parameters.height,
-                                'framerate': video_parameters.frame_rate,
-                                'ffmpeg_parameters': video_f_parameters,
-                            }
-                        await self._binding.send(request)
-                    asyncio.ensure_future(internal_sender())
-                    result = await self._wait_result.wait_future_update(
-                        solver_id,
+        stream_audio = stream.stream_audio
+        stream_video = stream.stream_video
+        audio_description = None
+        video_description = None
+
+        raw_encoder = False
+        if isinstance(
+            stream,
+            (AudioImagePiped, AudioPiped, AudioVideoPiped, VideoPiped, CaptureVideoDesktop, CaptureAudioDevice)
+        ):
+            await stream.check_pipe()
+            raw_encoder = True
+
+        if stream_audio is not None:
+            audio_description = AudioDescription(
+                sampleRate=stream_audio.parameters.bitrate,
+                bitsPerSample=16,
+                channelCount=stream_audio.parameters.channels,
+                path=stream_audio.path,
+            )
+
+        if stream_video is not None:
+            video_description = VideoDescription(
+                width=stream_video.parameters.width,
+                height=stream_video.parameters.height,
+                fps=stream_video.parameters.frame_rate,
+                path=stream_video.path
+            )
+
+        if self._app is not None:
+            chat_call = await self._app.get_full_chat(
+                chat_id,
+            )
+
+            if chat_call is not None:
+                try:
+                    call_params = await ToAsync(
+                        self._binding.createCall(
+                            chat_id,
+                            MediaDescription(
+                                encoder='raw' if raw_encoder else 'ffmpeg',
+                                audio=audio_description,
+                                video=video_description
+                            )
+                        )
                     )
-                    if isinstance(result, AlreadyJoined):
-                        raise AlreadyJoinedError()
-                    elif isinstance(result, ErrorDuringJoin):
-                        raise TelegramServerError()
-                    elif isinstance(result, UpgradeNeeded):
-                        raise RTMPStreamNeeded()
-                    elif isinstance(result, MutedCall):
-                        raise UnMuteNeeded()
-                else:
-                    raise NoActiveGroupCall()
+                except ConnectionError:
+                    raise AlreadyJoinedError()
+
+                result_params = await self._app.join_group_call(
+                    chat_id,
+                    call_params,
+                    invite_hash,
+                    stream_video is not None,
+                    self._cache_user_peer.get(chat_id),
+                )
+
+                try:
+                    await ToAsync(
+                        self._binding.connect(
+                            chat_id,
+                            result_params
+                        )
+                    )
+                except InvalidParams:
+                    raise UnMuteNeeded()
+                except RTMPNeeded:
+                    raise RTMPStreamNeeded()
+                except Exception:
+                    raise TelegramServerError()
             else:
-                raise NodeJSNotRunning()
+                raise NoActiveGroupCall()
         else:
             raise NoMtProtoClientSet()

@@ -1,7 +1,7 @@
 import atexit
 from typing import Any
 
-from .binding import Binding
+from ntgcalls import NTgCalls
 from .environment import Environment
 from .handlers import HandlersHolder
 from .methods import Methods
@@ -64,11 +64,10 @@ class PyTgCalls(Methods, Scaffold):
         self._cache_user_peer = Cache()
         self._wait_result = UpdateSolver()
         self._on_event_update = HandlersHolder()
-        self._binding = Binding(
-            overload_quiet_mode,
-        )
+        self._binding = NTgCalls()
 
         def cleanup():
             if self._async_core is not None:
                 self._async_core.cancel()
+
         atexit.register(cleanup)

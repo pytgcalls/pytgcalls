@@ -1,6 +1,8 @@
 from asyncio import Future
 from typing import Optional
 
+from ntgcalls import NTgCalls
+
 
 class Scaffold:
     _REQUIRED_PYROGRAM_VERSION = '1.2.20'
@@ -11,14 +13,13 @@ class Scaffold:
         self._async_core = None
         self._is_running = None
         self._my_id = None
-        self._wait_until_run: Optional[Future] = None
         self._env_checker = None
         self._call_holder = None
         self._cache_user_peer = None
         self._wait_result = None
         self._cache_local_peer = None
         self._on_event_update = None
-        self._binding = None
+        self._binding: NTgCalls = None
 
     def _handle_mtproto(self):
         pass
