@@ -1,12 +1,11 @@
-import asyncio
 from typing import Union
 
+from ntgcalls import ConnectionError
+from ...to_async import ToAsync
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
-from ...types import NotInGroupCall
-from ...types.session import Session
 
 
 class UnMuteStream(Scaffold):
@@ -57,23 +56,14 @@ class UnMuteStream(Scaffold):
             chat_id = BridgedClient.chat_id(
                 await self._app.resolve_peer(chat_id),
             )
-        if self._app is not None:
-            if self._wait_until_run is not None: #TODO remove this
-                solver_id = Session.generate_session_id(24)
 
-                async def internal_sender():
-                    if not self._wait_until_run.done():
-                        await self._wait_until_run
-                    await self._binding.send({
-                        'action': 'unmute_stream',
-                        'chat_id': chat_id,
-                        'solver_id': solver_id,
-                    })
-                asyncio.ensure_future(internal_sender())
-                result = await self._wait_result.wait_future_update(
-                    solver_id,
+        if self._app is not None:
+            try:
+                await ToAsync(
+                    self._binding.unmute,
+                    chat_id
                 )
-                if isinstance(result, NotInGroupCall):
-                    raise NotInGroupCallError()
+            except ConnectionError:
+                raise NotInGroupCallError()
         else:
             raise NoMtProtoClientSet()

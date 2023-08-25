@@ -1,12 +1,12 @@
-import asyncio
 from typing import Union
 
+from ntgcalls import ConnectionError
+from ...to_async import ToAsync
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...types import NotInGroupCall
-from ...types.session import Session
 
 
 class ResumeStream(Scaffold):
@@ -61,25 +61,14 @@ class ResumeStream(Scaffold):
             chat_id = BridgedClient.chat_id(
                 await self._app.resolve_peer(chat_id),
             )
-        if self._app is not None:
-            if self._wait_until_run is not None:
-                solver_id = Session.generate_session_id(24)
 
-                async def internal_sender():
-                    if not self._wait_until_run.done(): #TODO remove this
-                        await self._wait_until_run
-                    await self._binding.send({
-                        'action': 'resume',
-                        'chat_id': chat_id,
-                        'solver_id': solver_id,
-                    })
-                active_call = self._call_holder.get_active_call(chat_id)
-                asyncio.ensure_future(internal_sender())
-                result = await self._wait_result.wait_future_update(
-                    solver_id,
+        if self._app is not None:
+            try:
+                return await ToAsync(
+                    self._binding.resume,
+                    chat_id
                 )
-                if isinstance(result, NotInGroupCall):
-                    raise NotInGroupCallError()
-                return active_call.status == 'paused'
+            except ConnectionError:
+                raise NotInGroupCallError()
         else:
             raise NoMtProtoClientSet()

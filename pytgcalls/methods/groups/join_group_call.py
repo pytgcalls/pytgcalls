@@ -128,13 +128,13 @@ class JoinGroupCall(Scaffold):
         audio_description = None
         video_description = None
 
-        raw_encoder = False
+        raw_encoder = True
         if isinstance(
             stream,
             (AudioImagePiped, AudioPiped, AudioVideoPiped, VideoPiped, CaptureVideoDesktop, CaptureAudioDevice)
         ):
             await stream.check_pipe()
-            raw_encoder = True
+            raw_encoder = False
 
         if stream_audio is not None:
             audio_description = AudioDescription(
@@ -145,6 +145,13 @@ class JoinGroupCall(Scaffold):
             )
 
         if stream_video is not None:
+            if stream_video.parameters.frame_rate % 5 != 0 and \
+                    not isinstance(stream, AudioImagePiped):
+                py_logger.warning(
+                    'For better experience the '
+                    'video frame rate must be a multiple of 5',
+                )
+
             video_description = VideoDescription(
                 width=stream_video.parameters.width,
                 height=stream_video.parameters.height,
@@ -160,13 +167,12 @@ class JoinGroupCall(Scaffold):
             if chat_call is not None:
                 try:
                     call_params = await ToAsync(
-                        self._binding.createCall(
-                            chat_id,
-                            MediaDescription(
-                                encoder='raw' if raw_encoder else 'ffmpeg',
-                                audio=audio_description,
-                                video=video_description
-                            )
+                        self._binding.createCall,
+                        chat_id,
+                        MediaDescription(
+                            encoder='raw' if raw_encoder else 'ffmpeg',
+                            audio=audio_description,
+                            video=video_description
                         )
                     )
                 except ConnectionError:
@@ -182,10 +188,9 @@ class JoinGroupCall(Scaffold):
 
                 try:
                     await ToAsync(
-                        self._binding.connect(
-                            chat_id,
-                            result_params
-                        )
+                        self._binding.connect,
+                        chat_id,
+                        result_params
                     )
                 except InvalidParams:
                     raise UnMuteNeeded()

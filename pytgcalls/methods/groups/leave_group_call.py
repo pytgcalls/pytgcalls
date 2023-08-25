@@ -62,13 +62,18 @@ class LeaveGroupCall(Scaffold):
             )
 
             if chat_call is not None:
+                await self._app.leave_group_call(
+                    chat_id,
+                )
+
                 try:
                     await ToAsync(
-                        self._binding.stop(chat_id)
+                        self._binding.stop,
+                        chat_id
                     )
                 except ConnectionError:
                     raise NotInGroupCallError()
-                else:
-                    raise NoActiveGroupCall()
             else:
-                raise NoMtProtoClientSet()
+                raise NoActiveGroupCall()
+        else:
+            raise NoMtProtoClientSet()
