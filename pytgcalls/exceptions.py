@@ -196,17 +196,6 @@ class NoAudioSourceFound(Exception):
         )
 
 
-class RTMPStreamNeeded(Exception):
-    """Needed an RTMP Stream, raised by
-    :meth:`~pytgcalls.PyTgCalls.join_group_call`
-    """
-
-    def __init__(self):
-        super().__init__(
-            'Needed an RTMP Stream',
-        )
-
-
 class UnMuteNeeded(Exception):
     """Needed to unmute the userbot, raised by
     :meth:`~pytgcalls.PyTgCalls.join_group_call`

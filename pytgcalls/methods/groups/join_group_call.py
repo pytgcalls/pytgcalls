@@ -2,33 +2,28 @@ import logging
 
 from typing import Union
 
-from ntgcalls import MediaDescription, AudioDescription, InvalidParams, ConnectionError, RTMPNeeded, VideoDescription
+from ntgcalls import InvalidParams, ConnectionError
+from ..utilities.stream_params import StreamParams
 from ...to_async import ToAsync
-from ...exceptions import InvalidStreamMode, AlreadyJoinedError, TelegramServerError, RTMPStreamNeeded, UnMuteNeeded
+from ...exceptions import InvalidStreamMode, AlreadyJoinedError, TelegramServerError, UnMuteNeeded
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMtProtoClientSet
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
-from ...types import CaptureAudioDevice
-from ...types import CaptureVideoDesktop
-from ...types.input_stream import AudioPiped
-from ...types.input_stream import AudioVideoPiped
 from ...types.input_stream import InputStream
-from ...types.input_stream import VideoPiped
-from ...types.input_stream.audio_image_piped import AudioImagePiped
 
 py_logger = logging.getLogger('pytgcalls')
 
 
 class JoinGroupCall(Scaffold):
     async def join_group_call(
-            self,
-            chat_id: Union[int, str],
-            stream: InputStream,
-            invite_hash: str = None,
-            join_as=None,
-            stream_type: StreamType = None,
+        self,
+        chat_id: Union[int, str],
+        stream: InputStream,
+        invite_hash: str = None,
+        join_as=None,
+        stream_type: StreamType = None,
     ):
         """Join a group call to stream a file
 
@@ -123,57 +118,19 @@ class JoinGroupCall(Scaffold):
             )
         self._cache_user_peer.put(chat_id, join_as)
 
-        stream_audio = stream.stream_audio
-        stream_video = stream.stream_video
-        audio_description = None
-        video_description = None
-
-        raw_encoder = True
-        if isinstance(
-            stream,
-            (AudioImagePiped, AudioPiped, AudioVideoPiped, VideoPiped, CaptureVideoDesktop, CaptureAudioDevice)
-        ):
-            await stream.check_pipe()
-            raw_encoder = False
-
-        if stream_audio is not None:
-            audio_description = AudioDescription(
-                sampleRate=stream_audio.parameters.bitrate,
-                bitsPerSample=16,
-                channelCount=stream_audio.parameters.channels,
-                path=stream_audio.path,
-            )
-
-        if stream_video is not None:
-            if stream_video.parameters.frame_rate % 5 != 0 and \
-                    not isinstance(stream, AudioImagePiped):
-                py_logger.warning(
-                    'For better experience the '
-                    'video frame rate must be a multiple of 5',
-                )
-
-            video_description = VideoDescription(
-                width=stream_video.parameters.width,
-                height=stream_video.parameters.height,
-                fps=stream_video.parameters.frame_rate,
-                path=stream_video.path
-            )
-
         if self._app is not None:
             chat_call = await self._app.get_full_chat(
                 chat_id,
             )
 
             if chat_call is not None:
+                media_description = await StreamParams.get_stream_params(stream)
+
                 try:
                     call_params = await ToAsync(
                         self._binding.createCall,
                         chat_id,
-                        MediaDescription(
-                            encoder='raw' if raw_encoder else 'ffmpeg',
-                            audio=audio_description,
-                            video=video_description
-                        )
+                        media_description
                     )
                 except ConnectionError:
                     raise AlreadyJoinedError()
@@ -182,7 +139,7 @@ class JoinGroupCall(Scaffold):
                     chat_id,
                     call_params,
                     invite_hash,
-                    stream_video is not None,
+                    media_description.video is not None,
                     self._cache_user_peer.get(chat_id),
                 )
 
@@ -194,8 +151,6 @@ class JoinGroupCall(Scaffold):
                     )
                 except InvalidParams:
                     raise UnMuteNeeded()
-                except RTMPNeeded:
-                    raise RTMPStreamNeeded()
                 except Exception:
                     raise TelegramServerError()
             else:
