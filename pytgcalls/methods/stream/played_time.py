@@ -1,13 +1,11 @@
-import asyncio
 from typing import Union
 
+from ntgcalls import ConnectionError
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
-from ...types import NotInGroupCall
-from ...types.session import Session
-from ...types.stream import StreamTime
+from ...to_async import ToAsync
 
 
 class PlayedTime(Scaffold):
@@ -17,7 +15,7 @@ class PlayedTime(Scaffold):
     ):
         """Get the played time of the stream
 
-        This method allow to get the played time of the stream
+        This method allows you to get the played time of the stream
 
         Parameters:
             chat_id (``int`` | ``str``):
@@ -27,9 +25,6 @@ class PlayedTime(Scaffold):
         Raises:
             NoMtProtoClientSet: In case you try
                 to call this method without any MtProto client
-            NodeJSNotRunning: In case you try
-                to call this method without do
-                :meth:`~pytgcalls.PyTgCalls.start` before
             NoActiveGroupCall: In case you try
                 to edit a not started group call
         """
@@ -39,27 +34,14 @@ class PlayedTime(Scaffold):
             chat_id = BridgedClient.chat_id(
                 await self._app.resolve_peer(chat_id),
             )
+
         if self._app is not None:
-            if self._wait_until_run is not None: #TODO remove this
-                solver_id = Session.generate_session_id(24)
-
-                async def internal_sender():
-                    if not self._wait_until_run.done():
-                        await self._wait_until_run
-                    request = {
-                        'action': 'played_time',
-                        'chat_id': chat_id,
-                        'solver_id': solver_id,
-                    }
-                    await self._binding.send(request)
-
-                asyncio.ensure_future(internal_sender())
-                result = await self._wait_result.wait_future_update(
-                    solver_id,
+            try:
+                return await ToAsync(
+                    self._binding.time,
+                    chat_id
                 )
-                if isinstance(result, NotInGroupCall):
-                    raise NotInGroupCallError()
-                elif isinstance(result, StreamTime):
-                    return result.time
+            except ConnectionError:
+                raise NotInGroupCallError()
         else:
             raise NoMtProtoClientSet()

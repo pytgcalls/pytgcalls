@@ -3,6 +3,7 @@ import logging
 from typing import Union
 
 from ..utilities.stream_params import StreamParams
+from ntgcalls import FileError
 from ...exceptions import NoMtProtoClientSet, NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
@@ -97,8 +98,8 @@ class ChangeStream(Scaffold):
                     chat_id,
                     await StreamParams.get_stream_params(stream)
                 )
-            except FileNotFoundError:
-                raise
+            except FileError:
+                raise FileNotFoundError()
             except Exception:
                 raise NotInGroupCallError()
         else:

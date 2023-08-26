@@ -42,7 +42,6 @@ from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
 
-# TODO refactor needed
 class PyrogramClient(BridgedClient):
     def __init__(
         self,

@@ -1,7 +1,7 @@
 import logging
 
 from ntgcalls import AudioDescription, VideoDescription, MediaDescription
-from pytgcalls.types import CaptureAudioDevice
+from pytgcalls.types import CaptureAudioDevice, CaptureAVDesktop
 from pytgcalls.types import CaptureVideoDesktop
 from pytgcalls.types.input_stream import AudioPiped
 from pytgcalls.types.input_stream import AudioVideoPiped
@@ -13,17 +13,18 @@ py_logger = logging.getLogger('pytgcalls')
 
 
 class StreamParams:
-
     @staticmethod
     async def get_stream_params(stream: InputStream) -> MediaDescription:
         audio_description = None
         video_description = None
-
         raw_encoder = True
-        # TODO CaptureAVDeviceDesktop ?
+
         if isinstance(
                 stream,
-                (AudioImagePiped, AudioPiped, AudioVideoPiped, VideoPiped, CaptureVideoDesktop, CaptureAudioDevice)
+                (
+                    AudioImagePiped, AudioPiped, AudioVideoPiped,
+                    VideoPiped, CaptureVideoDesktop, CaptureAudioDevice, CaptureAVDesktop
+                )
         ):
             await stream.check_pipe()
             raw_encoder = False

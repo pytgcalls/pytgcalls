@@ -2,7 +2,7 @@ import logging
 
 from typing import Union
 
-from ntgcalls import InvalidParams, ConnectionError
+from ntgcalls import InvalidParams, ConnectionError, FileError
 from ..utilities.stream_params import StreamParams
 from ...to_async import ToAsync
 from ...exceptions import InvalidStreamMode, AlreadyJoinedError, TelegramServerError, UnMuteNeeded
@@ -132,6 +132,8 @@ class JoinGroupCall(Scaffold):
                         chat_id,
                         media_description
                     )
+                except FileError:
+                    raise FileNotFoundError()
                 except ConnectionError:
                     raise AlreadyJoinedError()
 
