@@ -59,7 +59,7 @@ class MuteStream(Scaffold):
 
         if self._app is not None:
             try:
-                await ToAsync(
+                return await ToAsync(
                     self._binding.mute,
                     chat_id
                 )

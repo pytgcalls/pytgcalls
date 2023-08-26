@@ -73,11 +73,8 @@ class JoinGroupCall(Scaffold):
                 to join in already joined group
                 call
             TelegramServerError: Error occurred when
-                joining to a group call (
+                joining a group call (
                 Telegram Server Side)
-            RTMPStreamNeeded: In case you try
-                to join a group call without
-                a RTMP stream
             UnMuteNeeded: In case you try
                 to play on a muted group call
 
