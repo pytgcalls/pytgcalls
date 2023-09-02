@@ -8,7 +8,6 @@ from .join_group_call import JoinGroupCall
 from .leave_group_call import LeaveGroupCall
 
 
-# TODO refactor needed
 class Groups(
     ActiveCalls,
     Calls,

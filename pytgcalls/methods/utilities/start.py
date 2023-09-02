@@ -1,5 +1,3 @@
-import asyncio
-
 from ...exceptions import PyTgCallsAlreadyRunning
 from ...scaffold import Scaffold
 
