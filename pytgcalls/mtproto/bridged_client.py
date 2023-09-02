@@ -41,11 +41,12 @@ class BridgedClient:
     ):
         pass
 
-    async def set_video_call_status(
+    async def set_call_status(
         self,
         chat_id: int,
-        stopped_status: Optional[bool],
+        muted_status: Optional[bool],
         paused_status: Optional[bool],
+        stopped_status: Optional[bool],
         participant: Any,
     ):
         pass

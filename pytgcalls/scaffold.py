@@ -1,7 +1,4 @@
-from asyncio import Future
-from typing import Optional
-
-from ntgcalls import NTgCalls
+from ntgcalls import NTgCalls, StreamType
 
 
 class Scaffold:
@@ -24,25 +21,10 @@ class Scaffold:
     def _handle_mtproto(self):
         pass
 
-    async def _start_binding(self):
-        pass
-
     async def _init_mtproto(self):
         pass
 
-    async def _join_voice_call(self, params: dict):
-        pass
-
-    async def _leave_voice_call(self, params: dict):
-        pass
-
-    async def _stream_ended_handler(self, params: dict, is_audio: bool):
-        pass
-
-    async def _raw_update_handler(self, params: dict):
-        pass
-
-    async def _set_video_call_status(self, params: dict):
+    async def _stream_ended_handler(self, chat_id: int, stream: StreamType):
         pass
 
     async def start(self):

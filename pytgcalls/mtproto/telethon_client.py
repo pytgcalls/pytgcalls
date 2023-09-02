@@ -353,11 +353,12 @@ class TelethonClient(BridgedClient):
                 ),
             )
 
-    async def set_video_call_status(
+    async def set_call_status(
         self,
         chat_id: int,
-        stopped_status: Optional[bool],
+        muted_status: Optional[bool],
         paused_status: Optional[bool],
+        stopped_status: Optional[bool],
         participant: TypeInputPeer,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
@@ -366,7 +367,7 @@ class TelethonClient(BridgedClient):
                 EditGroupCallParticipantRequest(
                     call=chat_call,
                     participant=participant,
-                    muted=False,
+                    muted=muted_status,
                     video_stopped=stopped_status,
                     video_paused=paused_status,
                 ),
