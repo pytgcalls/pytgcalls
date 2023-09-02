@@ -147,6 +147,7 @@ setup(
         'aiohttp',
         'psutil',
         'screeninfo',
+        'deprecation',
     ],
     python_requires='>=3.6.1',
     include_package_data=True,

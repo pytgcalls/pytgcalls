@@ -1,3 +1,4 @@
 aiohttp
+deprecation
 psutil
 screeninfo

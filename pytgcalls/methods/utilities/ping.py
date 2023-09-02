@@ -1,7 +1,7 @@
 from time import time
 
-from ...to_async import ToAsync
 from ...scaffold import Scaffold
+from ...to_async import ToAsync
 
 
 class Ping(Scaffold):

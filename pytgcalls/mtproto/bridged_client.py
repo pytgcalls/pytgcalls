@@ -14,11 +14,11 @@ class BridgedClient:
     async def join_group_call(
         self,
         chat_id: int,
-        json_join: dict,
+        json_join: str,
         invite_hash: str,
         have_video: bool,
         join_as: Any,
-    ) -> dict:
+    ) -> str:
         pass
 
     async def leave_group_call(

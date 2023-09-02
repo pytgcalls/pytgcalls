@@ -1,11 +1,13 @@
 from typing import Union
 
 from ntgcalls import ConnectionError
-from ...to_async import ToAsync
-from ...exceptions import NoActiveGroupCall, NotInGroupCallError
+
+from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMtProtoClientSet
+from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
+from ...to_async import ToAsync
 
 
 class LeaveGroupCall(Scaffold):
@@ -69,7 +71,7 @@ class LeaveGroupCall(Scaffold):
                 try:
                     await ToAsync(
                         self._binding.stop,
-                        chat_id
+                        chat_id,
                     )
                 except ConnectionError:
                     raise NotInGroupCallError()

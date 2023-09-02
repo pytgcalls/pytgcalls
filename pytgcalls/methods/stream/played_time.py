@@ -1,6 +1,7 @@
 from typing import Union
 
 from ntgcalls import ConnectionError
+
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
@@ -39,7 +40,7 @@ class PlayedTime(Scaffold):
             try:
                 return await ToAsync(
                     self._binding.time,
-                    chat_id
+                    chat_id,
                 )
             except ConnectionError:
                 raise NotInGroupCallError()

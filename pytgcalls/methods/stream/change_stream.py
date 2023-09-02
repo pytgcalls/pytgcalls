@@ -1,14 +1,15 @@
 import logging
-
 from typing import Union
 
-from ..utilities.stream_params import StreamParams
 from ntgcalls import FileError
-from ...exceptions import NoMtProtoClientSet, NotInGroupCallError
+
+from ...exceptions import NoMtProtoClientSet
+from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
 from ...types.input_stream import InputStream
+from ..utilities.stream_params import StreamParams
 
 py_logger = logging.getLogger('pytgcalls')
 
@@ -96,7 +97,7 @@ class ChangeStream(Scaffold):
                 await ToAsync(
                     self._binding.changeStream,
                     chat_id,
-                    await StreamParams.get_stream_params(stream)
+                    await StreamParams.get_stream_params(stream),
                 )
             except FileError:
                 raise FileNotFoundError()

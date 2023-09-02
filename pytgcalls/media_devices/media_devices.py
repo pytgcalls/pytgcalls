@@ -11,6 +11,7 @@ from .device_info import DeviceInfo
 from .screen_info import ScreenInfo
 
 
+# TODO: Refactor
 class MediaDevices:
     @staticmethod
     async def get_screen_devices() -> List:

@@ -1,11 +1,12 @@
 from typing import Union
 
 from ntgcalls import ConnectionError
-from ...to_async import ToAsync
+
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
+from ...to_async import ToAsync
 
 
 class PauseStream(Scaffold):
@@ -65,7 +66,7 @@ class PauseStream(Scaffold):
             try:
                 return await ToAsync(
                     self._binding.pause,
-                    chat_id
+                    chat_id,
                 )
             except ConnectionError:
                 raise NotInGroupCallError()

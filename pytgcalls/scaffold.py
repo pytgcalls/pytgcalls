@@ -1,4 +1,5 @@
-from ntgcalls import NTgCalls, StreamType
+from ntgcalls import NTgCalls
+from ntgcalls import StreamType
 
 
 class Scaffold:

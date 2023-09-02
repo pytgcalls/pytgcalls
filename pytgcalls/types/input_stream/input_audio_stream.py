@@ -1,32 +1,21 @@
-from ..py_object import PyObject
+import deprecation
+from ntgcalls import InputMode
+
+from ... import __version__
 from .audio_parameters import AudioParameters
+from .audio_stream import AudioStream
 
 
-class InputAudioStream(PyObject):
-    """The raw audio stream (PCM16L) descriptor
-
-    Attributes:
-        path (``str``):
-            The audio file path
-        parameters (:obj:`~pytgcalls.types.AudioParameters()`):
-            The audio parameters of the stream
-
-    Parameters:
-        path (``str``):
-            The audio file path (PCM16L format only)
-        parameters (:obj:`~pytgcalls.types.AudioParameters()`):
-            The audio parameters of the stream, can be used also
-            :obj:`~pytgcalls.types.HighQualityAudio()`,
-            :obj:`~pytgcalls.types.MediumQualityAudio()` or
-            :obj:`~pytgcalls.types.LowQualityAudio()`
-    """
-
+@deprecation.deprecated(
+    deprecated_in='1.0.0.dev1',
+    current_version=__version__,
+    details='Use pytgcalls.AudioStream instead.',
+)
+class InputAudioStream(AudioStream):
     def __init__(
         self,
         path: str,
         parameters: AudioParameters = AudioParameters(),
         header_enabled: bool = False,
     ):
-        self.path: str = path
-        self.parameters: AudioParameters = parameters
-        self.header_enabled: bool = header_enabled
+        super().__init__(InputMode.File, path, parameters, header_enabled)

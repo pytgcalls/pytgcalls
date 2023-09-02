@@ -1,12 +1,10 @@
 import logging
 
-from ntgcalls import AudioDescription, VideoDescription, MediaDescription
-from pytgcalls.types import CaptureAudioDevice, CaptureAVDesktop
-from pytgcalls.types import CaptureVideoDesktop
-from pytgcalls.types.input_stream import AudioPiped
-from pytgcalls.types.input_stream import AudioVideoPiped
+from ntgcalls import AudioDescription
+from ntgcalls import MediaDescription
+from ntgcalls import VideoDescription
+
 from pytgcalls.types.input_stream import InputStream
-from pytgcalls.types.input_stream import VideoPiped
 from pytgcalls.types.input_stream.audio_image_piped import AudioImagePiped
 
 py_logger = logging.getLogger('pytgcalls')
@@ -17,24 +15,14 @@ class StreamParams:
     async def get_stream_params(stream: InputStream) -> MediaDescription:
         audio_description = None
         video_description = None
-        raw_encoder = True
-
-        if isinstance(
-                stream,
-                (
-                    AudioImagePiped, AudioPiped, AudioVideoPiped,
-                    VideoPiped, CaptureVideoDesktop, CaptureAudioDevice, CaptureAVDesktop
-                )
-        ):
-            await stream.check_pipe()
-            raw_encoder = False
 
         if stream.stream_audio is not None:
             audio_description = AudioDescription(
-                sampleRate=stream.stream_audio.parameters.bitrate,
-                bitsPerSample=16,
-                channelCount=stream.stream_audio.parameters.channels,
-                path=stream.stream_audio.path,
+                input_mode=stream.stream_audio.input_mode,
+                input=stream.stream_audio.path,
+                sample_rate=stream.stream_audio.parameters.bitrate,
+                bits_per_sample=16,
+                channel_count=stream.stream_audio.parameters.channels,
             )
 
         if stream.stream_video is not None:
@@ -46,14 +34,14 @@ class StreamParams:
                 )
 
             video_description = VideoDescription(
+                input_mode=stream.stream_video.input_mode,
+                input=stream.stream_video.path,
                 width=stream.stream_video.parameters.width,
                 height=stream.stream_video.parameters.height,
                 fps=stream.stream_video.parameters.frame_rate,
-                path=stream.stream_video.path
             )
 
         return MediaDescription(
-            encoder='raw' if raw_encoder else 'ffmpeg',
             audio=audio_description,
-            video=video_description
+            video=video_description,
         )

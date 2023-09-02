@@ -1,11 +1,12 @@
 from typing import Union
 
 from ntgcalls import ConnectionError
-from ...to_async import ToAsync
+
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
+from ...to_async import ToAsync
 
 
 class MuteStream(Scaffold):
@@ -61,7 +62,7 @@ class MuteStream(Scaffold):
             try:
                 return await ToAsync(
                     self._binding.mute,
-                    chat_id
+                    chat_id,
                 )
             except ConnectionError:
                 raise NotInGroupCallError()

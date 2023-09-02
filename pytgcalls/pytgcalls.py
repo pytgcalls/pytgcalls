@@ -2,6 +2,7 @@ import atexit
 from typing import Any
 
 from ntgcalls import NTgCalls
+
 from .environment import Environment
 from .handlers import HandlersHolder
 from .methods import Methods
