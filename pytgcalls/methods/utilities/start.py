@@ -10,27 +10,6 @@ from ...scaffold import Scaffold
 
 class Start(Scaffold):
     async def start(self):
-        """Start the client.
-
-        Raises:
-            PyTgCallsAlreadyRunning: In case you try
-                to start an already started client.
-
-        Example:
-            .. code-block:: python
-                :emphasize-lines: 5
-
-                from pytgcalls import Client
-                from pytgcalls import idle
-                ...
-                app = Client(client)
-                app.start()
-
-                ...  # Call API methods
-
-                idle()
-        """
-
         def stream_upgrade(chat_id: int, state: MediaState):
             async def async_upgrade():
                 try:

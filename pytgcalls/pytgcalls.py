@@ -25,9 +25,7 @@ class PyTgCalls(Methods, Scaffold):
         cache_peer (`InputPeer (P)`_ | `InputPeer (T)`_):
             Get current Telegram user
         ping (``int``):
-            Ping of NodeJS core
-        is_connected (``bool``):
-            Check if is alive the NodeJS connection
+            Ping of C++ core
 
     Parameters:
         app (`Client`_ | `TelegramClient`_):
@@ -35,9 +33,6 @@ class PyTgCalls(Methods, Scaffold):
 
         cache_duration (``int``):
             Cache duration of Full Chat query
-
-        overload_quiet_mode (``bool``):
-            Disable overload cpu messages by setting true
 
     Raises:
         InvalidMtProtoClient: You set an invalid MtProto client
@@ -48,7 +43,6 @@ class PyTgCalls(Methods, Scaffold):
         self,
         app: Any,
         cache_duration: int = 120,
-        overload_quiet_mode: bool = False,
     ):
         super().__init__()
         self._app = MtProtoClient(

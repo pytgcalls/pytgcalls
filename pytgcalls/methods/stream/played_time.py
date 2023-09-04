@@ -14,21 +14,6 @@ class PlayedTime(Scaffold):
         self,
         chat_id: Union[int, str],
     ):
-        """Get the played time of the stream
-
-        This method allows you to get the played time of the stream
-
-        Parameters:
-            chat_id (``int`` | ``str``):
-                Unique identifier of the target chat.
-                Can be a direct id (int) or a username (str)
-
-        Raises:
-            NoMtProtoClientSet: In case you try
-                to call this method without any MtProto client
-            NoActiveGroupCall: In case you try
-                to edit a not started group call
-        """
         try:
             chat_id = int(chat_id)
         except ValueError:
