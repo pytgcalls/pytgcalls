@@ -1,6 +1,6 @@
 from ntgcalls import InputMode
 
-from pytgcalls.types import VideoParameters
+from .video_parameters import VideoParameters
 
 
 class VideoStream:
