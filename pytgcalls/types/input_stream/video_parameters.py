@@ -2,24 +2,6 @@ from ..py_object import PyObject
 
 
 class VideoParameters(PyObject):
-    """Video parameters of the stream
-
-    Attributes:
-        width (``int``):
-            Video width
-        height (``int``):
-            Video height
-        frame_rate (``int``):
-            Framerate of video
-
-    Parameters:
-        width (``int``):
-            Video width
-        height (``int``):
-            Video height
-        frame_rate (``int``):
-            Framerate of video
-    """
 
     def __init__(
         self,

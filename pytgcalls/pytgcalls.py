@@ -14,30 +14,6 @@ from .types.update_solver import UpdateSolver
 
 
 class PyTgCalls(Methods, Scaffold):
-    """PyTgCalls Client, the main means
-    for interacting with Group Calls.
-
-    Attributes:
-        active_calls (List of :obj:`~pytgcalls.types.GroupCall`):
-            Get a list of active (Playing / Paused) group calls
-        calls (List of :obj:`~pytgcalls.types.GroupCall`):
-            Get a list of existent group calls
-        cache_peer (`InputPeer (P)`_ | `InputPeer (T)`_):
-            Get current Telegram user
-        ping (``int``):
-            Ping of C++ core
-
-    Parameters:
-        app (`Client`_ | `TelegramClient`_):
-            Pass the MtProto Client
-
-        cache_duration (``int``):
-            Cache duration of Full Chat query
-
-    Raises:
-        InvalidMtProtoClient: You set an invalid MtProto client
-
-    """
 
     def __init__(
         self,

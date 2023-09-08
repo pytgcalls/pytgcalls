@@ -2,22 +2,6 @@ from pytgcalls.types.py_object import PyObject
 
 
 class GroupCall(PyObject):
-    """Info about a group call
-
-    Attributes:
-        chat_id (``int``):
-            Unique identifier of chat.
-        is_playing (``bool``):
-            Check if exist any sort of stream
-        status (``str``):
-            Status of Stream
-
-    Parameters:
-        chat_id (``int``):
-            Unique identifier of chat.
-        binary_status (``int``):
-            PyTgCalls API parameter.
-    """
 
     def __init__(
             self,

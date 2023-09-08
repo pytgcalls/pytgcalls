@@ -12,38 +12,6 @@ class GetParticipants(Scaffold):
         self,
         chat_id: Union[int, str],
     ) -> Optional[List[GroupCallParticipant]]:
-        """Get list of participants from a group call
-
-        This method return the list of participants on a group call
-        using MtProto APIs
-
-        Parameters:
-            chat_id (``int`` | ``str``):
-                Can be a direct id (int) or a username (str)
-
-        Returns:
-            List of :obj:`~pytgcalls.types.GroupCallParticipant()`:
-            On success, a list of participants is returned
-
-        Example:
-            .. code-block:: python
-                :emphasize-lines: 10-12
-
-                from pytgcalls import Client
-                from pytgcalls import idle
-                ...
-
-                app = PyTgCalls(client)
-                app.start()
-
-                ...  # Call API methods
-
-                app.get_participants(
-                    -1001185324811,
-                )
-
-                idle()
-        """
         try:
             chat_id = int(chat_id)
         except ValueError:

@@ -12,46 +12,6 @@ class ChangeVolumeCall(Scaffold):
         chat_id: Union[int, str],
         volume: int,
     ):
-        """Change the volume of the playing stream
-
-        This method change the output volume of the userbot
-        using MtProto APIs
-
-        Parameters:
-            chat_id (``int`` | ``str``):
-                Can be a direct id (int) or a username (str)
-            volume (``int``)
-                Volume to set to the stream
-
-        Raises:
-            NoMtProtoClientSet: In case you try
-                to call this method without any MtProto client
-            NodeJSNotRunning: In case you try
-                to call this method without do
-                :meth:`~pytgcalls.PyTgCalls.start` before
-            NoActiveGroupCall: In case you try
-                to edit a not started group call
-
-        Example:
-            .. code-block:: python
-                :emphasize-lines: 10-13
-
-                from pytgcalls import Client
-                from pytgcalls import idle
-                ...
-
-                app = PyTgCalls(client)
-                app.start()
-
-                ...  # Call API methods
-
-                app.change_volume_call(
-                    -1001185324811,
-                    175,
-                )
-
-                idle()
-        """
         if self._app is not None:
             try:
                 chat_id = int(chat_id)
