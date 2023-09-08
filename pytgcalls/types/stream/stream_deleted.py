@@ -1,5 +1,7 @@
 from ...types.update import Update
 
+# TODO deprecation warning
+
 
 class StreamDeleted(Update):
 

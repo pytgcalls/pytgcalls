@@ -84,6 +84,7 @@ class JoinGroupCall(Scaffold):
                     raise UnMuteNeeded()
                 except Exception:
                     raise TelegramServerError()
+
             else:
                 raise NoActiveGroupCall()
         else:

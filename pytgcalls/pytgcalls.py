@@ -9,7 +9,6 @@ from .methods import Methods
 from .mtproto import MtProtoClient
 from .scaffold import Scaffold
 from .types import Cache
-from .types.call_holder import CallHolder
 from .types.update_solver import UpdateSolver
 
 
@@ -31,7 +30,6 @@ class PyTgCalls(Methods, Scaffold):
             self._REQUIRED_TELETHON_VERSION,
             self._app.client,
         )
-        self._call_holder = CallHolder()
         self._cache_user_peer = Cache()
         self._wait_result = UpdateSolver()
         self._on_event_update = HandlersHolder()
