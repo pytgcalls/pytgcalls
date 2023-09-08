@@ -13,7 +13,6 @@ from .types.update_solver import UpdateSolver
 
 
 class PyTgCalls(Methods, Scaffold):
-
     def __init__(
         self,
         app: Any,

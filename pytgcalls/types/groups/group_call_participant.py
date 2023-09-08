@@ -2,7 +2,6 @@ from pytgcalls.types.py_object import PyObject
 
 
 class GroupCallParticipant(PyObject):
-
     def __init__(
         self,
         user_id: int,

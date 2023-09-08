@@ -9,7 +9,6 @@ from ..exceptions import TooManyCustomApiDecorators
 
 
 class CustomApi:
-
     def __init__(
         self,
         port: int = 24859,

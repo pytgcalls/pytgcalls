@@ -10,7 +10,6 @@ from .video_tools import check_video_params
 
 # TODO refactor needed
 class VideoPiped(InputStream):
-
     def __init__(
         self,
         path: str,

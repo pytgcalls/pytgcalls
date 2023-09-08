@@ -1,5 +1,4 @@
 class TooOldPyrogramVersion(Exception):
-
     def __init__(
             self,
             version_needed: str,
@@ -13,7 +12,6 @@ class TooOldPyrogramVersion(Exception):
 
 
 class TooOldTelethonVersion(Exception):
-
     def __init__(
             self,
             version_needed: str,
@@ -27,7 +25,6 @@ class TooOldTelethonVersion(Exception):
 
 
 class InvalidStreamMode(Exception):
-
     def __init__(self):
         super().__init__(
             'Invalid stream mode',
@@ -35,7 +32,6 @@ class InvalidStreamMode(Exception):
 
 
 class NoMtProtoClientSet(Exception):
-
     def __init__(self):
         super().__init__(
             'No MtProto client set',
@@ -43,7 +39,6 @@ class NoMtProtoClientSet(Exception):
 
 
 class NoActiveGroupCall(Exception):
-
     def __init__(self):
         super().__init__(
             'No active group call',
@@ -51,7 +46,6 @@ class NoActiveGroupCall(Exception):
 
 
 class NotInGroupCallError(Exception):
-
     def __init__(self):
         super().__init__(
             'The userbot there isn\'t in a group call',
@@ -59,7 +53,6 @@ class NotInGroupCallError(Exception):
 
 
 class AlreadyJoinedError(Exception):
-
     def __init__(self):
         super().__init__(
             'Already joined into group call',
@@ -67,7 +60,6 @@ class AlreadyJoinedError(Exception):
 
 
 class TelegramServerError(Exception):
-
     def __init__(self):
         super().__init__(
             'Telegram Server is having some '
@@ -76,7 +68,6 @@ class TelegramServerError(Exception):
 
 
 class PyTgCallsAlreadyRunning(Exception):
-
     def __init__(self):
         super().__init__(
             'PyTgCalls client is already running',
@@ -84,7 +75,6 @@ class PyTgCallsAlreadyRunning(Exception):
 
 
 class TooManyCustomApiDecorators(Exception):
-
     def __init__(self):
         super().__init__(
             'Too Many Custom Api Decorators',
@@ -92,7 +82,6 @@ class TooManyCustomApiDecorators(Exception):
 
 
 class GroupCallNotFound(Exception):
-
     def __init__(
             self,
             chat_id: int,
@@ -103,7 +92,6 @@ class GroupCallNotFound(Exception):
 
 
 class InvalidMtProtoClient(Exception):
-
     def __init__(self):
         super().__init__(
             'Invalid MtProto Client',
@@ -111,7 +99,6 @@ class InvalidMtProtoClient(Exception):
 
 
 class NoVideoSourceFound(Exception):
-
     def __init__(self, path: str):
         super().__init__(
             f'No video source found on {path}',
@@ -119,7 +106,6 @@ class NoVideoSourceFound(Exception):
 
 
 class InvalidVideoProportion(Exception):
-
     def __init__(self, message: str):
         super().__init__(
             message,
@@ -127,7 +113,6 @@ class InvalidVideoProportion(Exception):
 
 
 class NoAudioSourceFound(Exception):
-
     def __init__(self, path: str):
         super().__init__(
             f'No audio source found on {path}',
@@ -135,7 +120,6 @@ class NoAudioSourceFound(Exception):
 
 
 class UnMuteNeeded(Exception):
-
     def __init__(self):
         super().__init__(
             'Needed to unmute the userbot',

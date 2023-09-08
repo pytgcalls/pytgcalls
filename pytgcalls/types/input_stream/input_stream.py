@@ -6,7 +6,6 @@ from .video_stream import VideoStream
 
 
 class InputStream(PyObject):
-
     def __init__(
         self,
         stream_audio: Optional[AudioStream] = None,

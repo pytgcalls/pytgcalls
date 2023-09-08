@@ -3,7 +3,6 @@ from ...types.update import Update
 
 
 class JoinedGroupCallParticipant(Update):
-
     def __init__(
         self,
         chat_id: int,

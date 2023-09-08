@@ -2,11 +2,10 @@ from pytgcalls.types.py_object import PyObject
 
 
 class GroupCall(PyObject):
-
     def __init__(
-            self,
-            chat_id: int,
-            binary_status: int,
+        self,
+        chat_id: int,
+        binary_status: int,
     ):
         self.chat_id: int = chat_id
         self.is_playing: bool = binary_status != 3

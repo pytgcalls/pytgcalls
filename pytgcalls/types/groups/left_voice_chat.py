@@ -4,7 +4,6 @@ from ...types.update import Update
 
 
 class LeftVoiceChat(Update):
-
     def __init__(
         self,
         chat_id: Union[int, str],

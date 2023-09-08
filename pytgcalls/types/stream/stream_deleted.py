@@ -9,7 +9,6 @@ from ...types.update import Update
     details='This method is no longer supported.',
 )
 class StreamDeleted(Update):
-
     def __init__(
             self,
             chat_id: int,
