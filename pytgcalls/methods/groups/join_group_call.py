@@ -15,6 +15,7 @@ from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
 from ...to_async import ToAsync
+from ...types import JoinedVoiceChat
 from ...types.input_stream import InputStream
 from ..utilities.stream_params import StreamParams
 
@@ -85,6 +86,11 @@ class JoinGroupCall(Scaffold):
                 except Exception:
                     raise TelegramServerError()
 
+                await self._on_event_update.propagate(
+                    'RAW_UPDATE_HANDLER',
+                    self,
+                    JoinedVoiceChat(chat_id),
+                )
             else:
                 raise NoActiveGroupCall()
         else:

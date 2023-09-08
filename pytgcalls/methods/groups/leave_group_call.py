@@ -8,6 +8,7 @@ from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
+from ...types import LeftVoiceChat
 
 
 class LeaveGroupCall(Scaffold):
@@ -39,6 +40,12 @@ class LeaveGroupCall(Scaffold):
                     )
                 except ConnectionError:
                     raise NotInGroupCallError()
+
+                await self._on_event_update.propagate(
+                    'RAW_UPDATE_HANDLER',
+                    self,
+                    LeftVoiceChat(chat_id),
+                )
             else:
                 raise NoActiveGroupCall()
         else:

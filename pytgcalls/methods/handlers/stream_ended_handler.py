@@ -1,7 +1,6 @@
 from ntgcalls import StreamType
 
 from ...scaffold import Scaffold
-from ...types.call_holder import CallHolder
 from ...types.stream import StreamAudioEnded
 from ...types.stream import StreamVideoEnded
 

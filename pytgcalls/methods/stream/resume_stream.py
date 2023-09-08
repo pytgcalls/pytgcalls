@@ -7,6 +7,7 @@ from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
+from ...types import ResumedStream
 
 
 class ResumeStream(Scaffold):
@@ -23,10 +24,17 @@ class ResumeStream(Scaffold):
 
         if self._app is not None:
             try:
-                return await ToAsync(
+                status = await ToAsync(
                     self._binding.resume,
                     chat_id,
                 )
+                await self._on_event_update.propagate(
+                    'RAW_UPDATE_HANDLER',
+                    self,
+                    ResumedStream(chat_id),
+                )
+
+                return status
             except ConnectionError:
                 raise NotInGroupCallError()
         else:

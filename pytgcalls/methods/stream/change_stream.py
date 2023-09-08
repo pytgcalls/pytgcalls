@@ -8,6 +8,7 @@ from ...exceptions import NotInGroupCallError
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
+from ...types import ChangedStream
 from ...types.input_stream import InputStream
 from ..utilities.stream_params import StreamParams
 
@@ -38,5 +39,11 @@ class ChangeStream(Scaffold):
                 raise FileNotFoundError()
             except Exception:
                 raise NotInGroupCallError()
+
+            await self._on_event_update.propagate(
+                'RAW_UPDATE_HANDLER',
+                self,
+                ChangedStream(chat_id),
+            )
         else:
             raise NoMtProtoClientSet()
