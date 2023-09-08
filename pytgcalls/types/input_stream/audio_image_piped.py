@@ -9,7 +9,6 @@ from .audio_stream import AudioStream
 from .input_stream import InputStream
 from .video_parameters import VideoParameters
 from .video_stream import VideoStream
-from .video_tools import check_video_params
 
 
 class AudioImagePiped(InputStream):
@@ -43,28 +42,3 @@ class AudioImagePiped(InputStream):
     @property
     def headers(self):
         return FFprobe.ffmpeg_headers(self.raw_headers)
-
-    async def check_pipe(self):
-        dest_width, dest_height, header1 = await FFprobe.check_file(
-            self._image_path,
-            needed_audio=False,
-            needed_video=True,
-            needed_image=True,
-            headers=self.raw_headers,
-        )
-        header2 = await FFprobe.check_file(
-            self._audio_path,
-            needed_audio=True,
-            needed_video=False,
-            needed_image=False,
-            headers=self.raw_headers,
-        )
-        width, height = check_video_params(
-            self.stream_video.parameters,
-            dest_width,
-            dest_height,
-        )
-        self.stream_video.parameters.width = width
-        self.stream_video.parameters.height = height
-        self.stream_video.header_enabled = header1
-        self.stream_audio.header_enabled = header2

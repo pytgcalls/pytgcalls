@@ -29,6 +29,3 @@ class CaptureVideoDesktop(InputStream):
     @property
     def headers(self):
         return FFprobe.ffmpeg_headers(self.raw_headers)
-
-    async def check_pipe(self):
-        pass

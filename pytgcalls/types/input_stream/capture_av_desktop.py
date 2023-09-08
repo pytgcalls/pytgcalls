@@ -45,13 +45,3 @@ class CaptureAVDesktop(InputStream):
     @property
     def headers(self):
         return FFprobe.ffmpeg_headers(self.raw_headers)
-
-    async def check_pipe(self):
-        header = await FFprobe.check_file(
-            self._audio_path,
-            needed_audio=True,
-            needed_video=False,
-            needed_image=False,
-            headers=self.raw_headers,
-        )
-        self.stream_audio.header_enabled = header
