@@ -5,7 +5,6 @@ from ntgcalls import ConnectionError
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
-from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
 from ...types import LeftVoiceChat
@@ -17,13 +16,7 @@ class LeaveGroupCall(Scaffold):
         chat_id: Union[int, str],
     ):
         if self._app is not None:
-            try:
-                chat_id = int(chat_id)
-            except ValueError:
-                chat_id = BridgedClient.chat_id(
-                    await self._app.resolve_peer(chat_id),
-                )
-
+            chat_id = await self._resolve_chat_id(chat_id)
             chat_call = await self._app.get_full_chat(
                 chat_id,
             )

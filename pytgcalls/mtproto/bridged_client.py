@@ -70,7 +70,7 @@ class BridgedClient:
         pass
 
     @staticmethod
-    def chat_id(input_peer):
+    def chat_id(input_peer) -> int:
         is_channel = hasattr(input_peer, 'channel_id')
         is_channel_update = input_peer.__class__.__name__ == 'Channel'
         is_chat = input_peer.__class__.__name__ == 'Chat'

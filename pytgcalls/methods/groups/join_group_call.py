@@ -11,7 +11,6 @@ from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import TelegramServerError
 from ...exceptions import UnMuteNeeded
-from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
 from ...to_async import ToAsync
@@ -38,12 +37,7 @@ class JoinGroupCall(Scaffold):
         if stream_type.stream_mode == 0:
             raise InvalidStreamMode()
 
-        try:
-            chat_id = int(chat_id)
-        except ValueError:
-            chat_id = BridgedClient.chat_id(
-                await self._app.resolve_peer(chat_id),
-            )
+        chat_id = await self._resolve_chat_id(chat_id)
         self._cache_user_peer.put(chat_id, join_as)
 
         if self._app is not None:

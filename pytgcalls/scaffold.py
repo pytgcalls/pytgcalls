@@ -1,3 +1,5 @@
+from typing import Union
+
 from ntgcalls import NTgCalls
 from ntgcalls import StreamType
 
@@ -26,6 +28,9 @@ class Scaffold:
         pass
 
     async def _stream_ended_handler(self, chat_id: int, stream: StreamType):
+        pass
+
+    async def _resolve_chat_id(self, chat_id: Union[int, str]) -> int:
         pass
 
     async def start(self):

@@ -5,7 +5,6 @@ from ntgcalls import FileError
 
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
-from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
 from ...types import ChangedStream
@@ -21,12 +20,7 @@ class ChangeStream(Scaffold):
         chat_id: Union[int, str],
         stream: InputStream,
     ):
-        try:
-            chat_id = int(chat_id)
-        except ValueError:
-            chat_id = BridgedClient.chat_id(
-                await self._app.resolve_peer(chat_id),
-            )
+        chat_id = await self._resolve_chat_id(chat_id)
 
         if self._app is not None:
             try:
