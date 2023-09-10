@@ -1,3 +1,5 @@
+from typing import Union
+
 from ntgcalls import StreamStatus
 
 from ...exceptions import GroupCallNotFound
@@ -21,36 +23,42 @@ class CallHolder(Scaffold):
 
     @property
     def calls(self):
-        calls = self._binding.calls()
+        calls_list: dict = self._binding.calls()
         return List([
-            GroupCall(x, self._conversions[calls[x]]) for x in calls
+            GroupCall(x, self._conversions[calls_list[x]]) for x in calls_list
         ])
 
     @property
     def active_calls(self):
-        calls = self._binding.calls()
+        calls_list: dict = self._binding.calls()
         return List([
-            GroupCall(x, self._conversions[calls[x]]) for x in calls
-            if self._binding.calls()[x] != StreamStatus.Idling
+            GroupCall(x, self._conversions[calls_list[x]]) for x in calls_list
+            if calls_list[x] != StreamStatus.Idling
         ])
 
-    def get_active_call(
+    async def get_active_call(
         self,
-        chat_id: int,
+        chat_id: Union[int, str],
     ):
-        calls = self._binding.calls()
-        if chat_id in calls:
-            if calls[chat_id] != StreamStatus.Idling:
-                return GroupCall(chat_id, self._conversions[calls[chat_id]])
+        calls_list: dict = self._binding.calls()
+        chat_id = await self._resolve_chat_id(chat_id)
+
+        if chat_id in calls_list:
+            if calls_list[chat_id] != StreamStatus.Idling:
+                return GroupCall(
+                    chat_id, self._conversions[calls_list[chat_id]],
+                )
 
         raise GroupCallNotFound(chat_id)
 
-    def get_call(
+    async def get_call(
         self,
         chat_id: int,
     ):
-        calls = self._binding.calls()
-        if chat_id in calls:
-            return GroupCall(chat_id, self._conversions[calls[chat_id]])
+        calls_list: dict = self._binding.calls()
+        chat_id = await self._resolve_chat_id(chat_id)
+
+        if chat_id in calls_list:
+            return GroupCall(chat_id, self._conversions[calls_list[chat_id]])
 
         raise GroupCallNotFound(chat_id)

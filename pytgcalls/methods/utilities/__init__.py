@@ -1,5 +1,5 @@
-from ...types.call_holder import CallHolder
 from .cache_peer import CachePeer
+from .call_holder import CallHolder
 from .get_max_voice_chat import GetMaxVoiceChat
 from .mtproto_handler import MtProtoHandler
 from .ping import Ping
