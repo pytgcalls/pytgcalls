@@ -91,10 +91,10 @@ class GroupCallNotFound(Exception):
         )
 
 
-class InvalidMtProtoClient(Exception):
+class InvalidMTProtoClient(Exception):
     def __init__(self):
         super().__init__(
-            'Invalid MtProto Client',
+            'Invalid MTProto Client',
         )
 
 
