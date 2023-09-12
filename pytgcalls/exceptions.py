@@ -67,6 +67,14 @@ class TelegramServerError(Exception):
         )
 
 
+class ClientNotStarted(Exception):
+    def __init__(self):
+        super().__init__(
+            'Ensure you have started the process with start() '
+            'before calling this method',
+        )
+
+
 class PyTgCallsAlreadyRunning(Exception):
     def __init__(self):
         super().__init__(

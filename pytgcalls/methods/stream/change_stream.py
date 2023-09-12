@@ -3,7 +3,7 @@ from typing import Union
 
 from ntgcalls import FileError
 
-from ...exceptions import NoMtProtoClientSet
+from ...exceptions import NoMtProtoClientSet, ClientNotStarted
 from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
@@ -23,21 +23,24 @@ class ChangeStream(Scaffold):
         chat_id = await self._resolve_chat_id(chat_id)
 
         if self._app is not None:
-            try:
-                await ToAsync(
-                    self._binding.changeStream,
-                    chat_id,
-                    await StreamParams.get_stream_params(stream),
-                )
-            except FileError:
-                raise FileNotFoundError()
-            except Exception:
-                raise NotInGroupCallError()
+            if self._is_running:
+                try:
+                    await ToAsync(
+                        self._binding.changeStream,
+                        chat_id,
+                        await StreamParams.get_stream_params(stream),
+                    )
+                except FileError:
+                    raise FileNotFoundError()
+                except Exception:
+                    raise NotInGroupCallError()
 
-            await self._on_event_update.propagate(
-                'RAW_UPDATE_HANDLER',
-                self,
-                ChangedStream(chat_id),
-            )
+                await self._on_event_update.propagate(
+                    'RAW_UPDATE_HANDLER',
+                    self,
+                    ChangedStream(chat_id),
+                )
+            else:
+                raise ClientNotStarted()
         else:
             raise NoMtProtoClientSet()

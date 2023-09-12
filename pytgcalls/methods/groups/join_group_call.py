@@ -5,7 +5,7 @@ from ntgcalls import ConnectionError
 from ntgcalls import FileError
 from ntgcalls import InvalidParams
 
-from ...exceptions import AlreadyJoinedError
+from ...exceptions import AlreadyJoinedError, ClientNotStarted
 from ...exceptions import InvalidStreamMode
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMtProtoClientSet
@@ -41,51 +41,54 @@ class JoinGroupCall(Scaffold):
         self._cache_user_peer.put(chat_id, join_as)
 
         if self._app is not None:
-            chat_call = await self._app.get_full_chat(
-                chat_id,
-            )
-
-            if chat_call is not None:
-                media_description = await StreamParams.get_stream_params(
-                    stream,
-                )
-
-                try:
-                    call_params: str = await ToAsync(
-                        self._binding.createCall,
-                        chat_id,
-                        media_description,
-                    )
-                except FileError:
-                    raise FileNotFoundError()
-                except ConnectionError:
-                    raise AlreadyJoinedError()
-
-                result_params = await self._app.join_group_call(
+            if self._is_running:
+                chat_call = await self._app.get_full_chat(
                     chat_id,
-                    call_params,
-                    invite_hash,
-                    media_description.video is not None,
-                    self._cache_user_peer.get(chat_id),
                 )
 
-                try:
-                    await ToAsync(
-                        self._binding.connect,
-                        chat_id,
-                        result_params,
+                if chat_call is not None:
+                    media_description = await StreamParams.get_stream_params(
+                        stream,
                     )
-                except InvalidParams:
-                    raise UnMuteNeeded()
-                except Exception:
-                    raise TelegramServerError()
 
-                await self._on_event_update.propagate(
-                    'RAW_UPDATE_HANDLER',
-                    self,
-                    JoinedVoiceChat(chat_id),
-                )
+                    try:
+                        call_params: str = await ToAsync(
+                            self._binding.createCall,
+                            chat_id,
+                            media_description,
+                        )
+                    except FileError:
+                        raise FileNotFoundError()
+                    except ConnectionError:
+                        raise AlreadyJoinedError()
+
+                    result_params = await self._app.join_group_call(
+                        chat_id,
+                        call_params,
+                        invite_hash,
+                        media_description.video is not None,
+                        self._cache_user_peer.get(chat_id),
+                    )
+
+                    try:
+                        await ToAsync(
+                            self._binding.connect,
+                            chat_id,
+                            result_params,
+                        )
+                    except InvalidParams:
+                        raise UnMuteNeeded()
+                    except Exception:
+                        raise TelegramServerError()
+
+                    await self._on_event_update.propagate(
+                        'RAW_UPDATE_HANDLER',
+                        self,
+                        JoinedVoiceChat(chat_id),
+                    )
+                else:
+                    raise NoActiveGroupCall()
             else:
-                raise NoActiveGroupCall()
+                raise ClientNotStarted()
         else:
             raise NoMtProtoClientSet()

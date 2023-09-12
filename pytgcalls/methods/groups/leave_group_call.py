@@ -2,7 +2,7 @@ from typing import Union
 
 from ntgcalls import ConnectionError
 
-from ...exceptions import NoActiveGroupCall
+from ...exceptions import NoActiveGroupCall, ClientNotStarted
 from ...exceptions import NoMtProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
@@ -16,30 +16,33 @@ class LeaveGroupCall(Scaffold):
         chat_id: Union[int, str],
     ):
         if self._app is not None:
-            chat_id = await self._resolve_chat_id(chat_id)
-            chat_call = await self._app.get_full_chat(
-                chat_id,
-            )
-
-            if chat_call is not None:
-                await self._app.leave_group_call(
+            if self._is_running:
+                chat_id = await self._resolve_chat_id(chat_id)
+                chat_call = await self._app.get_full_chat(
                     chat_id,
                 )
 
-                try:
-                    await ToAsync(
-                        self._binding.stop,
+                if chat_call is not None:
+                    await self._app.leave_group_call(
                         chat_id,
                     )
-                except ConnectionError:
-                    raise NotInGroupCallError()
 
-                await self._on_event_update.propagate(
-                    'RAW_UPDATE_HANDLER',
-                    self,
-                    LeftVoiceChat(chat_id),
-                )
+                    try:
+                        await ToAsync(
+                            self._binding.stop,
+                            chat_id,
+                        )
+                    except ConnectionError:
+                        raise NotInGroupCallError()
+
+                    await self._on_event_update.propagate(
+                        'RAW_UPDATE_HANDLER',
+                        self,
+                        LeftVoiceChat(chat_id),
+                    )
+                else:
+                    raise NoActiveGroupCall()
             else:
-                raise NoActiveGroupCall()
+                raise ClientNotStarted()
         else:
             raise NoMtProtoClientSet()
