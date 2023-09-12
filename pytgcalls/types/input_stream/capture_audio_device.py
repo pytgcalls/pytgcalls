@@ -4,10 +4,10 @@ from ...ffprobe import FFprobe
 from ...media_devices.device_info import DeviceInfo
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
-from .input_stream import InputStream
+from .input_stream import Stream
 
 
-class CaptureAudioDevice(InputStream):
+class CaptureAudioDevice(Stream):
     def __init__(
         self,
         audio_info: DeviceInfo,

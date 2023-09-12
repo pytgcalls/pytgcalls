@@ -2,13 +2,13 @@ from typing import Dict
 from typing import Optional
 
 from ...ffprobe import FFprobe
-from .input_stream import InputStream
+from .input_stream import Stream
 from .input_video_stream import InputVideoStream
 from .video_parameters import VideoParameters
 
 
 # TODO refactor needed
-class VideoPiped(InputStream):
+class VideoPiped(Stream):
     def __init__(
         self,
         path: str,

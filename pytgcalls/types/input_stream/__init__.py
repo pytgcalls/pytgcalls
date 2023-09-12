@@ -10,6 +10,7 @@ from .capture_video_desktop import CaptureVideoDesktop
 from .input_audio_stream import InputAudioStream
 from .input_stream import InputStream
 from .input_video_stream import InputVideoStream
+from .stream import Stream
 from .video_parameters import VideoParameters
 from .video_piped import VideoPiped
 from .video_stream import VideoStream
@@ -20,6 +21,7 @@ __all__ = (
     'AudioPiped',
     'AudioVideoPiped',
     'InputAudioStream',
+    'Stream',
     'InputStream',
     'InputVideoStream',
     'VideoStream',

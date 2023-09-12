@@ -9,7 +9,7 @@ from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
 from ...types import ChangedStream
-from ...types.input_stream import InputStream
+from ...types.input_stream.stream import Stream
 from ..utilities.stream_params import StreamParams
 
 py_logger = logging.getLogger('pytgcalls')
@@ -19,7 +19,7 @@ class ChangeStream(Scaffold):
     async def change_stream(
         self,
         chat_id: Union[int, str],
-        stream: InputStream,
+        stream: Stream,
     ):
         chat_id = await self._resolve_chat_id(chat_id)
 

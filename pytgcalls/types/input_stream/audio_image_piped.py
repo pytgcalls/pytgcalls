@@ -6,12 +6,12 @@ from ntgcalls import InputMode
 from ...ffprobe import FFprobe
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
-from .input_stream import InputStream
+from .input_stream import Stream
 from .video_parameters import VideoParameters
 from .video_stream import VideoStream
 
 
-class AudioImagePiped(InputStream):
+class AudioImagePiped(Stream):
     def __init__(
         self,
         audio_path: str,

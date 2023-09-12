@@ -2,12 +2,12 @@ from ntgcalls import InputMode
 
 from ...ffprobe import FFprobe
 from ...media_devices.screen_info import ScreenInfo
-from .input_stream import InputStream
+from .input_stream import Stream
 from .video_parameters import VideoParameters
 from .video_stream import VideoStream
 
 
-class CaptureVideoDesktop(InputStream):
+class CaptureVideoDesktop(Stream):
     def __init__(
         self,
         screen_info: ScreenInfo,

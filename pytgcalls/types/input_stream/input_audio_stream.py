@@ -7,7 +7,7 @@ from .audio_stream import AudioStream
 
 @deprecation.deprecated(
     deprecated_in='1.0.0.dev1',
-    details='Use pytgcalls.AudioStream instead.',
+    details='Use pytgcalls.types.AudioStream instead.',
 )
 class InputAudioStream(AudioStream):
     def __init__(

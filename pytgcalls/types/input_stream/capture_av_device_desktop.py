@@ -5,12 +5,12 @@ from ...media_devices.device_info import DeviceInfo
 from ...media_devices.screen_info import ScreenInfo
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
-from .input_stream import InputStream
+from .input_stream import Stream
 from .video_parameters import VideoParameters
 from .video_stream import VideoStream
 
 
-class CaptureAVDeviceDesktop(InputStream):
+class CaptureAVDeviceDesktop(Stream):
     def __init__(
         self,
         audio_info: DeviceInfo,

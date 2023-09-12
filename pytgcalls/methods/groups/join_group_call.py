@@ -16,7 +16,7 @@ from ...scaffold import Scaffold
 from ...stream_type import StreamType
 from ...to_async import ToAsync
 from ...types import JoinedVoiceChat
-from ...types.input_stream import InputStream
+from ...types.input_stream.stream import Stream
 from ..utilities.stream_params import StreamParams
 
 py_logger = logging.getLogger('pytgcalls')
@@ -26,7 +26,7 @@ class JoinGroupCall(Scaffold):
     async def join_group_call(
         self,
         chat_id: Union[int, str],
-        stream: InputStream,
+        stream: Stream,
         invite_hash: str = None,
         join_as=None,
         stream_type: StreamType = None,
