@@ -2,7 +2,8 @@ from typing import Union
 
 from ntgcalls import ConnectionError
 
-from ...exceptions import NoMtProtoClientSet, ClientNotStarted
+from ...exceptions import ClientNotStarted
+from ...exceptions import NoMTProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
@@ -27,4 +28,4 @@ class MuteStream(Scaffold):
             else:
                 raise ClientNotStarted()
         else:
-            raise NoMtProtoClientSet()
+            raise NoMTProtoClientSet()

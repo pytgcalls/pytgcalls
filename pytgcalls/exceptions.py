@@ -31,10 +31,10 @@ class InvalidStreamMode(Exception):
         )
 
 
-class NoMtProtoClientSet(Exception):
+class NoMTProtoClientSet(Exception):
     def __init__(self):
         super().__init__(
-            'No MtProto client set',
+            'No MTProto client set',
         )
 
 

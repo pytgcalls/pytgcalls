@@ -5,10 +5,11 @@ from ntgcalls import ConnectionError
 from ntgcalls import FileError
 from ntgcalls import InvalidParams
 
-from ...exceptions import AlreadyJoinedError, ClientNotStarted
+from ...exceptions import AlreadyJoinedError
+from ...exceptions import ClientNotStarted
 from ...exceptions import InvalidStreamMode
 from ...exceptions import NoActiveGroupCall
-from ...exceptions import NoMtProtoClientSet
+from ...exceptions import NoMTProtoClientSet
 from ...exceptions import TelegramServerError
 from ...exceptions import UnMuteNeeded
 from ...scaffold import Scaffold
@@ -91,4 +92,4 @@ class JoinGroupCall(Scaffold):
             else:
                 raise ClientNotStarted()
         else:
-            raise NoMtProtoClientSet()
+            raise NoMTProtoClientSet()

@@ -1,7 +1,8 @@
 from typing import Union
 
-from ...exceptions import NoActiveGroupCall, ClientNotStarted
-from ...exceptions import NoMtProtoClientSet
+from ...exceptions import ClientNotStarted
+from ...exceptions import NoActiveGroupCall
+from ...exceptions import NoMTProtoClientSet
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 
@@ -35,4 +36,4 @@ class ChangeVolumeCall(Scaffold):
             else:
                 raise ClientNotStarted()
         else:
-            raise NoMtProtoClientSet()
+            raise NoMTProtoClientSet()
