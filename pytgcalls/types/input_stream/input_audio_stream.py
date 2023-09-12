@@ -16,4 +16,5 @@ class InputAudioStream(AudioStream):
         parameters: AudioParameters = AudioParameters(),
         header_enabled: bool = False,
     ):
-        super().__init__(InputMode.File, path, parameters, header_enabled)
+        super().__init__(InputMode.File, path, parameters)
+        self.header_enabled = header_enabled
