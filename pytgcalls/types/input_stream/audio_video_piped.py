@@ -4,6 +4,7 @@ from typing import Optional
 from ntgcalls import InputMode
 
 from ...ffprobe import FFprobe
+from ...methods.utilities import ffmpeg_tools
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
 from .input_stream import Stream
@@ -25,14 +26,22 @@ class AudioVideoPiped(Stream):
         self.raw_headers = headers
         super().__init__(
             AudioStream(
-                InputMode.FFmpeg,
-                f'fifo://{path}',
-                audio_parameters,
+                InputMode.Shell,
+                ffmpeg_tools.build_ffmpeg_command(
+                    self.ffmpeg_parameters,
+                    self._path,
+                    'audio',
+                    audio_parameters,
+                ),
             ),
             VideoStream(
-                InputMode.FFmpeg,
-                f'fifo://{path}',
-                video_parameters,
+                InputMode.Shell,
+                ffmpeg_tools.build_ffmpeg_command(
+                    self.ffmpeg_parameters,
+                    self._path,
+                    'video',
+                    video_parameters,
+                ),
             ),
         )
         self.lip_sync = True

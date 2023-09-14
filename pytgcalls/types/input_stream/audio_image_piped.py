@@ -4,6 +4,7 @@ from typing import Optional
 from ntgcalls import InputMode
 
 from ...ffprobe import FFprobe
+from ...methods.utilities import ffmpeg_tools
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
 from .input_stream import Stream
@@ -28,14 +29,22 @@ class AudioImagePiped(Stream):
         video_parameters.frame_rate = 1
         super().__init__(
             AudioStream(
-                InputMode.FFmpeg,
-                f'fifo://{audio_path}',
-                audio_parameters,
+                InputMode.Shell,
+                ffmpeg_tools.build_ffmpeg_command(
+                    self.ffmpeg_parameters,
+                    self._audio_path,
+                    'audio',
+                    audio_parameters,
+                ),
             ),
             VideoStream(
-                InputMode.FFmpeg,
-                f'fifo://image:{image_path}',
-                video_parameters,
+                InputMode.Shell,
+                ffmpeg_tools.build_ffmpeg_command(
+                    self.ffmpeg_parameters,
+                    self._image_path,
+                    'image',
+                    video_parameters,
+                ),
             ),
         )
 

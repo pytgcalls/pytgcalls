@@ -11,6 +11,6 @@ class AudioStream(PyObject):
         path: str,
         parameters: AudioParameters = AudioParameters(),
     ):
-        self.path: str = path
         self.input_mode: InputMode = input_mode
+        self.path: str = path
         self.parameters: AudioParameters = parameters
