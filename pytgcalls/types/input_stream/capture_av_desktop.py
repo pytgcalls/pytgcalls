@@ -5,7 +5,7 @@ from ntgcalls import InputMode
 
 from ...ffprobe import FFprobe
 from ...media_devices.screen_info import ScreenInfo
-from ...methods.utilities import ffmpeg_tools
+from ...ffmpeg import build_ffmpeg_command
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
 from .input_stream import Stream
@@ -33,7 +33,7 @@ class CaptureAVDesktop(Stream):
         super().__init__(
             AudioStream(
                 InputMode.Shell,
-                ffmpeg_tools.build_ffmpeg_command(
+                build_ffmpeg_command(
                     self.audio_ffmpeg,
                     self._audio_path,
                     'audio',
@@ -42,7 +42,7 @@ class CaptureAVDesktop(Stream):
             ),
             VideoStream(
                 InputMode.Shell,
-                ffmpeg_tools.build_ffmpeg_command(
+                build_ffmpeg_command(
                     self.video_ffmpeg,
                     self._video_path,
                     'video',

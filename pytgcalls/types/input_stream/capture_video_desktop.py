@@ -2,7 +2,7 @@ from ntgcalls import InputMode
 
 from ...ffprobe import FFprobe
 from ...media_devices.screen_info import ScreenInfo
-from ...methods.utilities import ffmpeg_tools
+from ...ffmpeg import build_ffmpeg_command
 from .input_stream import Stream
 from .video_parameters import VideoParameters
 from .video_stream import VideoStream
@@ -22,7 +22,7 @@ class CaptureVideoDesktop(Stream):
         super().__init__(
             stream_video=VideoStream(
                 InputMode.Shell,
-                ffmpeg_tools.build_ffmpeg_command(
+                build_ffmpeg_command(
                     self.ffmpeg_parameters,
                     self._path,
                     'video',

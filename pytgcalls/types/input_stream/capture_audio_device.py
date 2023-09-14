@@ -2,7 +2,7 @@ from ntgcalls import InputMode
 
 from ...ffprobe import FFprobe
 from ...media_devices.device_info import DeviceInfo
-from ...methods.utilities import ffmpeg_tools
+from ...ffmpeg import build_ffmpeg_command
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
 from .input_stream import Stream
@@ -20,7 +20,7 @@ class CaptureAudioDevice(Stream):
         super().__init__(
             AudioStream(
                 InputMode.Shell,
-                ffmpeg_tools.build_ffmpeg_command(
+                build_ffmpeg_command(
                     self.ffmpeg_parameters,
                     self._audio_path,
                     'audio',
