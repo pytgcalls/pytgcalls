@@ -3,7 +3,6 @@ from typing import Optional
 
 from ntgcalls import InputMode
 
-from ...ffprobe import FFprobe
 from ...ffmpeg import build_ffmpeg_command
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
@@ -19,21 +18,16 @@ class AudioPiped(Stream):
         additional_ffmpeg_parameters: str = '',
     ):
         self._path = path
-        self.ffmpeg_parameters = additional_ffmpeg_parameters
-        self.raw_headers = headers
         super().__init__(
             AudioStream(
                 InputMode.Shell,
                 build_ffmpeg_command(
-                    self.ffmpeg_parameters,
+                    additional_ffmpeg_parameters,
                     self._path,
-                    'audio',
                     audio_parameters,
+                    [],
+                    headers,
                 ),
                 audio_parameters,
             ),
         )
-
-    @property
-    def headers(self):
-        return FFprobe.ffmpeg_headers(self.raw_headers)

@@ -3,7 +3,6 @@ from typing import Optional
 
 from ntgcalls import InputMode
 
-from ...ffprobe import FFprobe
 from ...ffmpeg import build_ffmpeg_command
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
@@ -24,30 +23,31 @@ class AudioImagePiped(Stream):
     ):
         self._image_path = image_path
         self._audio_path = audio_path
-        self.ffmpeg_parameters = additional_ffmpeg_parameters
-        self.raw_headers = headers
         video_parameters.frame_rate = 1
         super().__init__(
             AudioStream(
                 InputMode.Shell,
                 build_ffmpeg_command(
-                    self.ffmpeg_parameters,
+                    additional_ffmpeg_parameters,
                     self._audio_path,
-                    'audio',
                     audio_parameters,
+                    [],
+                    headers,
                 ),
             ),
             VideoStream(
                 InputMode.Shell,
                 build_ffmpeg_command(
-                    self.ffmpeg_parameters,
+                    additional_ffmpeg_parameters,
                     self._image_path,
-                    'image',
                     video_parameters,
+                    [
+                        '-loop',
+                        '1',
+                        '-framerate',
+                        str(video_parameters.frame_rate),
+                    ],
+                    headers,
                 ),
             ),
         )
-
-    @property
-    def headers(self):
-        return FFprobe.ffmpeg_headers(self.raw_headers)

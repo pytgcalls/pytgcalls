@@ -3,9 +3,8 @@ from typing import Optional
 
 from ntgcalls import InputMode
 
-from ...ffprobe import FFprobe
-from ...media_devices.screen_info import ScreenInfo
 from ...ffmpeg import build_ffmpeg_command
+from ...media_devices.screen_info import ScreenInfo
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
 from .input_stream import Stream
@@ -24,33 +23,27 @@ class CaptureAVDesktop(Stream):
         video_parameters: VideoParameters = VideoParameters(),
     ):
         self._audio_path = audio_path
-        self.audio_ffmpeg: str = additional_ffmpeg_parameters
         self._video_path = screen_info.build_ffmpeg_command(
             video_parameters.frame_rate,
         )
-        self.video_ffmpeg: str = screen_info.ffmpeg_parameters
-        self.raw_headers = headers
         super().__init__(
             AudioStream(
                 InputMode.Shell,
                 build_ffmpeg_command(
-                    self.audio_ffmpeg,
+                    additional_ffmpeg_parameters,
                     self._audio_path,
-                    'audio',
                     audio_parameters,
+                    [],
+                    headers,
                 ),
             ),
             VideoStream(
                 InputMode.Shell,
                 build_ffmpeg_command(
-                    self.video_ffmpeg,
+                    '',
                     self._video_path,
-                    'video',
                     video_parameters,
+                    screen_info.ffmpeg_parameters,
                 ),
             ),
         )
-
-    @property
-    def headers(self):
-        return FFprobe.ffmpeg_headers(self.raw_headers)

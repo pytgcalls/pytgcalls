@@ -3,7 +3,6 @@ from typing import Optional
 
 from ntgcalls import InputMode
 
-from ...ffprobe import FFprobe
 from ...ffmpeg import build_ffmpeg_command
 from .input_stream import Stream
 from .video_parameters import VideoParameters
@@ -19,20 +18,15 @@ class VideoPiped(Stream):
             additional_ffmpeg_parameters: str = '',
     ):
         self._path = path
-        self.ffmpeg_parameters = additional_ffmpeg_parameters
-        self.raw_headers = headers
         super().__init__(
             stream_video=VideoStream(
                 InputMode.Shell,
                 build_ffmpeg_command(
-                    self.ffmpeg_parameters,
+                    additional_ffmpeg_parameters,
                     self._path,
-                    'video',
                     video_parameters,
+                    [],
+                    headers,
                 ),
             ),
         )
-
-    @property
-    def headers(self):
-        return FFprobe.ffmpeg_headers(self.raw_headers)

@@ -1,18 +1,23 @@
 import shlex
-from typing import List, Union
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 from .types.input_stream.audio_parameters import AudioParameters
 from .types.input_stream.video_parameters import VideoParameters
 
+
 def build_ffmpeg_command(
     ffmpeg_parameters: str,
     path: str,
-    stream_type: str,
     stream_parameters: Union[AudioParameters, VideoParameters],
+    before_commands: List[str] = None,
+    headers: Optional[Dict[str, str]] = None,
 ) -> str:
     command = _get_stream_params(ffmpeg_parameters)
 
-    if stream_type == 'video' or stream_type == 'image':
+    if isinstance(stream_parameters, VideoParameters):
         command = command['video']
     else:
         command = command['audio']
@@ -21,14 +26,15 @@ def build_ffmpeg_command(
 
     ffmpeg_command += command['start']
 
-    if stream_type == 'image':
-        stream_parameters.frame_rate = 1
-        ffmpeg_command += [
-            '-loop',
-            1,
-            '-framerate',
-            stream_parameters.frame_rate,
-        ]
+    if before_commands:
+        ffmpeg_command += before_commands
+
+    if headers is not None:
+        ffmpeg_command.append('-headers')
+        built_header = ''
+        for i in headers:
+            built_header += f'{i}: {headers[i]}\r\n'
+        ffmpeg_command.append(built_header)
 
     ffmpeg_command += [
         '-i',
@@ -37,37 +43,34 @@ def build_ffmpeg_command(
     ffmpeg_command += command['mid']
     ffmpeg_command.append('-f')
 
-    if stream_type == 'video' or stream_type == 'image':
+    if isinstance(stream_parameters, VideoParameters):
         ffmpeg_command += [
             'rawvideo',
             '-r',
-            stream_parameters.frame_rate,
+            str(stream_parameters.frame_rate),
             '-pix_fmt',
             'yuv420p',
             '-vf',
-            f'scale={stream_parameters.width}:{stream_parameters.height}'
+            f'scale={stream_parameters.width}:{stream_parameters.height}',
         ]
     else:
         ffmpeg_command += [
             's16le',
             '-ac',
-            stream_parameters.channels,
+            str(stream_parameters.channels),
             '-ar',
-            stream_parameters.bitrate
+            str(stream_parameters.bitrate),
         ]
 
     ffmpeg_command += command['end']
     ffmpeg_command.append('pipe:1')
 
-    return ' '.join([
-        str(el) if isinstance(el, int) else el
-        for el in ffmpeg_command
-    ])
+    return ' '.join(ffmpeg_command)
 
 
 def _get_stream_params(command: str):
     arg_names = ['base', 'audio', 'video']
-    command_args: dict = {arg: [] for arg in arg_names}
+    command_args: Dict = {arg: [] for arg in arg_names}
     current_arg = arg_names[0]
 
     for part in shlex.split(command):
@@ -86,9 +89,9 @@ def _get_stream_params(command: str):
     return command_args
 
 
-def _extract_stream_params(command: list[str]):
+def _extract_stream_params(command: List[str]):
     arg_names = ['start', 'mid', 'end']
-    command_args: dict = {arg: [] for arg in arg_names}
+    command_args: Dict = {arg: [] for arg in arg_names}
     current_arg = arg_names[0]
 
     for part in command:
