@@ -31,10 +31,11 @@ def build_ffmpeg_command(
 
     if headers is not None:
         ffmpeg_command.append('-headers')
-        built_header = ''
+        built_header = '"'
         for i in headers:
             built_header += f'{i}: {headers[i]}\r\n'
-        ffmpeg_command.append(built_header)
+
+        ffmpeg_command.append(built_header + '"')
 
     ffmpeg_command += [
         '-i',
