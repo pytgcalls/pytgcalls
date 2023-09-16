@@ -14,7 +14,6 @@ class Scaffold:
         self._is_running = None
         self._my_id = None
         self._env_checker = None
-        self._call_holder = None
         self._cache_user_peer = None
         self._wait_result = None
         self._cache_local_peer = None
@@ -27,10 +26,13 @@ class Scaffold:
     async def _init_mtproto(self):
         pass
 
-    async def _stream_ended_handler(self, chat_id: int, stream: StreamType):
+    async def _resolve_chat_id(self, chat_id: Union[int, str]) -> int:
         pass
 
-    async def _resolve_chat_id(self, chat_id: Union[int, str]) -> int:
+    async def get_call(self, chat_id: int):
+        pass
+
+    async def _stream_ended_handler(self, chat_id: int, stream: StreamType):
         pass
 
     async def start(self):
