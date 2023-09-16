@@ -14,7 +14,7 @@ class ChangeVolumeCall(Scaffold):
     ):
         if self._app is not None:
             if self._is_running:
-                chat_id = self._resolve_chat_id(chat_id)
+                chat_id = await self._resolve_chat_id(chat_id)
 
                 chat_call = await self._app.get_full_chat(
                     chat_id,
