@@ -34,7 +34,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'aiohttp',
-        'ntgcalls==1.0.0.dev8',
+        'ntgcalls',
         'psutil',
         'screeninfo',
         'deprecation',
