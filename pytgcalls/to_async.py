@@ -6,7 +6,7 @@ from typing import Callable
 
 class ToAsync:
     def __init__(self, function: Callable, *args):
-        self._loop: AbstractEventLoop = asyncio.get_running_loop()
+        self._loop: AbstractEventLoop = asyncio.get_event_loop()
         self._function: Callable = function
         self._function_args: tuple = args
 
