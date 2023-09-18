@@ -67,7 +67,7 @@ class JoinGroupCall(Scaffold):
                         chat_id,
                         call_params,
                         invite_hash,
-                        media_description.video is not None,
+                        media_description.video is None,
                         self._cache_user_peer.get(chat_id),
                     )
 
