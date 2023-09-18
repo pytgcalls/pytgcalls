@@ -14,8 +14,8 @@ from .screen_info import ScreenInfo
 # TODO: Refactor
 class MediaDevices:
     @staticmethod
-    async def get_screen_devices() -> List:
-        list_screens: List = List()
+    async def get_screen_devices() -> List[ScreenInfo]:
+        list_screens: List[ScreenInfo] = List()
         if platform != 'darwin':
             try:
                 for screen in get_monitors():
@@ -34,8 +34,8 @@ class MediaDevices:
         return list_screens
 
     @staticmethod
-    async def get_audio_devices() -> List:
-        list_devices: List = List()
+    async def get_audio_devices() -> List[DeviceInfo]:
+        list_devices: List[DeviceInfo] = List()
         if platform == 'darwin':
             return list_devices
         try:
