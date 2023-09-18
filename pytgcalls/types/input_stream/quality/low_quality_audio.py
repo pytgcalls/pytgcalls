@@ -5,4 +5,5 @@ class LowQualityAudio(AudioParameters):
     def __init__(self):
         super().__init__(
             24000,
+            1,
         )

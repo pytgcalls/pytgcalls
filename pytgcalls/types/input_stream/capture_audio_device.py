@@ -23,5 +23,6 @@ class CaptureAudioDevice(Stream):
                     audio_parameters,
                     audio_info.ffmpeg_parameters,
                 ),
+                audio_parameters,
             ),
         )

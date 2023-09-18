@@ -36,6 +36,7 @@ class CaptureAVDesktop(Stream):
                     [],
                     headers,
                 ),
+                audio_parameters,
             ),
             VideoStream(
                 InputMode.Shell,
@@ -45,5 +46,6 @@ class CaptureAVDesktop(Stream):
                     video_parameters,
                     screen_info.ffmpeg_parameters,
                 ),
+                video_parameters,
             ),
         )

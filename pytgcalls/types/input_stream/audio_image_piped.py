@@ -34,6 +34,7 @@ class AudioImagePiped(Stream):
                     [],
                     headers,
                 ),
+                audio_parameters,
             ),
             VideoStream(
                 InputMode.Shell,
@@ -49,5 +50,6 @@ class AudioImagePiped(Stream):
                     ],
                     headers,
                 ),
+                video_parameters,
             ),
         )

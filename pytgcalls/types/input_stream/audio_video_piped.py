@@ -31,6 +31,7 @@ class AudioVideoPiped(Stream):
                     [],
                     headers,
                 ),
+                audio_parameters
             ),
             VideoStream(
                 InputMode.Shell,
@@ -41,6 +42,6 @@ class AudioVideoPiped(Stream):
                     [],
                     headers,
                 ),
+                video_parameters
             ),
         )
-        self.lip_sync = True
