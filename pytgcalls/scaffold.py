@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Dict
 
 from ntgcalls import NTgCalls
 
@@ -19,6 +19,7 @@ class Scaffold:
         self._on_event_update = None
         # noinspection PyTypeChecker
         self._binding: NTgCalls = None
+        self._need_unmute: Dict[int, bool] = {}
 
     def _handle_mtproto(self):
         pass

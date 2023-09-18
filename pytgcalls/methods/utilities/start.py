@@ -4,31 +4,51 @@ from asyncio.log import logger
 from ntgcalls import MediaState
 from ntgcalls import StreamType
 
+from pytgcalls.types import StreamAudioEnded, GroupCallParticipant
+from pytgcalls.types import StreamVideoEnded
 from ...exceptions import PyTgCallsAlreadyRunning
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
-from pytgcalls.types import StreamAudioEnded
-from pytgcalls.types import StreamVideoEnded
 
 
 class Start(Scaffold):
     async def start(self):
         loop = asyncio.get_event_loop()
 
-        def stream_upgrade(chat_id: int, state: MediaState):
-            async def async_upgrade():
-                try:
-                    await self._app.set_call_status(
+        @self._app.on_participants_change()
+        async def participants_handler(
+                chat_id: int,
+                participant: GroupCallParticipant,
+                just_joined: bool,
+                just_left: bool,
+        ):
+            print(participant)
+            if chat_id in self._need_unmute:
+                need_unmute = self._need_unmute[chat_id]
+                if not just_joined and \
+                        not just_left and \
+                        need_unmute and \
+                        not participant.muted_by_admin:
+                    await update_status(
                         chat_id,
-                        state.muted,
-                        state.video_paused,
-                        state.video_stopped,
-                        self._cache_user_peer.get(chat_id),
+                        self._binding.get_state(chat_id),
                     )
-                except Exception as e:
-                    logger.error(f'SetVideoCallStatus: {e}')
+                self._need_unmute[chat_id] = participant.muted_by_admin
 
-            asyncio.run_coroutine_threadsafe(async_upgrade(), loop)
+        def stream_upgrade(chat_id: int, state: MediaState):
+            asyncio.run_coroutine_threadsafe(update_status(chat_id, state), loop)
+
+        async def update_status(chat_id: int, state: MediaState):
+            try:
+                await self._app.set_call_status(
+                    chat_id,
+                    state.muted,
+                    state.video_paused,
+                    state.video_stopped,
+                    self._cache_user_peer.get(chat_id),
+                )
+            except Exception as e:
+                logger.error(f'SetVideoCallStatus: {e}')
 
         def stream_ended(chat_id: int, stream: StreamType):
             async def async_stream_ended():

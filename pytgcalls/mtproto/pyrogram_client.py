@@ -1,5 +1,6 @@
+import asyncio
 import json
-from typing import Callable
+from typing import Callable, List
 from typing import Dict
 from typing import Optional
 from typing import Union
@@ -44,18 +45,24 @@ from .client_cache import ClientCache
 
 class PyrogramClient(BridgedClient):
     def __init__(
-        self,
-        cache_duration: int,
-        client: Client,
+            self,
+            cache_duration: int,
+            client: Client,
     ):
         self._app: Client = client
         if VersionManager.version_tuple(
-            pyrogram.__version__,
+                pyrogram.__version__,
         ) > VersionManager.version_tuple(
             '2.0.0',
         ):
             self._app.send = self._app.invoke
-        self._handler: Dict[str, Callable] = {}
+        self._handler: Dict[str, List[Callable]] = {
+            'CLOSED_HANDLER': [],
+            'KICK_HANDLER': [],
+            'INVITE_HANDLER': [],
+            'LEFT_HANDLER': [],
+            'PARTICIPANTS_HANDLER': [],
+        }
         self._cache: ClientCache = ClientCache(
             cache_duration,
             self,
@@ -64,8 +71,8 @@ class PyrogramClient(BridgedClient):
         @self._app.on_raw_update()
         async def on_update(_, update, __, data2):
             if isinstance(
-                update,
-                UpdateGroupCallParticipants,
+                    update,
+                    UpdateGroupCallParticipants,
             ):
                 participants = update.participants
                 for participant in participants:
@@ -84,20 +91,21 @@ class PyrogramClient(BridgedClient):
                     )
                     if result is not None:
                         if 'PARTICIPANTS_HANDLER' in self._handler:
-                            await self._handler['PARTICIPANTS_HANDLER'](
+                            await self.propagate(
+                                'PARTICIPANTS_HANDLER',
                                 self._cache.get_chat_id(update.call.id),
                                 result,
                                 participant.just_joined,
                                 participant.left,
                             )
             if isinstance(
-                update,
-                UpdateGroupCall,
+                    update,
+                    UpdateGroupCall,
             ):
                 chat_id = self.chat_id(data2[update.chat_id])
                 if isinstance(
-                    update.call,
-                    GroupCall,
+                        update.call,
+                        GroupCall,
                 ):
                     if update.call.schedule_date is None:
                         self._cache.set_cache(
@@ -108,85 +116,89 @@ class PyrogramClient(BridgedClient):
                             ),
                         )
                 if isinstance(
-                    update.call,
-                    GroupCallDiscarded,
+                        update.call,
+                        GroupCallDiscarded,
                 ):
                     self._cache.drop_cache(chat_id)
                     if 'CLOSED_HANDLER' in self._handler:
-                        await self._handler['CLOSED_HANDLER'](
+                        await self.propagate(
+                            'CLOSED_HANDLER',
                             chat_id,
                         )
             if isinstance(
-                update,
-                UpdateChannel,
+                    update,
+                    UpdateChannel,
             ):
                 chat_id = self.chat_id(update)
                 if len(data2) > 0:
                     if isinstance(
-                        data2[update.channel_id],
-                        ChannelForbidden,
+                            data2[update.channel_id],
+                            ChannelForbidden,
                     ):
                         self._cache.drop_cache(chat_id)
                         if 'KICK_HANDLER' in self._handler:
-                            await self._handler['KICK_HANDLER'](
+                            await self.propagate(
+                                'KICK_HANDLER',
                                 chat_id,
                             )
             if isinstance(
-                update,
-                UpdateNewChannelMessage,
+                    update,
+                    UpdateNewChannelMessage,
             ) or isinstance(
                 update,
                 UpdateNewMessage,
             ):
                 if isinstance(
-                    update.message,
-                    MessageService,
+                        update.message,
+                        MessageService,
                 ):
                     if isinstance(
-                        update.message.action,
-                        MessageActionInviteToGroupCall,
+                            update.message.action,
+                            MessageActionInviteToGroupCall,
                     ):
                         if 'INVITE_HANDLER' in self._handler:
-                            await self._handler['INVITE_HANDLER'](
+                            await self.propagate(
+                                'INVITE_HANDLER',
                                 update.message.action,
                             )
                     if isinstance(
-                        update.message.action,
-                        MessageActionChatDeleteUser,
+                            update.message.action,
+                            MessageActionChatDeleteUser,
                     ):
                         if isinstance(
-                            update.message.peer_id,
-                            PeerChat,
+                                update.message.peer_id,
+                                PeerChat,
                         ):
                             chat_id = self.chat_id(update.message.peer_id)
                             if isinstance(
-                                data2[update.message.peer_id.chat_id],
-                                ChatForbidden,
+                                    data2[update.message.peer_id.chat_id],
+                                    ChatForbidden,
                             ):
                                 self._cache.drop_cache(chat_id)
                                 if 'KICK_HANDLER' in self._handler:
-                                    await self._handler['KICK_HANDLER'](
+                                    await self.propagate(
+                                        'KICK_HANDLER',
                                         chat_id,
                                     )
             if isinstance(
-                data2,
-                Dict,
+                    data2,
+                    Dict,
             ):
                 for group_id in data2:
                     if isinstance(
-                        update,
-                        UpdateNewChannelMessage,
+                            update,
+                            UpdateNewChannelMessage,
                     ) or isinstance(
                         update,
                         UpdateNewMessage,
                     ):
                         if isinstance(
-                            update.message,
-                            MessageService,
+                                update.message,
+                                MessageService,
                         ):
                             if isinstance(
-                                data2[group_id],
-                                Channel,
+                                    data2[group_id],
+                                    Channel,
                             ) or isinstance(
                                 data2[group_id],
                                 Chat,
@@ -197,49 +209,59 @@ class PyrogramClient(BridgedClient):
                                         chat_id,
                                     )
                                     if 'LEFT_HANDLER' in self._handler:
-                                        await self._handler['LEFT_HANDLER'](
+                                        await self.propagate(
+                                            'LEFT_HANDLER',
                                             chat_id,
                                         )
             raise ContinuePropagation()
 
+    async def propagate(self, event_name: str, *args, **kwargs):
+        for event in self._handler[event_name]:
+            asyncio.ensure_future(event(*args, **kwargs))
+
     def on_closed_voice_chat(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['CLOSED_HANDLER'] = func
+                self._handler['CLOSED_HANDLER'].append(func)
             return func
+
         return decorator
 
     def on_kicked(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['KICK_HANDLER'] = func
+                self._handler['KICK_HANDLER'].append(func)
             return func
+
         return decorator
 
     def on_receive_invite(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['INVITE_HANDLER'] = func
+                self._handler['INVITE_HANDLER'].append(func)
             return func
+
         return decorator
 
     def on_left_group(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['LEFT_HANDLER'] = func
+                self._handler['LEFT_HANDLER'].append(func)
             return func
+
         return decorator
 
     def on_participants_change(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['PARTICIPANTS_HANDLER'] = func
+                self._handler['PARTICIPANTS_HANDLER'].append(func)
             return func
+
         return decorator
 
     async def get_call(
-        self,
-        chat_id: int,
+            self,
+            chat_id: int,
     ) -> Optional[InputGroupCall]:
         chat = await self._app.resolve_peer(chat_id)
         if isinstance(chat, InputPeerChannel):
@@ -276,16 +298,16 @@ class PyrogramClient(BridgedClient):
         return input_call
 
     async def get_group_call_participants(
-        self,
-        chat_id: int,
+            self,
+            chat_id: int,
     ):
         return await self._cache.get_participant_list(
             chat_id,
         )
 
     async def get_participants(
-        self,
-        input_call: InputGroupCall,
+            self,
+            input_call: InputGroupCall,
     ):
         return [
             {
@@ -311,12 +333,12 @@ class PyrogramClient(BridgedClient):
         ]
 
     async def join_group_call(
-        self,
-        chat_id: int,
-        json_join: str,
-        invite_hash: str,
-        have_video: bool,
-        join_as: InputPeer,
+            self,
+            chat_id: int,
+            json_join: str,
+            invite_hash: str,
+            have_video: bool,
+            join_as: InputPeer,
     ) -> str:
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
@@ -332,8 +354,8 @@ class PyrogramClient(BridgedClient):
             )
             for update in result.updates:
                 if isinstance(
-                    update,
-                    UpdateGroupCallParticipants,
+                        update,
+                        UpdateGroupCallParticipants,
                 ):
                     participants = update.participants
                     for participant in participants:
@@ -356,8 +378,8 @@ class PyrogramClient(BridgedClient):
         return json.dumps({'transport': None})
 
     async def leave_group_call(
-        self,
-        chat_id: int,
+            self,
+            chat_id: int,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
@@ -369,10 +391,10 @@ class PyrogramClient(BridgedClient):
             )
 
     async def change_volume(
-        self,
-        chat_id: int,
-        volume: int,
-        participant: InputPeer,
+            self,
+            chat_id: int,
+            volume: int,
+            participant: InputPeer,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
@@ -386,12 +408,12 @@ class PyrogramClient(BridgedClient):
             )
 
     async def set_call_status(
-        self,
-        chat_id: int,
-        muted_status: Optional[bool],
-        paused_status: Optional[bool],
-        stopped_status: Optional[bool],
-        participant: InputPeer,
+            self,
+            chat_id: int,
+            muted_status: Optional[bool],
+            paused_status: Optional[bool],
+            stopped_status: Optional[bool],
+            participant: InputPeer,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
@@ -409,8 +431,8 @@ class PyrogramClient(BridgedClient):
         return await self._cache.get_full_chat(chat_id)
 
     async def resolve_peer(
-        self,
-        user_id: Union[int, str],
+            self,
+            user_id: Union[int, str],
     ) -> InputPeer:
         return await self._app.resolve_peer(user_id)
 

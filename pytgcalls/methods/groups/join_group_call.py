@@ -40,6 +40,7 @@ class JoinGroupCall(Scaffold):
 
         chat_id = await self._resolve_chat_id(chat_id)
         self._cache_user_peer.put(chat_id, join_as)
+        self._need_unmute[chat_id] = False
 
         if self._app is not None:
             if self._is_running:
