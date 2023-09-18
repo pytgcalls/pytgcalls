@@ -1,7 +1,6 @@
 from typing import Union
 
 from ntgcalls import NTgCalls
-from ntgcalls import StreamType
 
 
 class Scaffold:
@@ -18,6 +17,7 @@ class Scaffold:
         self._wait_result = None
         self._cache_local_peer = None
         self._on_event_update = None
+        # noinspection PyTypeChecker
         self._binding: NTgCalls = None
 
     def _handle_mtproto(self):
@@ -30,9 +30,6 @@ class Scaffold:
         pass
 
     async def get_call(self, chat_id: int):
-        pass
-
-    async def _stream_ended_handler(self, chat_id: int, stream: StreamType):
         pass
 
     async def start(self):
