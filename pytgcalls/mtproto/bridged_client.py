@@ -74,6 +74,7 @@ class BridgedClient:
         is_channel = hasattr(input_peer, 'channel_id')
         is_channel_update = input_peer.__class__.__name__ == 'Channel'
         is_chat = input_peer.__class__.__name__ == 'Chat'
+        # TODO: @TuriOG please check if the code below works on Telethon and with channel peers
         is_user = input_peer.__class__.__name__ == 'PeerUser' or \
             input_peer.__class__.__name__ == 'InputPeerUser'
         if is_user:
