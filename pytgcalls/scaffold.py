@@ -1,4 +1,5 @@
-from typing import Union, Dict
+from typing import Dict
+from typing import Union
 
 from ntgcalls import NTgCalls
 

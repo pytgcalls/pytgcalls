@@ -4,11 +4,12 @@ from asyncio.log import logger
 from ntgcalls import MediaState
 from ntgcalls import StreamType
 
-from pytgcalls.types import StreamAudioEnded, GroupCallParticipant
-from pytgcalls.types import StreamVideoEnded
 from ...exceptions import PyTgCallsAlreadyRunning
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
+from pytgcalls.types import GroupCallParticipant
+from pytgcalls.types import StreamAudioEnded
+from pytgcalls.types import StreamVideoEnded
 
 
 class Start(Scaffold):
@@ -17,12 +18,11 @@ class Start(Scaffold):
 
         @self._app.on_participants_change()
         async def participants_handler(
-                chat_id: int,
-                participant: GroupCallParticipant,
-                just_joined: bool,
-                just_left: bool,
+            chat_id: int,
+            participant: GroupCallParticipant,
+            just_joined: bool,
+            just_left: bool,
         ):
-            print(participant)
             if chat_id in self._need_unmute:
                 need_unmute = self._need_unmute[chat_id]
                 if not just_joined and \
@@ -36,7 +36,9 @@ class Start(Scaffold):
                 self._need_unmute[chat_id] = participant.muted_by_admin
 
         def stream_upgrade(chat_id: int, state: MediaState):
-            asyncio.run_coroutine_threadsafe(update_status(chat_id, state), loop)
+            asyncio.run_coroutine_threadsafe(
+                update_status(chat_id, state), loop,
+            )
 
         async def update_status(chat_id: int, state: MediaState):
             try:
@@ -68,8 +70,8 @@ class Start(Scaffold):
             await self._init_mtproto()
             self._handle_mtproto()
 
-            self._binding.onStreamEnd(stream_ended)
-            self._binding.onUpgrade(stream_upgrade)
+            self._binding.on_stream_end(stream_ended)
+            self._binding.on_upgrade(stream_upgrade)
             await PyTgCallsSession().start()
         else:
             raise PyTgCallsAlreadyRunning()

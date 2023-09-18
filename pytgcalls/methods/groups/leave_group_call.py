@@ -36,6 +36,8 @@ class LeaveGroupCall(Scaffold):
                     except ConnectionError:
                         raise NotInGroupCallError()
 
+                    del self._need_unmute[chat_id]
+
                     await self._on_event_update.propagate(
                         'RAW_UPDATE_HANDLER',
                         self,

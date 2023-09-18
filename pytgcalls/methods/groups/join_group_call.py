@@ -12,6 +12,7 @@ from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMTProtoClientSet
 from ...exceptions import TelegramServerError
 from ...exceptions import UnMuteNeeded
+from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...stream_type import StreamType
 from ...to_async import ToAsync
@@ -40,7 +41,6 @@ class JoinGroupCall(Scaffold):
 
         chat_id = await self._resolve_chat_id(chat_id)
         self._cache_user_peer.put(chat_id, join_as)
-        self._need_unmute[chat_id] = False
 
         if self._app is not None:
             if self._is_running:
@@ -55,7 +55,7 @@ class JoinGroupCall(Scaffold):
 
                     try:
                         call_params: str = await ToAsync(
-                            self._binding.createCall,
+                            self._binding.create_call,
                             chat_id,
                             media_description,
                         )
@@ -82,6 +82,16 @@ class JoinGroupCall(Scaffold):
                         raise UnMuteNeeded()
                     except Exception:
                         raise TelegramServerError()
+
+                    participants = await self._app.get_group_call_participants(
+                        chat_id,
+                    )
+
+                    for x in participants:
+                        if x.user_id == BridgedClient.chat_id(
+                            self._cache_local_peer,
+                        ):
+                            self._need_unmute[chat_id] = x.muted_by_admin
 
                     await self._on_event_update.propagate(
                         'RAW_UPDATE_HANDLER',

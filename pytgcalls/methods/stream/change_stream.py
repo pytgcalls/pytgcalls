@@ -27,7 +27,7 @@ class ChangeStream(Scaffold):
             if self._is_running:
                 try:
                     await ToAsync(
-                        self._binding.changeStream,
+                        self._binding.change_stream,
                         chat_id,
                         await StreamParams.get_stream_params(stream),
                     )
