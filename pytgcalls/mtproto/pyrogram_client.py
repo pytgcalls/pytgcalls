@@ -2,7 +2,6 @@ import asyncio
 import json
 from typing import Callable
 from typing import Dict
-from typing import List
 from typing import Optional
 from typing import Union
 
@@ -57,13 +56,6 @@ class PyrogramClient(BridgedClient):
             '2.0.0',
         ):
             self._app.send = self._app.invoke
-        self._handler: Dict[str, List[Callable]] = {
-            'CLOSED_HANDLER': [],
-            'KICK_HANDLER': [],
-            'INVITE_HANDLER': [],
-            'LEFT_HANDLER': [],
-            'PARTICIPANTS_HANDLER': [],
-        }
         self._cache: ClientCache = ClientCache(
             cache_duration,
             self,
@@ -91,8 +83,8 @@ class PyrogramClient(BridgedClient):
                         participant.left,
                     )
                     if result is not None:
-                        if 'PARTICIPANTS_HANDLER' in self._handler:
-                            await self.propagate(
+                        if 'PARTICIPANTS_HANDLER' in self.HANDLERS_LIST:
+                            await self._propagate(
                                 'PARTICIPANTS_HANDLER',
                                 self._cache.get_chat_id(update.call.id),
                                 result,
@@ -121,8 +113,8 @@ class PyrogramClient(BridgedClient):
                         GroupCallDiscarded,
                 ):
                     self._cache.drop_cache(chat_id)
-                    if 'CLOSED_HANDLER' in self._handler:
-                        await self.propagate(
+                    if 'CLOSED_HANDLER' in self.HANDLERS_LIST:
+                        await self._propagate(
                             'CLOSED_HANDLER',
                             chat_id,
                         )
@@ -137,8 +129,8 @@ class PyrogramClient(BridgedClient):
                             ChannelForbidden,
                     ):
                         self._cache.drop_cache(chat_id)
-                        if 'KICK_HANDLER' in self._handler:
-                            await self.propagate(
+                        if 'KICK_HANDLER' in self.HANDLERS_LIST:
+                            await self._propagate(
                                 'KICK_HANDLER',
                                 chat_id,
                             )
@@ -157,8 +149,8 @@ class PyrogramClient(BridgedClient):
                             update.message.action,
                             MessageActionInviteToGroupCall,
                     ):
-                        if 'INVITE_HANDLER' in self._handler:
-                            await self.propagate(
+                        if 'INVITE_HANDLER' in self.HANDLERS_LIST:
+                            await self._propagate(
                                 'INVITE_HANDLER',
                                 update.message.action,
                             )
@@ -176,8 +168,8 @@ class PyrogramClient(BridgedClient):
                                     ChatForbidden,
                             ):
                                 self._cache.drop_cache(chat_id)
-                                if 'KICK_HANDLER' in self._handler:
-                                    await self.propagate(
+                                if 'KICK_HANDLER' in self.HANDLERS_LIST:
+                                    await self._propagate(
                                         'KICK_HANDLER',
                                         chat_id,
                                     )
@@ -209,21 +201,21 @@ class PyrogramClient(BridgedClient):
                                     self._cache.drop_cache(
                                         chat_id,
                                     )
-                                    if 'LEFT_HANDLER' in self._handler:
-                                        await self.propagate(
+                                    if 'LEFT_HANDLER' in self.HANDLERS_LIST:
+                                        await self._propagate(
                                             'LEFT_HANDLER',
                                             chat_id,
                                         )
             raise ContinuePropagation()
 
-    async def propagate(self, event_name: str, *args, **kwargs):
-        for event in self._handler[event_name]:
+    async def _propagate(self, event_name: str, *args, **kwargs):
+        for event in self.HANDLERS_LIST[event_name]:
             asyncio.ensure_future(event(*args, **kwargs))
 
     def on_closed_voice_chat(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['CLOSED_HANDLER'].append(func)
+                self.HANDLERS_LIST['CLOSED_HANDLER'].append(func)
             return func
 
         return decorator
@@ -231,7 +223,7 @@ class PyrogramClient(BridgedClient):
     def on_kicked(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['KICK_HANDLER'].append(func)
+                self.HANDLERS_LIST['KICK_HANDLER'].append(func)
             return func
 
         return decorator
@@ -239,7 +231,7 @@ class PyrogramClient(BridgedClient):
     def on_receive_invite(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['INVITE_HANDLER'].append(func)
+                self.HANDLERS_LIST['INVITE_HANDLER'].append(func)
             return func
 
         return decorator
@@ -247,7 +239,7 @@ class PyrogramClient(BridgedClient):
     def on_left_group(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['LEFT_HANDLER'].append(func)
+                self.HANDLERS_LIST['LEFT_HANDLER'].append(func)
             return func
 
         return decorator
@@ -255,7 +247,7 @@ class PyrogramClient(BridgedClient):
     def on_participants_change(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['PARTICIPANTS_HANDLER'].append(func)
+                self.HANDLERS_LIST['PARTICIPANTS_HANDLER'].append(func)
             return func
 
         return decorator

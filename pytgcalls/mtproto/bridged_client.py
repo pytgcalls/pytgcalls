@@ -1,9 +1,18 @@
 from typing import Any
 from typing import Callable
+from typing import Dict
+from typing import List
 from typing import Optional
 
 
 class BridgedClient:
+    HANDLERS_LIST: Dict[str, List[Callable]] = {
+        'CLOSED_HANDLER': [],
+        'KICK_HANDLER': [],
+        'INVITE_HANDLER': [],
+        'LEFT_HANDLER': [],
+        'PARTICIPANTS_HANDLER': [],
+    }
 
     async def get_call(
         self,

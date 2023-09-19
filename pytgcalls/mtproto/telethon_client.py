@@ -1,6 +1,6 @@
+import asyncio
 import json
 from typing import Callable
-from typing import Dict
 from typing import Optional
 from typing import Union
 
@@ -38,7 +38,6 @@ from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
 
-# TODO: @TuriOG add events listeners as array like on PyrogramClient
 class TelethonClient(BridgedClient):
     def __init__(
         self,
@@ -46,7 +45,6 @@ class TelethonClient(BridgedClient):
         client: TelegramClient,
     ):
         self._app: TelegramClient = client
-        self._handler: Dict[str, Callable] = {}
         self._cache: ClientCache = ClientCache(
             cache_duration,
             self,
@@ -74,8 +72,9 @@ class TelethonClient(BridgedClient):
                         participant.left,
                     )
                     if result is not None:
-                        if 'PARTICIPANTS_HANDLER' in self._handler:
-                            await self._handler['PARTICIPANTS_HANDLER'](
+                        if 'PARTICIPANTS_HANDLER' in self.HANDLERS_LIST:
+                            await self._propagate(
+                                'PARTICIPANTS_HANDLER',
                                 self._cache.get_chat_id(update.call.id),
                                 result,
                                 participant.just_joined,
@@ -107,8 +106,9 @@ class TelethonClient(BridgedClient):
                     self._cache.drop_cache(
                         chat_id,
                     )
-                    if 'CLOSED_HANDLER' in self._handler:
-                        await self._handler['CLOSED_HANDLER'](
+                    if 'CLOSED_HANDLER' in self.HANDLERS_LIST:
+                        await self._propagate(
+                            'CLOSED_HANDLER',
                             chat_id,
                         )
             if isinstance(
@@ -120,8 +120,9 @@ class TelethonClient(BridgedClient):
                     await self._app.get_entity(chat_id)
                 except ChannelPrivateError:
                     self._cache.drop_cache(chat_id)
-                    if 'KICK_HANDLER' in self._handler:
-                        await self._handler['KICK_HANDLER'](
+                    if 'KICK_HANDLER' in self.HANDLERS_LIST:
+                        await self._propagate(
+                            'KICK_HANDLER',
                             chat_id,
                         )
 
@@ -140,16 +141,18 @@ class TelethonClient(BridgedClient):
                         update.message.action,
                         MessageActionInviteToGroupCall,
                     ):
-                        if 'INVITE_HANDLER' in self._handler:
-                            await self._handler['INVITE_HANDLER'](
+                        if 'INVITE_HANDLER' in self.HANDLERS_LIST:
+                            await self._propagate(
+                                'INVITE_HANDLER',
                                 update.message.action,
                             )
                     if isinstance(update.message.out, bool):
                         if update.message.out:
                             chat_id = self.chat_id(update.message.peer_id)
                             self._cache.drop_cache(chat_id)
-                            if 'LEFT_HANDLER' in self._handler:
-                                await self._handler['LEFT_HANDLER'](
+                            if 'LEFT_HANDLER' in self.HANDLERS_LIST:
+                                await self._propagate(
+                                    'LEFT_HANDLER',
                                     chat_id,
                                 )
                     if isinstance(
@@ -166,8 +169,9 @@ class TelethonClient(BridgedClient):
                                 ChatForbidden,
                             ):
                                 self._cache.drop_cache(chat_id)
-                                if 'KICK_HANDLER' in self._handler:
-                                    await self._handler['KICK_HANDLER'](
+                                if 'KICK_HANDLER' in self.HANDLERS_LIST:
+                                    await self._propagate(
+                                        'KICK_HANDLER',
                                         chat_id,
                                     )
 
@@ -289,38 +293,42 @@ class TelethonClient(BridgedClient):
 
         return json.dumps({'transport': None})
 
+    async def _propagate(self, event_name: str, *args, **kwargs):
+        for event in self.HANDLERS_LIST[event_name]:
+            asyncio.ensure_future(event(*args, **kwargs))
+
     def on_closed_voice_chat(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['CLOSED_HANDLER'] = func
+                self.HANDLERS_LIST['CLOSED_HANDLER'].append(func)
             return func
         return decorator
 
     def on_kicked(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['KICK_HANDLER'] = func
+                self.HANDLERS_LIST['KICK_HANDLER'].append(func)
             return func
         return decorator
 
     def on_receive_invite(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['INVITE_HANDLER'] = func
+                self.HANDLERS_LIST['INVITE_HANDLER'].append(func)
             return func
         return decorator
 
     def on_left_group(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['LEFT_HANDLER'] = func
+                self.HANDLERS_LIST['LEFT_HANDLER'].append(func)
             return func
         return decorator
 
     def on_participants_change(self) -> Callable:
         def decorator(func: Callable) -> Callable:
             if self is not None:
-                self._handler['PARTICIPANTS_HANDLER'] = func
+                self.HANDLERS_LIST['PARTICIPANTS_HANDLER'].append(func)
             return func
         return decorator
 
