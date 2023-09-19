@@ -46,8 +46,6 @@ def build_ffmpeg_command(
 
     log_level = logging.getLogger().level
     if log_level == logging.DEBUG:
-        ffmpeg_level = 'debug'
-    elif log_level == logging.INFO:
         ffmpeg_level = 'info'
     else:
         ffmpeg_level = 'quiet'
