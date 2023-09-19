@@ -1,3 +1,4 @@
+import logging
 import shlex
 from typing import Dict
 from typing import List
@@ -42,6 +43,16 @@ def build_ffmpeg_command(
         path,
     ]
     ffmpeg_command += command['mid']
+
+    log_level = logging.getLogger().level
+    if log_level == logging.DEBUG:
+        ffmpeg_level = 'debug'
+    elif log_level == logging.INFO:
+        ffmpeg_level = 'info'
+    else:
+        ffmpeg_level = 'quiet'
+
+    ffmpeg_command += ['-v', ffmpeg_level]
     ffmpeg_command.append('-f')
 
     if isinstance(stream_parameters, VideoParameters):
