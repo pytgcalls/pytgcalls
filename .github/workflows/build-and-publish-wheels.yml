@@ -3,7 +3,7 @@
 name: Build Wheels
 on:
   push:
-    branches: [ master, dev ]
+    branches: [ master, dev, ntgcalls ]
     paths-ignore:
       - '.gitignore'
       - '.npmignore'
@@ -18,145 +18,78 @@ on:
   workflow_dispatch:
 
 jobs:
-  pytglin-build:
-    runs-on: ubuntu-20.04
+  build:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        arch-image-names: [ 'amd64', 'arm64v8', 'arm32v7' ]
         include:
-          - arch-image-names: 'amd64'
-            arch-run-names: 'linux/amd64'
-            build-plat-names: 'manylinux2014_x86_64'
+          - os: ubuntu-latest
+            cibw_archs: "native"
+            shared_name: "linux-x86_64"
+            cibw_os_build: "manylinux_"
+          #- os: ubuntu-latest
+          #  cibw_archs: "aarch64"
+          #  shared_name: "linux-arm64"
+          #  cibw_os_build: "manylinux_"
+          - os: windows-latest
+            cibw_archs: "native"
+            shared_name: "windows-x86_64"
+          - os: macos-13
+            cibw_archs: "arm64"
+            cibw_os_build: "macosx_arm64"
+            shared_name: "macos-arm64"
+      fail-fast: false
 
-          - arch-image-names: 'arm64v8'
-            arch-run-names: 'linux/arm64/v8'
-            build-plat-names: 'manylinux2014_aarch64'
+    steps:
+      - name: Get Branch Name
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: github_info
 
-          - arch-image-names: 'arm32v7'
-            arch-run-names: 'linux/arm32/v7'
-            build-plat-names: 'manylinux2014_armv7l'
-        python-version: [ '3.7', '3.8', '3.9', '3.10', '3.11' ]
-    steps:
-      - name: Get Branch Name
-        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
-        id: github_info
-      - name: Checkout ${{ steps.github_info.outputs.branch }}
+      - name: Check out the repo
         uses: actions/checkout@v3
         with:
           ref: ${{ steps.github_info.outputs.branch }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v2
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.15.0
+        env:
+          CIBW_ARCHS: ${{ matrix.cibw_archs }}
+          CIBW_PROJECT_REQUIRES_PYTHON: ">=3.7"
+          CIBW_BUILD: cp3*-${{ matrix.cibw_os_build }}*
+          CIBW_SKIP: cp36-* 
+          CIBW_BUILD_VERBOSITY: 3
+          CIBW_TEST_SKIP: "*-macosx_arm64"
+          CIBW_TEST_COMMAND: python -c "import pytgcalls; print(pytgcalls.__version__)"
+
+      - uses: actions/upload-artifact@v3
         with:
-          install: true
-      - name: Enable multi-arch support
-        run: |
-          echo '{"experimental": true}' | sudo tee /etc/docker/daemon.json > /dev/null
-          sudo systemctl restart docker
-      - name: Build Docker Image
-        run: |
-          docker buildx build --load --build-arg pname="${{ matrix.build-plat-names }}" --build-arg dname="${{ matrix.arch-image-names }}" --build-arg python_version="${{ matrix.python-version }}" --platform "${{ matrix.arch-run-names }}" -t pytgcalls_p"${{ matrix.python-version }}":"${{ matrix.arch-image-names }}" . -f platforms/linux/Dockerfile
-      - name: Run Docker Container
-        run: |
-          docker run --platform "${{ matrix.arch-run-names }}" -v "$PWD":/usr/src/mnt pytgcalls_p"${{ matrix.python-version }}":"${{ matrix.arch-image-names }}" ./linux_mount.sh
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: pytgcalls-python${{ matrix.python-version }}
-          path:
-            dist/*.whl
-  pytgwin-build:
-    runs-on: windows-2019
-    strategy:
-      matrix:
-        python-version: [ '3.7', '3.8', '3.9', '3.10', '3.11' ]
+          name: pytgcalls-${{ matrix.shared_name }}-wheels
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+            
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [build]
+    permissions:
+      id-token: write
     steps:
-      - name: Get Branch Name
-        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
-        id: github_info
-      - name: Checkout ${{ steps.github_info.outputs.branch }}
+      - name: Check out the repo
         uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.github_info.outputs.branch }}
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 'latest'
-      - name: Setup Python${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install pip requirements
-        run: |
-          python -m pip install wheel setuptools
-      - name: Build wheel for Python${{ matrix.python-version }}
-        run: |
-          python setup.py sdist bdist_wheel
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: pytgcalls-python${{ matrix.python-version }}
-          path:
-            dist/*.whl
-  pytgmac-build:
-    runs-on: macos-11
-    strategy:
-      matrix:
-        python-version: [ '3.7', '3.8', '3.9', '3.10', '3.11' ]
-    steps:
-      - name: Get Branch Name
-        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
-        id: github_info
-      - name: Checkout ${{ steps.github_info.outputs.branch }}
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.github_info.outputs.branch }}
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 'latest'
-      - name: Setup Python${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install pip requirements
-        run: |
-          python -m pip install wheel setuptools
-      - name: Build wheel for Python${{ matrix.python-version }}
-        run: |
-          python setup.py sdist bdist_wheel
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: pytgcalls-python${{ matrix.python-version }}
-          path:
-            dist/*.whl
-  pytgcalls-publish:
-    runs-on: windows-2019
-    needs: [pytglin-build, pytgwin-build, pytgmac-build]
-    steps:
-      - name: Install Python3.8
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-      - name: Install pip requirements
-        run: |
-          python -m pip install twine
+
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: tmp/
+
       - name: Extract artifacts
         run: |
-          md dist
-          Get-ChildItem -Path .\tmp -Recurse -File | Move-Item -Destination .\dist
-      - name: Push to PyPi
-        env:
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-        run: |
-          echo "${{ github.ref }} ${{ github.workspace }}"
-          python -m twine check dist/*
-          python -m twine upload dist/*
+          mkdir dist
+          find tmp -type f -name "*.whl" | xargs -I {} mv {} dist
+
+      - name: Publish a Python distribution to PyPI.
+        if: github.ref == 'refs/heads/master' && github.repository == 'pytgcalls/ntgcalls'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+          packages-dir: dist/
