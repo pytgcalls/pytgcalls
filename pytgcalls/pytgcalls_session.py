@@ -2,6 +2,7 @@ import asyncio
 import re
 import sys
 
+import ntgcalls
 from aiohttp import ClientConnectionError
 from aiohttp import ClientResponse
 from aiohttp import ClientSession
@@ -17,7 +18,8 @@ class PyTgCallsSession:
         if not self.notice_displayed:
             PyTgCallsSession.notice_displayed = True
             print(
-                f'PyTgCalls v{__version__}, Copyright (C) '
+                f'PyTgCalls v{__version__} powered by '
+                f'NTgCalls v{ntgcalls.__version__}, Copyright (C) '
                 f'2021-2022 Laky-64 <https://github.com/Laky-64>\n'
                 'Licensed under the terms of the GNU Lesser '
                 'General Public License v3 or later (LGPLv3+)\n',
