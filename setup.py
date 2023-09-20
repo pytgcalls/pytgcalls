@@ -21,6 +21,7 @@ setup(
     classifiers=[
         'License :: OSI Approved :: '
         'GNU Lesser General Public License v3 (LGPLv3)',
+        'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.7',
@@ -28,6 +29,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
@@ -39,7 +41,7 @@ setup(
         'screeninfo',
         'deprecation',
     ],
-    python_requires='>=3.6.1',
+    python_requires='>=3.7',
     include_package_data=True,
     universal=True,
     zip_safe=False,
