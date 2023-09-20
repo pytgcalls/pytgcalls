@@ -3,7 +3,7 @@
 name: Build Wheels
 on:
   push:
-    branches: [ master, dev, ntgcalls ]
+    branches: [ master, dev ]
     paths-ignore:
       - '.gitignore'
       - '.pre-commit-config.yaml'
