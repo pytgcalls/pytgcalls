@@ -39,7 +39,7 @@ setup(
         'screeninfo',
         'deprecation',
     ],
-    python_requires='>=3.6.1',
+    python_requires='>=3.7',
     include_package_data=True,
     universal=True,
     zip_safe=False,
