@@ -19,7 +19,7 @@ setup(
     license='LGPL-3.0',
     license_file='LICENSE',
     classifiers=[
-        'License :: OSI Approved :: '
+        'License :: OSI Approved'
         'GNU Lesser General Public License v3 (LGPLv3)',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
@@ -31,7 +31,6 @@ setup(
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy',
     ],
     packages=find_packages(),
     install_requires=[
