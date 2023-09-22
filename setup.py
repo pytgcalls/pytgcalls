@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 
 from setuptools import find_packages
 from setuptools import setup
@@ -8,9 +9,19 @@ base_path = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(base_path, 'README.md'), encoding='utf-8') as f:
     readme = f.read()
 
+about: Dict = {}
+with open(
+    os.path.join(
+        base_path,
+        'pytgcalls',
+        '__version__.py',
+    ), encoding='utf-8',
+) as f:
+    exec(f.read(), about)
+
 setup(
     name='py-tgcalls',
-    version='1.0.0.dev1',
+    version=about['__version__'],
     long_description=readme,
     long_description_content_type='text/markdown',
     url='https://github.com/pytgcalls/pytgcalls',
