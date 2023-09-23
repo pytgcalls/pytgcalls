@@ -4,6 +4,8 @@ from .low_quality_audio import LowQualityAudio
 from .low_quality_video import LowQualityVideo
 from .medium_quality_audio import MediumQualityAudio
 from .medium_quality_video import MediumQualityVideo
+from .very_high_quality_audio import VeryHighQualityAudio
+from .very_high_quality_video import VeryHighQualityVideo
 
 __all__ = (
     'HighQualityAudio',
@@ -12,4 +14,6 @@ __all__ = (
     'LowQualityVideo',
     'MediumQualityAudio',
     'MediumQualityVideo',
+    'VeryHighQualityAudio',
+    'VeryHighQualityVideo',
 )
