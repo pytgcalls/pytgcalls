@@ -6,5 +6,5 @@ class LowQualityVideo(VideoParameters):
         super().__init__(
             640,
             360,
-            20,
+            15,
         )

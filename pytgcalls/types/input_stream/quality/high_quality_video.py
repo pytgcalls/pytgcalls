@@ -6,5 +6,5 @@ class HighQualityVideo(VideoParameters):
         super().__init__(
             1280,
             720,
-            20,
+            30,
         )
