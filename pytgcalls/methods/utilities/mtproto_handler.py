@@ -1,3 +1,5 @@
+from ntgcalls import ConnectionNotFound
+
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
 from ...types import Update
@@ -25,7 +27,7 @@ class MTProtoHandler(Scaffold):
                     self._binding.stop,
                     chat_id,
                 )
-            except ConnectionError:
+            except ConnectionNotFound:
                 pass
 
             await self._on_event_update.propagate(
@@ -43,7 +45,7 @@ class MTProtoHandler(Scaffold):
                     self._binding.stop,
                     chat_id,
                 )
-            except ConnectionError:
+            except ConnectionNotFound:
                 pass
 
             await self._on_event_update.propagate(
@@ -62,6 +64,14 @@ class MTProtoHandler(Scaffold):
 
         @self._app.on_left_group()
         async def left_handler(chat_id: int):
+            self._cache_user_peer.pop(chat_id)
+            try:
+                await ToAsync(
+                    self._binding.stop,
+                    chat_id,
+                )
+            except ConnectionNotFound:
+                pass
             await self._on_event_update.propagate(
                 'LEFT_HANDLER',
                 self,
