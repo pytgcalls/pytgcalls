@@ -1,13 +1,13 @@
 from typing import Callable
 
-import deprecation
+from deprecation import deprecated
 
 from ...scaffold import Scaffold
 
 
 class OnRawUpdate(Scaffold):
 
-    @deprecation.deprecated(
+    @deprecated(
         deprecated_in='1.0.0.dev1',
         details='This method is no longer supported.',
     )

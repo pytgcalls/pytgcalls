@@ -1,11 +1,11 @@
-import deprecation
+from deprecation import deprecated
 from ntgcalls import InputMode
 
 from .video_parameters import VideoParameters
 from .video_stream import VideoStream
 
 
-@deprecation.deprecated(
+@deprecated(
     deprecated_in='1.0.0.dev1',
     details='Use pytgcalls.VideoStream instead.',
 )

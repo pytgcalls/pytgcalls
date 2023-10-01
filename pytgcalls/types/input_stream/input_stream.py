@@ -1,13 +1,13 @@
 from typing import Optional
 
-import deprecation
+from deprecation import deprecated
 
 from .input_audio_stream import InputAudioStream
 from .input_video_stream import InputVideoStream
 from .stream import Stream
 
 
-@deprecation.deprecated(
+@deprecated(
     deprecated_in='1.0.0.dev1',
     details='This class is no longer supported.'
             'Use pytgcalls.types.Stream instead.',

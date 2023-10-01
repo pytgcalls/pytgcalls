@@ -1,7 +1,7 @@
-import deprecation
+from deprecation import deprecated
 
 
-@deprecation.deprecated(
+@deprecated(
     deprecated_in='1.0.0.dev1',
     details='This enum is no longer supported.',
 )

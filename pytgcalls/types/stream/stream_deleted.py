@@ -1,9 +1,9 @@
-import deprecation
+from deprecation import deprecated
 
 from ...types.update import Update
 
 
-@deprecation.deprecated(
+@deprecated(
     deprecated_in='1.0.0.dev1',
     removed_in='1.0.0.dev1',
     details='This method is no longer supported.',

@@ -1,11 +1,11 @@
-import deprecation
+from deprecation import deprecated
 from ntgcalls import InputMode
 
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
 
 
-@deprecation.deprecated(
+@deprecated(
     deprecated_in='1.0.0.dev1',
     details='Use pytgcalls.types.AudioStream instead.',
 )
