@@ -4,7 +4,6 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
 from pytgcalls.types import AudioParameters
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import VideoParameters
@@ -17,7 +16,7 @@ def get_youtube_stream():
     # USE THIS IF YOU WANT ASYNC WAY
     async def run_async():
         proc = await asyncio.create_subprocess_exec(
-            'youtube-dl',
+            'yt-dlp',
             '-g',
             '-f',
             # CHANGE THIS BASED ON WHAT YOU WANT
@@ -47,6 +46,5 @@ call_py.join_group_call(
         AudioParameters.from_quality(AudioQuality.HIGH),
         VideoParameters.from_quality(VideoQuality.HD_720p),
     ),
-    stream_type=StreamType().pulse_stream,
 )
 idle()
