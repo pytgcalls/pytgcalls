@@ -2,7 +2,6 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
 from pytgcalls.types import AudioParameters
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import VideoParameters
@@ -33,6 +32,5 @@ call_py.join_group_call(
                                      '-atend '
                                      'EVERYTHING AFTER ALL ARGUMENTS',
     ),
-    stream_type=StreamType().pulse_stream,
 )
 idle()

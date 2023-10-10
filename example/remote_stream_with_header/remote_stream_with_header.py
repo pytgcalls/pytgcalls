@@ -2,7 +2,6 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
 from pytgcalls.types import AudioParameters
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import Browsers
@@ -29,6 +28,5 @@ call_py.join_group_call(
             'User-Agent': Browsers().chrome_windows,
         },
     ),
-    stream_type=StreamType().pulse_stream,
 )
 idle()
