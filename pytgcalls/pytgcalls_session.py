@@ -1,6 +1,7 @@
 import asyncio
 import re
 import sys
+from datetime import date
 
 import ntgcalls
 from aiohttp import ClientConnectionError
@@ -17,10 +18,11 @@ class PyTgCallsSession:
     async def start(self):
         if not self.notice_displayed:
             PyTgCallsSession.notice_displayed = True
+            year = date.today().year
             print(
                 f'PyTgCalls v{__version__} powered by '
                 f'NTgCalls v{ntgcalls.__version__}, Copyright (C) '
-                f'2021-2022 Laky-64 <https://github.com/Laky-64>\n'
+                f'2021-{year} Laky-64 <https://github.com/Laky-64>\n'
                 'Licensed under the terms of the GNU Lesser '
                 'General Public License v3 or later (LGPLv3+)\n',
             )
