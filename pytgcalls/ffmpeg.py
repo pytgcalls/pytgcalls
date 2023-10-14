@@ -1,21 +1,117 @@
+import asyncio
 import logging
 import shlex
+import subprocess
+from json import JSONDecodeError
+from json import loads
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
 
+from ntgcalls import FFmpegError
+
+from .exceptions import InvalidVideoProportion
+from .exceptions import NoAudioSourceFound
+from .exceptions import NoVideoSourceFound
 from .types.input_stream.audio_parameters import AudioParameters
 from .types.input_stream.video_parameters import VideoParameters
 
 
-def build_ffmpeg_command(
+async def check_stream(
     ffmpeg_parameters: str,
     path: str,
     stream_parameters: Union[AudioParameters, VideoParameters],
     before_commands: List[str] = None,
     headers: Optional[Dict[str, str]] = None,
-) -> str:
+    need_image: bool = False,
+):
+    need_audio = isinstance(stream_parameters, AudioParameters)
+    need_video = isinstance(stream_parameters, VideoParameters)
+
+    have_video = False
+    have_audio = False
+    have_valid_video = False
+
+    original_width = 0
+    original_height = 0
+    try:
+        ffprobe = await asyncio.create_subprocess_exec(
+            *tuple(
+                build_command(
+                    'ffprobe',
+                    ffmpeg_parameters,
+                    path,
+                    stream_parameters,
+                    before_commands,
+                    headers,
+                ),
+            ),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stream_list = []
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                ffprobe.communicate(),
+                timeout=30,
+            )
+            result = loads(stdout.decode('utf-8')) or {}
+            stream_list = result.get('streams', [])
+        except (subprocess.TimeoutExpired, JSONDecodeError):
+            pass
+
+        for stream in stream_list:
+            codec_type = stream.get('codec_type', '')
+            codec_name = stream.get('codec_name', '')
+            image_codecs = ['png', 'jpeg', 'jpg', 'mjpeg']
+            is_valid = not need_image and codec_name in image_codecs
+            if codec_type == 'video' and not is_valid:
+                have_video = True
+                original_width = int(stream.get('width', 0))
+                original_height = int(stream.get('height', 0))
+                if original_height and original_width:
+                    have_valid_video = True
+            elif codec_type == 'audio':
+                have_audio = True
+
+        if need_video:
+            if not have_video:
+                raise NoVideoSourceFound(path)
+            if not have_valid_video:
+                raise InvalidVideoProportion(
+                    'Video proportion not found',
+                )
+
+            if isinstance(stream_parameters, VideoParameters):
+                ratio = float(original_width) / original_height
+                new_w = min(original_width, stream_parameters.width)
+                new_h = int(new_w / ratio)
+
+                if new_h > stream_parameters.height:
+                    new_h = stream_parameters.height
+                    new_w = int(new_h * ratio)
+
+                new_w = new_w - 1 if new_w % 2 else new_w
+                new_h = new_h - 1 if new_h % 2 else new_h
+                stream_parameters.height = new_h
+                stream_parameters.width = new_w
+
+        if need_audio:
+            if not have_audio:
+                raise NoAudioSourceFound(path)
+    except FileNotFoundError:
+        raise FFmpegError('ffprobe not installed')
+
+
+def build_command(
+    name: str,
+    ffmpeg_parameters: str,
+    path: str,
+    stream_parameters: Union[AudioParameters, VideoParameters],
+    before_commands: List[str] = None,
+    headers: Optional[Dict[str, str]] = None,
+) -> List[str]:
     command = _get_stream_params(ffmpeg_parameters)
 
     if isinstance(stream_parameters, VideoParameters):
@@ -23,9 +119,19 @@ def build_ffmpeg_command(
     else:
         command = command['audio']
 
-    ffmpeg_command: List = ['ffmpeg']
+    ffmpeg_command: List = [name]
 
     ffmpeg_command += command['start']
+
+    if name == 'ffprobe':
+        ffmpeg_command += [
+            '-v',
+            'error',
+            '-show_entries',
+            'stream=width,height,codec_type,codec_name',
+            '-of',
+            'json',
+        ]
 
     if before_commands:
         ffmpeg_command += before_commands
@@ -44,38 +150,40 @@ def build_ffmpeg_command(
     ]
     ffmpeg_command += command['mid']
 
-    log_level = logging.getLogger().level
-    if log_level == logging.DEBUG:
-        ffmpeg_level = 'info'
-    else:
-        ffmpeg_level = 'quiet'
+    if name == 'ffmpeg':
+        log_level = logging.getLogger().level
+        if log_level == logging.DEBUG:
+            ffmpeg_level = 'info'
+        else:
+            ffmpeg_level = 'quiet'
 
-    ffmpeg_command += ['-v', ffmpeg_level]
-    ffmpeg_command.append('-f')
+        ffmpeg_command += ['-v', ffmpeg_level]
+        ffmpeg_command.append('-f')
 
-    if isinstance(stream_parameters, VideoParameters):
-        ffmpeg_command += [
-            'rawvideo',
-            '-r',
-            str(stream_parameters.frame_rate),
-            '-pix_fmt',
-            'yuv420p',
-            '-vf',
-            f'scale={stream_parameters.width}:{stream_parameters.height}',
-        ]
-    else:
-        ffmpeg_command += [
-            's16le',
-            '-ac',
-            str(stream_parameters.channels),
-            '-ar',
-            str(stream_parameters.bitrate),
-        ]
+        if isinstance(stream_parameters, VideoParameters):
+            ffmpeg_command += [
+                'rawvideo',
+                '-r',
+                str(stream_parameters.frame_rate),
+                '-pix_fmt',
+                'yuv420p',
+                '-vf',
+                f'scale={stream_parameters.width}:{stream_parameters.height}',
+            ]
+        else:
+            ffmpeg_command += [
+                's16le',
+                '-ac',
+                str(stream_parameters.channels),
+                '-ar',
+                str(stream_parameters.bitrate),
+            ]
 
     ffmpeg_command += command['end']
-    ffmpeg_command.append('pipe:1')
+    if name == 'ffmpeg':
+        ffmpeg_command.append('pipe:1')
 
-    return ' '.join(ffmpeg_command)
+    return ffmpeg_command
 
 
 def _get_stream_params(command: str):
