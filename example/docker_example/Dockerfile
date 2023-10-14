@@ -1,8 +1,4 @@
-FROM amd64/python:3.9-buster
-RUN \
-  curl -fsSL https://deb.nodesource.com/setup_current.x | bash - &&\
-  apt-get update && \
-  apt-get install -y nodejs
+FROM amd64/python:3.12-buster
 RUN python3.9 -m pip install py-tgcalls
 RUN apt update && apt install -y ffmpeg
 WORKDIR /usr/src/installer

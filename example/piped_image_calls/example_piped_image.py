@@ -2,7 +2,6 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
 from pytgcalls.types import VideoParameters
 from pytgcalls.types import VideoQuality
 from pytgcalls.types.input_stream import AudioImagePiped
@@ -23,6 +22,5 @@ call_py.join_group_call(
         'test.png',
         video_parameters=VideoParameters.from_quality(VideoQuality.HD_720p),
     ),
-    stream_type=StreamType().pulse_stream,
 )
 idle()

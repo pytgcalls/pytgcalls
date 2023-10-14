@@ -2,7 +2,6 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
 from pytgcalls.media_devices import MediaDevices
 from pytgcalls.types import CaptureAudioDevice
 
@@ -19,6 +18,5 @@ call_py.join_group_call(
     CaptureAudioDevice(
         MediaDevices.get_audio_devices()[0],
     ),
-    stream_type=StreamType().pulse_stream,
 )
 idle()
