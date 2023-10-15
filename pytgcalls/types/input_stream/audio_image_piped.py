@@ -75,7 +75,7 @@ class AudioImagePiped(SmartStream):
             *self._video_data,
             need_image=True,
         )
-        self.stream_video.path = build_command(
+        self.stream_video.path = ' '.join(build_command(
             'ffmpeg',
             *self._video_data,
-        )
+        ))
