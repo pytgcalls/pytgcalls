@@ -42,7 +42,9 @@ class VideoPiped(SmartStream):
         await check_stream(
             *self._video_data,
         )
-        self.stream_video.path = ' '.join(build_command(
-            'ffmpeg',
-            *self._video_data,
-        ))
+        self.stream_video.path = ' '.join(
+            build_command(
+                'ffmpeg',
+                *self._video_data,
+            ),
+        )
