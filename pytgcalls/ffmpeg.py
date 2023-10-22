@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 import shlex
 import subprocess
 from json import JSONDecodeError
@@ -38,13 +39,15 @@ async def check_stream(
     try:
         ffprobe = await asyncio.create_subprocess_exec(
             *tuple(
-                build_command(
-                    'ffprobe',
-                    ffmpeg_parameters,
-                    path,
-                    stream_parameters,
-                    before_commands,
-                    headers,
+                await cleanup_commands(
+                    build_command(
+                        'ffprobe',
+                        ffmpeg_parameters,
+                        path,
+                        stream_parameters,
+                        before_commands,
+                        headers,
+                    ),
                 ),
             ),
             stdout=asyncio.subprocess.PIPE,
@@ -102,6 +105,37 @@ async def check_stream(
                 raise NoAudioSourceFound(path)
     except FileNotFoundError:
         raise FFmpegError('ffprobe not installed')
+
+
+async def cleanup_commands(commands: List[str]) -> List[str]:
+    try:
+        proc_res = await asyncio.create_subprocess_exec(
+            commands[0],
+            '-h',
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        result = ''
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                proc_res.communicate(),
+                timeout=30,
+            )
+            result = stdout.decode('utf-8')
+        except (subprocess.TimeoutExpired, JSONDecodeError):
+            pass
+        supported = re.findall(r'(-.*?)\s+', result)
+        new_commands = []
+        ignore_next = False
+
+        for v in commands:
+            if v[0] == '-':
+                ignore_next = v not in supported
+            if not ignore_next:
+                new_commands += [v]
+        return new_commands
+    except FileNotFoundError:
+        raise FFmpegError(f'{commands[0]} not installed')
 
 
 def build_command(
