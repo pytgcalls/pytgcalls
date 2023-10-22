@@ -202,6 +202,10 @@ def _get_stream_params(command: str):
         for command in command_args
     }
 
+    for arg in arg_names[1:]:
+        for x in command_args[arg_names[0]]:
+            command_args[arg][x] += command_args[arg_names[0]][x]
+
     del command_args[arg_names[0]]
 
     return command_args
