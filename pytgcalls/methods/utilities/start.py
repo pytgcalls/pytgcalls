@@ -59,7 +59,7 @@ class Start(Scaffold):
                     self,
                     StreamAudioEnded(
                         chat_id,
-                    ) if stream.Audio else StreamVideoEnded(chat_id),
+                    ) if stream == stream.Audio else StreamVideoEnded(chat_id),
                 )
 
             asyncio.run_coroutine_threadsafe(async_stream_ended(), loop)
