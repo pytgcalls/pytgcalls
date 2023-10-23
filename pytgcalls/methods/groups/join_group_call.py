@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 from typing import Union
 
 from ntgcalls import ConnectionError
@@ -7,14 +8,12 @@ from ntgcalls import InvalidParams
 
 from ...exceptions import AlreadyJoinedError
 from ...exceptions import ClientNotStarted
-from ...exceptions import InvalidStreamMode
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMTProtoClientSet
 from ...exceptions import TelegramServerError
 from ...exceptions import UnMuteNeeded
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
-from ...stream_type import StreamType
 from ...to_async import ToAsync
 from ...types import JoinedVoiceChat
 from ...types.input_stream.stream import Stream
@@ -27,17 +26,12 @@ class JoinGroupCall(Scaffold):
     async def join_group_call(
         self,
         chat_id: Union[int, str],
-        stream: Stream,
+        stream: Optional[Stream] = None,
         invite_hash: str = None,
         join_as=None,
-        stream_type: StreamType = None,
     ):
         if join_as is None:
             join_as = self._cache_local_peer
-        if stream_type is None:
-            stream_type = StreamType().local_stream
-        if stream_type.stream_mode == 0:
-            raise InvalidStreamMode()
 
         chat_id = await self._resolve_chat_id(chat_id)
         self._cache_user_peer.put(chat_id, join_as)

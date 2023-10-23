@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 from typing import Union
 
 from ntgcalls import FileError
@@ -19,7 +20,7 @@ class ChangeStream(Scaffold):
     async def change_stream(
         self,
         chat_id: Union[int, str],
-        stream: Stream,
+        stream: Optional[Stream] = None,
     ):
         chat_id = await self._resolve_chat_id(chat_id)
 
