@@ -180,7 +180,7 @@ def build_command(
 
     ffmpeg_command += [
         '-i',
-        path,
+        f'"{path}"' if name == 'ffmpeg' else path,
     ]
     ffmpeg_command += command['mid']
 
