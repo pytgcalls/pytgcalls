@@ -1,13 +1,14 @@
 import os
 import time
 
+from ntgcalls import InputMode
 from telethon import TelegramClient
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls import StreamType
-from pytgcalls.types.input_stream import InputAudioStream
-from pytgcalls.types.input_stream import InputStream
+from pytgcalls.types.input_stream import AudioStream
+from pytgcalls.types.input_stream import Stream
 
 app = TelegramClient(
     'py-tgcalls',
@@ -22,9 +23,10 @@ while not os.path.exists(file):
     time.sleep(0.125)
 call_py.join_group_call(
     -1001234567890,
-    InputStream(
-        InputAudioStream(
-            file,
+    Stream(
+        AudioStream(
+            input_mode=InputMode.File,
+            path=file,
         ),
     ),
     stream_type=StreamType().local_stream,

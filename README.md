@@ -38,7 +38,7 @@
 ![Architectures](https://img.shields.io/badge/architectures-x86__64%20%7C%20arm64v8%20%7C%20win__amd64%20%7C%20darwin__x64-blue)
 [![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
 
-This project allows making Telegram group call using MtProto and WebRTC, this is possible thanks to the power of NodeJS's WebRTC library and [@evgeny-nadymov]
+This project allows making Telegram group call using MtProto and WebRTC, this is possible thanks to the power of [NTgCalls] library and [@evgeny-nadymov]
 
 ## What are the supported clients?
 The supported clients for now are Pyrogram and Telethon, but we accept other clients too, you can open a pull request with the edits
@@ -104,8 +104,9 @@ ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -ar {BITRATE} {O
 
 ## Credits
 
-Big thanks to [@evgeny-nadymov] for allowing us to use their code from [telegram-react], and thanks
-to [alemidev] for helping to rebuild this library
+Many thanks to [@evgeny-nadymov] for graciously permitting us to utilize their code from [telegram-react].
+Additionally, we extend our gratitude to [@alemidev] for their invaluable assistance in reconstructing this library,
+and to [@TuriOG] for implementing NTgCalls within the library.
 
 This library is based on [tgcallsjs] developed [@AndrewLaneX] and pyservercall by [@Laky-64]
 
@@ -117,4 +118,6 @@ This library is based on [tgcallsjs] developed [@AndrewLaneX] and pyservercall b
 [tgcallsjs]: https://github.com/tgcallsjs/tgcalls
 [pyservercall]: https://github.com/pytgcalls/pyservercall/
 [@Laky-64]: https://github.com/Laky-64/
-[alemidev]: https://github.com/alemidev/
+[@alemidev]: https://github.com/alemidev/
+[@TuriOG]: https://github.com/TuriOG/
+[NTgCalls]: https://github.com/pytgcalls/ntgcalls

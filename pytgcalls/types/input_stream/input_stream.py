@@ -1,36 +1,23 @@
 from typing import Optional
 
-from ..py_object import PyObject
+from deprecation import deprecated
+
 from .input_audio_stream import InputAudioStream
 from .input_video_stream import InputVideoStream
+from .stream import Stream
 
 
-class InputStream(PyObject):
-    """The streams descriptor
-
-    Attributes:
-        lip_sync (``bool``):
-            Lip Sync mode
-        stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
-            Input Audio Stream Descriptor
-        stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
-            Input Video Stream Descriptor
-
-    Parameters:
-        stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
-            Audio File Descriptor
-        stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
-            Video File Descriptor
-        lip_sync (``bool``, **optional**):
-            Lip Sync mode
-    """
-
+@deprecated(
+    deprecated_in='1.0.0.dev1',
+    details='This class is no longer supported.'
+            'Use pytgcalls.types.Stream instead.',
+)
+class InputStream(Stream):
     def __init__(
         self,
         stream_audio: Optional[InputAudioStream] = None,
         stream_video: Optional[InputVideoStream] = None,
         lip_sync: bool = False,
     ):
-        self.stream_audio: Optional[InputAudioStream] = stream_audio
-        self.stream_video: Optional[InputVideoStream] = stream_video
+        super().__init__(stream_audio, stream_video)
         self.lip_sync = lip_sync

@@ -1,38 +1,16 @@
-from ...ffprobe import FFprobe
+from ntgcalls import InputMode
+
+from ...ffmpeg import build_command
 from ...media_devices.device_info import DeviceInfo
 from ...media_devices.screen_info import ScreenInfo
 from .audio_parameters import AudioParameters
-from .input_stream import InputAudioStream
-from .input_stream import InputStream
-from .input_stream import InputVideoStream
+from .audio_stream import AudioStream
+from .smart_stream import SmartStream
 from .video_parameters import VideoParameters
+from .video_stream import VideoStream
 
 
-class CaptureAVDeviceDesktop(InputStream):
-    """Capture video from Screen and Audio from device
-
-    Attributes:
-        stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
-            Input Audio Stream Descriptor
-        stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
-            Input Video Stream Descriptor
-    Parameters:
-        audio_info (:obj: `~pytgcalls.media_devices.DeviceInfo()`):
-            The audio device capturing params
-        screen_info (:obj: `~pytgcalls.media_devices.ScreenManager()`):
-            The screen video capturing params
-        audio_parameters (:obj:`~pytgcalls.types.AudioParameters()`):
-            The audio parameters of the stream, can be used also
-            :obj:`~pytgcalls.types.HighQualityAudio()`,
-            :obj:`~pytgcalls.types.MediumQualityAudio()` or
-            :obj:`~pytgcalls.types.LowQualityAudio()`
-        video_parameters (:obj:`~pytgcalls.types.VideoParameters()`):
-            The video parameters of the stream, can be used also
-            :obj:`~pytgcalls.types.HighQualityVideo()`,
-            :obj:`~pytgcalls.types.MediumQualityVideo()` or
-            :obj:`~pytgcalls.types.LowQualityVideo()`
-    """
-
+class CaptureAVDeviceDesktop(SmartStream):
     def __init__(
         self,
         audio_info: DeviceInfo,
@@ -41,26 +19,37 @@ class CaptureAVDeviceDesktop(InputStream):
         video_parameters: VideoParameters = VideoParameters(),
     ):
         self._audio_path = audio_info.build_ffmpeg_command()
-        self.audio_ffmpeg: str = audio_info.ffmpeg_parameters
         self._video_path = screen_info.build_ffmpeg_command(
             video_parameters.frame_rate,
         )
-        self.video_ffmpeg: str = screen_info.ffmpeg_parameters
-        self.raw_headers = None
+        audio_data = (
+            '',
+            self._audio_path,
+            audio_parameters,
+            audio_info.ffmpeg_parameters,
+        )
         super().__init__(
-            InputAudioStream(
-                f'device://{self._audio_path}',
+            AudioStream(
+                InputMode.Shell,
+                ' '.join(
+                    build_command(
+                        'ffmpeg',
+                        *audio_data,
+                    ),
+                ),
                 audio_parameters,
             ),
-            InputVideoStream(
-                f'screen://{self._video_path}',
+            VideoStream(
+                InputMode.Shell,
+                ' '.join(
+                    build_command(
+                        'ffmpeg',
+                        '',
+                        self._video_path,
+                        video_parameters,
+                        screen_info.ffmpeg_parameters,
+                    ),
+                ),
                 video_parameters,
             ),
         )
-
-    @property
-    def headers(self):
-        return FFprobe.ffmpeg_headers(self.raw_headers)
-
-    async def check_pipe(self):
-        pass

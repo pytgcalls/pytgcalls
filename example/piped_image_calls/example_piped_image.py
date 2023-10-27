@@ -2,9 +2,9 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
+from pytgcalls.types import VideoParameters
+from pytgcalls.types import VideoQuality
 from pytgcalls.types.input_stream import AudioImagePiped
-from pytgcalls.types.input_stream.quality import HighQualityVideo
 
 app = Client(
     'py-tgcalls',
@@ -20,8 +20,7 @@ call_py.join_group_call(
     AudioImagePiped(
         audio_file,
         'test.png',
-        video_parameters=HighQualityVideo(),
+        video_parameters=VideoParameters.from_quality(VideoQuality.HD_720p),
     ),
-    stream_type=StreamType().pulse_stream,
 )
 idle()

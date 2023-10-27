@@ -1,20 +1,11 @@
+from typing import Union
+
 from ...types.update import Update
 
 
 class PausedStream(Update):
-    """Raised when paused stream successfully
-
-    Attributes:
-        chat_id (``int``):
-            Unique identifier of chat.
-
-    Parameters:
-        chat_id (``int``):
-            Unique identifier of chat.
-    """
-
     def __init__(
         self,
-        chat_id: int,
+        chat_id: Union[int, str],
     ):
         super().__init__(chat_id)

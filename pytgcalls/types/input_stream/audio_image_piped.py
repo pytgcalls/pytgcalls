@@ -1,51 +1,18 @@
 from typing import Dict
 from typing import Optional
 
-from ...ffprobe import FFprobe
+from ntgcalls import InputMode
+
+from ...ffmpeg import build_command
+from ...ffmpeg import check_stream
 from .audio_parameters import AudioParameters
-from .input_audio_stream import InputAudioStream
-from .input_stream import InputStream
-from .input_video_stream import InputVideoStream
+from .audio_stream import AudioStream
+from .smart_stream import SmartStream
 from .video_parameters import VideoParameters
-from .video_tools import check_video_params
+from .video_stream import VideoStream
 
 
-class AudioImagePiped(InputStream):
-    """The audio/image stream piped descriptor
-
-    Attributes:
-        ffmpeg_parameters (``str``):
-            FFmpeg additional parameters
-        lip_sync (``bool``):
-            Lip Sync mode
-        raw_headers (``str``):
-            Headers of http the connection
-        stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
-            Input Audio Stream Descriptor
-        stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
-            Input Video Stream Descriptor
-
-    Parameters:
-        audio_path (``str``):
-            The audio file path
-        image_path (``str``):
-            The image file path
-        audio_parameters (:obj:`~pytgcalls.types.AudioParameters()`):
-            The audio parameters of the stream, can be used also
-            :obj:`~pytgcalls.types.HighQualityAudio()`,
-            :obj:`~pytgcalls.types.MediumQualityAudio()` or
-            :obj:`~pytgcalls.types.LowQualityAudio()`
-        video_parameters (:obj:`~pytgcalls.types.VideoParameters()`):
-            The video parameters of the stream, can be used also
-            :obj:`~pytgcalls.types.HighQualityVideo()`,
-            :obj:`~pytgcalls.types.MediumQualityVideo()` or
-            :obj:`~pytgcalls.types.LowQualityVideo()`
-        headers (``Dict[str, str]``, **optional**):
-            Headers of http the connection
-        additional_ffmpeg_parameters (``str``, **optional**):
-            FFmpeg additional parameters
-    """
-
+class AudioImagePiped(SmartStream):
     def __init__(
         self,
         audio_path: str,
@@ -57,45 +24,60 @@ class AudioImagePiped(InputStream):
     ):
         self._image_path = image_path
         self._audio_path = audio_path
-        self.ffmpeg_parameters = additional_ffmpeg_parameters
-        self.raw_headers = headers
         video_parameters.frame_rate = 1
+        self._audio_data = (
+            additional_ffmpeg_parameters,
+            self._audio_path,
+            audio_parameters,
+            [],
+            headers,
+        )
+        self._video_data = (
+            additional_ffmpeg_parameters,
+            self._image_path,
+            video_parameters,
+            [
+                '-loop',
+                '1',
+                '-framerate',
+                str(video_parameters.frame_rate),
+            ],
+            headers,
+        )
         super().__init__(
-            InputAudioStream(
-                f'fifo://{audio_path}',
+            AudioStream(
+                InputMode.Shell,
+                ' '.join(
+                    build_command(
+                        'ffmpeg',
+                        *self._audio_data,
+                    ),
+                ),
                 audio_parameters,
             ),
-            InputVideoStream(
-                f'fifo://image:{image_path}',
+            VideoStream(
+                InputMode.Shell,
+                ' '.join(
+                    build_command(
+                        'ffmpeg',
+                        *self._video_data,
+                    ),
+                ),
                 video_parameters,
             ),
         )
 
-    @property
-    def headers(self):
-        return FFprobe.ffmpeg_headers(self.raw_headers)
-
-    async def check_pipe(self):
-        dest_width, dest_height, header1 = await FFprobe.check_file(
-            self._image_path,
-            needed_audio=False,
-            needed_video=True,
-            needed_image=True,
-            headers=self.raw_headers,
+    async def check_stream(self):
+        await check_stream(
+            *self._audio_data,
         )
-        header2 = await FFprobe.check_file(
-            self._audio_path,
-            needed_audio=True,
-            needed_video=False,
-            needed_image=False,
-            headers=self.raw_headers,
+        await check_stream(
+            *self._video_data,
+            need_image=True,
         )
-        width, height = check_video_params(
-            self.stream_video.parameters,
-            dest_width,
-            dest_height,
+        self.stream_video.path = ' '.join(
+            build_command(
+                'ffmpeg',
+                *self._video_data,
+            ),
         )
-        self.stream_video.parameters.width = width
-        self.stream_video.parameters.height = height
-        self.stream_video.header_enabled = header1
-        self.stream_audio.header_enabled = header2

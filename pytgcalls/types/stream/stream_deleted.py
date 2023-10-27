@@ -1,21 +1,16 @@
+from deprecation import deprecated
+
 from ...types.update import Update
 
 
+@deprecated(
+    deprecated_in='1.0.0.dev1',
+    removed_in='1.0.0.dev1',
+    details='This method is no longer supported.',
+)
 class StreamDeleted(Update):
-    """Raised when the stream file was
-    deleted during playing
-
-    Attributes:
-        chat_id (``int``):
-            Unique identifier of chat.
-
-    Parameters:
-        chat_id (``int``):
-            Unique identifier of chat.
-    """
-
     def __init__(
-        self,
-        chat_id: int,
+            self,
+            chat_id: int,
     ):
         super().__init__(chat_id)

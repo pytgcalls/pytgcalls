@@ -3,7 +3,7 @@ from typing import Callable
 from typing import List
 from typing import Optional
 
-from ..exceptions import InvalidMtProtoClient
+from ..exceptions import InvalidMTProtoClient
 from ..types.groups.group_call_participant import GroupCallParticipant
 from .bridged_client import BridgedClient
 
@@ -28,7 +28,7 @@ class MtProtoClient:
                 client,
             )
         else:
-            raise InvalidMtProtoClient()
+            raise InvalidMTProtoClient()
 
     @property
     def client(self):
@@ -49,16 +49,16 @@ class MtProtoClient:
                 chat_id,
             )
         else:
-            raise InvalidMtProtoClient()
+            raise InvalidMTProtoClient()
 
     async def join_group_call(
         self,
         chat_id: int,
-        json_join: dict,
+        json_join: str,
         invite_hash: str,
         have_video: bool,
         join_as: Any,
-    ) -> dict:
+    ) -> str:
         if self._bind_client is not None:
             return await self._bind_client.join_group_call(
                 chat_id,
@@ -68,7 +68,7 @@ class MtProtoClient:
                 join_as,
             )
         else:
-            raise InvalidMtProtoClient()
+            raise InvalidMTProtoClient()
 
     async def leave_group_call(
         self,
@@ -79,7 +79,7 @@ class MtProtoClient:
                 chat_id,
             )
         else:
-            raise InvalidMtProtoClient()
+            raise InvalidMTProtoClient()
 
     async def change_volume(
         self,
@@ -94,24 +94,26 @@ class MtProtoClient:
                 participant,
             )
         else:
-            raise InvalidMtProtoClient()
+            raise InvalidMTProtoClient()
 
-    async def set_video_call_status(
+    async def set_call_status(
         self,
         chat_id: int,
-        stopped_status: Optional[bool],
+        muted_status: Optional[bool],
         paused_status: Optional[bool],
+        stopped_status: Optional[bool],
         participant: Any,
     ):
         if self._bind_client is not None:
-            await self._bind_client.set_video_call_status(
+            await self._bind_client.set_call_status(
                 chat_id,
-                stopped_status,
+                muted_status,
                 paused_status,
+                stopped_status,
                 participant,
             )
         else:
-            raise InvalidMtProtoClient()
+            raise InvalidMTProtoClient()
 
     async def get_full_chat(
         self,
@@ -121,7 +123,7 @@ class MtProtoClient:
             return await self._bind_client.get_full_chat(
                 chat_id,
             )
-        raise InvalidMtProtoClient()
+        raise InvalidMTProtoClient()
 
     async def resolve_peer(
         self,
@@ -131,46 +133,46 @@ class MtProtoClient:
             return await self._bind_client.resolve_peer(
                 user_id,
             )
-        raise InvalidMtProtoClient()
+        raise InvalidMTProtoClient()
 
     async def get_id(self) -> int:
         if self._bind_client is not None:
             return await self._bind_client.get_id()
-        raise InvalidMtProtoClient()
+        raise InvalidMTProtoClient()
 
     @property
     def is_connected(self) -> bool:
         if self._bind_client is not None:
             return self._bind_client.is_connected()
-        raise InvalidMtProtoClient()
+        raise InvalidMTProtoClient()
 
     async def start(self):
         if self._bind_client is not None:
             await self._bind_client.start()
         else:
-            raise InvalidMtProtoClient()
+            raise InvalidMTProtoClient()
 
     def on_closed_voice_chat(self) -> Callable:
         if self._bind_client is not None:
             return self._bind_client.on_closed_voice_chat()
-        raise InvalidMtProtoClient()
+        raise InvalidMTProtoClient()
 
     def on_kicked(self) -> Callable:
         if self._bind_client is not None:
             return self._bind_client.on_kicked()
-        raise InvalidMtProtoClient()
+        raise InvalidMTProtoClient()
 
     def on_receive_invite(self) -> Callable:
         if self._bind_client is not None:
             return self._bind_client.on_receive_invite()
-        raise InvalidMtProtoClient()
+        raise InvalidMTProtoClient()
 
     def on_left_group(self) -> Callable:
         if self._bind_client is not None:
             return self._bind_client.on_left_group()
-        raise InvalidMtProtoClient()
+        raise InvalidMTProtoClient()
 
     def on_participants_change(self) -> Callable:
         if self._bind_client is not None:
             return self._bind_client.on_participants_change()
-        raise InvalidMtProtoClient()
+        raise InvalidMTProtoClient()

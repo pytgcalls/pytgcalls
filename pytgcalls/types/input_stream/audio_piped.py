@@ -1,41 +1,16 @@
 from typing import Dict
 from typing import Optional
 
-from ...ffprobe import FFprobe
+from ntgcalls import InputMode
+
+from ...ffmpeg import build_command
+from ...ffmpeg import check_stream
 from .audio_parameters import AudioParameters
-from .input_audio_stream import InputAudioStream
-from .input_stream import InputStream
+from .audio_stream import AudioStream
+from .smart_stream import SmartStream
 
 
-class AudioPiped(InputStream):
-    """The audio only stream piped descriptor
-
-    Attributes:
-        ffmpeg_parameters (``str``):
-            FFmpeg additional parameters
-        lip_sync (``bool``):
-            Lip Sync mode
-        raw_headers (``str``):
-            Headers of http the connection
-        stream_audio (:obj:`~pytgcalls.types.InputAudioStream()`):
-            Input Audio Stream Descriptor
-        stream_video (:obj:`~pytgcalls.types.InputVideoStream()`):
-            Input Video Stream Descriptor
-
-    Parameters:
-        path (``str``):
-            The audio file path
-        audio_parameters (:obj:`~pytgcalls.types.AudioParameters()`):
-            The audio parameters of the stream, can be used also
-            :obj:`~pytgcalls.types.HighQualityAudio()`,
-            :obj:`~pytgcalls.types.MediumQualityAudio()` or
-            :obj:`~pytgcalls.types.LowQualityAudio()`
-        headers (``Dict[str, str]``, **optional**):
-            Headers of http the connection
-        additional_ffmpeg_parameters (``str``, **optional**):
-            FFmpeg additional parameters
-    """
-
+class AudioPiped(SmartStream):
     def __init__(
         self,
         path: str,
@@ -44,25 +19,27 @@ class AudioPiped(InputStream):
         additional_ffmpeg_parameters: str = '',
     ):
         self._path = path
-        self.ffmpeg_parameters = additional_ffmpeg_parameters
-        self.raw_headers = headers
+        self._audio_data = (
+            additional_ffmpeg_parameters,
+            self._path,
+            audio_parameters,
+            [],
+            headers,
+        )
         super().__init__(
-            InputAudioStream(
-                f'fifo://{path}',
+            AudioStream(
+                InputMode.Shell,
+                ' '.join(
+                    build_command(
+                        'ffmpeg',
+                        *self._audio_data,
+                    ),
+                ),
                 audio_parameters,
             ),
         )
 
-    @property
-    def headers(self):
-        return FFprobe.ffmpeg_headers(self.raw_headers)
-
-    async def check_pipe(self):
-        header = await FFprobe.check_file(
-            self._path,
-            needed_audio=True,
-            needed_video=False,
-            needed_image=False,
-            headers=self.raw_headers,
+    async def check_stream(self):
+        await check_stream(
+            *self._audio_data,
         )
-        self.stream_audio.header_enabled = header

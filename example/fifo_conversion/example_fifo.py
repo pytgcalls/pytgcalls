@@ -5,15 +5,15 @@ import signal
 import subprocess
 import time
 
+from ntgcalls import InputMode
 from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
-from pytgcalls.types.input_stream import InputAudioStream
-from pytgcalls.types.input_stream import InputStream
+from pytgcalls.types.input_stream import AudioStream
+from pytgcalls.types.input_stream import Stream
 
 app = Client(
     'py-tgcalls',
@@ -49,12 +49,12 @@ async def test_handler(client: Client, message: Message):
         time.sleep(0.125)
     await call_py.join_group_call(
         message.chat.id,
-        InputStream(
-            InputAudioStream(
-                output_file,
+        Stream(
+            AudioStream(
+                input_mode=InputMode.File,
+                path=output_file,
             ),
         ),
-        stream_type=StreamType().pulse_stream,
     )
 
 

@@ -19,40 +19,6 @@ signals = {
 
 
 async def idle():
-    """Block the main script execution until a signal is received.
-
-    This function will run indefinitely in order to block the main
-    script execution and prevent it from exiting while having client(s)
-    that are still running in the background.
-
-    The way PyTgCalls works, it will keep your handlers in a pool of
-    worker threads, which are executed concurrently outside the main
-    thread; calling idle() will ensure the client(s) will be kept alive
-    by not letting the main script to end, until you decide to quit.
-
-    Once a signal is received (e.g.: from CTRL+C) the function will
-    terminate and your main script will continue.
-
-    Example:
-        .. code-block:: python
-            :emphasize-lines: 15
-
-            from pytgcalls import Client
-            from pytgcalls import idle
-            ...
-
-            app1 = PyTgCalls(client1)
-            app2 = PyTgCalls(client2)
-            app3 = PyTgCalls(client3)
-
-            ...  # Set handlers up
-
-            app1.start()
-            app2.start()
-            app3.start()
-
-            idle()
-    """
     global is_idling
 
     def signal_handler(signum, __):

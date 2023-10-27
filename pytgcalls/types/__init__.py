@@ -15,6 +15,7 @@ from .groups import UpgradeNeeded
 from .input_stream import AudioImagePiped
 from .input_stream import AudioParameters
 from .input_stream import AudioPiped
+from .input_stream import AudioQuality
 from .input_stream import AudioVideoPiped
 from .input_stream import CaptureAudioDevice
 from .input_stream import CaptureAVDesktop
@@ -25,6 +26,7 @@ from .input_stream import InputStream
 from .input_stream import InputVideoStream
 from .input_stream import VideoParameters
 from .input_stream import VideoPiped
+from .input_stream import VideoQuality
 from .input_stream.quality import HighQualityAudio
 from .input_stream.quality import HighQualityVideo
 from .input_stream.quality import LowQualityAudio
@@ -46,6 +48,7 @@ __all__ = (
     'AudioParameters',
     'AudioImagePiped',
     'AudioPiped',
+    'AudioQuality',
     'AudioVideoPiped',
     'Browsers',
     'Cache',
@@ -82,6 +85,7 @@ __all__ = (
     'CaptureVideoDesktop',
     'VideoParameters',
     'VideoPiped',
+    'VideoQuality',
     'UpgradeNeeded',
     'MutedCall',
 )

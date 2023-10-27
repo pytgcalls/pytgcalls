@@ -1,21 +1,14 @@
+from deprecation import deprecated
+
 from ..video_parameters import VideoParameters
+from ..video_quality import VideoQuality
 
 
+@deprecated(
+    deprecated_in='1.0.0.dev6',
+    details='This class is no longer supported.'
+            'Use pytgcalls.types.VideoParameters.from_quality instead.',
+)
 class MediumQualityVideo(VideoParameters):
-    """Medium Video Quality (854x480)
-
-    Attributes:
-        width (``int``):
-            Video width
-        height (``int``):
-            Video height
-        frame_rate (``int``):
-            Framerate of video
-    """
-
     def __init__(self):
-        super().__init__(
-            854,
-            480,
-            20,
-        )
+        super().__init__(*VideoQuality.SD_360p.value)

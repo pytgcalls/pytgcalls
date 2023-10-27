@@ -1,9 +1,18 @@
 from typing import Any
 from typing import Callable
+from typing import Dict
+from typing import List
 from typing import Optional
 
 
 class BridgedClient:
+    HANDLERS_LIST: Dict[str, List[Callable]] = {
+        'CLOSED_HANDLER': [],
+        'KICK_HANDLER': [],
+        'INVITE_HANDLER': [],
+        'LEFT_HANDLER': [],
+        'PARTICIPANTS_HANDLER': [],
+    }
 
     async def get_call(
         self,
@@ -14,11 +23,11 @@ class BridgedClient:
     async def join_group_call(
         self,
         chat_id: int,
-        json_join: dict,
+        json_join: str,
         invite_hash: str,
         have_video: bool,
         join_as: Any,
-    ) -> dict:
+    ) -> str:
         pass
 
     async def leave_group_call(
@@ -41,11 +50,12 @@ class BridgedClient:
     ):
         pass
 
-    async def set_video_call_status(
+    async def set_call_status(
         self,
         chat_id: int,
-        stopped_status: Optional[bool],
+        muted_status: Optional[bool],
         paused_status: Optional[bool],
+        stopped_status: Optional[bool],
         participant: Any,
     ):
         pass
@@ -69,11 +79,13 @@ class BridgedClient:
         pass
 
     @staticmethod
-    def chat_id(input_peer):
+    def chat_id(input_peer) -> int:
         is_channel = hasattr(input_peer, 'channel_id')
         is_channel_update = input_peer.__class__.__name__ == 'Channel'
         is_chat = input_peer.__class__.__name__ == 'Chat'
-        is_user = input_peer.__class__.__name__ == 'PeerUser'
+        is_user = input_peer.__class__.__name__ == 'PeerUser' or \
+            input_peer.__class__.__name__ == 'InputPeerUser'
+
         if is_user:
             return input_peer.user_id
         elif is_channel:

@@ -1,4 +1,7 @@
+from ntgcalls import ConnectionNotFound
+
 from ...scaffold import Scaffold
+from ...to_async import ToAsync
 from ...types import Update
 from ...types.groups import GroupCallParticipant
 from ...types.groups import JoinedGroupCallParticipant
@@ -6,10 +9,11 @@ from ...types.groups import LeftGroupCallParticipant
 from ...types.groups import UpdatedGroupCallParticipant
 
 
-class MtProtoHandler(Scaffold):
+class MTProtoHandler(Scaffold):
     async def _init_mtproto(self):
         if not self._app.is_connected:
             await self._app.start()
+
         self._my_id = await self._app.get_id()
         self._cache_local_peer = await self._app.resolve_peer(
             self._my_id,
@@ -18,14 +22,14 @@ class MtProtoHandler(Scaffold):
     def _handle_mtproto(self):
         @self._app.on_kicked()
         async def kicked_handler(chat_id: int):
-            self._call_holder.remove_call(
-                chat_id,
-            )
-            await self._binding.send({
-                'action': 'leave_call',
-                'chat_id': chat_id,
-                'type': 'kicked_from_group',
-            })
+            try:
+                await ToAsync(
+                    self._binding.stop,
+                    chat_id,
+                )
+            except ConnectionNotFound:
+                pass
+
             await self._on_event_update.propagate(
                 'KICK_HANDLER',
                 self,
@@ -36,11 +40,14 @@ class MtProtoHandler(Scaffold):
         @self._app.on_closed_voice_chat()
         async def closed_voice_chat_handler(chat_id: int):
             self._cache_user_peer.pop(chat_id)
-            await self._binding.send({
-                'action': 'leave_call',
-                'chat_id': chat_id,
-                'type': 'closed_voice_chat',
-            })
+            try:
+                await ToAsync(
+                    self._binding.stop,
+                    chat_id,
+                )
+            except ConnectionNotFound:
+                pass
+
             await self._on_event_update.propagate(
                 'CLOSED_HANDLER',
                 self,
@@ -57,6 +64,14 @@ class MtProtoHandler(Scaffold):
 
         @self._app.on_left_group()
         async def left_handler(chat_id: int):
+            self._cache_user_peer.pop(chat_id)
+            try:
+                await ToAsync(
+                    self._binding.stop,
+                    chat_id,
+                )
+            except ConnectionNotFound:
+                pass
             await self._on_event_update.propagate(
                 'LEFT_HANDLER',
                 self,

@@ -2,7 +2,6 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
 from pytgcalls.types.input_stream import AudioVideoPiped
 
 app = Client(
@@ -19,6 +18,5 @@ call_py.join_group_call(
     AudioVideoPiped(
         video_file,
     ),
-    stream_type=StreamType().pulse_stream,
 )
 idle()
