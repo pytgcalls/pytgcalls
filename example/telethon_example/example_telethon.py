@@ -29,6 +29,5 @@ call_py.join_group_call(
             path=file,
         ),
     ),
-    stream_type=StreamType().local_stream,
 )
 idle()

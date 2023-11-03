@@ -43,6 +43,5 @@ call_py.join_group_call(
             ),
         ),
     ),
-    stream_type=StreamType().local_stream,
 )
 idle()
