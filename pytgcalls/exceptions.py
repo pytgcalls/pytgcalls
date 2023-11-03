@@ -109,7 +109,7 @@ class InvalidMTProtoClient(Exception):
 class NoVideoSourceFound(Exception):
     def __init__(self, path: str):
         super().__init__(
-            f'No video source found on {path}',
+            f'No video source found on "{path}"',
         )
 
 
@@ -123,7 +123,7 @@ class InvalidVideoProportion(Exception):
 class NoAudioSourceFound(Exception):
     def __init__(self, path: str):
         super().__init__(
-            f'No audio source found on {path}',
+            f'No audio source found on "{path}"',
         )
 
 

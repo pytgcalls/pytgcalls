@@ -129,10 +129,11 @@ async def cleanup_commands(commands: List[str]) -> List[str]:
         ignore_next = False
 
         for v in commands:
-            if v[0] == '-':
-                ignore_next = v not in supported
-            if not ignore_next:
-                new_commands += [v]
+            if len(v) > 0:
+                if v[0] == '-':
+                    ignore_next = v not in supported
+                if not ignore_next:
+                    new_commands += [v]
         return new_commands
     except FileNotFoundError:
         raise FFmpegError(f'{commands[0]} not installed')
