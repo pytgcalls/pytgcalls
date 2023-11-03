@@ -6,7 +6,6 @@ from telethon import TelegramClient
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
 from pytgcalls.types.input_stream import AudioStream
 from pytgcalls.types.input_stream import Stream
 

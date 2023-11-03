@@ -4,7 +4,6 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls import StreamType
 from pytgcalls.types import AudioParameters
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import VideoParameters
