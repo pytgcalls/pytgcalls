@@ -1,6 +1,7 @@
 import asyncio
 from asyncio.log import logger
 
+from ntgcalls import ConnectionNotFound
 from ntgcalls import MediaState
 from ntgcalls import StreamType
 
@@ -29,10 +30,13 @@ class Start(Scaffold):
                         not just_left and \
                         need_unmute and \
                         not participant.muted_by_admin:
-                    await update_status(
-                        chat_id,
-                        self._binding.get_state(chat_id),
-                    )
+                    try:
+                        await update_status(
+                            chat_id,
+                            self._binding.get_state(chat_id),
+                        )
+                    except ConnectionNotFound:
+                        pass
                 self._need_unmute[chat_id] = participant.muted_by_admin
 
         def stream_upgrade(chat_id: int, state: MediaState):
