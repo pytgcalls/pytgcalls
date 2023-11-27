@@ -85,15 +85,15 @@ class BridgedClient:
         is_chat = input_peer.__class__.__name__ == 'Chat'
         is_user = input_peer.__class__.__name__ == 'PeerUser' or \
             input_peer.__class__.__name__ == 'InputPeerUser'
-
+        is_forbidden = input_peer.__class__.__name__ == 'ChannelForbidden'
         if is_user:
             return input_peer.user_id
         elif is_channel:
             return -1000000000000 - input_peer.channel_id
-        elif is_channel_update:
+        elif is_channel_update or is_forbidden:
             return -1000000000000 - input_peer.id
         elif is_chat:
-            return - input_peer.id
+            return -input_peer.id
         else:
             return -input_peer.chat_id
 
