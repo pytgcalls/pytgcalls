@@ -1,6 +1,6 @@
+from .exceptions import TooOldHydrogramVersion
 from .exceptions import TooOldPyrogramVersion
 from .exceptions import TooOldTelethonVersion
-from .exceptions import TooOldHydrogramVersion
 from .version_manager import VersionManager
 
 
