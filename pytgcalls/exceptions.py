@@ -24,6 +24,19 @@ class TooOldTelethonVersion(Exception):
         )
 
 
+class TooOldHydrogramVersion(Exception):
+    def __init__(
+            self,
+            version_needed: str,
+            hydrogram_version: str,
+    ):
+        super().__init__(
+            f'Needed hydrogram {version_needed}+, '
+            'actually installed is '
+            f'{hydrogram_version}',
+        )
+
+
 class InvalidStreamMode(Exception):
     def __init__(self):
         super().__init__(

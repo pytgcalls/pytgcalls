@@ -7,6 +7,7 @@ from ntgcalls import NTgCalls
 class Scaffold:
     _REQUIRED_PYROGRAM_VERSION = '1.2.20'
     _REQUIRED_TELETHON_VERSION = '1.24.0'
+    _REQUIRED_HYDROGRAM_VERSION = '0.1.4'
 
     def __init__(self):
         self._app = None
