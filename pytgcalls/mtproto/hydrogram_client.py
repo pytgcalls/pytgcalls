@@ -5,7 +5,6 @@ from typing import Dict
 from typing import Optional
 from typing import Union
 
-import hydrogram
 from hydrogram import Client
 from hydrogram import ContinuePropagation
 from hydrogram.raw.base import InputPeer
@@ -38,7 +37,6 @@ from hydrogram.raw.types import UpdateNewChannelMessage
 from hydrogram.raw.types import UpdateNewMessage
 from hydrogram.raw.types import Updates
 
-from ..version_manager import VersionManager
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
@@ -50,12 +48,7 @@ class HydrogramClient(BridgedClient):
             client: Client,
     ):
         self._app: Client = client
-        if VersionManager.version_tuple(
-                hydrogram.__version__,
-        ) > VersionManager.version_tuple(
-            '2.0.0',
-        ):
-            self._app.send = self._app.invoke
+        self._app.send = self._app.invoke
         self._cache: ClientCache = ClientCache(
             cache_duration,
             self,
