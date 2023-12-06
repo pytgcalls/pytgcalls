@@ -41,7 +41,7 @@
 This project allows making Telegram group call using MtProto and WebRTC, this is possible thanks to the power of [NTgCalls] library and [@evgeny-nadymov]
 
 ## What are the supported clients?
-The supported clients for now are Pyrogram and Telethon, but we accept other clients too, you can open a pull request with the edits
+The supported clients for now are Pyrogram, Telethon and Hydrogram, but we accept other clients too, you can open a pull request with the edits
 
 ## How to install?
 Here's how to install the PyTgCalls lib, the commands are given below:

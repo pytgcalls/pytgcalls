@@ -27,6 +27,12 @@ class MtProtoClient:
                 cache_duration,
                 client,
             )
+        elif client.__class__.__module__ == 'hydrogram.client':
+            from .hydrogram_client import HydrogramClient
+            self._bind_client = HydrogramClient(
+                cache_duration,
+                client,
+            )
         else:
             raise InvalidMTProtoClient()
 
@@ -37,6 +43,8 @@ class MtProtoClient:
             return 'pyrogram'
         elif client_name == 'TelethonClient':
             return 'telethon'
+        elif client_name == 'HydrogramClient':
+            return 'hydrogram'
         else:
             return 'unknown'
 
