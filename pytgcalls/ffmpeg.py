@@ -20,22 +20,13 @@ from .types.input_stream.video_parameters import VideoParameters
 
 
 async def check_stream(
-    ffmpeg_parameters: str,
-    path: str,
-    stream_parameters: Union[AudioParameters, VideoParameters],
-    before_commands: List[str] = None,
-    headers: Optional[Dict[str, str]] = None,
-    need_image: bool = False,
+        ffmpeg_parameters: str,
+        path: str,
+        stream_parameters: Union[AudioParameters, VideoParameters],
+        before_commands: List[str] = None,
+        headers: Optional[Dict[str, str]] = None,
+        need_image: bool = False,
 ):
-    need_audio = isinstance(stream_parameters, AudioParameters)
-    need_video = isinstance(stream_parameters, VideoParameters)
-
-    have_video = False
-    have_audio = False
-    have_valid_video = False
-
-    original_width = 0
-    original_height = 0
     try:
         ffprobe = await asyncio.create_subprocess_exec(
             *tuple(
@@ -55,7 +46,7 @@ async def check_stream(
         )
         stream_list = []
         try:
-            stdout, stderr = await asyncio.wait_for(
+            stdout, _ = await asyncio.wait_for(
                 ffprobe.communicate(),
                 timeout=30,
             )
@@ -63,6 +54,12 @@ async def check_stream(
             stream_list = result.get('streams', [])
         except (subprocess.TimeoutExpired, JSONDecodeError):
             pass
+
+        have_video = False
+        have_audio = False
+        have_valid_video = False
+
+        original_width, original_height = 0, 0
 
         for stream in stream_list:
             codec_type = stream.get('codec_type', '')
@@ -78,7 +75,7 @@ async def check_stream(
             elif codec_type == 'audio':
                 have_audio = True
 
-        if need_video:
+        if isinstance(stream_parameters, VideoParameters):
             if not have_video:
                 raise NoVideoSourceFound(path)
             if not have_valid_video:
@@ -86,23 +83,21 @@ async def check_stream(
                     'Video proportion not found',
                 )
 
-            if isinstance(stream_parameters, VideoParameters):
-                ratio = float(original_width) / original_height
-                new_w = min(original_width, stream_parameters.width)
-                new_h = int(new_w / ratio)
+            ratio = float(original_width) / original_height
+            new_w = min(original_width, stream_parameters.width)
+            new_h = int(new_w / ratio)
 
-                if new_h > stream_parameters.height:
-                    new_h = stream_parameters.height
-                    new_w = int(new_h * ratio)
+            if new_h > stream_parameters.height:
+                new_h = stream_parameters.height
+                new_w = int(new_h * ratio)
 
-                new_w = new_w - 1 if new_w % 2 else new_w
-                new_h = new_h - 1 if new_h % 2 else new_h
-                stream_parameters.height = new_h
-                stream_parameters.width = new_w
+            new_w = new_w - 1 if new_w % 2 else new_w
+            new_h = new_h - 1 if new_h % 2 else new_h
+            stream_parameters.height = new_h
+            stream_parameters.width = new_w
 
-        if need_audio:
-            if not have_audio:
-                raise NoAudioSourceFound(path)
+        if isinstance(stream_parameters, AudioParameters) and not have_audio:
+            raise NoAudioSourceFound(path)
     except FileNotFoundError:
         raise FFmpegError('ffprobe not installed')
 
@@ -117,7 +112,7 @@ async def cleanup_commands(commands: List[str]) -> List[str]:
         )
         result = ''
         try:
-            stdout, stderr = await asyncio.wait_for(
+            stdout, _ = await asyncio.wait_for(
                 proc_res.communicate(),
                 timeout=30,
             )
@@ -140,12 +135,12 @@ async def cleanup_commands(commands: List[str]) -> List[str]:
 
 
 def build_command(
-    name: str,
-    ffmpeg_parameters: str,
-    path: str,
-    stream_parameters: Union[AudioParameters, VideoParameters],
-    before_commands: List[str] = None,
-    headers: Optional[Dict[str, str]] = None,
+        name: str,
+        ffmpeg_parameters: str,
+        path: str,
+        stream_parameters: Union[AudioParameters, VideoParameters],
+        before_commands: List[str] = None,
+        headers: Optional[Dict[str, str]] = None,
 ) -> List[str]:
     command = _get_stream_params(ffmpeg_parameters)
 
@@ -172,12 +167,9 @@ def build_command(
         ffmpeg_command += before_commands
 
     if headers is not None:
-        ffmpeg_command.append('-headers')
-        built_header = '"'
         for i in headers:
-            built_header += f'{i}: {headers[i]}\r\n'
-
-        ffmpeg_command.append(built_header + '"')
+            ffmpeg_command.append('-headers')
+            ffmpeg_command.append(f'{i}: {headers[i]}\r\n')
 
     ffmpeg_command += [
         '-i',
@@ -186,33 +178,7 @@ def build_command(
     ffmpeg_command += command['mid']
 
     if name == 'ffmpeg':
-        log_level = logging.getLogger().level
-        if log_level == logging.DEBUG:
-            ffmpeg_level = 'info'
-        else:
-            ffmpeg_level = 'quiet'
-
-        ffmpeg_command += ['-v', ffmpeg_level]
-        ffmpeg_command.append('-f')
-
-        if isinstance(stream_parameters, VideoParameters):
-            ffmpeg_command += [
-                'rawvideo',
-                '-r',
-                str(stream_parameters.frame_rate),
-                '-pix_fmt',
-                'yuv420p',
-                '-vf',
-                f'scale={stream_parameters.width}:{stream_parameters.height}',
-            ]
-        else:
-            ffmpeg_command += [
-                's16le',
-                '-ac',
-                str(stream_parameters.channels),
-                '-ar',
-                str(stream_parameters.bitrate),
-            ]
+        ffmpeg_command += _build_ffmpeg_options(stream_parameters)
 
     ffmpeg_command += command['end']
     if name == 'ffmpeg':
@@ -259,3 +225,29 @@ def _extract_stream_params(command: List[str]):
             command_args[current_arg].append(part)
 
     return command_args
+
+
+def _build_ffmpeg_options(
+        stream_parameters: Union[AudioParameters, VideoParameters],
+) -> List[str]:
+    log_level = logging.getLogger().level
+    ffmpeg_level = 'info' if log_level == logging.DEBUG else 'quiet'
+
+    options = ['-v', ffmpeg_level, '-f']
+
+    if isinstance(stream_parameters, VideoParameters):
+        options.extend([
+            'rawvideo',
+            '-r', str(stream_parameters.frame_rate),
+            '-pix_fmt', 'yuv420p',
+            '-vf',
+            f'scale={stream_parameters.width}:{stream_parameters.height}',
+        ])
+    else:
+        options.extend([
+            's16le',
+            '-ac', str(stream_parameters.channels),
+            '-ar', str(stream_parameters.bitrate),
+        ])
+
+    return options
