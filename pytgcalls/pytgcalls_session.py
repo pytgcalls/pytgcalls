@@ -41,8 +41,8 @@ class PyTgCallsSession:
                 if VersionManager.version_tuple(remote_ver) > \
                         VersionManager.version_tuple(my_ver):
                     text = f'Update Available!\n' \
-                           f'New PyTgCalls v{remote_readable_ver} ' \
-                           f'is now available!\n'
+                        f'New PyTgCalls v{remote_readable_ver} ' \
+                        f'is now available!\n'
                     if not sys.platform.startswith('win'):
                         print(f'\033[93m{text}\033[0m')
                     else:
