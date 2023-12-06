@@ -48,7 +48,6 @@ class HydrogramClient(BridgedClient):
             client: Client,
     ):
         self._app: Client = client
-        self._app.send = self._app.invoke
         self._cache: ClientCache = ClientCache(
             cache_duration,
             self,
@@ -252,7 +251,7 @@ class HydrogramClient(BridgedClient):
         chat = await self._app.resolve_peer(chat_id)
         if isinstance(chat, InputPeerChannel):
             input_call = (
-                await self._app.send(
+                await self._app.invoke(
                     GetFullChannel(
                         channel=InputChannel(
                             channel_id=chat.channel_id,
@@ -263,14 +262,14 @@ class HydrogramClient(BridgedClient):
             ).full_chat.call
         else:
             input_call = (
-                await self._app.send(
+                await self._app.invoke(
                     GetFullChat(chat_id=chat.chat_id),
                 )
             ).full_chat.call
 
         if input_call is not None:
             call: GroupCall = (
-                await self._app.send(
+                await self._app.invoke(
                     GetGroupCall(
                         call=input_call,
                         limit=-1,
@@ -306,7 +305,7 @@ class HydrogramClient(BridgedClient):
                 'raise_hand_rating': participant.raise_hand_rating,
                 'left': participant.left,
             } for participant in (
-                await self._app.send(
+                await self._app.invoke(
                     GetGroupParticipants(
                         call=input_call,
                         ids=[],
@@ -328,7 +327,7 @@ class HydrogramClient(BridgedClient):
     ) -> str:
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            result: Updates = await self._app.send(
+            result: Updates = await self._app.invoke(
                 JoinGroupCall(
                     call=chat_call,
                     params=DataJSON(data=json_join),
@@ -369,7 +368,7 @@ class HydrogramClient(BridgedClient):
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            await self._app.send(
+            await self._app.invoke(
                 LeaveGroupCall(
                     call=chat_call,
                     source=0,
@@ -384,7 +383,7 @@ class HydrogramClient(BridgedClient):
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            await self._app.send(
+            await self._app.invoke(
                 EditGroupCallParticipant(
                     call=chat_call,
                     participant=participant,
@@ -403,7 +402,7 @@ class HydrogramClient(BridgedClient):
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            await self._app.send(
+            await self._app.invoke(
                 EditGroupCallParticipant(
                     call=chat_call,
                     participant=participant,
