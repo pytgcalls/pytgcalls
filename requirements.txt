@@ -1,5 +1,5 @@
 aiohttp
 deprecation
-ntgcalls>=1.0.0dev23
+ntgcalls>=1.0.0dev24
 psutil
 screeninfo
