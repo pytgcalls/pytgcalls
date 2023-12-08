@@ -16,36 +16,37 @@ class LeaveGroupCall(Scaffold):
         self,
         chat_id: Union[int, str],
     ):
-        if self._app is not None:
-            if self._is_running:
-                chat_id = await self._resolve_chat_id(chat_id)
-                chat_call = await self._app.get_full_chat(
-                    chat_id,
-                )
-
-                if chat_call is not None:
-                    await self._app.leave_group_call(
-                        chat_id,
-                    )
-
-                    try:
-                        await ToAsync(
-                            self._binding.stop,
-                            chat_id,
-                        )
-                    except ConnectionError:
-                        raise NotInGroupCallError()
-
-                    del self._need_unmute[chat_id]
-
-                    await self._on_event_update.propagate(
-                        'RAW_UPDATE_HANDLER',
-                        self,
-                        LeftVoiceChat(chat_id),
-                    )
-                else:
-                    raise NoActiveGroupCall()
-            else:
-                raise ClientNotStarted()
-        else:
+        if self._app is None:
             raise NoMTProtoClientSet()
+
+        if not self._is_running:
+            raise ClientNotStarted()
+
+        chat_id = await self._resolve_chat_id(chat_id)
+        chat_call = await self._app.get_full_chat(
+            chat_id,
+        )
+
+        if chat_call is None:
+            raise NoActiveGroupCall()
+
+        await self._app.leave_group_call(
+            chat_id,
+        )
+
+        try:
+            await ToAsync(
+                self._binding.stop,
+                chat_id,
+            )
+        except ConnectionError:
+            raise NotInGroupCallError()
+
+        if chat_id in self._need_unmute:
+            del self._need_unmute[chat_id]
+
+        await self._on_event_update.propagate(
+            'RAW_UPDATE_HANDLER',
+            self,
+            LeftVoiceChat(chat_id),
+        )

@@ -36,65 +36,63 @@ class JoinGroupCall(Scaffold):
         chat_id = await self._resolve_chat_id(chat_id)
         self._cache_user_peer.put(chat_id, join_as)
 
-        if self._app is not None:
-            if self._is_running:
-                chat_call = await self._app.get_full_chat(
-                    chat_id,
-                )
-
-                if chat_call is not None:
-                    media_description = await StreamParams.get_stream_params(
-                        stream,
-                    )
-
-                    try:
-                        call_params: str = await ToAsync(
-                            self._binding.create_call,
-                            chat_id,
-                            media_description,
-                        )
-                    except FileError:
-                        raise FileNotFoundError()
-                    except ConnectionError:
-                        raise AlreadyJoinedError()
-
-                    result_params = await self._app.join_group_call(
-                        chat_id,
-                        call_params,
-                        invite_hash,
-                        media_description.video is None,
-                        self._cache_user_peer.get(chat_id),
-                    )
-
-                    try:
-                        await ToAsync(
-                            self._binding.connect,
-                            chat_id,
-                            result_params,
-                        )
-                    except InvalidParams:
-                        raise UnMuteNeeded()
-                    except Exception:
-                        raise TelegramServerError()
-
-                    participants = await self._app.get_group_call_participants(
-                        chat_id,
-                    )
-
-                    for x in participants:
-                        if x.user_id == BridgedClient.chat_id(
-                            self._cache_local_peer,
-                        ):
-                            self._need_unmute[chat_id] = x.muted_by_admin
-
-                    await self._on_event_update.propagate(
-                        'RAW_UPDATE_HANDLER',
-                        self,
-                        JoinedVoiceChat(chat_id),
-                    )
-                else:
-                    raise NoActiveGroupCall()
-            else:
-                raise ClientNotStarted()
-        else:
+        if self._app is None:
             raise NoMTProtoClientSet()
+
+        if not self._is_running:
+            raise ClientNotStarted()
+
+        chat_call = await self._app.get_full_chat(
+            chat_id,
+        )
+        if chat_call is None:
+            raise NoActiveGroupCall()
+
+        media_description = await StreamParams.get_stream_params(
+            stream,
+        )
+
+        try:
+            call_params: str = await ToAsync(
+                self._binding.create_call,
+                chat_id,
+                media_description,
+            )
+
+            result_params = await self._app.join_group_call(
+                chat_id,
+                call_params,
+                invite_hash,
+                media_description.video is None,
+                self._cache_user_peer.get(chat_id),
+            )
+
+            await ToAsync(
+                self._binding.connect,
+                chat_id,
+                result_params,
+            )
+
+            participants = await self._app.get_group_call_participants(
+                chat_id,
+            )
+
+            for x in participants:
+                if x.user_id == BridgedClient.chat_id(
+                        self._cache_local_peer,
+                ):
+                    self._need_unmute[chat_id] = x.muted_by_admin
+
+            await self._on_event_update.propagate(
+                'RAW_UPDATE_HANDLER',
+                self,
+                JoinedVoiceChat(chat_id),
+            )
+        except FileError:
+            raise FileNotFoundError()
+        except ConnectionError:
+            raise AlreadyJoinedError()
+        except InvalidParams:
+            raise UnMuteNeeded()
+        except Exception:
+            raise TelegramServerError()

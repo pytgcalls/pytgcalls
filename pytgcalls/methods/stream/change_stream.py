@@ -22,27 +22,26 @@ class ChangeStream(Scaffold):
         chat_id: Union[int, str],
         stream: Optional[Stream] = None,
     ):
-        chat_id = await self._resolve_chat_id(chat_id)
-
-        if self._app is not None:
-            if self._is_running:
-                try:
-                    await ToAsync(
-                        self._binding.change_stream,
-                        chat_id,
-                        await StreamParams.get_stream_params(stream),
-                    )
-                except FileError:
-                    raise FileNotFoundError()
-                except Exception:
-                    raise NotInGroupCallError()
-
-                await self._on_event_update.propagate(
-                    'RAW_UPDATE_HANDLER',
-                    self,
-                    ChangedStream(chat_id),
-                )
-            else:
-                raise ClientNotStarted()
-        else:
+        if self._app is None:
             raise NoMTProtoClientSet()
+
+        if not self._is_running:
+            raise ClientNotStarted()
+
+        chat_id = await self._resolve_chat_id(chat_id)
+        try:
+            await ToAsync(
+                self._binding.change_stream,
+                chat_id,
+                await StreamParams.get_stream_params(stream),
+            )
+        except FileError:
+            raise FileNotFoundError()
+        except Exception:
+            raise NotInGroupCallError()
+
+        await self._on_event_update.propagate(
+            'RAW_UPDATE_HANDLER',
+            self,
+            ChangedStream(chat_id),
+        )
