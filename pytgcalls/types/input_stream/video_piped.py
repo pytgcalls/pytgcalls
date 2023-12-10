@@ -35,6 +35,7 @@ class VideoPiped(SmartStream):
                         *self._video_data,
                     ),
                 ),
+                video_parameters,
             ),
         )
 
