@@ -1,13 +1,13 @@
 from .decorators import Decorators
 from .groups import Groups
-from .stream import Stream
+from .stream import StreamMethods
 from .utilities import Utilities
 
 
 class Methods(
     Decorators,
     Groups,
-    Stream,
+    StreamMethods,
     Utilities,
 ):
     pass

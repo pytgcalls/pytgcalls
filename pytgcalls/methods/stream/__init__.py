@@ -6,7 +6,7 @@ from .resume_stream import ResumeStream
 from .unmute_stream import UnMuteStream
 
 
-class Stream(
+class StreamMethods(
     ChangeStream,
     MuteStream,
     PauseStream,
