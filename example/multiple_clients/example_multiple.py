@@ -1,16 +1,10 @@
-import asyncio
-import os
-import time
-
-from ntgcalls import InputMode
 from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioStream
-from pytgcalls.types.input_stream import Stream
+from pytgcalls import idle
+from pytgcalls.types import AudioVideoPiped
 
 app = Client(
     'py-tgcalls',
@@ -23,6 +17,8 @@ app2 = Client(
     api_hash='abcdef12345',
 )
 
+test_stream = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+
 # You can enter an unlimited number of PyTgCalls clients
 call_py = PyTgCalls(app)
 call_py2 = PyTgCalls(app2)
@@ -30,32 +26,20 @@ call_py2 = PyTgCalls(app2)
 
 @app.on_message(filters.regex('!p1'))
 async def play_handler(_: Client, message: Message):
-    file = '../input.raw'
-    while not os.path.exists(file):
-        time.sleep(0.125)
     await call_py.join_group_call(
         message.chat.id,
-        Stream(
-            AudioStream(
-                input_mode=InputMode.File,
-                path=file,
-            ),
+        AudioVideoPiped(
+            test_stream
         ),
     )
 
 
 @app.on_message(filters.regex('!p2'))
 async def play_handler2(_: Client, message: Message):
-    file = '../input.raw'
-    while not os.path.exists(file):
-        await asyncio.sleep(0.125)
     await call_py2.join_group_call(
         message.chat.id,
-        Stream(
-            AudioStream(
-                input_mode=InputMode.File,
-                path=file,
-            ),
+        AudioVideoPiped(
+            test_stream
         ),
     )
 

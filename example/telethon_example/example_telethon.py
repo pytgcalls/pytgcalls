@@ -1,13 +1,8 @@
-import os
-import time
-
-from ntgcalls import InputMode
 from telethon import TelegramClient
 
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioStream
-from pytgcalls.types.input_stream import Stream
+from pytgcalls import idle
+from pytgcalls.types import AudioVideoPiped
 
 app = TelegramClient(
     'py-tgcalls',
@@ -17,16 +12,11 @@ app = TelegramClient(
 
 call_py = PyTgCalls(app)
 call_py.start()
-file = '../input.raw'
-while not os.path.exists(file):
-    time.sleep(0.125)
+test_stream = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
 call_py.join_group_call(
     -1001234567890,
-    Stream(
-        AudioStream(
-            input_mode=InputMode.File,
-            path=file,
-        ),
+    AudioVideoPiped(
+        test_stream
     ),
 )
 idle()

@@ -1,16 +1,10 @@
-import asyncio
-import os
-
-from ntgcalls import InputMode
 from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types import Update
-from pytgcalls.types.input_stream import AudioStream
-from pytgcalls.types.input_stream import Stream
+from pytgcalls import idle
+from pytgcalls.types import Update, AudioVideoPiped
 
 app = Client(
     'py-tgcalls',
@@ -19,33 +13,25 @@ app = Client(
 )
 call_py = PyTgCalls(app)
 
+test_stream = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+
 
 @app.on_message(filters.regex('!play'))
 async def play_handler(_: Client, message: Message):
-    file = '../input.raw'
-    while not os.path.exists(file):
-        await asyncio.sleep(0.125)
     await call_py.join_group_call(
         message.chat.id,
-        Stream(
-            AudioStream(
-                input_mode=InputMode.File,
-                path=file,
-            ),
+        AudioVideoPiped(
+            test_stream
         ),
     )
 
 
 @app.on_message(filters.regex('!change_stream'))
 async def change_handler(_: Client, message: Message):
-    file = '../input.raw'
     await call_py.change_stream(
         message.chat.id,
-        Stream(
-            AudioStream(
-                input_mode=InputMode.File,
-                path=file,
-            ),
+        AudioVideoPiped(
+            test_stream
         ),
     )
 
