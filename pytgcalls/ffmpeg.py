@@ -172,6 +172,8 @@ def build_command(
             ffmpeg_command.append(f'{i}: {headers[i]}\r\n')
 
     ffmpeg_command += [
+        '-y',
+        '-nostdin',
         '-i',
         f'"{path}"' if name == 'ffmpeg' else path,
     ]
