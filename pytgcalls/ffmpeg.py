@@ -169,7 +169,7 @@ def build_command(
     if headers is not None:
         for i in headers:
             ffmpeg_command.append('-headers')
-            ffmpeg_command.append(f'{i}: {headers[i]}\r\n')
+            ffmpeg_command.append(f'"{i}: {headers[i]}"')
 
     ffmpeg_command += [
         '-y',
