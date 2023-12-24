@@ -8,7 +8,6 @@ class HandlersHolder:
     def __init__(self):
         self._on_event_update: Dict[str, List[Callable]] = {
             'STREAM_END_HANDLER': [],
-            'RAW_UPDATE_HANDLER': [],
             'INVITE_HANDLER': [],
             'KICK_HANDLER': [],
             'CLOSED_HANDLER': [],

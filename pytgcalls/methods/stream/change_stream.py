@@ -9,7 +9,6 @@ from ...exceptions import NoMTProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
-from ...types import ChangedStream
 from ...types.input_stream.stream import Stream
 from ..utilities.stream_params import StreamParams
 
@@ -39,9 +38,3 @@ class ChangeStream(Scaffold):
             raise FileNotFoundError()
         except Exception:
             raise NotInGroupCallError()
-
-        await self._on_event_update.propagate(
-            'RAW_UPDATE_HANDLER',
-            self,
-            ChangedStream(chat_id),
-        )

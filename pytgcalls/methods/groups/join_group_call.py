@@ -15,7 +15,6 @@ from ...exceptions import UnMuteNeeded
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
-from ...types import JoinedVoiceChat
 from ...types.input_stream.stream import Stream
 from ..utilities.stream_params import StreamParams
 
@@ -82,12 +81,6 @@ class JoinGroupCall(Scaffold):
                         self._cache_local_peer,
                 ):
                     self._need_unmute[chat_id] = x.muted_by_admin
-
-            await self._on_event_update.propagate(
-                'RAW_UPDATE_HANDLER',
-                self,
-                JoinedVoiceChat(chat_id),
-            )
         except FileError:
             raise FileNotFoundError()
         except ConnectionError:
