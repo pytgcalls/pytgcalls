@@ -11,12 +11,10 @@ class Scaffold:
 
     def __init__(self):
         self._app = None
-        self._async_core = None
         self._is_running = None
         self._my_id = None
         self._env_checker = None
         self._cache_user_peer = None
-        self._wait_result = None
         self._cache_local_peer = None
         self._on_event_update = None
         # noinspection PyTypeChecker

@@ -5,7 +5,6 @@ from ...scaffold import Scaffold
 
 class OnStreamEnd(Scaffold):
     def on_stream_end(self) -> Callable:
-
         method = 'STREAM_END_HANDLER'
 
         def decorator(func: Callable) -> Callable:

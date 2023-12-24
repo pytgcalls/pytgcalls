@@ -5,7 +5,6 @@ from ...scaffold import Scaffold
 
 class OnParticipantsChange(Scaffold):
     def on_participants_change(self) -> Callable:
-
         method = 'PARTICIPANTS_LIST'
 
         def decorator(func: Callable) -> Callable:

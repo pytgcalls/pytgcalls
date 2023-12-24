@@ -18,10 +18,9 @@ class AudioPiped(SmartStream):
         headers: Optional[Dict[str, str]] = None,
         additional_ffmpeg_parameters: str = '',
     ):
-        self._path = path
         self._audio_data = (
             additional_ffmpeg_parameters,
-            self._path,
+            path,
             audio_parameters,
             [],
             headers,

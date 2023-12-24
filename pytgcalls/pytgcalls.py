@@ -1,4 +1,3 @@
-import atexit
 from typing import Any
 
 from ntgcalls import NTgCalls
@@ -9,7 +8,6 @@ from .methods import Methods
 from .mtproto import MtProtoClient
 from .scaffold import Scaffold
 from .types import Cache
-from .types.update_solver import UpdateSolver
 
 
 class PyTgCalls(Methods, Scaffold):
@@ -31,12 +29,5 @@ class PyTgCalls(Methods, Scaffold):
             self._app.client,
         )
         self._cache_user_peer = Cache()
-        self._wait_result = UpdateSolver()
         self._on_event_update = HandlersHolder()
         self._binding = NTgCalls()
-
-        def cleanup():
-            if self._async_core is not None:
-                self._async_core.cancel()
-
-        atexit.register(cleanup)

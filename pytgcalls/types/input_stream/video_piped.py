@@ -18,10 +18,9 @@ class VideoPiped(SmartStream):
         headers: Optional[Dict[str, str]] = None,
         additional_ffmpeg_parameters: str = '',
     ):
-        self._path = path
         self._video_data = (
             additional_ffmpeg_parameters,
-            self._path,
+            path,
             video_parameters,
             [],
             headers,
