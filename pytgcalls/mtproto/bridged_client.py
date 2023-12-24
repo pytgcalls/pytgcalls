@@ -1,3 +1,4 @@
+import random
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -28,6 +29,12 @@ class BridgedClient:
         have_video: bool,
         join_as: Any,
     ) -> str:
+        pass
+
+    async def create_group_call(
+        self,
+        chat_id: int,
+    ):
         pass
 
     async def leave_group_call(
@@ -96,6 +103,10 @@ class BridgedClient:
             return -input_peer.id
         else:
             return -input_peer.chat_id
+
+    @staticmethod
+    def rnd_id() -> int:
+        return random.randint(0, 2 ** 32 - 1)
 
     def on_closed_voice_chat(self) -> Callable:
         pass

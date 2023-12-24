@@ -9,6 +9,7 @@ from telethon.errors import ChannelPrivateError
 from telethon.events import Raw
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetFullChatRequest
+from telethon.tl.functions.phone import CreateGroupCallRequest
 from telethon.tl.functions.phone import EditGroupCallParticipantRequest
 from telethon.tl.functions.phone import GetGroupCallRequest
 from telethon.tl.functions.phone import GetGroupParticipantsRequest
@@ -292,6 +293,34 @@ class TelethonClient(BridgedClient):
                     return update.params.data
 
         return json.dumps({'transport': None})
+
+    async def create_group_call(
+            self,
+            chat_id: int,
+    ):
+        result: Updates = await self._app(
+            CreateGroupCallRequest(
+                peer=await self.resolve_peer(chat_id),
+                random_id=self.rnd_id(),
+            ),
+        )
+        for update in result.updates:
+            if isinstance(
+                update,
+                UpdateGroupCall,
+            ):
+                if isinstance(
+                    update.call,
+                    GroupCall,
+                ):
+                    if update.call.schedule_date is None:
+                        self._cache.set_cache(
+                            chat_id,
+                            InputGroupCall(
+                                access_hash=update.call.access_hash,
+                                id=update.call.id,
+                            ),
+                        )
 
     async def _propagate(self, event_name: str, *args, **kwargs):
         for event in self.HANDLERS_LIST[event_name]:

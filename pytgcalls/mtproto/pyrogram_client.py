@@ -11,6 +11,7 @@ from pyrogram import ContinuePropagation
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.functions.channels import GetFullChannel
 from pyrogram.raw.functions.messages import GetFullChat
+from pyrogram.raw.functions.phone import CreateGroupCall
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
 from pyrogram.raw.functions.phone import GetGroupCall
 from pyrogram.raw.functions.phone import GetGroupParticipants
@@ -369,6 +370,34 @@ class PyrogramClient(BridgedClient):
                     return update.params.data
 
         return json.dumps({'transport': None})
+
+    async def create_group_call(
+            self,
+            chat_id: int,
+    ):
+        result: Updates = await self._app.send(
+            CreateGroupCall(
+                peer=await self.resolve_peer(chat_id),
+                random_id=self.rnd_id(),
+            ),
+        )
+        for update in result.updates:
+            if isinstance(
+                update,
+                UpdateGroupCall,
+            ):
+                if isinstance(
+                    update.call,
+                    GroupCall,
+                ):
+                    if update.call.schedule_date is None:
+                        self._cache.set_cache(
+                            chat_id,
+                            InputGroupCall(
+                                access_hash=update.call.access_hash,
+                                id=update.call.id,
+                            ),
+                        )
 
     async def leave_group_call(
             self,

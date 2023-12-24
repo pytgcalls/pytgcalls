@@ -10,6 +10,7 @@ from hydrogram import ContinuePropagation
 from hydrogram.raw.base import InputPeer
 from hydrogram.raw.functions.channels import GetFullChannel
 from hydrogram.raw.functions.messages import GetFullChat
+from hydrogram.raw.functions.phone import CreateGroupCall
 from hydrogram.raw.functions.phone import EditGroupCallParticipant
 from hydrogram.raw.functions.phone import GetGroupCall
 from hydrogram.raw.functions.phone import GetGroupParticipants
@@ -361,6 +362,34 @@ class HydrogramClient(BridgedClient):
                     return update.params.data
 
         return json.dumps({'transport': None})
+
+    async def create_group_call(
+            self,
+            chat_id: int,
+    ):
+        result: Updates = await self._app.invoke(
+            CreateGroupCall(
+                peer=await self.resolve_peer(chat_id),
+                random_id=self.rnd_id(),
+            ),
+        )
+        for update in result.updates:
+            if isinstance(
+                    update,
+                    UpdateGroupCall,
+            ):
+                if isinstance(
+                        update.call,
+                        GroupCall,
+                ):
+                    if update.call.schedule_date is None:
+                        self._cache.set_cache(
+                            chat_id,
+                            InputGroupCall(
+                                access_hash=update.call.access_hash,
+                                id=update.call.id,
+                            ),
+                        )
 
     async def leave_group_call(
             self,

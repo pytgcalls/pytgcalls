@@ -28,6 +28,7 @@ class JoinGroupCall(Scaffold):
         stream: Optional[Stream] = None,
         invite_hash: str = None,
         join_as=None,
+        auto_start: bool = True,
     ):
         if join_as is None:
             join_as = self._cache_local_peer
@@ -45,8 +46,12 @@ class JoinGroupCall(Scaffold):
             chat_id,
         )
         if chat_call is None:
-            raise NoActiveGroupCall()
-
+            if auto_start:
+                await self._app.create_group_call(
+                    chat_id,
+                )
+            else:
+                raise NoActiveGroupCall()
         media_description = await StreamParams.get_stream_params(
             stream,
         )
