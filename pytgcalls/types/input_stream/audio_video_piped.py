@@ -15,23 +15,23 @@ from .video_stream import VideoStream
 class AudioVideoPiped(SmartStream):
     def __init__(
         self,
-        path: str,
+        media_path: str,
         audio_parameters: AudioParameters = AudioParameters(),
         video_parameters: VideoParameters = VideoParameters(),
         headers: Optional[Dict[str, str]] = None,
         additional_ffmpeg_parameters: str = '',
+        audio_path: str = None,
     ):
-        self._path = path
         self._audio_data = (
             additional_ffmpeg_parameters,
-            self._path,
+            audio_path if audio_path else media_path,
             audio_parameters,
             [],
             headers,
         )
         self._video_data = (
             additional_ffmpeg_parameters,
-            self._path,
+            media_path,
             video_parameters,
             [],
             headers,
