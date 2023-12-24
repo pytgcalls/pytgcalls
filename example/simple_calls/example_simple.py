@@ -2,9 +2,10 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import PyTgCalls
 from pytgcalls import idle
-from pytgcalls.types import Update, AudioVideoPiped
+from pytgcalls import PyTgCalls
+from pytgcalls.types import AudioVideoPiped
+from pytgcalls.types import Update
 
 app = Client(
     'py-tgcalls',
@@ -21,7 +22,7 @@ async def play_handler(_: Client, message: Message):
     await call_py.join_group_call(
         message.chat.id,
         AudioVideoPiped(
-            test_stream
+            test_stream,
         ),
     )
 
@@ -31,7 +32,7 @@ async def change_handler(_: Client, message: Message):
     await call_py.change_stream(
         message.chat.id,
         AudioVideoPiped(
-            test_stream
+            test_stream,
         ),
     )
 
