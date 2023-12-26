@@ -1,74 +1,33 @@
 from typing import Dict
 from typing import Optional
 
-from ntgcalls import InputMode
+from deprecation import deprecated
 
-from ...ffmpeg import build_command
-from ...ffmpeg import check_stream
 from .audio_parameters import AudioParameters
-from .audio_stream import AudioStream
-from .smart_stream import SmartStream
+from .media_stream import MediaStream
 from .video_parameters import VideoParameters
-from .video_stream import VideoStream
 
 
-class AudioVideoPiped(SmartStream):
+@deprecated(
+    deprecated_in='1.1.0',
+    details='This class is no longer supported.'
+            'Use pytgcalls.types.input_stream.MediaStream instead.',
+)
+class AudioVideoPiped(MediaStream):
     def __init__(
         self,
-        media_path: str,
+        path: str,
         audio_parameters: AudioParameters = AudioParameters(),
         video_parameters: VideoParameters = VideoParameters(),
         headers: Optional[Dict[str, str]] = None,
         additional_ffmpeg_parameters: str = '',
-        audio_path: str = None,
     ):
-        self._audio_data = (
-            additional_ffmpeg_parameters,
-            audio_path if audio_path else media_path,
-            audio_parameters,
-            [],
-            headers,
-        )
-        self._video_data = (
-            additional_ffmpeg_parameters,
-            media_path,
-            video_parameters,
-            [],
-            headers,
-        )
         super().__init__(
-            AudioStream(
-                InputMode.Shell,
-                ' '.join(
-                    build_command(
-                        'ffmpeg',
-                        *self._audio_data,
-                    ),
-                ),
-                audio_parameters,
-            ),
-            VideoStream(
-                InputMode.Shell,
-                ' '.join(
-                    build_command(
-                        'ffmpeg',
-                        *self._video_data,
-                    ),
-                ),
-                video_parameters,
-            ),
-        )
-
-    async def check_stream(self):
-        await check_stream(
-            *self._audio_data,
-        )
-        await check_stream(
-            *self._video_data,
-        )
-        self.stream_video.path = ' '.join(
-            build_command(
-                'ffmpeg',
-                *self._video_data,
-            ),
+            media_path=path,
+            audio_parameters=audio_parameters,
+            video_parameters=video_parameters,
+            requires_audio=True,
+            requires_video=True,
+            headers=headers,
+            additional_ffmpeg_parameters=additional_ffmpeg_parameters,
         )

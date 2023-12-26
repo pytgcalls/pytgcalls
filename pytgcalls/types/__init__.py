@@ -17,6 +17,7 @@ from .input_stream import CaptureVideoDesktop
 from .input_stream import InputAudioStream
 from .input_stream import InputStream
 from .input_stream import InputVideoStream
+from .input_stream import MediaStream
 from .input_stream import VideoParameters
 from .input_stream import VideoPiped
 from .input_stream import VideoQuality
@@ -51,6 +52,7 @@ __all__ = (
     'LeftGroupCallParticipant',
     'MediumQualityAudio',
     'MediumQualityVideo',
+    'MediaStream',
     'StreamAudioEnded',
     'StreamVideoEnded',
     'UpdatedGroupCallParticipant',

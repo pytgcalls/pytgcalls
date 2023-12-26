@@ -140,6 +140,13 @@ class NoAudioSourceFound(Exception):
         )
 
 
+class ImageSourceFound(Exception):
+    def __init__(self, path: str):
+        super().__init__(
+            f'Found an image source on "{path}"',
+        )
+
+
 class UnMuteNeeded(Exception):
     def __init__(self):
         super().__init__(

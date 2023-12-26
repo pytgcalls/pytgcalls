@@ -1,44 +1,29 @@
 from typing import Dict
 from typing import Optional
 
-from ntgcalls import InputMode
+from deprecation import deprecated
 
-from ...ffmpeg import build_command
-from ...ffmpeg import check_stream
 from .audio_parameters import AudioParameters
-from .audio_stream import AudioStream
-from .smart_stream import SmartStream
+from .media_stream import MediaStream
 
 
-class AudioPiped(SmartStream):
+@deprecated(
+    deprecated_in='1.1.0',
+    details='This class is no longer supported.'
+            'Use pytgcalls.types.input_stream.MediaStream instead.',
+)
+class AudioPiped(MediaStream):
     def __init__(
-        self,
-        path: str,
-        audio_parameters: AudioParameters = AudioParameters(),
-        headers: Optional[Dict[str, str]] = None,
-        additional_ffmpeg_parameters: str = '',
+            self,
+            path: str,
+            audio_parameters: AudioParameters = AudioParameters(),
+            headers: Optional[Dict[str, str]] = None,
+            additional_ffmpeg_parameters: str = '',
     ):
-        self._audio_data = (
-            additional_ffmpeg_parameters,
-            path,
-            audio_parameters,
-            [],
-            headers,
-        )
         super().__init__(
-            AudioStream(
-                InputMode.Shell,
-                ' '.join(
-                    build_command(
-                        'ffmpeg',
-                        *self._audio_data,
-                    ),
-                ),
-                audio_parameters,
-            ),
-        )
-
-    async def check_stream(self):
-        await check_stream(
-            *self._audio_data,
+            media_path=path,
+            requires_audio=True,
+            audio_parameters=audio_parameters,
+            headers=headers,
+            additional_ffmpeg_parameters=additional_ffmpeg_parameters,
         )

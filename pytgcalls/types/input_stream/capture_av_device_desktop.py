@@ -1,16 +1,18 @@
-from ntgcalls import InputMode
+from deprecation import deprecated
 
-from ...ffmpeg import build_command
 from ...media_devices.device_info import DeviceInfo
 from ...media_devices.screen_info import ScreenInfo
 from .audio_parameters import AudioParameters
-from .audio_stream import AudioStream
-from .smart_stream import SmartStream
+from .media_stream import MediaStream
 from .video_parameters import VideoParameters
-from .video_stream import VideoStream
 
 
-class CaptureAVDeviceDesktop(SmartStream):
+@deprecated(
+    deprecated_in='1.1.0',
+    details='This class is no longer supported.'
+            'Use pytgcalls.types.input_stream.MediaStream instead.',
+)
+class CaptureAVDeviceDesktop(MediaStream):
     def __init__(
         self,
         audio_info: DeviceInfo,
@@ -18,38 +20,11 @@ class CaptureAVDeviceDesktop(SmartStream):
         audio_parameters: AudioParameters = AudioParameters(),
         video_parameters: VideoParameters = VideoParameters(),
     ):
-        self._audio_path = audio_info.build_ffmpeg_command()
-        self._video_path = screen_info.build_ffmpeg_command(
-            video_parameters.frame_rate,
-        )
-        audio_data = (
-            '',
-            self._audio_path,
-            audio_parameters,
-            audio_info.ffmpeg_parameters,
-        )
         super().__init__(
-            AudioStream(
-                InputMode.Shell,
-                ' '.join(
-                    build_command(
-                        'ffmpeg',
-                        *audio_data,
-                    ),
-                ),
-                audio_parameters,
-            ),
-            VideoStream(
-                InputMode.Shell,
-                ' '.join(
-                    build_command(
-                        'ffmpeg',
-                        '',
-                        self._video_path,
-                        video_parameters,
-                        screen_info.ffmpeg_parameters,
-                    ),
-                ),
-                video_parameters,
-            ),
+            media_path=screen_info,
+            audio_parameters=audio_parameters,
+            video_parameters=video_parameters,
+            audio_path=audio_info,
+            requires_audio=True,
+            requires_video=True,
         )
