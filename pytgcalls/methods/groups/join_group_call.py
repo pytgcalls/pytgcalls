@@ -26,7 +26,7 @@ class JoinGroupCall(Scaffold):
         self,
         chat_id: Union[int, str],
         stream: Optional[Stream] = None,
-        invite_hash: str = None,
+        invite_hash: Optional[str] = None,
         join_as=None,
         auto_start: bool = True,
     ):

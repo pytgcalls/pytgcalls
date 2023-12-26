@@ -24,7 +24,7 @@ class MediaStream(SmartStream):
         media_path: Union[str, ScreenInfo, DeviceInfo],
         audio_parameters: AudioParameters = AudioParameters(),
         video_parameters: VideoParameters = VideoParameters(),
-        audio_path: Union[str, DeviceInfo] = None,
+        audio_path: Optional[Union[str, DeviceInfo]] = None,
         requires_audio=False,
         requires_video=False,
         headers: Optional[Dict[str, str]] = None,

@@ -28,7 +28,7 @@ class BridgedClient:
         invite_hash: str,
         have_video: bool,
         join_as: Any,
-    ) -> str:
+    ):
         pass
 
     async def create_group_call(
@@ -79,7 +79,7 @@ class BridgedClient:
     ):
         pass
 
-    def is_connected(self) -> bool:
+    def is_connected(self):
         pass
 
     async def start(self):
@@ -108,22 +108,22 @@ class BridgedClient:
     def rnd_id() -> int:
         return random.randint(0, 2 ** 32 - 1)
 
-    def on_closed_voice_chat(self) -> Callable:
+    def on_closed_voice_chat(self):
         pass
 
-    def on_kicked(self) -> Callable:
+    def on_kicked(self):
         pass
 
-    def on_receive_invite(self) -> Callable:
+    def on_receive_invite(self):
         pass
 
-    async def get_id(self) -> int:
+    async def get_id(self):
         pass
 
-    def on_left_group(self) -> Callable:
+    def on_left_group(self):
         pass
 
-    def on_participants_change(self) -> Callable:
+    def on_participants_change(self):
         pass
 
     async def get_full_chat(self, chat_id: int):

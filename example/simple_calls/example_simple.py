@@ -14,7 +14,8 @@ app = Client(
 )
 call_py = PyTgCalls(app)
 
-test_stream = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+test_stream = 'http://docs.evostream.com/sample_content/assets/' \
+              'sintel1m720p.mp4'
 
 
 @app.on_message(filters.regex('!play'))

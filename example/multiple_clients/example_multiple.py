@@ -17,7 +17,8 @@ app2 = Client(
     api_hash='abcdef12345',
 )
 
-test_stream = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+test_stream = 'http://docs.evostream.com/sample_content/assets/' \
+              'sintel1m720p.mp4'
 
 # You can enter an unlimited number of PyTgCalls clients
 call_py = PyTgCalls(app)

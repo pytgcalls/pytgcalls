@@ -26,7 +26,7 @@ async def check_stream(
     ffmpeg_parameters: str,
     path: str,
     stream_parameters: Union[AudioParameters, VideoParameters],
-    before_commands: List[str] = None,
+    before_commands: Optional[List[str]] = None,
     headers: Optional[Dict[str, str]] = None,
 ):
     try:
@@ -145,7 +145,7 @@ def build_command(
         ffmpeg_parameters: str,
         path: Union[str, ScreenInfo, DeviceInfo],
         stream_parameters: Union[AudioParameters, VideoParameters],
-        before_commands: List[str] = None,
+        before_commands: Optional[List[str]] = None,
         headers: Optional[Dict[str, str]] = None,
 ) -> List[str]:
     command = _get_stream_params(ffmpeg_parameters)
