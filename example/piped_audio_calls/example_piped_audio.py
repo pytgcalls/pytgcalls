@@ -2,7 +2,7 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioPiped
+from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -15,7 +15,7 @@ call_py.start()
 audio_file = 'input.webm'
 call_py.join_group_call(
     -1001234567890,
-    AudioPiped(
+    MediaStream(
         audio_file,
     ),
 )

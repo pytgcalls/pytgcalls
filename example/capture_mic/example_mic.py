@@ -3,7 +3,7 @@ from pyrogram import Client
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls.media_devices import MediaDevices
-from pytgcalls.types import CaptureAudioDevice
+from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -15,7 +15,7 @@ call_py = PyTgCalls(app)
 call_py.start()
 call_py.join_group_call(
     -1001234567890,
-    CaptureAudioDevice(
+    MediaStream(
         MediaDevices.get_audio_devices()[0],
     ),
 )

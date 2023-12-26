@@ -2,9 +2,9 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls.types import MediaStream
 from pytgcalls.types import VideoParameters
 from pytgcalls.types import VideoQuality
-from pytgcalls.types.input_stream import AudioImagePiped
 
 app = Client(
     'py-tgcalls',
@@ -17,9 +17,9 @@ call_py.start()
 audio_file = 'input.webm'
 call_py.join_group_call(
     -1001234567890,
-    AudioImagePiped(
-        audio_file,
+    MediaStream(
         'test.png',
+        audio_path=audio_file,
         video_parameters=VideoParameters.from_quality(VideoQuality.HD_720p),
     ),
 )

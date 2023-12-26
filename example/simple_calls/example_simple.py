@@ -4,7 +4,7 @@ from pyrogram.types import Message
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioVideoPiped
+from pytgcalls.types import MediaStream
 from pytgcalls.types import Update
 
 app = Client(
@@ -21,7 +21,7 @@ test_stream = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
 async def play_handler(_: Client, message: Message):
     await call_py.join_group_call(
         message.chat.id,
-        AudioVideoPiped(
+        MediaStream(
             test_stream,
         ),
     )
@@ -31,7 +31,7 @@ async def play_handler(_: Client, message: Message):
 async def change_handler(_: Client, message: Message):
     await call_py.change_stream(
         message.chat.id,
-        AudioVideoPiped(
+        MediaStream(
             test_stream,
         ),
     )
@@ -87,11 +87,6 @@ async def get_play_status(client: Client, message: Message):
 @call_py.on_kicked()
 async def kicked_handler(_: PyTgCalls, chat_id: int):
     print(f'Kicked from {chat_id}')
-
-
-@call_py.on_raw_update()
-async def raw_handler(_: PyTgCalls, update: Update):
-    print(update)
 
 
 @call_py.on_stream_end()

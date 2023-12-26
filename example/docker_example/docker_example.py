@@ -2,7 +2,7 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioPiped
+from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -16,7 +16,7 @@ call_py.start()
 audio_file = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
 call_py.join_group_call(
     chat_id,
-    AudioPiped(
+    MediaStream(
         audio_file,
     ),
 )

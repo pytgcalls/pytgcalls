@@ -4,7 +4,7 @@ from pyrogram.types import Message
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioVideoPiped
+from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -28,7 +28,7 @@ call_py2 = PyTgCalls(app2)
 async def play_handler(_: Client, message: Message):
     await call_py.join_group_call(
         message.chat.id,
-        AudioVideoPiped(
+        MediaStream(
             test_stream,
         ),
     )
@@ -38,7 +38,7 @@ async def play_handler(_: Client, message: Message):
 async def play_handler2(_: Client, message: Message):
     await call_py2.join_group_call(
         message.chat.id,
-        AudioVideoPiped(
+        MediaStream(
             test_stream,
         ),
     )

@@ -5,9 +5,9 @@ from pytgcalls import PyTgCalls
 from pytgcalls.types import AudioParameters
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import Browsers
+from pytgcalls.types import MediaStream
 from pytgcalls.types import VideoParameters
 from pytgcalls.types import VideoQuality
-from pytgcalls.types.input_stream import AudioVideoPiped
 
 app = Client(
     'py-tgcalls',
@@ -20,7 +20,7 @@ call_py.start()
 remote = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
 call_py.join_group_call(
     -1001234567890,
-    AudioVideoPiped(
+    MediaStream(
         remote,
         AudioParameters.from_quality(AudioQuality.HIGH),
         VideoParameters.from_quality(VideoQuality.HD_720p),
