@@ -1,5 +1,7 @@
 from typing import Dict
+from typing import List
 from typing import Optional
+from typing import Tuple
 from typing import Union
 
 from ntgcalls import InputMode
@@ -13,12 +15,12 @@ from ...media_devices import DeviceInfo
 from ...media_devices import ScreenInfo
 from .audio_parameters import AudioParameters
 from .audio_stream import AudioStream
-from .smart_stream import SmartStream
+from .stream import Stream
 from .video_parameters import VideoParameters
 from .video_stream import VideoStream
 
 
-class MediaStream(SmartStream):
+class MediaStream(Stream):
     def __init__(
         self,
         media_path: Union[str, ScreenInfo, DeviceInfo],
@@ -41,14 +43,26 @@ class MediaStream(SmartStream):
         if isinstance(audio_path, DeviceInfo):
             audio_path = audio_path.build_ffmpeg_command()
 
-        self._audio_data = (
+        self._audio_data: Tuple[
+            str,
+            Union[str, ScreenInfo, DeviceInfo],
+            AudioParameters,
+            List[str],
+            Optional[Dict[str, str]],
+        ] = (
             additional_ffmpeg_parameters,
             audio_path if audio_path else media_path,
             audio_parameters,
             [],
             headers,
         )
-        self._video_data = (
+        self._video_data: Tuple[
+            str,
+            Union[str, ScreenInfo, DeviceInfo],
+            VideoParameters,
+            List[str],
+            Optional[Dict[str, str]],
+        ] = (
             additional_ffmpeg_parameters,
             media_path,
             video_parameters,

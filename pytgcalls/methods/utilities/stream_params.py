@@ -5,7 +5,7 @@ from ntgcalls import AudioDescription
 from ntgcalls import MediaDescription
 from ntgcalls import VideoDescription
 
-from ...types.input_stream.smart_stream import SmartStream
+from ...types.input_stream.media_stream import MediaStream
 from ...types.input_stream.stream import Stream
 
 py_logger = logging.getLogger('pytgcalls')
@@ -18,7 +18,7 @@ class StreamParams:
         video_description = None
 
         if stream is not None:
-            if isinstance(stream, SmartStream):
+            if isinstance(stream, MediaStream):
                 await stream.check_stream()
 
             if stream.stream_audio is not None:
