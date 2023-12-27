@@ -12,20 +12,22 @@ from typing import Union
 
 from ntgcalls import FFmpegError
 
+from .exceptions import ImageSourceFound
 from .exceptions import InvalidVideoProportion
 from .exceptions import NoAudioSourceFound
 from .exceptions import NoVideoSourceFound
+from .media_devices import DeviceInfo
+from .media_devices import ScreenInfo
 from .types.input_stream.audio_parameters import AudioParameters
 from .types.input_stream.video_parameters import VideoParameters
 
 
 async def check_stream(
-        ffmpeg_parameters: str,
-        path: str,
-        stream_parameters: Union[AudioParameters, VideoParameters],
-        before_commands: List[str] = None,
-        headers: Optional[Dict[str, str]] = None,
-        need_image: bool = False,
+    ffmpeg_parameters: str,
+    path: str,
+    stream_parameters: Union[AudioParameters, VideoParameters],
+    before_commands: Optional[List[str]] = None,
+    headers: Optional[Dict[str, str]] = None,
 ):
     try:
         ffprobe = await asyncio.create_subprocess_exec(
@@ -56,6 +58,7 @@ async def check_stream(
             pass
 
         have_video = False
+        is_image = False
         have_audio = False
         have_valid_video = False
 
@@ -65,8 +68,8 @@ async def check_stream(
             codec_type = stream.get('codec_type', '')
             codec_name = stream.get('codec_name', '')
             image_codecs = ['png', 'jpeg', 'jpg', 'mjpeg']
-            is_valid = not need_image and codec_name in image_codecs
-            if codec_type == 'video' and not is_valid:
+            if codec_type == 'video':
+                is_image = codec_name in image_codecs
                 have_video = True
                 original_width = int(stream.get('width', 0))
                 original_height = int(stream.get('height', 0))
@@ -95,6 +98,9 @@ async def check_stream(
             new_h = new_h - 1 if new_h % 2 else new_h
             stream_parameters.height = new_h
             stream_parameters.width = new_w
+            if is_image:
+                stream_parameters.frame_rate = 1
+                raise ImageSourceFound(path)
 
         if isinstance(stream_parameters, AudioParameters) and not have_audio:
             raise NoAudioSourceFound(path)
@@ -137,9 +143,9 @@ async def cleanup_commands(commands: List[str]) -> List[str]:
 def build_command(
         name: str,
         ffmpeg_parameters: str,
-        path: str,
+        path: Union[str, ScreenInfo, DeviceInfo],
         stream_parameters: Union[AudioParameters, VideoParameters],
-        before_commands: List[str] = None,
+        before_commands: Optional[List[str]] = None,
         headers: Optional[Dict[str, str]] = None,
 ) -> List[str]:
     command = _get_stream_params(ffmpeg_parameters)

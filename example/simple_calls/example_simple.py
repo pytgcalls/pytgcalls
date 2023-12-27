@@ -2,9 +2,10 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import PyTgCalls
 from pytgcalls import idle
-from pytgcalls.types import Update, AudioVideoPiped
+from pytgcalls import PyTgCalls
+from pytgcalls.types import MediaStream
+from pytgcalls.types import Update
 
 app = Client(
     'py-tgcalls',
@@ -13,15 +14,16 @@ app = Client(
 )
 call_py = PyTgCalls(app)
 
-test_stream = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+test_stream = 'http://docs.evostream.com/sample_content/assets/' \
+              'sintel1m720p.mp4'
 
 
 @app.on_message(filters.regex('!play'))
 async def play_handler(_: Client, message: Message):
     await call_py.join_group_call(
         message.chat.id,
-        AudioVideoPiped(
-            test_stream
+        MediaStream(
+            test_stream,
         ),
     )
 
@@ -30,8 +32,8 @@ async def play_handler(_: Client, message: Message):
 async def change_handler(_: Client, message: Message):
     await call_py.change_stream(
         message.chat.id,
-        AudioVideoPiped(
-            test_stream
+        MediaStream(
+            test_stream,
         ),
     )
 
@@ -86,11 +88,6 @@ async def get_play_status(client: Client, message: Message):
 @call_py.on_kicked()
 async def kicked_handler(_: PyTgCalls, chat_id: int):
     print(f'Kicked from {chat_id}')
-
-
-@call_py.on_raw_update()
-async def raw_handler(_: PyTgCalls, update: Update):
-    print(update)
 
 
 @call_py.on_stream_end()

@@ -5,7 +5,6 @@ from ...scaffold import Scaffold
 
 class OnKicked(Scaffold):
     def on_kicked(self) -> Callable:
-
         method = 'KICK_HANDLER'
 
         def decorator(func: Callable) -> Callable:

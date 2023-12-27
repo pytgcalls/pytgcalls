@@ -2,9 +2,9 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import PyTgCalls
 from pytgcalls import idle
-from pytgcalls.types import AudioVideoPiped
+from pytgcalls import PyTgCalls
+from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -17,7 +17,8 @@ app2 = Client(
     api_hash='abcdef12345',
 )
 
-test_stream = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+test_stream = 'http://docs.evostream.com/sample_content/assets/' \
+              'sintel1m720p.mp4'
 
 # You can enter an unlimited number of PyTgCalls clients
 call_py = PyTgCalls(app)
@@ -28,8 +29,8 @@ call_py2 = PyTgCalls(app2)
 async def play_handler(_: Client, message: Message):
     await call_py.join_group_call(
         message.chat.id,
-        AudioVideoPiped(
-            test_stream
+        MediaStream(
+            test_stream,
         ),
     )
 
@@ -38,8 +39,8 @@ async def play_handler(_: Client, message: Message):
 async def play_handler2(_: Client, message: Message):
     await call_py2.join_group_call(
         message.chat.id,
-        AudioVideoPiped(
-            test_stream
+        MediaStream(
+            test_stream,
         ),
     )
 

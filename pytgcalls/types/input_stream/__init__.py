@@ -11,7 +11,7 @@ from .capture_video_desktop import CaptureVideoDesktop
 from .input_audio_stream import InputAudioStream
 from .input_stream import InputStream
 from .input_video_stream import InputVideoStream
-from .smart_stream import SmartStream
+from .media_stream import MediaStream
 from .stream import Stream
 from .video_parameters import VideoParameters
 from .video_piped import VideoPiped
@@ -28,7 +28,7 @@ __all__ = (
     'Stream',
     'InputStream',
     'InputVideoStream',
-    'SmartStream',
+    'MediaStream',
     'VideoStream',
     'AudioStream',
     'CaptureAudioDevice',

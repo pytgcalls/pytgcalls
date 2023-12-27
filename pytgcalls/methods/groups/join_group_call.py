@@ -15,7 +15,6 @@ from ...exceptions import UnMuteNeeded
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
-from ...types import JoinedVoiceChat
 from ...types.input_stream.stream import Stream
 from ..utilities.stream_params import StreamParams
 
@@ -27,8 +26,9 @@ class JoinGroupCall(Scaffold):
         self,
         chat_id: Union[int, str],
         stream: Optional[Stream] = None,
-        invite_hash: str = None,
+        invite_hash: Optional[str] = None,
         join_as=None,
+        auto_start: bool = True,
     ):
         if join_as is None:
             join_as = self._cache_local_peer
@@ -46,8 +46,12 @@ class JoinGroupCall(Scaffold):
             chat_id,
         )
         if chat_call is None:
-            raise NoActiveGroupCall()
-
+            if auto_start:
+                await self._app.create_group_call(
+                    chat_id,
+                )
+            else:
+                raise NoActiveGroupCall()
         media_description = await StreamParams.get_stream_params(
             stream,
         )
@@ -82,12 +86,6 @@ class JoinGroupCall(Scaffold):
                         self._cache_local_peer,
                 ):
                     self._need_unmute[chat_id] = x.muted_by_admin
-
-            await self._on_event_update.propagate(
-                'RAW_UPDATE_HANDLER',
-                self,
-                JoinedVoiceChat(chat_id),
-            )
         except FileError:
             raise FileNotFoundError()
         except ConnectionError:

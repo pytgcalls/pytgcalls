@@ -78,6 +78,17 @@ class MtProtoClient:
         else:
             raise InvalidMTProtoClient()
 
+    async def create_group_call(
+        self,
+        chat_id: int,
+    ):
+        if self._bind_client is not None:
+            await self._bind_client.create_group_call(
+                chat_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
     async def leave_group_call(
         self,
         chat_id: int,

@@ -1,6 +1,5 @@
 import asyncio
 from asyncio import AbstractEventLoop
-from typing import Any
 from typing import Callable
 
 
@@ -11,13 +10,11 @@ class ToAsync:
         self._function_args: tuple = args
 
     async def _run(self):
-        result: Any = await self._loop.run_in_executor(
+        return await self._loop.run_in_executor(
             None,
             self._function,
             *self._function_args,
         )
-
-        return result
 
     def __await__(self):
         return self._run().__await__()

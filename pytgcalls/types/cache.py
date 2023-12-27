@@ -14,7 +14,7 @@ class CacheEntry:
 
 class Cache:
     def __init__(self):
-        self._store: Dict[int, CacheEntry] = {}
+        self._store: Dict[int, CacheEntry] = {}  # type: ignore
 
     def get(self, chat_id: int) -> Optional[Any]:
         if chat_id in self._store:

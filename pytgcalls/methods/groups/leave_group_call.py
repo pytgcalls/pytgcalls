@@ -8,7 +8,6 @@ from ...exceptions import NoMTProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
-from ...types import LeftVoiceChat
 
 
 class LeaveGroupCall(Scaffold):
@@ -44,9 +43,3 @@ class LeaveGroupCall(Scaffold):
 
         if chat_id in self._need_unmute:
             del self._need_unmute[chat_id]
-
-        await self._on_event_update.propagate(
-            'RAW_UPDATE_HANDLER',
-            self,
-            LeftVoiceChat(chat_id),
-        )

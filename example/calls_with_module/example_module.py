@@ -1,8 +1,8 @@
 from pyrogram import Client
 
-from pytgcalls import PyTgCalls
 from pytgcalls import idle
-from pytgcalls.types import AudioVideoPiped
+from pytgcalls import PyTgCalls
+from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -12,11 +12,12 @@ app = Client(
 
 call_py = PyTgCalls(app)
 call_py.start()
-test_stream = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+test_stream = 'http://docs.evostream.com/sample_content/assets/' \
+              'sintel1m720p.mp4'
 call_py.join_group_call(
     -1001234567890,
-    AudioVideoPiped(
-        test_stream
+    MediaStream(
+        test_stream,
     ),
 )
 idle()
