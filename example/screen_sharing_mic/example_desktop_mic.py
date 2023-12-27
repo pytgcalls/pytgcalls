@@ -16,8 +16,8 @@ call_py.start()
 call_py.join_group_call(
     -1001234567890,
     MediaStream(
-        MediaDevices.get_audio_devices()[0],
-        audio_path=MediaDevices.get_screen_devices()[0],
+        MediaDevices.get_screen_devices()[0],
+        audio_path=MediaDevices.get_audio_devices()[0],
     ),
 )
 idle()
