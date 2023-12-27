@@ -17,6 +17,7 @@ call_py.join_group_call(
     -1001234567890,
     MediaStream(
         audio_file,
+        video_flags=MediaStream.IGNORE,
     ),
 )
 idle()
