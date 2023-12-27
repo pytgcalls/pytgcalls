@@ -25,6 +25,6 @@ class CaptureAVDeviceDesktop(MediaStream):
             audio_parameters=audio_parameters,
             video_parameters=video_parameters,
             audio_path=audio_info,
-            requires_audio=True,
-            requires_video=True,
+            audio_flags=MediaStream.REQUIRED,
+            video_flags=MediaStream.REQUIRED,
         )

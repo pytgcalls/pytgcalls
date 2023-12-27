@@ -18,6 +18,7 @@ class CaptureVideoDesktop(MediaStream):
     ):
         super().__init__(
             media_path=screen_info,
-            requires_video=True,
             video_parameters=video_parameters,
+            audio_flags=MediaStream.IGNORE,
+            video_flags=MediaStream.REQUIRED,
         )

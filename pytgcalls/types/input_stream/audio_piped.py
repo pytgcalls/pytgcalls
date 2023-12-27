@@ -22,8 +22,9 @@ class AudioPiped(MediaStream):
     ):
         super().__init__(
             media_path=path,
-            requires_audio=True,
             audio_parameters=audio_parameters,
+            audio_flags=MediaStream.REQUIRED,
+            video_flags=MediaStream.IGNORE,
             headers=headers,
             additional_ffmpeg_parameters=additional_ffmpeg_parameters,
         )

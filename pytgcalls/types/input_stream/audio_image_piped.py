@@ -28,8 +28,8 @@ class AudioImagePiped(MediaStream):
             audio_parameters=audio_parameters,
             video_parameters=video_parameters,
             audio_path=audio_path,
-            requires_audio=True,
-            requires_video=True,
+            audio_flags=MediaStream.REQUIRED,
+            video_flags=MediaStream.REQUIRED,
             headers=headers,
             additional_ffmpeg_parameters=additional_ffmpeg_parameters,
         )

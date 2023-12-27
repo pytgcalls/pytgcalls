@@ -19,5 +19,6 @@ class CaptureAudioDevice(MediaStream):
         super().__init__(
             media_path=audio_info,
             audio_parameters=audio_parameters,
-            requires_audio=True,
+            audio_flags=MediaStream.REQUIRED,
+            video_flags=MediaStream.IGNORE,
         )

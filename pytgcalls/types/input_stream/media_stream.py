@@ -21,14 +21,18 @@ from .video_stream import VideoStream
 
 
 class MediaStream(Stream):
+    AUTO_DETECT = 1
+    IGNORE = 4
+    REQUIRED = 8
+
     def __init__(
         self,
         media_path: Union[str, ScreenInfo, DeviceInfo],
         audio_parameters: AudioParameters = AudioParameters(),
         video_parameters: VideoParameters = VideoParameters(),
         audio_path: Optional[Union[str, DeviceInfo]] = None,
-        requires_audio=False,
-        requires_video=False,
+        audio_flags: int = AUTO_DETECT,
+        video_flags: int = AUTO_DETECT,
         headers: Optional[Dict[str, str]] = None,
         additional_ffmpeg_parameters: str = '',
     ):
@@ -43,6 +47,8 @@ class MediaStream(Stream):
         if isinstance(audio_path, DeviceInfo):
             audio_path = audio_path.build_ffmpeg_command()
 
+        self._audio_flags = audio_flags
+        self._video_flags = video_flags
         self._audio_data: Tuple[
             str,
             Union[str, ScreenInfo, DeviceInfo],
@@ -69,9 +75,8 @@ class MediaStream(Stream):
             [],
             headers,
         )
-        self._requires_audio = requires_audio
-        self._requires_video = requires_video
         super().__init__(
+            stream_audio=None if audio_flags == self.IGNORE else
             AudioStream(
                 InputMode.Shell,
                 ' '.join(
@@ -82,6 +87,7 @@ class MediaStream(Stream):
                 ),
                 audio_parameters,
             ),
+            stream_video=None if video_flags == self.IGNORE else
             VideoStream(
                 InputMode.Shell,
                 ' '.join(
@@ -95,40 +101,42 @@ class MediaStream(Stream):
         )
 
     async def check_stream(self):
-        try:
-            await check_stream(
-                *self._audio_data,
-            )
-        except NoAudioSourceFound as e:
-            if self._requires_audio:
-                raise e
-            self.stream_audio = None
-
-        try:
+        if not self._audio_flags == self.IGNORE:
             try:
                 await check_stream(
-                    *self._video_data,
+                    *self._audio_data,
                 )
-            except ImageSourceFound:
-                self._video_data = (
-                    self._video_data[0],
-                    self._video_data[1],
-                    self._video_data[2],
-                    [
-                        '-loop',
-                        '1',
-                        '-framerate',
-                        '1',
-                    ],
-                    self._video_data[4],
+            except NoAudioSourceFound as e:
+                if self._audio_flags == self.REQUIRED:
+                    raise e
+                self.stream_audio = None
+
+        if not self._video_flags == self.IGNORE:
+            try:
+                try:
+                    await check_stream(
+                        *self._video_data,
+                    )
+                except ImageSourceFound:
+                    self._video_data = (
+                        self._video_data[0],
+                        self._video_data[1],
+                        self._video_data[2],
+                        [
+                            '-loop',
+                            '1',
+                            '-framerate',
+                            '1',
+                        ],
+                        self._video_data[4],
+                    )
+                self.stream_video.path = ' '.join(
+                    build_command(
+                        'ffmpeg',
+                        *self._video_data,
+                    ),
                 )
-            self.stream_video.path = ' '.join(
-                build_command(
-                    'ffmpeg',
-                    *self._video_data,
-                ),
-            )
-        except NoVideoSourceFound as e:
-            if self._requires_video:
-                raise e
-            self.stream_video = None
+            except NoVideoSourceFound as e:
+                if self._video_flags == self.REQUIRED:
+                    raise e
+                self.stream_video = None
