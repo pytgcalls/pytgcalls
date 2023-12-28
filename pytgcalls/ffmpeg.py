@@ -159,6 +159,16 @@ def build_command(
 
     ffmpeg_command += command['start']
 
+    ffmpeg_command += [
+        '-reconnect',
+        '1',
+        '-reconnect_at_eof',
+        '1',
+        '-reconnect_streamed',
+        '1',
+        '-reconnect_delay_max',
+        '2',
+    ]
     if name == 'ffprobe':
         ffmpeg_command += [
             '-v',
