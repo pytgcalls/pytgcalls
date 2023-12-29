@@ -47,66 +47,69 @@ async def check_stream(
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stream_list = []
-        try:
-            stdout, _ = await asyncio.wait_for(
-                ffprobe.communicate(),
-                timeout=30,
-            )
-            result = loads(stdout.decode('utf-8')) or {}
-            stream_list = result.get('streams', [])
-        except (subprocess.TimeoutExpired, JSONDecodeError):
-            pass
-
-        have_video = False
-        is_image = False
-        have_audio = False
-        have_valid_video = False
-
-        original_width, original_height = 0, 0
-
-        for stream in stream_list:
-            codec_type = stream.get('codec_type', '')
-            codec_name = stream.get('codec_name', '')
-            image_codecs = ['png', 'jpeg', 'jpg', 'mjpeg']
-            if codec_type == 'video':
-                is_image = codec_name in image_codecs
-                have_video = True
-                original_width = int(stream.get('width', 0))
-                original_height = int(stream.get('height', 0))
-                if original_height and original_width:
-                    have_valid_video = True
-            elif codec_type == 'audio':
-                have_audio = True
-
-        if isinstance(stream_parameters, VideoParameters):
-            if not have_video:
-                raise NoVideoSourceFound(path)
-            if not have_valid_video:
-                raise InvalidVideoProportion(
-                    'Video proportion not found',
-                )
-
-            ratio = float(original_width) / original_height
-            new_w = min(original_width, stream_parameters.width)
-            new_h = int(new_w / ratio)
-
-            if new_h > stream_parameters.height:
-                new_h = stream_parameters.height
-                new_w = int(new_h * ratio)
-
-            new_w = new_w - 1 if new_w % 2 else new_w
-            new_h = new_h - 1 if new_h % 2 else new_h
-            stream_parameters.height = new_h
-            stream_parameters.width = new_w
-            if is_image:
-                stream_parameters.frame_rate = 1
-                raise ImageSourceFound(path)
-
-        if isinstance(stream_parameters, AudioParameters) and not have_audio:
-            raise NoAudioSourceFound(path)
     except FileNotFoundError:
         raise FFmpegError('ffprobe not installed')
+
+    stream_list = []
+    try:
+        stdout, stderr = await asyncio.wait_for(
+            ffprobe.communicate(),
+            timeout=30,
+        )
+        result = loads(stdout.decode('utf-8')) or {}
+        stream_list = result.get('streams', [])
+        if 'No such file' in stderr.decode('utf-8'):
+            raise FileNotFoundError()
+    except (subprocess.TimeoutExpired, JSONDecodeError):
+        pass
+
+    have_video = False
+    is_image = False
+    have_audio = False
+    have_valid_video = False
+
+    original_width, original_height = 0, 0
+
+    for stream in stream_list:
+        codec_type = stream.get('codec_type', '')
+        codec_name = stream.get('codec_name', '')
+        image_codecs = ['png', 'jpeg', 'jpg', 'mjpeg']
+        if codec_type == 'video':
+            is_image = codec_name in image_codecs
+            have_video = True
+            original_width = int(stream.get('width', 0))
+            original_height = int(stream.get('height', 0))
+            if original_height and original_width:
+                have_valid_video = True
+        elif codec_type == 'audio':
+            have_audio = True
+
+    if isinstance(stream_parameters, VideoParameters):
+        if not have_video:
+            raise NoVideoSourceFound(path)
+        if not have_valid_video:
+            raise InvalidVideoProportion(
+                'Video proportion not found',
+            )
+
+        ratio = float(original_width) / original_height
+        new_w = min(original_width, stream_parameters.width)
+        new_h = int(new_w / ratio)
+
+        if new_h > stream_parameters.height:
+            new_h = stream_parameters.height
+            new_w = int(new_h * ratio)
+
+        new_w = new_w - 1 if new_w % 2 else new_w
+        new_h = new_h - 1 if new_h % 2 else new_h
+        stream_parameters.height = new_h
+        stream_parameters.width = new_w
+        if is_image:
+            stream_parameters.frame_rate = 1
+            raise ImageSourceFound(path)
+
+    if isinstance(stream_parameters, AudioParameters) and not have_audio:
+        raise NoAudioSourceFound(path)
 
 
 async def cleanup_commands(commands: List[str]) -> List[str]:
@@ -160,7 +163,7 @@ def build_command(
 
     ffmpeg_command += command['start']
 
-    if not os.path.exists(path):
+    if isinstance(path, str) and not os.path.exists(path):
         ffmpeg_command += [
             '-reconnect',
             '1',
