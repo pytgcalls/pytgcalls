@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os.path
 import re
 import shlex
 import subprocess
@@ -159,16 +160,18 @@ def build_command(
 
     ffmpeg_command += command['start']
 
-    ffmpeg_command += [
-        '-reconnect',
-        '1',
-        '-reconnect_at_eof',
-        '1',
-        '-reconnect_streamed',
-        '1',
-        '-reconnect_delay_max',
-        '2',
-    ]
+    if not os.path.exists(path):
+        ffmpeg_command += [
+            '-reconnect',
+            '1',
+            '-reconnect_at_eof',
+            '1',
+            '-reconnect_streamed',
+            '1',
+            '-reconnect_delay_max',
+            '2',
+        ]
+
     if name == 'ffprobe':
         ffmpeg_command += [
             '-v',
