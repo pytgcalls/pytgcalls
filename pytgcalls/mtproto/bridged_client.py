@@ -106,7 +106,7 @@ class BridgedClient:
 
     @staticmethod
     def rnd_id() -> int:
-        return random.randint(0, 2 ** 32 - 1)
+        return random.randint(0, 2147483647)
 
     def on_closed_voice_chat(self):
         pass
