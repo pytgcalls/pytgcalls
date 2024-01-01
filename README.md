@@ -1,5 +1,4 @@
-
-<img src=".github/images/banner.png" alt="pytgcalls logo" />
+<img src="https://raw.githubusercontent.com/pytgcalls/pytgcalls/master/.github/images/banner.png" alt="pytgcalls logo" />
 <p align="center">
     <b>A simple and elegant client that allows you to make group voice calls quickly and easily.</b>
     <br>
@@ -73,12 +72,12 @@ pip install py-tgcalls -U
     * Played a crucial role in developing PyTgCalls being an ex developer of pyservercall and of tgcallsjs.
     * Automation with GitHub Actions
 * <b><a href="https://github.com/kuogi">@kuogi</a> (Senior UI/UX designer, Documenter):</b>
-    * As a Senior UI/UX Designer, Kuogi has significantly improved the user interface of our documentation, 
+    * As a Senior UI/UX Designer, Kuogi has significantly improved the user interface of our documentation,
       making it more visually appealing and user-friendly.
     * Played a key role in writing and structuring our documentation, ensuring that it is clear,
       informative, and accessible to all users.
 * <b><a href="https://github.com/vrumger">@vrumger</a> (Senior Node.js Developer, Software Architect):</b>
-    * Has made important fixes and enhancements to the WebRTC component of the library, 
+    * Has made important fixes and enhancements to the WebRTC component of the library,
       improving its stability and performance.
     * Main developer of TgCallsJS
 * <b><a href="https://github.com/alemidev">@alemidev</a> (Senior Python Developer):</b>
