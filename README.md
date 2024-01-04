@@ -24,7 +24,7 @@
 </p>
 
 # PyTgCalls [![PyPI](https://img.shields.io/pypi/v/py-tgcalls.svg?logo=python&logoColor=%23959DA5&label=pypi&labelColor=%23282f37)](https://pypi.org/project/py-tgcalls/) [![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
-This project allows making Telegram group call using MtProto and WebRTC, this is possible thanks to the power of [NTgCalls] library and [@evgeny-nadymov]
+This project enables the creation of Telegram group calls through MtProto and WebRTC, a capability made possible by the [!][NTgCalls](https://github.com/pytgcalls/ntgcalls) library and the contributions of [!][@evgeny-nadymov](https://github.com/evgeny-nadymov/)
 
 #### Example Usage
 ```python
@@ -45,11 +45,11 @@ idle()
 ```
 
 ## Features
-- Prebuilt wheels for macOS, Linux and Windows.
-- Supporting all type of MTProto libraries: Pyrogram, Telethon and Hydrogram.
+- Prebuilt wheels for macOS, Linux, and Windows.
+- Supporting all types of MTProto libraries: Pyrogram, Telethon, and Hydrogram.
 - Work with voice chats in channels and chats.
 - Join as channels or chats.
-- Mute/unmute, pause/resume, stop/play, volume control and more...
+- Mute/unmute, pause/resume, stop/play, volume control, and more...
 
 ## Requirements
 - Python 3.7 or higher.
@@ -69,7 +69,7 @@ pip install py-tgcalls -U
 
 ## Key Contributors
 * <b><a href="https://github.com/Laky-64">@Laky-64</a> (DevOps Engineer, Software Architect):</b>
-    * Played a crucial role in developing PyTgCalls being an ex developer of pyservercall and of tgcallsjs.
+    * Played a crucial role in developing PyTgCalls being an ex-developer of pyservercall and of tgcallsjs.
     * Automation with GitHub Actions
 * <b><a href="https://github.com/kuogi">@kuogi</a> (Senior UI/UX designer, Documenter):</b>
     * As a Senior UI/UX Designer, Kuogi has significantly improved the user interface of our documentation,
