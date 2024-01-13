@@ -1,6 +1,6 @@
 from typing import Union
 
-from ntgcalls import ConnectionError
+from ntgcalls import ConnectionNotFound
 
 from ...exceptions import ClientNotStarted
 from ...exceptions import NoMTProtoClientSet
@@ -26,5 +26,5 @@ class PlayedTime(Scaffold):
                 self._binding.time,
                 chat_id,
             )
-        except ConnectionError:
+        except ConnectionNotFound:
             raise NotInGroupCallError()

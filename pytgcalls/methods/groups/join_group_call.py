@@ -88,9 +88,9 @@ class JoinGroupCall(Scaffold):
                     self._need_unmute[chat_id] = x.muted_by_admin
         except FileError:
             raise FileNotFoundError()
-        except ConnectionError:
+        except ConnectionError as e:
+            if 'Connection failed' in str(e):
+                raise TelegramServerError()
             raise AlreadyJoinedError()
         except InvalidParams:
             raise UnMuteNeeded()
-        except Exception:
-            raise TelegramServerError()

@@ -1,6 +1,6 @@
 from typing import Union
 
-from ntgcalls import ConnectionError
+from ntgcalls import ConnectionNotFound
 
 from ...exceptions import ClientNotStarted
 from ...exceptions import NoActiveGroupCall
@@ -38,7 +38,7 @@ class LeaveGroupCall(Scaffold):
                 self._binding.stop,
                 chat_id,
             )
-        except ConnectionError:
+        except ConnectionNotFound:
             raise NotInGroupCallError()
 
         if chat_id in self._need_unmute:

@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 from typing import Union
 
+from ntgcalls import ConnectionNotFound
 from ntgcalls import FileError
 
 from ...exceptions import ClientNotStarted
@@ -36,5 +37,5 @@ class ChangeStream(Scaffold):
             )
         except FileError:
             raise FileNotFoundError()
-        except Exception:
+        except ConnectionNotFound:
             raise NotInGroupCallError()

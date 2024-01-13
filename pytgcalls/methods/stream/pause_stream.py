@@ -1,6 +1,6 @@
 from typing import Union
 
-from ntgcalls import ConnectionError
+from ntgcalls import ConnectionNotFound
 
 from ...exceptions import ClientNotStarted
 from ...exceptions import NoMTProtoClientSet
@@ -27,5 +27,5 @@ class PauseStream(Scaffold):
                 chat_id,
             )
             return status
-        except ConnectionError:
+        except ConnectionNotFound:
             raise NotInGroupCallError()
