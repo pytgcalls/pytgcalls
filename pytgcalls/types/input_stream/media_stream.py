@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -22,36 +23,39 @@ from .video_stream import VideoStream
 
 class MediaStream(Stream):
     AUTO_DETECT = 1
-    IGNORE = 4
-    REQUIRED = 8
+    IGNORE = 2
+    REQUIRED = 4
 
     def __init__(
         self,
-        media_path: Union[str, ScreenInfo, DeviceInfo],
+        media_path: Union[str, Path, ScreenInfo, DeviceInfo],
         audio_parameters: AudioParameters = AudioParameters(),
         video_parameters: VideoParameters = VideoParameters(),
-        audio_path: Optional[Union[str, DeviceInfo]] = None,
-        audio_flags: int = AUTO_DETECT,
-        video_flags: int = AUTO_DETECT,
+        audio_path: Optional[Union[str, Path, DeviceInfo]] = None,
+        audio_flags: Optional[int] = AUTO_DETECT,
+        video_flags: Optional[int] = AUTO_DETECT,
         headers: Optional[Dict[str, str]] = None,
-        additional_ffmpeg_parameters: str = '',
+        additional_ffmpeg_parameters: Optional[str] = None,
     ):
         if isinstance(media_path, DeviceInfo):
             media_path = media_path.build_ffmpeg_command()
-
-        if isinstance(media_path, ScreenInfo):
+        elif isinstance(media_path, ScreenInfo):
             media_path = media_path.build_ffmpeg_command(
                 video_parameters.frame_rate,
             )
+        elif isinstance(media_path, Path):
+            media_path = str(media_path)
 
         if isinstance(audio_path, DeviceInfo):
             audio_path = audio_path.build_ffmpeg_command()
+        elif isinstance(audio_path, Path):
+            audio_path = str(audio_path)
 
         self._audio_flags = audio_flags
         self._video_flags = video_flags
         self._audio_data: Tuple[
-            str,
-            Union[str, ScreenInfo, DeviceInfo],
+            Optional[str],
+            Union[str, Path, ScreenInfo, DeviceInfo],
             AudioParameters,
             List[str],
             Optional[Dict[str, str]],
@@ -63,8 +67,8 @@ class MediaStream(Stream):
             headers,
         )
         self._video_data: Tuple[
-            str,
-            Union[str, ScreenInfo, DeviceInfo],
+            Optional[str],
+            Union[str, Path, ScreenInfo, DeviceInfo],
             VideoParameters,
             List[str],
             Optional[Dict[str, str]],

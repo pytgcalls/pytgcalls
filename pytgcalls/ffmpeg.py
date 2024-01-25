@@ -6,6 +6,7 @@ import shlex
 import subprocess
 from json import JSONDecodeError
 from json import loads
+from pathlib import Path
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -24,7 +25,7 @@ from .types.input_stream.video_parameters import VideoParameters
 
 
 async def check_stream(
-    ffmpeg_parameters: str,
+    ffmpeg_parameters: Optional[str],
     path: str,
     stream_parameters: Union[AudioParameters, VideoParameters],
     before_commands: Optional[List[str]] = None,
@@ -146,8 +147,8 @@ async def cleanup_commands(commands: List[str]) -> List[str]:
 
 def build_command(
         name: str,
-        ffmpeg_parameters: str,
-        path: Union[str, ScreenInfo, DeviceInfo],
+        ffmpeg_parameters: Optional[str],
+        path: Union[str, Path, ScreenInfo, DeviceInfo],
         stream_parameters: Union[AudioParameters, VideoParameters],
         before_commands: Optional[List[str]] = None,
         headers: Optional[Dict[str, str]] = None,
@@ -208,17 +209,18 @@ def build_command(
     return ffmpeg_command
 
 
-def _get_stream_params(command: str):
+def _get_stream_params(command: Optional[str]):
     arg_names = ['base', 'audio', 'video']
     command_args: Dict = {arg: [] for arg in arg_names}
     current_arg = arg_names[0]
 
-    for part in shlex.split(command):
-        arg_name = part[2:]
-        if arg_name in arg_names:
-            current_arg = arg_name
-        else:
-            command_args[current_arg].append(part)
+    if command:
+        for part in shlex.split(command):
+            arg_name = part[2:]
+            if arg_name in arg_names:
+                current_arg = arg_name
+            else:
+                command_args[current_arg].append(part)
     command_args = {
         command: _extract_stream_params(command_args[command])
         for command in command_args
