@@ -6,6 +6,7 @@ from ntgcalls import MediaState
 from ntgcalls import StreamType
 
 from ...exceptions import PyTgCallsAlreadyRunning
+from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
 from pytgcalls.types import GroupCallParticipant
@@ -24,7 +25,10 @@ class Start(Scaffold):
             just_joined: bool,
             just_left: bool,
         ):
-            if chat_id in self._need_unmute:
+            is_self = BridgedClient.chat_id(
+                self._cache_user_peer.get(chat_id),
+            ) == participant.user_id
+            if chat_id in self._need_unmute and is_self:
                 need_unmute = self._need_unmute[chat_id]
                 if not just_joined and \
                         not just_left and \
