@@ -25,9 +25,9 @@ class Start(Scaffold):
             just_joined: bool,
             just_left: bool,
         ):
-            is_self = BridgedClient.chat_id(
-                self._cache_user_peer.get(chat_id),
-            ) == participant.user_id
+            chat_peer = self._cache_user_peer.get(chat_id)
+            is_self = BridgedClient.chat_id(chat_peer) == participant.user_id \
+                if chat_peer else False
             if chat_id in self._need_unmute and is_self:
                 need_unmute = self._need_unmute[chat_id]
                 if not just_joined and \
