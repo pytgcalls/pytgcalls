@@ -133,7 +133,9 @@ class MediaDevices:
                             ffmpeg.communicate(),
                             timeout=3,
                         )
-                        result: str = stderr.decode('utf-8') if platform == 'win32' else stdout.decode('utf-8')
+                        result: str = stderr.decode(
+                            'utf-8',
+                        ) if platform == 'win32' else stdout.decode('utf-8')
                         output = re.findall(
                             '\\[.*?].*?"(.*?)".*?\n\\[.*?].*?"(.*?)"', result,
                         )
