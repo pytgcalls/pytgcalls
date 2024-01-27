@@ -54,46 +54,98 @@ class MediaDevices:
                     'list',
                     'sources',
                 ]
-            ffmpeg = await asyncio.create_subprocess_exec(
-                *tuple(commands),
+            async with asyncio.create_subprocess_exec(
+                *commands,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-            )
-            try:
-                stdout, stderr = await asyncio.wait_for(
-                    ffmpeg.communicate(),
-                    timeout=3,
-                )
-                result: str = ''
+            ) as ffmpeg:
+                try:
+                    stdout, stderr = await asyncio.wait_for(
+                        ffmpeg.communicate(),
+                        timeout=3,
+                    )
+                    result: str = ''
+                    if platform == 'win32':
+                        result = stderr.decode('utf-8')
+                    elif platform != 'darwin':
+                        result = stdout.decode('utf-8')
+                except asyncio.TimeoutError:
+                    return list_devices
                 if platform == 'win32':
-                    result = stderr.decode('utf-8')
-                elif platform != 'darwin':
-                    result = stdout.decode('utf-8')
-            except subprocess.TimeoutExpired:
-                return list_devices
-            if platform == 'win32':
-                list_raw = result.split('DirectShow audio devices')[1]
-                output = re.findall(
-                    '\\[.*?].*?"(.*?)".*?\n\\[.*?].*?"(.*?)"', list_raw,
-                )
-                for device in output:
-                    list_devices.append(
-                        DeviceInfo(
-                            device[1],
-                            device[0],
-                        ),
+                    list_raw = result.split('DirectShow audio devices')[1]
+                    output = re.findall(
+                        '\\[.*?].*?"(.*?)".*?\n\\[.*?].*?"(.*?)"', list_raw,
                     )
-            else:
-                output = re.findall(
-                    'Name: (.*?)\n.*?Description: (.*?)\n', result,
-                )
-                for device in output:
-                    list_devices.append(
-                        DeviceInfo(
-                            device[0],
-                            device[1],
-                        ),
+                    for device in output:
+                        list_devices.append(
+                            DeviceInfo(
+                                device[1],
+                                device[0],
+                            ),
+                        )
+                else:
+                    output = re.findall(
+                        'Name: (.*?)\n.*?Description: (.*?)\n', result,
                     )
+                    for device in output:
+                        list_devices.append(
+                            DeviceInfo(
+                                device[0],
+                                device[1],
+                            ),
+                        )
         except FileNotFoundError:
             pass
         return list_devices
+
+    @staticmethod
+    async def get_video_devices() -> List:
+        list_video_devices: List = List()
+        if platform != 'darwin':
+            try:
+                if platform == 'win32':
+                    commands = [
+                        'ffmpeg',
+                        '-list_devices',
+                        'true',
+                        '-f',
+                        'dshow',
+                        '-i',
+                        'dummy',
+                    ]
+                else:
+                    commands = [
+                        'ffmpeg',
+                        '-f',
+                        'v4l2',
+                        '-list_devices',
+                        'true',
+                        '-i',
+                        '/dev/video0',
+                    ]
+                async with asyncio.create_subprocess_exec(
+                    *commands,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                ) as ffmpeg:
+                    try:
+                        stdout, stderr = await asyncio.wait_for(
+                            ffmpeg.communicate(),
+                            timeout=3,
+                        )
+                        result: str = stderr.decode('utf-8') if platform == 'win32' else stdout.decode('utf-8')
+                        output = re.findall(
+                            '\\[.*?].*?"(.*?)".*?\n\\[.*?].*?"(.*?)"', result,
+                        )
+                        for device in output:
+                            list_video_devices.append(
+                                DeviceInfo(
+                                    device[1],
+                                    device[0],
+                                ),
+                            )
+                    except asyncio.TimeoutError:
+                        pass
+            except FileNotFoundError:
+                pass
+        return list_video_devices
