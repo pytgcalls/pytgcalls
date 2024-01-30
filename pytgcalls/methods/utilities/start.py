@@ -9,9 +9,9 @@ from ...exceptions import PyTgCallsAlreadyRunning
 from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
-from pytgcalls.types import GroupCallParticipant
-from pytgcalls.types import StreamAudioEnded
-from pytgcalls.types import StreamVideoEnded
+from ...types import GroupCallParticipant
+from ...types import StreamAudioEnded
+from ...types import StreamVideoEnded
 
 
 class Start(Scaffold):

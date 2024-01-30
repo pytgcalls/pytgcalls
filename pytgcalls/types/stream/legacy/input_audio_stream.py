@@ -1,8 +1,8 @@
 from deprecation import deprecated
 from ntgcalls import InputMode
 
-from .audio_parameters import AudioParameters
-from .audio_stream import AudioStream
+from ...raw import AudioParameters
+from ...raw import AudioStream
 
 
 @deprecated(

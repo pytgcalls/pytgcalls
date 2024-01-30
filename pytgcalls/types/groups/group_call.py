@@ -1,4 +1,4 @@
-from pytgcalls.types.py_object import PyObject
+from ...types.py_object import PyObject
 
 
 class GroupCall(PyObject):

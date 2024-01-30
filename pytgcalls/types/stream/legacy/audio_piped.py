@@ -3,14 +3,14 @@ from typing import Optional
 
 from deprecation import deprecated
 
-from .audio_parameters import AudioParameters
-from .media_stream import MediaStream
+from ...raw import AudioParameters
+from ..media_stream import MediaStream
 
 
 @deprecated(
     deprecated_in='1.1.0',
     details='This class is no longer supported.'
-            'Use pytgcalls.types.input_stream.MediaStream instead.',
+            'Use pytgcalls.types.MediaStream instead.',
 )
 class AudioPiped(MediaStream):
     def __init__(

@@ -5,8 +5,8 @@ from ntgcalls import AudioDescription
 from ntgcalls import MediaDescription
 from ntgcalls import VideoDescription
 
-from ...types.input_stream.media_stream import MediaStream
-from ...types.input_stream.stream import Stream
+from ...types.raw.stream import Stream
+from ...types.stream.media_stream import MediaStream
 
 py_logger = logging.getLogger('pytgcalls')
 

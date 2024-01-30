@@ -1,6 +1,6 @@
 from typing import Union
 
-from pytgcalls.types.py_object import PyObject
+from ..types.py_object import PyObject
 
 
 class Update(PyObject):

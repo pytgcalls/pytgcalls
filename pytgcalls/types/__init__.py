@@ -5,63 +5,51 @@ from .groups import GroupCallParticipant
 from .groups import JoinedGroupCallParticipant
 from .groups import LeftGroupCallParticipant
 from .groups import UpdatedGroupCallParticipant
-from .input_stream import AudioImagePiped
-from .input_stream import AudioParameters
-from .input_stream import AudioPiped
-from .input_stream import AudioQuality
-from .input_stream import AudioVideoPiped
-from .input_stream import CaptureAudioDevice
-from .input_stream import CaptureAVDesktop
-from .input_stream import CaptureAVDeviceDesktop
-from .input_stream import CaptureVideoDesktop
-from .input_stream import InputAudioStream
-from .input_stream import InputStream
-from .input_stream import InputVideoStream
-from .input_stream import MediaStream
-from .input_stream import VideoParameters
-from .input_stream import VideoPiped
-from .input_stream import VideoQuality
-from .input_stream.quality import HighQualityAudio
-from .input_stream.quality import HighQualityVideo
-from .input_stream.quality import LowQualityAudio
-from .input_stream.quality import LowQualityVideo
-from .input_stream.quality import MediumQualityAudio
-from .input_stream.quality import MediumQualityVideo
+from .stream import AudioQuality
+from .stream import MediaStream
 from .stream import StreamAudioEnded
 from .stream import StreamVideoEnded
+from .stream import VideoQuality
+from .stream.legacy import AudioImagePiped
+from .stream.legacy import AudioPiped
+from .stream.legacy import AudioVideoPiped
+from .stream.legacy import CaptureAudioDevice
+from .stream.legacy import CaptureAVDesktop
+from .stream.legacy import CaptureAVDeviceDesktop
+from .stream.legacy import CaptureVideoDesktop
+from .stream.legacy.quality import HighQualityAudio
+from .stream.legacy.quality import HighQualityVideo
+from .stream.legacy.quality import LowQualityAudio
+from .stream.legacy.quality import LowQualityVideo
+from .stream.legacy.quality import MediumQualityAudio
+from .stream.legacy.quality import MediumQualityVideo
 from .update import Update
 
 __all__ = (
-    'AudioParameters',
     'AudioImagePiped',
     'AudioPiped',
     'AudioQuality',
     'AudioVideoPiped',
     'Browsers',
     'Cache',
+    'CaptureAVDesktop',
+    'CaptureAVDeviceDesktop',
+    'CaptureAudioDevice',
+    'CaptureVideoDesktop',
     'GroupCall',
     'GroupCallParticipant',
     'HighQualityAudio',
     'HighQualityVideo',
-    'InputAudioStream',
-    'InputStream',
-    'InputVideoStream',
     'JoinedGroupCallParticipant',
+    'LeftGroupCallParticipant',
     'LowQualityAudio',
     'LowQualityVideo',
-    'LeftGroupCallParticipant',
+    'MediaStream',
     'MediumQualityAudio',
     'MediumQualityVideo',
-    'MediaStream',
     'StreamAudioEnded',
     'StreamVideoEnded',
-    'UpdatedGroupCallParticipant',
     'Update',
-    'CaptureAudioDevice',
-    'CaptureAVDesktop',
-    'CaptureAVDeviceDesktop',
-    'CaptureVideoDesktop',
-    'VideoParameters',
-    'VideoPiped',
+    'UpdatedGroupCallParticipant',
     'VideoQuality',
 )

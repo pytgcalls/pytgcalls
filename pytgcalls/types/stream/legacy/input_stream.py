@@ -2,9 +2,9 @@ from typing import Optional
 
 from deprecation import deprecated
 
+from ...raw import Stream
 from .input_audio_stream import InputAudioStream
 from .input_video_stream import InputVideoStream
-from .stream import Stream
 
 
 @deprecated(

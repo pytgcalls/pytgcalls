@@ -4,7 +4,7 @@ from typing import List
 from typing import Optional
 
 from ..exceptions import InvalidMTProtoClient
-from ..types.groups.group_call_participant import GroupCallParticipant
+from ..types.groups import GroupCallParticipant
 from .bridged_client import BridgedClient
 
 

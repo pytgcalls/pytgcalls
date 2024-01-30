@@ -15,7 +15,7 @@ from ...exceptions import UnMuteNeeded
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
-from ...types.input_stream.stream import Stream
+from ...types.raw.stream import Stream
 from ..utilities.stream_params import StreamParams
 
 py_logger = logging.getLogger('pytgcalls')

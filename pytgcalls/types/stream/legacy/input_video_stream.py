@@ -1,8 +1,8 @@
 from deprecation import deprecated
 from ntgcalls import InputMode
 
-from .video_parameters import VideoParameters
-from .video_stream import VideoStream
+from ...raw import VideoParameters
+from ...raw import VideoStream
 
 
 @deprecated(

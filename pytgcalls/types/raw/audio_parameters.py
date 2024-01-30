@@ -1,5 +1,5 @@
 from ..py_object import PyObject
-from .audio_quality import AudioQuality
+from ..stream.audio_quality import AudioQuality
 
 
 class AudioParameters(PyObject):

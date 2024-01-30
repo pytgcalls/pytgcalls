@@ -1,5 +1,5 @@
 from ..py_object import PyObject
-from .video_quality import VideoQuality
+from ..stream.video_quality import VideoQuality
 
 
 class VideoParameters(PyObject):

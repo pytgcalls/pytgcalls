@@ -13,11 +13,11 @@ from ...ffmpeg import build_command
 from ...ffmpeg import check_stream
 from ...media_devices import DeviceInfo
 from ...media_devices import ScreenInfo
-from .audio_parameters import AudioParameters
-from .audio_stream import AudioStream
-from .stream import Stream
-from .video_parameters import VideoParameters
-from .video_stream import VideoStream
+from ..raw.audio_parameters import AudioParameters
+from ..raw.audio_stream import AudioStream
+from ..raw.stream import Stream
+from ..raw.video_parameters import VideoParameters
+from ..raw.video_stream import VideoStream
 
 
 class MediaStream(Stream):
@@ -78,7 +78,7 @@ class MediaStream(Stream):
                         False,
                     ),
                 ),
-                audio_parameters,
+                self._audio_parameters,
             ),
             stream_video=None if video_flags == self.IGNORE else
             VideoStream(
@@ -94,7 +94,7 @@ class MediaStream(Stream):
                         False,
                     ),
                 ),
-                video_parameters,
+                self._video_parameters,
             ),
         )
 

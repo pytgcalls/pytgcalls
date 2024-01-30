@@ -12,8 +12,8 @@ from pyrogram.types import Message
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioStream
-from pytgcalls.types.input_stream import Stream
+from pytgcalls.types.raw import AudioStream
+from pytgcalls.types.raw import Stream
 
 app = Client(
     'py-tgcalls',

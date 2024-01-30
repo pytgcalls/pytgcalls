@@ -18,8 +18,8 @@ from .exceptions import InvalidVideoProportion
 from .exceptions import LiveStreamFound
 from .exceptions import NoAudioSourceFound
 from .exceptions import NoVideoSourceFound
-from .types.input_stream.audio_parameters import AudioParameters
-from .types.input_stream.video_parameters import VideoParameters
+from .types.raw import AudioParameters
+from .types.raw import VideoParameters
 
 
 async def check_stream(

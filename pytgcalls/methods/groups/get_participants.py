@@ -3,7 +3,7 @@ from typing import Optional
 from typing import Union
 
 from ...scaffold import Scaffold
-from ...types.groups.group_call_participant import GroupCallParticipant
+from ...types.groups import GroupCallParticipant
 
 
 class GetParticipants(Scaffold):

@@ -1,14 +1,14 @@
 from deprecation import deprecated
 
-from ...media_devices.screen_info import ScreenInfo
-from .media_stream import MediaStream
-from .video_parameters import VideoParameters
+from ....media_devices import ScreenInfo
+from ...raw import VideoParameters
+from ..media_stream import MediaStream
 
 
 @deprecated(
     deprecated_in='1.1.0',
     details='This class is no longer supported.'
-            'Use pytgcalls.types.input_stream.MediaStream instead.',
+            'Use pytgcalls.types.MediaStream instead.',
 )
 class CaptureVideoDesktop(MediaStream):
     def __init__(
