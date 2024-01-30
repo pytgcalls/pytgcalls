@@ -13,6 +13,7 @@ from ...ffmpeg import build_command
 from ...ffmpeg import check_stream
 from ...media_devices import DeviceInfo
 from ...media_devices import ScreenInfo
+from ...ytdlp import YtDlp
 from ..raw.audio_parameters import AudioParameters
 from ..raw.audio_stream import AudioStream
 from ..raw.stream import Stream
@@ -56,9 +57,6 @@ class MediaStream(Stream):
         elif isinstance(audio_path, DeviceInfo):
             self._audio_path = audio_path.build_ffmpeg_command()
 
-        self._audio_path = self._audio_path \
-            if self._audio_path else self._media_path
-
         self._audio_flags = audio_flags
         self._video_flags = video_flags
         self._audio_parameters = audio_parameters
@@ -101,34 +99,15 @@ class MediaStream(Stream):
         )
 
     async def check_stream(self):
-        if not self._audio_flags == self.IGNORE:
-            try:
-                try:
-                    await check_stream(
-                        self._ffmpeg_parameters,
-                        self._audio_path,
-                        self._audio_parameters,
-                        [],
-                        self._headers,
-                    )
-                except LiveStreamFound:
-                    self.stream_audio.path = ' '.join(
-                        build_command(
-                            'ffmpeg',
-                            self._ffmpeg_parameters,
-                            self._audio_path,
-                            self._audio_parameters,
-                            [],
-                            self._headers,
-                            True,
-                        ),
-                    )
-            except NoAudioSourceFound as e:
-                if self._audio_flags == self.REQUIRED:
-                    raise e
-                self.stream_audio = None
-
         if not self._video_flags == self.IGNORE:
+            if YtDlp.is_valid(self._media_path):
+                links = await YtDlp.extract(
+                    self._media_path,
+                    self._video_parameters,
+                )
+                self._media_path = links[0]
+                if not self._audio_path:
+                    self._audio_path = links[1]
             try:
                 image_commands = []
                 live_stream = False
@@ -164,3 +143,43 @@ class MediaStream(Stream):
                 if self._video_flags == self.REQUIRED:
                     raise e
                 self.stream_video = None
+
+        self._audio_path = self._audio_path \
+            if self._audio_path else self._media_path
+
+        if not self._audio_flags == self.IGNORE:
+            if YtDlp.is_valid(self._audio_path):
+                self._audio_path = (
+                    await YtDlp.extract(
+                        self._audio_path,
+                        self._video_parameters,
+                    )
+                )[1]
+
+            try:
+                live_stream = False
+                try:
+                    await check_stream(
+                        self._ffmpeg_parameters,
+                        self._audio_path,
+                        self._audio_parameters,
+                        [],
+                        self._headers,
+                    )
+                except LiveStreamFound:
+                    live_stream = True
+                self.stream_audio.path = ' '.join(
+                    build_command(
+                        'ffmpeg',
+                        self._ffmpeg_parameters,
+                        self._audio_path,
+                        self._audio_parameters,
+                        [],
+                        self._headers,
+                        live_stream,
+                    ),
+                )
+            except NoAudioSourceFound as e:
+                if self._audio_flags == self.REQUIRED:
+                    raise e
+                self.stream_audio = None

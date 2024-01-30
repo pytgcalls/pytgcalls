@@ -5,6 +5,8 @@ from .groups import GroupCallParticipant
 from .groups import JoinedGroupCallParticipant
 from .groups import LeftGroupCallParticipant
 from .groups import UpdatedGroupCallParticipant
+from .raw import AudioParameters
+from .raw import VideoParameters
 from .stream import AudioQuality
 from .stream import MediaStream
 from .stream import StreamAudioEnded
@@ -28,6 +30,7 @@ from .update import Update
 
 __all__ = (
     'AudioImagePiped',
+    'AudioParameters',
     'AudioPiped',
     'AudioQuality',
     'AudioVideoPiped',
@@ -52,6 +55,7 @@ __all__ = (
     'StreamVideoEnded',
     'Update',
     'UpdatedGroupCallParticipant',
+    'VideoParameters',
     'VideoPiped',
     'VideoQuality',
 )

@@ -154,6 +154,13 @@ class LiveStreamFound(Exception):
         )
 
 
+class YtDlpError(Exception):
+    def __init__(self, message: str):
+        super().__init__(
+            message,
+        )
+
+
 class UnMuteNeeded(Exception):
     def __init__(self):
         super().__init__(

@@ -150,14 +150,16 @@ async def cleanup_commands(commands: List[str]) -> List[str]:
 
 
 def build_command(
-        name: str,
-        ffmpeg_parameters: Optional[str],
-        path: str,
-        stream_parameters: Union[AudioParameters, VideoParameters],
-        before_commands: Optional[List[str]] = None,
-        headers: Optional[Dict[str, str]] = None,
-        is_livestream: bool = False,
+    name: str,
+    ffmpeg_parameters: Optional[str],
+    path: Optional[str],
+    stream_parameters: Union[AudioParameters, VideoParameters],
+    before_commands: Optional[List[str]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    is_livestream: bool = False,
 ) -> List[str]:
+    if not path:
+        return []
     command = _get_stream_params(ffmpeg_parameters)
 
     if isinstance(stream_parameters, VideoParameters):
