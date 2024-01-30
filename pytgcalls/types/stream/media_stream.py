@@ -36,6 +36,8 @@ class MediaStream(Stream):
         headers: Optional[Dict[str, str]] = None,
         ffmpeg_parameters: Optional[str] = None,
     ):
+        self._media_path: Optional[str] = None
+        self._audio_path: Optional[str] = None
         if isinstance(media_path, str):
             self._media_path = media_path
         elif isinstance(media_path, Path):
