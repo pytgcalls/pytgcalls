@@ -22,8 +22,8 @@ from ..raw.video_stream import VideoStream
 
 class MediaStream(Stream):
     AUTO_DETECT = 1
-    IGNORE = 4
-    REQUIRED = 8
+    IGNORE = 2
+    REQUIRED = 4
 
     def __init__(
         self,
