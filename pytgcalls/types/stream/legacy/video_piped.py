@@ -18,7 +18,7 @@ class VideoPiped(MediaStream):
         path: str,
         video_parameters: VideoParameters = VideoParameters(),
         headers: Optional[Dict[str, str]] = None,
-        ffmpeg_parameters: str = '',
+        additional_ffmpeg_parameters: str = '',
     ):
         super().__init__(
             media_path=path,
@@ -26,5 +26,5 @@ class VideoPiped(MediaStream):
             audio_flags=MediaStream.IGNORE,
             video_flags=MediaStream.REQUIRED,
             headers=headers,
-            ffmpeg_parameters=ffmpeg_parameters,
+            ffmpeg_parameters=additional_ffmpeg_parameters,
         )

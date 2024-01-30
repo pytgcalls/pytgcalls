@@ -17,6 +17,7 @@ from .stream.legacy import CaptureAudioDevice
 from .stream.legacy import CaptureAVDesktop
 from .stream.legacy import CaptureAVDeviceDesktop
 from .stream.legacy import CaptureVideoDesktop
+from .stream.legacy import VideoPiped
 from .stream.legacy.quality import HighQualityAudio
 from .stream.legacy.quality import HighQualityVideo
 from .stream.legacy.quality import LowQualityAudio
@@ -51,5 +52,6 @@ __all__ = (
     'StreamVideoEnded',
     'Update',
     'UpdatedGroupCallParticipant',
+    'VideoPiped',
     'VideoQuality',
 )

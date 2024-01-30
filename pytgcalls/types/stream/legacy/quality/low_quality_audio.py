@@ -1,7 +1,7 @@
 from deprecation import deprecated
 
-from ..audio_parameters import AudioParameters
-from ..audio_quality import AudioQuality
+from .... import AudioQuality
+from ....raw import AudioParameters
 
 
 @deprecated(

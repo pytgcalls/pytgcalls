@@ -1,7 +1,7 @@
 from deprecation import deprecated
 
-from ..video_parameters import VideoParameters
-from ..video_quality import VideoQuality
+from .... import VideoQuality
+from ....raw import VideoParameters
 
 
 @deprecated(

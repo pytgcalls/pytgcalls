@@ -1,16 +1,16 @@
 import os
 import time
 
+from ntgcalls import InputMode
 from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from ntgcalls import InputMode
 from pytgcalls.types.raw import AudioParameters
 from pytgcalls.types.raw import AudioStream
 from pytgcalls.types.raw import Stream
-from pytgcalls.types.raw import VideoStream
 from pytgcalls.types.raw import VideoParameters
+from pytgcalls.types.raw import VideoStream
 
 app = Client(
     'py-tgcalls',

@@ -31,10 +31,10 @@ class MediaStream(Stream):
         audio_parameters: AudioParameters = AudioParameters(),
         video_parameters: VideoParameters = VideoParameters(),
         audio_path: Optional[Union[str, Path, DeviceInfo]] = None,
-        audio_flags: int = AUTO_DETECT,
-        video_flags: int = AUTO_DETECT,
+        audio_flags: Optional[int] = AUTO_DETECT,
+        video_flags: Optional[int] = AUTO_DETECT,
         headers: Optional[Dict[str, str]] = None,
-        ffmpeg_parameters: str = '',
+        ffmpeg_parameters: Optional[str] = None,
     ):
         if isinstance(media_path, str):
             self._media_path = media_path
