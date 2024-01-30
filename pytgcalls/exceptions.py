@@ -147,6 +147,13 @@ class ImageSourceFound(Exception):
         )
 
 
+class LiveStreamFound(Exception):
+    def __init__(self, path: str):
+        super().__init__(
+            f'Found a livestream on "{path}"',
+        )
+
+
 class UnMuteNeeded(Exception):
     def __init__(self):
         super().__init__(

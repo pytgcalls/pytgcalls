@@ -1,13 +1,12 @@
 from pathlib import Path
 from typing import Dict
-from typing import List
 from typing import Optional
-from typing import Tuple
 from typing import Union
 
 from ntgcalls import InputMode
 
 from ...exceptions import ImageSourceFound
+from ...exceptions import LiveStreamFound
 from ...exceptions import NoAudioSourceFound
 from ...exceptions import NoVideoSourceFound
 from ...ffmpeg import build_command
@@ -23,8 +22,8 @@ from .video_stream import VideoStream
 
 class MediaStream(Stream):
     AUTO_DETECT = 1
-    IGNORE = 2
-    REQUIRED = 4
+    IGNORE = 4
+    REQUIRED = 8
 
     def __init__(
         self,
@@ -32,53 +31,38 @@ class MediaStream(Stream):
         audio_parameters: AudioParameters = AudioParameters(),
         video_parameters: VideoParameters = VideoParameters(),
         audio_path: Optional[Union[str, Path, DeviceInfo]] = None,
-        audio_flags: Optional[int] = AUTO_DETECT,
-        video_flags: Optional[int] = AUTO_DETECT,
+        audio_flags: int = AUTO_DETECT,
+        video_flags: int = AUTO_DETECT,
         headers: Optional[Dict[str, str]] = None,
-        additional_ffmpeg_parameters: Optional[str] = None,
+        ffmpeg_parameters: str = '',
     ):
-        if isinstance(media_path, DeviceInfo):
-            media_path = media_path.build_ffmpeg_command()
+        if isinstance(media_path, str):
+            self._media_path = media_path
+        elif isinstance(media_path, Path):
+            self._media_path = str(media_path)
+        elif isinstance(media_path, DeviceInfo):
+            self._media_path = media_path.build_ffmpeg_command()
         elif isinstance(media_path, ScreenInfo):
-            media_path = media_path.build_ffmpeg_command(
+            self._media_path = media_path.build_ffmpeg_command(
                 video_parameters.frame_rate,
             )
-        elif isinstance(media_path, Path):
-            media_path = str(media_path)
 
-        if isinstance(audio_path, DeviceInfo):
-            audio_path = audio_path.build_ffmpeg_command()
+        if isinstance(audio_path, str):
+            self._audio_path = audio_path
         elif isinstance(audio_path, Path):
-            audio_path = str(audio_path)
+            self._audio_path = str(audio_path)
+        elif isinstance(audio_path, DeviceInfo):
+            self._audio_path = audio_path.build_ffmpeg_command()
+
+        self._audio_path = self._audio_path \
+            if self._audio_path else self._media_path
 
         self._audio_flags = audio_flags
         self._video_flags = video_flags
-        self._audio_data: Tuple[
-            Optional[str],
-            Union[str, Path, ScreenInfo, DeviceInfo],
-            AudioParameters,
-            List[str],
-            Optional[Dict[str, str]],
-        ] = (
-            additional_ffmpeg_parameters,
-            audio_path if audio_path else media_path,
-            audio_parameters,
-            [],
-            headers,
-        )
-        self._video_data: Tuple[
-            Optional[str],
-            Union[str, Path, ScreenInfo, DeviceInfo],
-            VideoParameters,
-            List[str],
-            Optional[Dict[str, str]],
-        ] = (
-            additional_ffmpeg_parameters,
-            media_path,
-            video_parameters,
-            [],
-            headers,
-        )
+        self._audio_parameters = audio_parameters
+        self._video_parameters = video_parameters
+        self._ffmpeg_parameters = ffmpeg_parameters
+        self._headers = headers
         super().__init__(
             stream_audio=None if audio_flags == self.IGNORE else
             AudioStream(
@@ -86,7 +70,12 @@ class MediaStream(Stream):
                 ' '.join(
                     build_command(
                         'ffmpeg',
-                        *self._audio_data,
+                        self._ffmpeg_parameters,
+                        self._audio_path,
+                        self._audio_parameters,
+                        [],
+                        self._headers,
+                        False,
                     ),
                 ),
                 audio_parameters,
@@ -97,7 +86,12 @@ class MediaStream(Stream):
                 ' '.join(
                     build_command(
                         'ffmpeg',
-                        *self._video_data,
+                        self._ffmpeg_parameters,
+                        self._media_path,
+                        self._video_parameters,
+                        [],
+                        self._headers,
+                        False,
                     ),
                 ),
                 video_parameters,
@@ -107,9 +101,26 @@ class MediaStream(Stream):
     async def check_stream(self):
         if not self._audio_flags == self.IGNORE:
             try:
-                await check_stream(
-                    *self._audio_data,
-                )
+                try:
+                    await check_stream(
+                        self._ffmpeg_parameters,
+                        self._audio_path,
+                        self._audio_parameters,
+                        [],
+                        self._headers,
+                    )
+                except LiveStreamFound:
+                    self.stream_audio.path = ' '.join(
+                        build_command(
+                            'ffmpeg',
+                            self._ffmpeg_parameters,
+                            self._audio_path,
+                            self._audio_parameters,
+                            [],
+                            self._headers,
+                            True,
+                        ),
+                    )
             except NoAudioSourceFound as e:
                 if self._audio_flags == self.REQUIRED:
                     raise e
@@ -117,27 +128,34 @@ class MediaStream(Stream):
 
         if not self._video_flags == self.IGNORE:
             try:
+                image_commands = []
+                live_stream = False
                 try:
                     await check_stream(
-                        *self._video_data,
+                        self._ffmpeg_parameters,
+                        self._media_path,
+                        self._video_parameters,
+                        [],
+                        self._headers,
                     )
                 except ImageSourceFound:
-                    self._video_data = (
-                        self._video_data[0],
-                        self._video_data[1],
-                        self._video_data[2],
-                        [
-                            '-loop',
-                            '1',
-                            '-framerate',
-                            '1',
-                        ],
-                        self._video_data[4],
-                    )
+                    image_commands = [
+                        '-loop',
+                        '1',
+                        '-framerate',
+                        '1',
+                    ]
+                except LiveStreamFound:
+                    live_stream = True
                 self.stream_video.path = ' '.join(
                     build_command(
                         'ffmpeg',
-                        *self._video_data,
+                        self._ffmpeg_parameters,
+                        self._media_path,
+                        self._video_parameters,
+                        image_commands,
+                        self._headers,
+                        live_stream,
                     ),
                 )
             except NoVideoSourceFound as e:

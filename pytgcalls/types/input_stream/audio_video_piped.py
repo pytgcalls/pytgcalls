@@ -29,5 +29,5 @@ class AudioVideoPiped(MediaStream):
             audio_flags=MediaStream.REQUIRED,
             video_flags=MediaStream.REQUIRED,
             headers=headers,
-            additional_ffmpeg_parameters=additional_ffmpeg_parameters,
+            ffmpeg_parameters=additional_ffmpeg_parameters,
         )

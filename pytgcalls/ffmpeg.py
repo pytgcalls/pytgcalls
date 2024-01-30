@@ -6,7 +6,6 @@ import shlex
 import subprocess
 from json import JSONDecodeError
 from json import loads
-from pathlib import Path
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -16,10 +15,9 @@ from ntgcalls import FFmpegError
 
 from .exceptions import ImageSourceFound
 from .exceptions import InvalidVideoProportion
+from .exceptions import LiveStreamFound
 from .exceptions import NoAudioSourceFound
 from .exceptions import NoVideoSourceFound
-from .media_devices import DeviceInfo
-from .media_devices import ScreenInfo
 from .types.input_stream.audio_parameters import AudioParameters
 from .types.input_stream.video_parameters import VideoParameters
 
@@ -42,6 +40,7 @@ async def check_stream(
                         stream_parameters,
                         before_commands,
                         headers,
+                        False,
                     ),
                 ),
             ),
@@ -52,6 +51,7 @@ async def check_stream(
         raise FFmpegError('ffprobe not installed')
 
     stream_list = []
+    format_content = []
     try:
         stdout, stderr = await asyncio.wait_for(
             ffprobe.communicate(),
@@ -59,6 +59,7 @@ async def check_stream(
         )
         result = loads(stdout.decode('utf-8')) or {}
         stream_list = result.get('streams', [])
+        format_content = result.get('format', [])
         if 'No such file' in stderr.decode('utf-8'):
             raise FileNotFoundError()
     except (subprocess.TimeoutExpired, JSONDecodeError):
@@ -112,6 +113,9 @@ async def check_stream(
     if isinstance(stream_parameters, AudioParameters) and not have_audio:
         raise NoAudioSourceFound(path)
 
+    if 'duration' not in format_content:
+        raise LiveStreamFound(path)
+
 
 async def cleanup_commands(commands: List[str]) -> List[str]:
     try:
@@ -148,10 +152,11 @@ async def cleanup_commands(commands: List[str]) -> List[str]:
 def build_command(
         name: str,
         ffmpeg_parameters: Optional[str],
-        path: Union[str, Path, ScreenInfo, DeviceInfo],
+        path: str,
         stream_parameters: Union[AudioParameters, VideoParameters],
         before_commands: Optional[List[str]] = None,
         headers: Optional[Dict[str, str]] = None,
+        is_livestream: bool = False,
 ) -> List[str]:
     command = _get_stream_params(ffmpeg_parameters)
 
@@ -164,9 +169,13 @@ def build_command(
 
     ffmpeg_command += command['start']
 
-    if isinstance(path, str) and not os.path.exists(path):
+    if os.path.exists(path) \
+            and not is_livestream\
+            and name == 'ffmpeg':
         ffmpeg_command += [
             '-reconnect',
+            '1',
+            '-reconnect_at_eof',
             '1',
             '-reconnect_streamed',
             '1',
@@ -180,6 +189,7 @@ def build_command(
             'error',
             '-show_entries',
             'stream=width,height,codec_type,codec_name',
+            '-show_format',
             '-of',
             'json',
         ]
