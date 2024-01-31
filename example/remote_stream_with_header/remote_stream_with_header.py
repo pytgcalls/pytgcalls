@@ -2,12 +2,12 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioParameters
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import Browsers
 from pytgcalls.types import MediaStream
-from pytgcalls.types import VideoParameters
 from pytgcalls.types import VideoQuality
+from pytgcalls.types.raw import AudioParameters
+from pytgcalls.types.raw import VideoParameters
 
 app = Client(
     'py-tgcalls',
