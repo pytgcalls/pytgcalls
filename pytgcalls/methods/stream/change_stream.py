@@ -1,15 +1,20 @@
 import logging
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
-from ntgcalls import ConnectionNotFound, FileError
+from ntgcalls import ConnectionNotFound
+from ntgcalls import FileError
 
-from ...exceptions import ClientNotStarted, NoMTProtoClientSet, NotInGroupCallError
+from ...exceptions import ClientNotStarted
+from ...exceptions import NoMTProtoClientSet
+from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
 from ...types.raw.stream import Stream
 from ..utilities.stream_params import StreamParams
 
 py_logger = logging.getLogger('pytgcalls')
+
 
 class ChangeStream(Scaffold):
     async def change_stream(
@@ -31,7 +36,7 @@ class ChangeStream(Scaffold):
                 await StreamParams.get_stream_params(stream),
             )
         except FileError as file_error:
-            if "No such file or directory" in str(file_error):
+            if 'No such file or directory' in str(file_error):
                 raise FileNotFoundError()
             raise file_error
         except ConnectionNotFound:
