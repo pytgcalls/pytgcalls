@@ -9,6 +9,7 @@ from ...exceptions import PyTgCallsAlreadyRunning
 from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
+from ...to_async import ToAsync
 from ...types import GroupCallParticipant
 from ...types import StreamAudioEnded
 from ...types import StreamVideoEnded
@@ -42,6 +43,21 @@ class Start(Scaffold):
                     except ConnectionNotFound:
                         pass
                 self._need_unmute[chat_id] = participant.muted_by_admin
+
+        @self._app.on_kicked()
+        @self._app.on_left_group()
+        @self._app.on_closed_voice_chat()
+        async def clear_call(chat_id: int):
+            try:
+                await ToAsync(
+                    self._binding.stop,
+                    chat_id,
+                )
+            except ConnectionNotFound:
+                pass
+            self._cache_user_peer.pop(chat_id)
+            if chat_id in self._need_unmute:
+                del self._need_unmute[chat_id]
 
         def stream_upgrade(chat_id: int, state: MediaState):
             asyncio.run_coroutine_threadsafe(
