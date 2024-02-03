@@ -1,4 +1,4 @@
-aiohttp
+aiohttp>=3.9.3
 deprecation
 ntgcalls>=1.0.4
 psutil
