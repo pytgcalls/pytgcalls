@@ -171,7 +171,7 @@ def build_command(
 
     ffmpeg_command += command['start']
 
-    if os.path.exists(path) \
+    if not os.path.exists(path) \
             and not is_livestream\
             and name == 'ffmpeg':
         ffmpeg_command += [
