@@ -3,6 +3,7 @@ from inspect import signature
 from typing import Any
 from typing import Union
 
+
 def statictypes(func):
     sig = signature(func)
 
@@ -48,15 +49,19 @@ def statictypes(func):
             if getattr(expected_type, '__origin__', None) is Union:
                 tmp_types = expected_type.__args__
                 if not any(is_instance(value, t) for t in tmp_types):
-                    types_expected = ', '.join(type_to_string(t) for t in tmp_types[:-1]) + ' or ' + type_to_string(tmp_types[-1])
+                    types_expected = ', '.join(
+                        type_to_string(
+                        t,
+                        ) for t in tmp_types[:-1]
+                    ) + ' or ' + type_to_string(tmp_types[-1])
             elif not isinstance(value, expected_type):
                 types_expected = type_to_string(expected_type)
 
             if types_expected:
                 raise TypeError(
                     f"Argument '{name}' has incorrect type. "
-                    f"Expected {types_expected}, "
-                    f"got '{type_to_string(value)}'"
+                    f'Expected {types_expected}, '
+                    f"got '{type_to_string(value)}'",
                 )
         return func(*args, **kwargs)
 
