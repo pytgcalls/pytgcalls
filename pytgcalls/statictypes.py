@@ -14,11 +14,7 @@ def statictypes(func):
         elif origin in (list, set, tuple):
             if obj:
                 return all(is_instance(x, typ.__args__[0]) for x in obj)
-            return (
-                isinstance(obj, list) or
-                isinstance(obj, set) or
-                isinstance(obj, tuple)
-            )
+            return isinstance(obj, (list, set, tuple))
         elif origin is dict:
             if obj:
                 return all(
@@ -39,14 +35,7 @@ def statictypes(func):
             d = t
             t = type(t)
         origin = getattr(t, '__origin__', None)
-        if origin is Union:
-            args = t.__args__
-            if len(args) == 2 and isinstance(None, args[1]):
-                return f'Optional[{type_to_string(args[0])}]'
-            return 'Union[' + ', '.join(
-                type_to_string(tt) for tt in args
-            ) + ']'
-        elif origin in {list, dict, set, tuple}:
+        if origin in {list, dict, set, tuple}:
             return (
                 t.__origin__.__name__.capitalize() + '['
                 + ', '.join(type_to_string(tt) for tt in t.__args__) + ']'
@@ -92,12 +81,12 @@ def statictypes(func):
                     ) + ' or ' + type_to_string(tmp_types[-1])
 
             elif not isinstance(value, expected_type):
-                types_expected = expected_type.__name__
+                types_expected = type_to_string(expected_type)
 
             if types_expected:
                 raise TypeError(
                     f"Argument '{name}' has incorrect type. "
-                    f"Expected {types_expected}, "
+                    f'Expected {types_expected}, '
                     f"got '{type_to_string(value)}'",
                 )
         return func(*args, **kwargs)
