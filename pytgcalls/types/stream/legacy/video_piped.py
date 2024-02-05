@@ -9,8 +9,7 @@ from ..media_stream import MediaStream
 
 @deprecated(
     deprecated_in='1.1.0',
-    details='This class is no longer supported.'
-            'Use pytgcalls.types.MediaStream instead.',
+    details='Use pytgcalls.types.MediaStream instead.',
 )
 class VideoPiped(MediaStream):
     def __init__(
