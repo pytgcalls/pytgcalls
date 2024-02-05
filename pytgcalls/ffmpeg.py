@@ -270,19 +270,19 @@ def _build_ffmpeg_options(
 
     options = ['-v', ffmpeg_level, '-f']
 
-    if isinstance(stream_parameters, VideoParameters):
+    if isinstance(stream_parameters, AudioParameters):
+        options.extend([
+            's16le',
+            '-ac', str(stream_parameters.channels),
+            '-ar', str(stream_parameters.bitrate),
+        ])
+    elif isinstance(stream_parameters, VideoParameters):
         options.extend([
             'rawvideo',
             '-r', str(stream_parameters.frame_rate),
             '-pix_fmt', 'yuv420p',
             '-vf',
             f'scale={stream_parameters.width}:{stream_parameters.height}',
-        ])
-    else:
-        options.extend([
-            's16le',
-            '-ac', str(stream_parameters.channels),
-            '-ar', str(stream_parameters.bitrate),
         ])
 
     return options

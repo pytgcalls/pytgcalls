@@ -5,8 +5,6 @@ from pytgcalls import PyTgCalls
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import MediaStream
 from pytgcalls.types import VideoQuality
-from pytgcalls.types.raw import AudioParameters
-from pytgcalls.types.raw import VideoParameters
 
 app = Client(
     'py-tgcalls',
@@ -21,8 +19,8 @@ call_py.join_group_call(
     -1001234567890,
     MediaStream(
         remote,
-        AudioParameters.from_quality(AudioQuality.HIGH),
-        VideoParameters.from_quality(VideoQuality.HD_720p),
+        AudioQuality.HIGH,
+        VideoQuality.HD_720p,
 
         # You can add --video or --audio to the ffmpeg
         # command line to specify to what you want to add these parameters

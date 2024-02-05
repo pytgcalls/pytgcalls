@@ -4,7 +4,6 @@ from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls.types import MediaStream
 from pytgcalls.types import VideoQuality
-from pytgcalls.types.raw import VideoParameters
 
 app = Client(
     'py-tgcalls',
@@ -20,7 +19,7 @@ call_py.join_group_call(
     MediaStream(
         'test.png',
         audio_path=audio_file,
-        video_parameters=VideoParameters.from_quality(VideoQuality.HD_720p),
+        video_parameters=VideoQuality.HD_720p,
     ),
 )
 idle()

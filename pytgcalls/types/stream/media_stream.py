@@ -20,6 +20,8 @@ from ..raw.audio_stream import AudioStream
 from ..raw.stream import Stream
 from ..raw.video_parameters import VideoParameters
 from ..raw.video_stream import VideoStream
+from ..stream.audio_quality import AudioQuality
+from ..stream.video_quality import VideoQuality
 
 
 class MediaStream(Stream):
@@ -31,14 +33,32 @@ class MediaStream(Stream):
     def __init__(
         self,
         media_path: Union[str, Path, ScreenInfo, DeviceInfo],
-        audio_parameters: AudioParameters = AudioParameters(),
-        video_parameters: VideoParameters = VideoParameters(),
+        audio_parameters: Union[
+            AudioParameters,
+            AudioQuality,
+        ] = AudioQuality.HIGH,
+        video_parameters: Union[
+            VideoParameters,
+            VideoQuality,
+        ] = VideoQuality.SD_480p,
         audio_path: Optional[Union[str, Path, DeviceInfo]] = None,
         audio_flags: Optional[int] = AUTO_DETECT,
         video_flags: Optional[int] = AUTO_DETECT,
         headers: Optional[Dict[str, str]] = None,
         ffmpeg_parameters: Optional[str] = None,
     ):
+        self._audio_parameters: AudioParameters
+        self._video_parameters: VideoParameters
+        if isinstance(audio_parameters, AudioParameters):
+            self._audio_parameters = audio_parameters
+        elif isinstance(audio_parameters, AudioQuality):
+            self._audio_parameters = AudioParameters(*audio_parameters.value)
+
+        if isinstance(video_parameters, VideoParameters):
+            self._video_parameters = video_parameters
+        elif isinstance(video_parameters, VideoQuality):
+            self._video_parameters = VideoParameters(*video_parameters.value)
+
         self._media_path: Optional[str] = None
         self._audio_path: Optional[str] = None
         if isinstance(media_path, str):
@@ -49,7 +69,7 @@ class MediaStream(Stream):
             self._media_path = media_path.build_ffmpeg_command()
         elif isinstance(media_path, ScreenInfo):
             self._media_path = media_path.build_ffmpeg_command(
-                video_parameters.frame_rate,
+                self._video_parameters.frame_rate,
             )
 
         if isinstance(audio_path, str):
@@ -61,8 +81,6 @@ class MediaStream(Stream):
 
         self._audio_flags = audio_flags
         self._video_flags = video_flags
-        self._audio_parameters = audio_parameters
-        self._video_parameters = video_parameters
         self._ffmpeg_parameters = ffmpeg_parameters
         self._headers = headers
         super().__init__(

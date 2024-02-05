@@ -1,3 +1,5 @@
+from deprecation import deprecated
+
 from ...statictypes import statictypes
 from ..py_object import PyObject
 from ..stream.video_quality import VideoQuality
@@ -19,5 +21,10 @@ class VideoParameters(PyObject):
         self.frame_rate: int = min(frame_rate, max_fps)
 
     @staticmethod
+    @deprecated(
+        deprecated_in='2.0.0',
+        details='Use VideoQuality.XXX directly without '
+                'VideoParameters instead.',
+    )
     def from_quality(quality: VideoQuality):
         return VideoParameters(*quality.value)
