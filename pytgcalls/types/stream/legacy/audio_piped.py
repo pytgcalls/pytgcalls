@@ -3,6 +3,7 @@ from typing import Optional
 
 from deprecation import deprecated
 
+from ....statictypes import statictypes
 from ...raw import AudioParameters
 from ..media_stream import MediaStream
 
@@ -12,12 +13,13 @@ from ..media_stream import MediaStream
     details='Use pytgcalls.types.MediaStream instead.',
 )
 class AudioPiped(MediaStream):
+    @statictypes
     def __init__(
-            self,
-            path: str,
-            audio_parameters: AudioParameters = AudioParameters(),
-            headers: Optional[Dict[str, str]] = None,
-            additional_ffmpeg_parameters: str = '',
+        self,
+        path: str,
+        audio_parameters: AudioParameters = AudioParameters(),
+        headers: Optional[Dict[str, str]] = None,
+        additional_ffmpeg_parameters: str = '',
     ):
         super().__init__(
             media_path=path,

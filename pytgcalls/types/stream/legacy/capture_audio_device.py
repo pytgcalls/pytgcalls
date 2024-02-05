@@ -1,6 +1,7 @@
 from deprecation import deprecated
 
 from ....media_devices import DeviceInfo
+from ....statictypes import statictypes
 from ...raw import AudioParameters
 from ..media_stream import MediaStream
 
@@ -10,6 +11,7 @@ from ..media_stream import MediaStream
     details='Use pytgcalls.types.MediaStream instead.',
 )
 class CaptureAudioDevice(MediaStream):
+    @statictypes
     def __init__(
         self,
         audio_info: DeviceInfo,

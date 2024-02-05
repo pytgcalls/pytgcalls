@@ -3,6 +3,7 @@ from typing import Optional
 
 from deprecation import deprecated
 
+from ....statictypes import statictypes
 from ...raw import VideoParameters
 from ..media_stream import MediaStream
 
@@ -12,6 +13,7 @@ from ..media_stream import MediaStream
     details='Use pytgcalls.types.MediaStream instead.',
 )
 class VideoPiped(MediaStream):
+    @statictypes
     def __init__(
         self,
         path: str,

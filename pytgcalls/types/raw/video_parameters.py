@@ -26,5 +26,6 @@ class VideoParameters(PyObject):
         details='Use VideoQuality.XXX directly without '
                 'VideoParameters instead.',
     )
+    @statictypes
     def from_quality(quality: VideoQuality):
         return VideoParameters(*quality.value)

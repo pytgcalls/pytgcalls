@@ -22,5 +22,6 @@ class AudioParameters(PyObject):
         details='Use AudioQuality.XXX directly without '
                 'AudioParameters instead.',
     )
+    @statictypes
     def from_quality(quality: AudioQuality):
         return AudioParameters(*quality.value)

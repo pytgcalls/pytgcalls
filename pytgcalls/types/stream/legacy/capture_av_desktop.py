@@ -4,6 +4,7 @@ from typing import Optional
 from deprecation import deprecated
 
 from ....media_devices import ScreenInfo
+from ....statictypes import statictypes
 from ...raw import AudioParameters
 from ...raw import VideoParameters
 from ..media_stream import MediaStream
@@ -14,6 +15,7 @@ from ..media_stream import MediaStream
     details='Use pytgcalls.types.MediaStream instead.',
 )
 class CaptureAVDesktop(MediaStream):
+    @statictypes
     def __init__(
         self,
         audio_path: str,

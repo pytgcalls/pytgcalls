@@ -1,6 +1,7 @@
 from deprecation import deprecated
 from ntgcalls import InputMode
 
+from ....statictypes import statictypes
 from ...raw import AudioParameters
 from ...raw import AudioStream
 
@@ -10,6 +11,7 @@ from ...raw import AudioStream
     details='Use pytgcalls.types.AudioStream instead.',
 )
 class InputAudioStream(AudioStream):
+    @statictypes
     def __init__(
         self,
         path: str,
