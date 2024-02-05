@@ -97,9 +97,8 @@ def statictypes(func):
             if types_expected:
                 raise TypeError(
                     f"Argument '{name}' has incorrect type. "
-                    f"Expected {types_expected}, got '{
-                        type_to_string(value)
-                    }'",
+                    f"Expected {types_expected}, "
+                    f"got '{type_to_string(value)}'",
                 )
         return func(*args, **kwargs)
 
