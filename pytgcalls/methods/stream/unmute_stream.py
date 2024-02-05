@@ -6,10 +6,12 @@ from ...exceptions import ClientNotStarted
 from ...exceptions import NoMTProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
+from ...statictypes import statictypes
 from ...to_async import ToAsync
 
 
 class UnMuteStream(Scaffold):
+    @statictypes
     async def unmute_stream(
         self,
         chat_id: Union[int, str],

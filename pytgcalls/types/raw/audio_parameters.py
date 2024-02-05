@@ -1,8 +1,10 @@
+from ...statictypes import statictypes
 from ..py_object import PyObject
 from ..stream.audio_quality import AudioQuality
 
 
 class AudioParameters(PyObject):
+    @statictypes
     def __init__(
         self,
         bitrate: int = 48000,

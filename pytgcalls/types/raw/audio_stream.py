@@ -1,10 +1,12 @@
 from ntgcalls import InputMode
 
+from ...statictypes import statictypes
 from ..py_object import PyObject
 from .audio_parameters import AudioParameters
 
 
 class AudioStream(PyObject):
+    @statictypes
     def __init__(
         self,
         input_mode: InputMode,

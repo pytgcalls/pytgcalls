@@ -7,10 +7,12 @@ from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMTProtoClientSet
 from ...exceptions import NotInGroupCallError
 from ...scaffold import Scaffold
+from ...statictypes import statictypes
 from ...to_async import ToAsync
 
 
 class LeaveGroupCall(Scaffold):
+    @statictypes
     async def leave_group_call(
         self,
         chat_id: Union[int, str],

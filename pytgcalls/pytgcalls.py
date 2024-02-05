@@ -7,10 +7,12 @@ from .handlers import HandlersHolder
 from .methods import Methods
 from .mtproto import MtProtoClient
 from .scaffold import Scaffold
+from .statictypes import statictypes
 from .types import Cache
 
 
 class PyTgCalls(Methods, Scaffold):
+    @statictypes
     def __init__(
         self,
         app: Any,

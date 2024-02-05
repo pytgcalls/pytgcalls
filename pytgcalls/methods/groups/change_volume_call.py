@@ -4,9 +4,11 @@ from ...exceptions import ClientNotStarted
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMTProtoClientSet
 from ...scaffold import Scaffold
+from ...statictypes import statictypes
 
 
 class ChangeVolumeCall(Scaffold):
+    @statictypes
     async def change_volume_call(
         self,
         chat_id: Union[int, str],

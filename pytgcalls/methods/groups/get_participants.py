@@ -3,10 +3,12 @@ from typing import Optional
 from typing import Union
 
 from ...scaffold import Scaffold
+from ...statictypes import statictypes
 from ...types.groups import GroupCallParticipant
 
 
 class GetParticipants(Scaffold):
+    @statictypes
     async def get_participants(
         self,
         chat_id: Union[int, str],

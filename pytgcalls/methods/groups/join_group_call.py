@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 from typing import Optional
 from typing import Union
 
@@ -14,6 +15,7 @@ from ...exceptions import TelegramServerError
 from ...exceptions import UnMuteNeeded
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
+from ...statictypes import statictypes
 from ...to_async import ToAsync
 from ...types.raw.stream import Stream
 from ..utilities.stream_params import StreamParams
@@ -22,12 +24,13 @@ py_logger = logging.getLogger('pytgcalls')
 
 
 class JoinGroupCall(Scaffold):
+    @statictypes
     async def join_group_call(
         self,
         chat_id: Union[int, str],
         stream: Optional[Stream] = None,
         invite_hash: Optional[str] = None,
-        join_as=None,
+        join_as: Any = None,
         auto_start: bool = True,
     ):
         if join_as is None:

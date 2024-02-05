@@ -13,6 +13,7 @@ from ...ffmpeg import build_command
 from ...ffmpeg import check_stream
 from ...media_devices import DeviceInfo
 from ...media_devices import ScreenInfo
+from ...statictypes import statictypes
 from ...ytdlp import YtDlp
 from ..raw.audio_parameters import AudioParameters
 from ..raw.audio_stream import AudioStream
@@ -26,6 +27,7 @@ class MediaStream(Stream):
     IGNORE = 2
     REQUIRED = 4
 
+    @statictypes
     def __init__(
         self,
         media_path: Union[str, Path, ScreenInfo, DeviceInfo],
