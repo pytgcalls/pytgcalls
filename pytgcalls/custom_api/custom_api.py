@@ -43,14 +43,14 @@ class CustomApi:
                     if isinstance(result, (dict, list)):
                         return web.json_response(result)
                     else:
-                        raise ValueError("Invalid response type")
+                        raise ValueError('Invalid response type')
                 except Exception as e:
                     if self._error_handler:
                         return await self._error_handler(e)
                     else:
                         return web.json_response({
                             'result': 'INTERNAL_SERVER_ERROR',
-                            'error': str(e)
+                            'error': str(e),
                         })
             else:
                 return web.json_response({
