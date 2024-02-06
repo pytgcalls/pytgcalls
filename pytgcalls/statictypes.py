@@ -50,7 +50,7 @@ def statictypes(func):
             inner_type = 'Any' if len(
                 inner_type,
             ) > 1 else list(inner_type)[0]
-            return f"{t.__name__.capitalize()}[{inner_type}]"
+            return f'{t.__name__.capitalize()}[{inner_type}]'
         elif t is dict:
             key_type = {type_to_string(k) for k in d.keys()}
             value_type = {type_to_string(v) for v in d.values()}
@@ -60,7 +60,7 @@ def statictypes(func):
             value_type = 'Any' if len(
                 value_type,
             ) > 1 else list(value_type)[0]
-            return f"{t.__name__.capitalize()}[{key_type}, {value_type}]"
+            return f'{t.__name__.capitalize()}[{key_type}, {value_type}]'
         return t.__name__
 
     @wraps(func)
