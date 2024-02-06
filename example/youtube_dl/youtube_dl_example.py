@@ -18,8 +18,8 @@ call_py.join_group_call(
     -1001234567890,
     MediaStream(
         'https://www.youtube.com/watch?v=msiLgFkXvD8',
-        audio_parameters=AudioQuality.HIGH,
-        video_parameters=VideoQuality.HD_720p,
+        AudioQuality.HIGH,
+        VideoQuality.HD_720p,
     ),
 )
 idle()
