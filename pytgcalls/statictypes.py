@@ -4,6 +4,7 @@ from typing import Any
 from typing import Union
 
 
+
 def statictypes(func):
     sig = signature(func)
 
