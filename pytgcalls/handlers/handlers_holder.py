@@ -28,3 +28,11 @@ class HandlersHolder:
         func: Callable,
     ):
         self._on_event_update[event_name].append(func)
+
+    def remove_handler(
+        self,
+        event_name: str,
+        func: Callable,
+    ):
+        if func in self._on_event_update[event_name]:
+            self._on_event_update[event_name].remove(func)
