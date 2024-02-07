@@ -1,18 +1,18 @@
 from pathlib import Path
-from typing import Dict
-from typing import Optional
-from typing import Union
+from typing import Dict, Optional, Union
 
 from ntgcalls import InputMode
 
-from ...exceptions import ImageSourceFound
-from ...exceptions import LiveStreamFound
-from ...exceptions import NoAudioSourceFound
-from ...exceptions import NoVideoSourceFound
-from ...ffmpeg import build_command
-from ...ffmpeg import check_stream
-from ...media_devices import DeviceInfo
-from ...media_devices import ScreenInfo
+from ...exceptions import(
+        ImageSourceFound, LiveStreamFound, 
+        NoAudioSourceFound, NoVideoSourceFound
+)
+from ...ffmpeg import(
+        build_command, check_stream
+)
+from ...media_devices import(
+        DeviceInfo, ScreenInfo
+)
 from ...statictypes import statictypes
 from ...ytdlp import YtDlp
 from ..raw.audio_parameters import AudioParameters
@@ -33,14 +33,8 @@ class MediaStream(Stream):
     def __init__(
         self,
         media_path: Union[str, Path, ScreenInfo, DeviceInfo],
-        audio_parameters: Union[
-            AudioParameters,
-            AudioQuality,
-        ] = AudioQuality.HIGH,
-        video_parameters: Union[
-            VideoParameters,
-            VideoQuality,
-        ] = VideoQuality.SD_480p,
+        audio_parameters: Union[AudioParameters, AudioQuality] = AudioQuality.HIGH,
+        video_parameters: Union[VideoParameters, VideoQuality] = VideoQuality.SD_480p,
         audio_path: Optional[Union[str, Path, DeviceInfo]] = None,
         audio_flags: Optional[int] = AUTO_DETECT,
         video_flags: Optional[int] = AUTO_DETECT,
@@ -121,13 +115,17 @@ class MediaStream(Stream):
     async def check_stream(self):
         if not self._video_flags == self.IGNORE:
             if YtDlp.is_valid(self._media_path):
-                links = await YtDlp.extract(
-                    self._media_path,
-                    self._video_parameters,
-                )
-                self._media_path = links[0]
-                if not self._audio_path:
-                    self._audio_path = links[1]
+                try:
+                    links = await YtDlp.extract(
+                        self._media_path,
+                        self._video_parameters,
+                    )
+                    self._media_path = links[0]
+                    if not self._audio_path:
+                        self._audio_path = links[1]
+                except YtDlpError as e:
+                    raise NoVideoSourceFound(f"Error extracting video source: {e}")
+
             try:
                 image_commands = []
                 live_stream = False
@@ -169,12 +167,15 @@ class MediaStream(Stream):
 
         if not self._audio_flags == self.IGNORE:
             if YtDlp.is_valid(self._audio_path):
-                self._audio_path = (
-                    await YtDlp.extract(
-                        self._audio_path,
-                        self._video_parameters,
-                    )
-                )[1]
+                try:
+                    self._audio_path = (
+                        await YtDlp.extract(
+                            self._audio_path,
+                            self._video_parameters,
+                        )
+                    )[1]
+                except YtDlpError as e:
+                    raise NoAudioSourceFound(f"Error extracting audio source: {e}")
 
             try:
                 live_stream = False
