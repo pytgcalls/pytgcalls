@@ -6,12 +6,12 @@ from typing import Union
 from ntgcalls import ConnectionError
 from ntgcalls import FileError
 from ntgcalls import InvalidParams
+from ntgcalls import TelegramServerError
 
 from ...exceptions import AlreadyJoinedError
 from ...exceptions import ClientNotStarted
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NoMTProtoClientSet
-from ...exceptions import TelegramServerError
 from ...exceptions import UnMuteNeeded
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
@@ -60,25 +60,35 @@ class JoinGroupCall(Scaffold):
         )
 
         try:
-            call_params: str = await ToAsync(
-                self._binding.create_call,
-                chat_id,
-                media_description,
-            )
+            for retries in range(4):
+                call_params: str = await ToAsync(
+                    self._binding.create_call,
+                    chat_id,
+                    media_description,
+                )
 
-            result_params = await self._app.join_group_call(
-                chat_id,
-                call_params,
-                invite_hash,
-                media_description.video is None,
-                self._cache_user_peer.get(chat_id),
-            )
-
-            await ToAsync(
-                self._binding.connect,
-                chat_id,
-                result_params,
-            )
+                try:
+                    result_params = await self._app.join_group_call(
+                        chat_id,
+                        call_params,
+                        invite_hash,
+                        media_description.video is None,
+                        self._cache_user_peer.get(chat_id),
+                    )
+                    await ToAsync(
+                        self._binding.connect,
+                        chat_id,
+                        result_params,
+                    )
+                    break
+                except TelegramServerError:
+                    if retries == 3:
+                        raise
+                    if retries >= 1:
+                        py_logger.warning(
+                            f'Telegram is having some internal server issues. '
+                            f"Retrying {retries + 1} of 3",
+                        )
 
             participants = await self._app.get_group_call_participants(
                 chat_id,
@@ -91,9 +101,7 @@ class JoinGroupCall(Scaffold):
                     self._need_unmute[chat_id] = x.muted_by_admin
         except FileError:
             raise FileNotFoundError()
-        except ConnectionError as e:
-            if 'Connection failed' in str(e):
-                raise TelegramServerError()
+        except ConnectionError:
             raise AlreadyJoinedError()
         except InvalidParams:
             raise UnMuteNeeded()

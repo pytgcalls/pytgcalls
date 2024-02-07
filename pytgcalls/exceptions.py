@@ -72,14 +72,6 @@ class AlreadyJoinedError(Exception):
         )
 
 
-class TelegramServerError(Exception):
-    def __init__(self):
-        super().__init__(
-            'Telegram Server is having some '
-            'internal problems',
-        )
-
-
 class ClientNotStarted(Exception):
     def __init__(self):
         super().__init__(
