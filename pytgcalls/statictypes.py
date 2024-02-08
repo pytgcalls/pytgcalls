@@ -1,3 +1,4 @@
+import inspect
 from functools import wraps
 from inspect import signature
 from typing import Any
@@ -63,8 +64,7 @@ def statictypes(func):
             return f'{t.__name__.capitalize()}[{key_type}, {value_type}]'
         return t.__name__
 
-    @wraps(func)
-    def wrapper(*args, **kwargs):
+    def check_parameters(*args, **kwargs):
         bound = sig.bind(*args, **kwargs)
         for name, value in bound.arguments.items():
             if name == 'self':
@@ -89,6 +89,19 @@ def statictypes(func):
                     f'Expected {types_expected}, '
                     f"got '{type_to_string(value)}'",
                 )
+
+    @wraps(func)
+    async def async_wrapper(*args, **kwargs):
+        check_parameters(*args, **kwargs)
+        return await func(*args, **kwargs)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        check_parameters(*args, **kwargs)
         return func(*args, **kwargs)
 
-    return wrapper
+    if inspect.iscoroutinefunction(func) or \
+            inspect.isasyncgenfunction(func):
+        return async_wrapper
+    else:
+        return wrapper
