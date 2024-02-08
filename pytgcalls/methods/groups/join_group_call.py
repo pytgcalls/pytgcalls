@@ -87,7 +87,7 @@ class JoinGroupCall(Scaffold):
                     if retries >= 1:
                         py_logger.warning(
                             f'Telegram is having some internal server issues. '
-                            f"Retrying {retries + 1} of 3",
+                            f'Retrying {retries + 1} of 3',
                         )
 
             participants = await self._app.get_group_call_participants(
@@ -96,7 +96,7 @@ class JoinGroupCall(Scaffold):
 
             for x in participants:
                 if x.user_id == BridgedClient.chat_id(
-                        self._cache_local_peer,
+                    self._cache_local_peer,
                 ):
                     self._need_unmute[chat_id] = x.muted_by_admin
         except FileError:
