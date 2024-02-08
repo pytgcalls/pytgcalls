@@ -46,6 +46,7 @@ class MediaStream(Stream):
         video_flags: Optional[int] = AUTO_DETECT,
         headers: Optional[Dict[str, str]] = None,
         ffmpeg_parameters: Optional[str] = None,
+        ytdlp_parameters: Optional[str] = None,
     ):
         self._audio_parameters: AudioParameters
         self._video_parameters: VideoParameters
@@ -82,6 +83,7 @@ class MediaStream(Stream):
         self._audio_flags = audio_flags
         self._video_flags = video_flags
         self._ffmpeg_parameters = ffmpeg_parameters
+        self._ytdlp_parameters = ytdlp_parameters
         self._headers = headers
         super().__init__(
             stream_audio=None if audio_flags == self.IGNORE else
@@ -124,6 +126,7 @@ class MediaStream(Stream):
                 links = await YtDlp.extract(
                     self._media_path,
                     self._video_parameters,
+                    self._ytdlp_parameters,
                 )
                 self._media_path = links[0]
                 if not self._audio_path:
@@ -173,6 +176,7 @@ class MediaStream(Stream):
                     await YtDlp.extract(
                         self._audio_path,
                         self._video_parameters,
+                        self._ytdlp_parameters,
                     )
                 )[1]
 

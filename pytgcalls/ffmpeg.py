@@ -31,17 +31,15 @@ async def check_stream(
 ):
     try:
         ffprobe = await asyncio.create_subprocess_exec(
-            *tuple(
-                await cleanup_commands(
-                    build_command(
-                        'ffprobe',
-                        ffmpeg_parameters,
-                        path,
-                        stream_parameters,
-                        before_commands,
-                        headers,
-                        False,
-                    ),
+            *await cleanup_commands(
+                build_command(
+                    'ffprobe',
+                    ffmpeg_parameters,
+                    path,
+                    stream_parameters,
+                    before_commands,
+                    headers,
+                    False,
                 ),
             ),
             stdout=asyncio.subprocess.PIPE,
@@ -117,10 +115,13 @@ async def check_stream(
         raise LiveStreamFound(path)
 
 
-async def cleanup_commands(commands: List[str]) -> List[str]:
+async def cleanup_commands(
+    commands: List[str],
+    process_name: Optional[str] = None,
+) -> List[str]:
     try:
         proc_res = await asyncio.create_subprocess_exec(
-            commands[0],
+            commands[0] if not process_name else process_name,
             '-h',
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -134,7 +135,7 @@ async def cleanup_commands(commands: List[str]) -> List[str]:
             result = stdout.decode('utf-8')
         except (subprocess.TimeoutExpired, JSONDecodeError):
             pass
-        supported = re.findall(r'(-.*?)\s+', result)
+        supported = re.findall(r'(?m)^ *(-.*?)\s+', result)
         new_commands = []
         ignore_next = False
 
