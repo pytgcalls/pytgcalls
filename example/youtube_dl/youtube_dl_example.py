@@ -20,6 +20,7 @@ call_py.join_group_call(
         'https://www.youtube.com/watch?v=msiLgFkXvD8',
         AudioQuality.HIGH,
         VideoQuality.HD_720p,
+        ytdlp_parameters='--proxy URL',
     ),
 )
 idle()
