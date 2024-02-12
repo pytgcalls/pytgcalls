@@ -76,7 +76,7 @@ class Start(Scaffold):
                     self._cache_user_peer.get(chat_id),
                 )
             except Exception as e:
-                logger.error(f'SetVideoCallStatus: {e}')
+                logger.debug(f'SetVideoCallStatus: {e}')
 
         def stream_ended(chat_id: int, stream: StreamType):
             async def async_stream_ended():
