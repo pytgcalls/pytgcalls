@@ -1,6 +1,7 @@
 import asyncio
 import json
 from typing import Callable
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -35,6 +36,7 @@ from telethon.tl.types import UpdateNewChannelMessage
 from telethon.tl.types import UpdateNewMessage
 from telethon.tl.types import Updates
 
+from ..types import GroupCallParticipant
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
@@ -61,16 +63,7 @@ class TelethonClient(BridgedClient):
                 for participant in participants:
                     result = self._cache.set_participants_cache(
                         update.call.id,
-                        self.chat_id(participant.peer),
-                        participant.muted,
-                        participant.volume,
-                        participant.can_self_unmute,
-                        participant.video is not None or
-                        participant.presentation is not None,
-                        participant.presentation is not None,
-                        participant.video is not None,
-                        participant.raise_hand_rating,
-                        participant.left,
+                        self.parse_participant(participant),
                     )
                     if result is not None:
                         if 'PARTICIPANTS_HANDLER' in self.HANDLERS_LIST:
@@ -225,18 +218,10 @@ class TelethonClient(BridgedClient):
     async def get_participants(
         self,
         input_call: InputGroupCall,
-    ):
+    ) -> List[GroupCallParticipant]:
         return [
-            {
-                'user_id': self.chat_id(participant.peer),
-                'muted': participant.muted,
-                'volume': participant.volume,
-                'can_self_unmute': participant.can_self_unmute,
-                'video': participant.video,
-                'presentation': participant.presentation,
-                'raise_hand_rating': participant.raise_hand_rating,
-                'left': participant.left,
-            } for participant in (
+            self.parse_participant(participant)
+            for participant in (
                 await self._app(
                     GetGroupParticipantsRequest(
                         call=input_call,
@@ -278,16 +263,7 @@ class TelethonClient(BridgedClient):
                     for participant in participants:
                         self._cache.set_participants_cache(
                             update.call.id,
-                            self.chat_id(participant.peer),
-                            participant.muted,
-                            participant.volume,
-                            participant.can_self_unmute,
-                            participant.video is not None or
-                            participant.presentation is not None,
-                            participant.presentation is not None,
-                            participant.video is not None,
-                            participant.raise_hand_rating,
-                            participant.left,
+                            self.parse_participant(participant),
                         )
                 if isinstance(update, UpdateGroupCallConnection):
                     return update.params.data

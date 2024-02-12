@@ -1,5 +1,4 @@
 import logging
-from math import floor
 from time import time
 from typing import Any
 from typing import List
@@ -49,15 +48,7 @@ class ClientCache:
     def set_participants_cache(
         self,
         input_id: int,
-        user_id: int,
-        muted: Optional[bool],
-        volume: Optional[int],
-        can_self_unmute: Optional[bool],
-        video: Optional[bool],
-        screen_sharing: Optional[bool],
-        video_camera: Optional[bool],
-        raised_hand: Optional[int],
-        left: Optional[int],
+        participant: GroupCallParticipant,
     ) -> Optional[GroupCallParticipant]:
         chat_id = self.get_chat_id(input_id)
         if chat_id is not None:
@@ -67,38 +58,10 @@ class ClientCache:
                 chat_id,
             )
             if participants is not None:
-                if not left:
-                    return participants.set_participant(
-                        user_id,
-                        muted if muted is not None
-                        else False,
-                        muted != can_self_unmute,
-                        video if video is not None
-                        else False,
-                        screen_sharing if screen_sharing is not None
-                        else False,
-                        video_camera if video_camera is not None
-                        else False,
-                        raised_hand is not None,
-                        floor(volume / 100) if volume is not None
-                        else 100,
-                    )
-                else:
-                    return participants.remove_participant(
-                        user_id,
-                        muted if muted is not None
-                        else False,
-                        muted != can_self_unmute,
-                        video if video is not None
-                        else False,
-                        screen_sharing if screen_sharing is not None
-                        else False,
-                        video_camera if video_camera is not None
-                        else False,
-                        raised_hand is not None,
-                        floor(volume / 100) if volume is not None
-                        else 100,
-                    )
+                participants.last_mtproto_update = (
+                    int(time()) + self._cache_duration
+                )
+                return participants.update_participant(participant)
         return None
 
     async def get_participant_list(
@@ -128,19 +91,8 @@ class ClientCache:
                         for participant in list_participants:
                             self.set_participants_cache(
                                 input_call.id,
-                                participant['user_id'],
-                                participant['muted'],
-                                participant['volume'],
-                                participant['can_self_unmute'],
-                                participant['video'] is not None or
-                                participant['presentation'] is not None,
-                                participant['presentation'] is not None,
-                                participant['video'] is not None,
-                                participant['raise_hand_rating'],
-                                participant['left'],
+                                participant,
                             )
-                        participants.last_mtproto_update = \
-                            curr_time + self._cache_duration
                     except Exception as e:
                         py_logger.error('Error for %s in %d', e, chat_id)
                 else:

@@ -5,6 +5,8 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from ..types import GroupCallParticipant
+
 
 class BridgedClient:
     HANDLERS_LIST: Dict[str, List[Callable]] = {
@@ -84,6 +86,26 @@ class BridgedClient:
 
     async def start(self):
         pass
+
+    @staticmethod
+    def package_name(obj):
+        return str(obj.__class__.__module__).split('.')[0]
+
+    @staticmethod
+    def parse_participant(participant):
+        return GroupCallParticipant(
+            BridgedClient.chat_id(participant.peer),
+            bool(participant.muted),
+            bool(participant.muted) != bool(participant.can_self_unmute),
+            bool(participant.video) or
+            bool(participant.presentation),
+            bool(participant.presentation),
+            bool(participant.video),
+            bool(participant.raise_hand_rating),
+            participant.volume // 100
+            if participant.volume is not None else 100,
+            bool(participant.left),
+        )
 
     @staticmethod
     def chat_id(input_peer) -> int:
