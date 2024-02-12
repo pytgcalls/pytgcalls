@@ -8,8 +8,6 @@ from ntgcalls import VideoDescription
 from ...types.raw.stream import Stream
 from ...types.stream.media_stream import MediaStream
 
-py_logger = logging.getLogger('pytgcalls')
-
 
 class StreamParams:
     @staticmethod

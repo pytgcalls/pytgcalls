@@ -14,8 +14,6 @@ from ...to_async import ToAsync
 from ...types.raw.stream import Stream
 from ..utilities.stream_params import StreamParams
 
-py_logger = logging.getLogger('pytgcalls')
-
 
 class ChangeStream(Scaffold):
     @statictypes
