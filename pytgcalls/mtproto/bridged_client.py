@@ -84,6 +84,9 @@ class BridgedClient:
     def is_connected(self):
         pass
 
+    def no_updates(self):
+        pass
+
     async def start(self):
         pass
 

@@ -19,7 +19,7 @@ class ClientCache:
         app: BridgedClient,
     ):
         self._app: BridgedClient = app
-        self._cache_duration = cache_duration
+        self._cache_duration = 1 if app.no_updates() else cache_duration
         self._full_chat_cache = Cache()
         self._call_participants_cache = Cache()
 

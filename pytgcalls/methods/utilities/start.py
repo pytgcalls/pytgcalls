@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from asyncio.log import logger
 
 from ntgcalls import ConnectionNotFound
@@ -13,6 +14,8 @@ from ...to_async import ToAsync
 from ...types import GroupCallParticipant
 from ...types import StreamAudioEnded
 from ...types import StreamVideoEnded
+
+py_logger = logging.getLogger('pytgcalls')
 
 
 class Start(Scaffold):
@@ -94,7 +97,15 @@ class Start(Scaffold):
             self._is_running = True
             self._env_checker.check_environment()
             await self._init_mtproto()
-            self._handle_mtproto()
+            if not self._app.no_updates:
+                py_logger.warning(
+                    f'Using {self._app.package_name.capitalize()} '
+                    'client in no_updates mode is not recommended. '
+                    'This mode may cause unexpected behavior or '
+                    'limitations.',
+                )
+            else:
+                self._handle_mtproto()
 
             self._binding.on_stream_end(stream_ended)
             self._binding.on_upgrade(stream_upgrade)

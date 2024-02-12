@@ -432,5 +432,8 @@ class HydrogramClient(BridgedClient):
     def is_connected(self) -> bool:
         return self._app.is_connected
 
+    def no_updates(self):
+        return not self._app.no_updates
+
     async def start(self):
         await self._app.start()

@@ -402,5 +402,8 @@ class TelethonClient(BridgedClient):
     def is_connected(self) -> bool:
         return self._app.is_connected()
 
+    def no_updates(self):
+        return True
+
     async def start(self):
         await self._app.start()
