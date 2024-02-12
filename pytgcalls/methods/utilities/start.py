@@ -46,7 +46,7 @@ class Start(Scaffold):
                         pass
                 if participant.muted_by_admin:
                     self._need_unmute.add(chat_id)
-                else:
+                elif chat_id in self._need_unmute:
                     self._need_unmute.remove(chat_id)
 
         @self._app.on_kicked()
