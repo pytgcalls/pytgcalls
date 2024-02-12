@@ -97,8 +97,8 @@ class JoinGroupCall(Scaffold):
             for x in participants:
                 if x.user_id == BridgedClient.chat_id(
                     self._cache_local_peer,
-                ):
-                    self._need_unmute[chat_id] = x.muted_by_admin
+                ) and x.muted_by_admin:
+                    self._need_unmute.add(chat_id)
         except FileError:
             raise FileNotFoundError()
         except ConnectionError:

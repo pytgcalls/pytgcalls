@@ -29,11 +29,10 @@ class Start(Scaffold):
             chat_peer = self._cache_user_peer.get(chat_id)
             is_self = BridgedClient.chat_id(chat_peer) == participant.user_id \
                 if chat_peer else False
-            if chat_id in self._need_unmute and is_self:
-                need_unmute = self._need_unmute[chat_id]
-                if not just_joined and \
+            if is_self:
+                if chat_id in self._need_unmute and \
+                        not just_joined and \
                         not just_left and \
-                        need_unmute and \
                         not participant.muted_by_admin:
                     try:
                         await update_status(
@@ -42,7 +41,10 @@ class Start(Scaffold):
                         )
                     except ConnectionNotFound:
                         pass
-                self._need_unmute[chat_id] = participant.muted_by_admin
+                if participant.muted_by_admin:
+                    self._need_unmute.add(chat_id)
+                else:
+                    self._need_unmute.remove(chat_id)
 
         @self._app.on_kicked()
         @self._app.on_left_group()
@@ -57,7 +59,7 @@ class Start(Scaffold):
                 pass
             self._cache_user_peer.pop(chat_id)
             if chat_id in self._need_unmute:
-                del self._need_unmute[chat_id]
+                self._need_unmute.remove(chat_id)
 
         def stream_upgrade(chat_id: int, state: MediaState):
             asyncio.run_coroutine_threadsafe(

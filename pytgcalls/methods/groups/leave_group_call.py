@@ -44,4 +44,4 @@ class LeaveGroupCall(Scaffold):
             raise NotInGroupCallError()
 
         if chat_id in self._need_unmute:
-            del self._need_unmute[chat_id]
+            self._need_unmute.remove(chat_id)

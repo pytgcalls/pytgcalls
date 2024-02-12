@@ -1,3 +1,4 @@
+from typing import Set
 from typing import Union
 
 
@@ -16,7 +17,7 @@ class Scaffold:
         self._on_event_update = None
         # noinspection PyTypeChecker
         self._binding = None
-        self._need_unmute = {}
+        self._need_unmute = set()
 
     def _handle_mtproto(self):
         pass
