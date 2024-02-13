@@ -30,9 +30,19 @@ class Start(Scaffold):
             just_left: bool,
         ):
             chat_peer = self._cache_user_peer.get(chat_id)
+            if not chat_peer:
+                return
             is_self = BridgedClient.chat_id(chat_peer) == participant.user_id \
                 if chat_peer else False
             if is_self:
+                if just_left:
+                    try:
+                        await ToAsync(
+                            self._binding.stop,
+                            chat_id,
+                        )
+                    except ConnectionNotFound:
+                        pass
                 if chat_id in self._need_unmute and \
                         not just_joined and \
                         not just_left and \
@@ -44,7 +54,8 @@ class Start(Scaffold):
                         )
                     except ConnectionNotFound:
                         pass
-                if participant.muted_by_admin:
+
+                if participant.muted_by_admin and not just_left:
                     self._need_unmute.add(chat_id)
                 elif chat_id in self._need_unmute:
                     self._need_unmute.remove(chat_id)
@@ -67,6 +78,16 @@ class Start(Scaffold):
         def stream_upgrade(chat_id: int, state: MediaState):
             asyncio.run_coroutine_threadsafe(
                 update_status(chat_id, state), loop,
+            )
+
+        def disconnect_handler(chat_id: int):
+            async def async_disconnect_handler():
+                if chat_id in self._need_unmute:
+                    self._need_unmute.remove(chat_id)
+
+            asyncio.run_coroutine_threadsafe(
+                async_disconnect_handler(),
+                loop,
             )
 
         async def update_status(chat_id: int, state: MediaState):
@@ -109,6 +130,7 @@ class Start(Scaffold):
 
             self._binding.on_stream_end(stream_ended)
             self._binding.on_upgrade(stream_upgrade)
+            self._binding.on_disconnect(disconnect_handler)
             await PyTgCallsSession().start()
         else:
             raise PyTgCallsAlreadyRunning()
