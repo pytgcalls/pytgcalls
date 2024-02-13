@@ -4,20 +4,16 @@ import sys
 from datetime import date
 
 import ntgcalls
-from aiohttp import ClientConnectionError
-from aiohttp import ClientResponse
-from aiohttp import ClientSession
-
+from aiohttp import ClientConnectionError, ClientResponse, ClientSession
 from .__version__ import __version__
 from .version_manager import VersionManager
-
 
 class PyTgCallsSession:
     notice_displayed = False
 
     async def start(self):
         if not self.notice_displayed:
-            PyTgCallsSession.notice_displayed = True
+            self.notice_displayed = True
             year = date.today().year
             print(
                 f'PyTgCalls v{__version__} powered by '
@@ -47,22 +43,19 @@ class PyTgCallsSession:
                         print(f'\033[93m{text}\033[0m')
                     else:
                         print(text)
-            except asyncio.exceptions.TimeoutError:
-                pass
-            except ClientConnectionError:
+            except (asyncio.exceptions.TimeoutError, ClientConnectionError):
                 pass
 
     @staticmethod
     async def _remote_version(branch: str):
         async def get_async(url) -> str:
-            session = ClientSession()
-            try:
-                response: ClientResponse = await session.get(url, timeout=5)
-                result_text = await response.text()
-                response.close()
-                return result_text
-            finally:
-                await session.close()
+            async with ClientSession() as session:
+                try:
+                    async with session.get(url, timeout=5) as response:
+                        result_text = await response.text()
+                        return result_text
+                except ClientConnectionError:
+                    return ''
 
         result = re.findall(
             '__version__ = \'(.*?)\'', (
@@ -73,4 +66,4 @@ class PyTgCallsSession:
                 )
             ),
         )
-        return result[0] if len(result) > 0 else __version__
+        return result[0] if result else __version__
