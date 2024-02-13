@@ -24,10 +24,9 @@ class PauseStream(Scaffold):
 
         chat_id = await self._resolve_chat_id(chat_id)
         try:
-            status = await ToAsync(
+            return await ToAsync(
                 self._binding.pause,
                 chat_id,
             )
-            return status
         except ConnectionNotFound:
             raise NotInGroupCallError()

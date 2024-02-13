@@ -1,3 +1,4 @@
+import asyncio
 import random
 from typing import Any
 from typing import Callable
@@ -133,23 +134,52 @@ class BridgedClient:
     def rnd_id() -> int:
         return random.randint(0, 2147483647)
 
-    def on_closed_voice_chat(self):
-        pass
+    async def _propagate(self, event_name: str, *args, **kwargs):
+        for event in self.HANDLERS_LIST[event_name]:
+            asyncio.ensure_future(event(*args, **kwargs))
 
-    def on_kicked(self):
-        pass
+    def on_closed_voice_chat(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['CLOSED_HANDLER'].append(func)
+            return func
 
-    def on_receive_invite(self):
-        pass
+        return decorator
+
+    def on_kicked(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['KICK_HANDLER'].append(func)
+            return func
+
+        return decorator
+
+    def on_receive_invite(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['INVITE_HANDLER'].append(func)
+            return func
+
+        return decorator
 
     async def get_id(self):
         pass
 
-    def on_left_group(self):
-        pass
+    def on_left_group(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['LEFT_HANDLER'].append(func)
+            return func
 
-    def on_participants_change(self):
-        pass
+        return decorator
+
+    def on_participants_change(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['PARTICIPANTS_HANDLER'].append(func)
+            return func
+
+        return decorator
 
     async def get_full_chat(self, chat_id: int):
         pass

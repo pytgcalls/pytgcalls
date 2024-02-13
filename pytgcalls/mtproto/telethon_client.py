@@ -1,6 +1,4 @@
-import asyncio
 import json
-from typing import Callable
 from typing import List
 from typing import Optional
 from typing import Union
@@ -298,45 +296,6 @@ class TelethonClient(BridgedClient):
                             ),
                         )
 
-    async def _propagate(self, event_name: str, *args, **kwargs):
-        for event in self.HANDLERS_LIST[event_name]:
-            asyncio.ensure_future(event(*args, **kwargs))
-
-    def on_closed_voice_chat(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['CLOSED_HANDLER'].append(func)
-            return func
-        return decorator
-
-    def on_kicked(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['KICK_HANDLER'].append(func)
-            return func
-        return decorator
-
-    def on_receive_invite(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['INVITE_HANDLER'].append(func)
-            return func
-        return decorator
-
-    def on_left_group(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['LEFT_HANDLER'].append(func)
-            return func
-        return decorator
-
-    def on_participants_change(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['PARTICIPANTS_HANDLER'].append(func)
-            return func
-        return decorator
-
     async def leave_group_call(
         self,
         chat_id: int,
@@ -403,7 +362,7 @@ class TelethonClient(BridgedClient):
         return self._app.is_connected()
 
     def no_updates(self):
-        return True
+        return False
 
     async def start(self):
-        await self._app.start()
+        self._app.start()
