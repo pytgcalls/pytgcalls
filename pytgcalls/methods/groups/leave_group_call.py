@@ -2,10 +2,9 @@ from typing import Union
 
 from ntgcalls import ConnectionNotFound
 
-from ...exceptions import ClientNotStarted
 from ...exceptions import NoActiveGroupCall
-from ...exceptions import NoMTProtoClientSet
 from ...exceptions import NotInGroupCallError
+from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
 from ...to_async import ToAsync
@@ -13,16 +12,11 @@ from ...to_async import ToAsync
 
 class LeaveGroupCall(Scaffold):
     @statictypes
+    @mtproto_required
     async def leave_group_call(
         self,
         chat_id: Union[int, str],
     ):
-        if self._app is None:
-            raise NoMTProtoClientSet()
-
-        if not self._is_running:
-            raise ClientNotStarted()
-
         chat_id = await self._resolve_chat_id(chat_id)
         chat_call = await self._app.get_full_chat(
             chat_id,

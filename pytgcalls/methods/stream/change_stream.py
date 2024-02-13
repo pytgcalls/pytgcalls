@@ -4,9 +4,8 @@ from typing import Union
 from ntgcalls import ConnectionNotFound
 from ntgcalls import FileError
 
-from ...exceptions import ClientNotStarted
-from ...exceptions import NoMTProtoClientSet
 from ...exceptions import NotInGroupCallError
+from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
 from ...to_async import ToAsync
@@ -16,17 +15,12 @@ from ..utilities.stream_params import StreamParams
 
 class ChangeStream(Scaffold):
     @statictypes
+    @mtproto_required
     async def change_stream(
         self,
         chat_id: Union[int, str],
         stream: Optional[Stream] = None,
     ):
-        if self._app is None:
-            raise NoMTProtoClientSet()
-
-        if not self._is_running:
-            raise ClientNotStarted()
-
         chat_id = await self._resolve_chat_id(chat_id)
         try:
             await ToAsync(

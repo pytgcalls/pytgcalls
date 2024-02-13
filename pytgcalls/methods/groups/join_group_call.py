@@ -9,11 +9,10 @@ from ntgcalls import InvalidParams
 from ntgcalls import TelegramServerError
 
 from ...exceptions import AlreadyJoinedError
-from ...exceptions import ClientNotStarted
 from ...exceptions import NoActiveGroupCall
-from ...exceptions import NoMTProtoClientSet
 from ...exceptions import UnMuteNeeded
 from ...mtproto import BridgedClient
+from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
 from ...to_async import ToAsync
@@ -25,6 +24,7 @@ py_logger = logging.getLogger('pytgcalls')
 
 class JoinGroupCall(Scaffold):
     @statictypes
+    @mtproto_required
     async def join_group_call(
         self,
         chat_id: Union[int, str],
@@ -38,12 +38,6 @@ class JoinGroupCall(Scaffold):
 
         chat_id = await self._resolve_chat_id(chat_id)
         self._cache_user_peer.put(chat_id, join_as)
-
-        if self._app is None:
-            raise NoMTProtoClientSet()
-
-        if not self._is_running:
-            raise ClientNotStarted()
 
         chat_call = await self._app.get_full_chat(
             chat_id,
