@@ -1,13 +1,18 @@
 import asyncio
 import logging
 
-from ntgcalls import ConnectionNotFound, MediaState, StreamType
+from ntgcalls import ConnectionNotFound
+from ntgcalls import MediaState
+from ntgcalls import StreamType
+
 from ...exceptions import PyTgCallsAlreadyRunning
 from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
 from ...to_async import ToAsync
-from ...types import GroupCallParticipant, StreamAudioEnded, StreamVideoEnded
+from ...types import GroupCallParticipant
+from ...types import StreamAudioEnded
+from ...types import StreamVideoEnded
 
 py_logger = logging.getLogger('pytgcalls')
 
@@ -18,7 +23,9 @@ class Start(Scaffold):
 
         async def participants_handler(chat_id: int, participant: GroupCallParticipant, just_joined: bool, just_left: bool):
             chat_peer = self._cache_user_peer.get(chat_id)
-            is_self = BridgedClient.chat_id(chat_peer) == participant.user_id if chat_peer else False
+            is_self = BridgedClient.chat_id(
+                chat_peer,
+            ) == participant.user_id if chat_peer else False
             if is_self:
                 if chat_id in self._need_unmute and not just_joined and not just_left and not participant.muted_by_admin:
                     try:
@@ -55,12 +62,18 @@ class Start(Scaffold):
             self._env_checker.check_environment()
             await self._init_mtproto()
             if not self._app.no_updates:
-                py_logger.warning(f'Using {self._app.package_name.capitalize()} client in no_updates mode is not recommended. This mode may cause unexpected behavior or limitations.')
+                py_logger.warning(
+                    f'Using {self._app.package_name.capitalize()} client in no_updates mode is not recommended. This mode may cause unexpected behavior or limitations.',
+                )
             else:
                 self._handle_mtproto()
 
             self._binding.on_upgrade(stream_upgrade)
-            self._binding.on_stream_end(lambda chat_id, stream: asyncio.create_task(async_stream_ended(chat_id, stream)))
+            self._binding.on_stream_end(
+                lambda chat_id, stream: asyncio.create_task(
+                async_stream_ended(chat_id, stream),
+                ),
+            )
             self._app.on_participants_change(participants_handler)
             self._app.on_kicked(clear_call)
             self._app.on_left_group(clear_call)
