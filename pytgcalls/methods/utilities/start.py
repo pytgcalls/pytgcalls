@@ -97,7 +97,7 @@ class Start(Scaffold):
             self._is_running = True
             self._env_checker.check_environment()
             await self._init_mtproto()
-            if not self._app.no_updates:
+            if self._app.no_updates:
                 py_logger.warning(
                     f'Using {self._app.package_name.capitalize()} '
                     'client in no_updates mode is not recommended. '

@@ -395,7 +395,7 @@ class PyrogramClient(BridgedClient):
         return self._app.is_connected
 
     def no_updates(self):
-        return not self._app.no_updates
+        return self._app.no_updates
 
     async def start(self):
         await self._app.start()
