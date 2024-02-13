@@ -4,9 +4,13 @@ import sys
 from datetime import date
 
 import ntgcalls
-from aiohttp import ClientConnectionError, ClientResponse, ClientSession
+from aiohttp import ClientConnectionError
+from aiohttp import ClientResponse
+from aiohttp import ClientSession
+
 from .__version__ import __version__
 from .version_manager import VersionManager
+
 
 class PyTgCallsSession:
     notice_displayed = False
