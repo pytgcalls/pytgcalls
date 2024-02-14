@@ -93,8 +93,8 @@ class JoinGroupCall(Scaffold):
                     self._cache_local_peer,
                 ) and x.muted_by_admin:
                     self._need_unmute.add(chat_id)
-        except FileError:
-            raise FileNotFoundError()
+        except FileError as e:
+            raise FileNotFoundError(e)
         except ConnectionError:
             raise AlreadyJoinedError()
         except InvalidParams:

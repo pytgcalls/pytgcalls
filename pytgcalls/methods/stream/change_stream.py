@@ -28,7 +28,7 @@ class ChangeStream(Scaffold):
                 chat_id,
                 await StreamParams.get_stream_params(stream),
             )
-        except FileError:
-            raise FileNotFoundError()
+        except FileError as e:
+            raise FileNotFoundError(e)
         except ConnectionNotFound:
             raise NotInGroupCallError()
