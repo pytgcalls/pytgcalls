@@ -37,5 +37,4 @@ class LeaveGroupCall(Scaffold):
         except ConnectionNotFound:
             raise NotInGroupCallError()
 
-        if chat_id in self._need_unmute:
-            self._need_unmute.remove(chat_id)
+        self._need_unmute.discard(chat_id)
