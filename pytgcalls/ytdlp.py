@@ -56,11 +56,8 @@ class YtDlp:
             if stderr:
                 raise YtDlpError(stderr.decode())
             data = stdout.decode().strip().split('\n')
-            if len(data) >= 2:
-                return data[0], data[1]
-            elif data:
-                return data[0], None
-            else:
-                raise YtDlpError('No video URLs found')
+            if data:
+                return data[0], data[1] if len(data) >= 2 else data[0]
+            raise YtDlpError('No video URLs found')
         except FileNotFoundError:
             raise YtDlpError('yt-dlp is not installed on your system')
