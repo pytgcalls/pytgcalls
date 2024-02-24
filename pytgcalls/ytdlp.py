@@ -36,6 +36,7 @@ class YtDlp:
             '-f',
             f'best[width<=?{video_parameters.width}]'
             f'[height<=?{video_parameters.height}]',
+            '--no-warnings',
         ]
 
         if add_commands:
