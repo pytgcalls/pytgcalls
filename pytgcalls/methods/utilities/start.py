@@ -125,10 +125,7 @@ class Start(Scaffold):
                 ),
             )
             self._binding.on_disconnect(
-                lambda chat_id: asyncio.run_coroutine_threadsafe(
-                    self._need_unmute.discard(chat_id),
-                    loop,
-                ),
+                lambda chat_id: self._need_unmute.discard(chat_id),
             )
             await PyTgCallsSession().start()
         else:
