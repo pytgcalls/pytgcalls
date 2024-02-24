@@ -4,6 +4,7 @@ from typing import Optional
 from typing import Union
 
 from ntgcalls import ConnectionError
+from ntgcalls import ConnectionNotFound
 from ntgcalls import FileError
 from ntgcalls import InvalidParams
 from ntgcalls import TelegramServerError
@@ -78,11 +79,10 @@ class JoinGroupCall(Scaffold):
                 except TelegramServerError:
                     if retries == 3:
                         raise
-                    if retries >= 1:
-                        py_logger.warning(
-                            f'Telegram is having some internal server issues. '
-                            f'Retrying {retries + 1} of 3',
-                        )
+                    (py_logger.warning if retries >= 1 else py_logger.info)(
+                        f'Telegram is having some internal server issues. '
+                        f'Retrying {retries + 1} of 3',
+                    )
                 except Exception:
                     await ToAsync(
                         self._binding.stop,
