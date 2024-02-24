@@ -6,6 +6,7 @@ from ntgcalls import FileError
 
 from ...exceptions import NotInGroupCallError
 from ...mtproto_required import mtproto_required
+from ...mutex import mutex
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
 from ...to_async import ToAsync
@@ -14,6 +15,7 @@ from ..utilities.stream_params import StreamParams
 
 
 class ChangeStream(Scaffold):
+    @mutex
     @statictypes
     @mtproto_required
     async def change_stream(

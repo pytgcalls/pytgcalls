@@ -71,8 +71,7 @@ class Start(Scaffold):
                 )
             except ConnectionNotFound:
                 pass
-            self._cache_user_peer.pop(chat_id)
-            self._need_unmute.discard(chat_id)
+            await clear_cache(chat_id)
 
         async def update_status(chat_id: int, state: MediaState):
             try:
@@ -97,6 +96,11 @@ class Start(Scaffold):
                     chat_id,
                 ),
             )
+
+        async def clear_cache(chat_id: int):
+            self._cache_user_peer.pop(chat_id)
+            self._need_unmute.discard(chat_id)
+            self._lock.pop(chat_id)
 
         if not self._is_running:
             self._is_running = True
@@ -125,7 +129,10 @@ class Start(Scaffold):
                 ),
             )
             self._binding.on_disconnect(
-                lambda chat_id: self._need_unmute.discard(chat_id),
+                lambda chat_id: asyncio.run_coroutine_threadsafe(
+                    clear_cache(chat_id),
+                    loop,
+                ),
             )
             await PyTgCallsSession().start()
         else:

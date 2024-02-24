@@ -5,12 +5,14 @@ from ntgcalls import ConnectionNotFound
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import NotInGroupCallError
 from ...mtproto_required import mtproto_required
+from ...mutex import mutex
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
 from ...to_async import ToAsync
 
 
 class LeaveGroupCall(Scaffold):
+    @mutex
     @statictypes
     @mtproto_required
     async def leave_group_call(

@@ -14,6 +14,7 @@ from ...exceptions import NoActiveGroupCall
 from ...exceptions import UnMuteNeeded
 from ...mtproto import BridgedClient
 from ...mtproto_required import mtproto_required
+from ...mutex import mutex
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
 from ...to_async import ToAsync
@@ -24,6 +25,7 @@ py_logger = logging.getLogger('pytgcalls')
 
 
 class JoinGroupCall(Scaffold):
+    @mutex
     @statictypes
     @mtproto_required
     async def join_group_call(
@@ -108,3 +110,6 @@ class JoinGroupCall(Scaffold):
             raise AlreadyJoinedError()
         except InvalidParams:
             raise UnMuteNeeded()
+        except Exception:
+            self._cache_user_peer.pop(chat_id)
+            raise

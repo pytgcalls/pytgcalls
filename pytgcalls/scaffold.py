@@ -17,6 +17,7 @@ class Scaffold:
         # noinspection PyTypeChecker
         self._binding = None
         self._need_unmute = set()
+        self._lock = dict()
 
     def _handle_mtproto(self):
         pass
