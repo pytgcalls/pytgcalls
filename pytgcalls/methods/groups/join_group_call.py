@@ -83,6 +83,12 @@ class JoinGroupCall(Scaffold):
                             f'Telegram is having some internal server issues. '
                             f'Retrying {retries + 1} of 3',
                         )
+                except Exception:
+                    await ToAsync(
+                        self._binding.stop,
+                        chat_id,
+                    )
+                    raise
 
             participants = await self._app.get_group_call_participants(
                 chat_id,
