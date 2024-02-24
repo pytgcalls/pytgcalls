@@ -36,13 +36,7 @@ class Start(Scaffold):
             ) == participant.user_id if chat_peer else False
             if is_self:
                 if just_left:
-                    try:
-                        await ToAsync(
-                            self._binding.stop,
-                            chat_id,
-                        )
-                    except ConnectionNotFound:
-                        pass
+                    await clear_call(chat_id)
                 if chat_id in self._need_unmute and \
                         not just_joined and \
                         not just_left and \
@@ -100,7 +94,6 @@ class Start(Scaffold):
         async def clear_cache(chat_id: int):
             self._cache_user_peer.pop(chat_id)
             self._need_unmute.discard(chat_id)
-            self._lock.pop(chat_id)
 
         if not self._is_running:
             self._is_running = True

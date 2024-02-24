@@ -1,4 +1,3 @@
-import inspect
 from functools import wraps
 
 from .exceptions import ClientNotStarted
@@ -6,7 +5,7 @@ from .exceptions import NoMTProtoClientSet
 
 
 def mtproto_required(func):
-    def check_mtproto(*args, **_):
+    def check_mtproto(*args):
         self = args[0]
         if not self._app:
             raise NoMTProtoClientSet()
@@ -16,16 +15,7 @@ def mtproto_required(func):
 
     @wraps(func)
     async def async_wrapper(*args, **kwargs):
-        check_mtproto(*args, **kwargs)
+        check_mtproto(*args)
         return await func(*args, **kwargs)
 
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        check_mtproto(*args, **kwargs)
-        return func(*args, **kwargs)
-
-    if inspect.iscoroutinefunction(func) or \
-            inspect.isasyncgenfunction(func):
-        return async_wrapper
-    else:
-        return wrapper
+    return async_wrapper
