@@ -84,10 +84,13 @@ class JoinGroupCall(Scaffold):
                         f'Retrying {retries + 1} of 3',
                     )
                 except Exception:
-                    await ToAsync(
-                        self._binding.stop,
-                        chat_id,
-                    )
+                    try:
+                        await ToAsync(
+                            self._binding.stop,
+                            chat_id,
+                        )
+                    except ConnectionNotFound:
+                        pass
                     raise
 
             participants = await self._app.get_group_call_participants(
