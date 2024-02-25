@@ -365,4 +365,4 @@ class TelethonClient(BridgedClient):
         return False
 
     async def start(self):
-        self._app.start()
+        await self._app.start()
