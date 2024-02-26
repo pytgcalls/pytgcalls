@@ -1,20 +1,21 @@
 from typing import Optional
 from typing import Union
 
-from ntgcalls import ConnectionNotFound
-from ntgcalls import FileError
+from deprecation import deprecated
 
 from ...exceptions import NotInGroupCallError
 from ...mtproto_required import mtproto_required
 from ...mutex import mutex
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
-from ...to_async import ToAsync
 from ...types.raw.stream import Stream
-from ..utilities.stream_params import StreamParams
 
 
 class ChangeStream(Scaffold):
+    @deprecated(
+        deprecated_in='1.3.0',
+        details='Use PyTgCalls.play() instead.',
+    )
     @mutex
     @statictypes
     @mtproto_required
@@ -24,13 +25,7 @@ class ChangeStream(Scaffold):
         stream: Optional[Stream] = None,
     ):
         chat_id = await self._resolve_chat_id(chat_id)
-        try:
-            await ToAsync(
-                self._binding.change_stream,
-                chat_id,
-                await StreamParams.get_stream_params(stream),
-            )
-        except FileError as e:
-            raise FileNotFoundError(e)
-        except ConnectionNotFound:
+        if chat_id not in self._binding.calls():
             raise NotInGroupCallError()
+
+        await self.play(chat_id, stream)
