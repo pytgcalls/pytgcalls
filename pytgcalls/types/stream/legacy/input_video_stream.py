@@ -1,8 +1,9 @@
 from deprecation import deprecated
 from ntgcalls import InputMode
 
-from .video_parameters import VideoParameters
-from .video_stream import VideoStream
+from ....statictypes import statictypes
+from ...raw import VideoParameters
+from ...raw import VideoStream
 
 
 @deprecated(
@@ -10,6 +11,7 @@ from .video_stream import VideoStream
     details='Use pytgcalls.VideoStream instead.',
 )
 class InputVideoStream(VideoStream):
+    @statictypes
     def __init__(
         self,
         path: str,

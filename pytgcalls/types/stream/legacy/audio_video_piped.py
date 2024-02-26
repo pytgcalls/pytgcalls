@@ -3,17 +3,18 @@ from typing import Optional
 
 from deprecation import deprecated
 
-from .audio_parameters import AudioParameters
-from .media_stream import MediaStream
-from .video_parameters import VideoParameters
+from ....statictypes import statictypes
+from ...raw import AudioParameters
+from ...raw import VideoParameters
+from ..media_stream import MediaStream
 
 
 @deprecated(
     deprecated_in='1.1.0',
-    details='This class is no longer supported.'
-            'Use pytgcalls.types.input_stream.MediaStream instead.',
+    details='Use pytgcalls.types.MediaStream instead.',
 )
 class AudioVideoPiped(MediaStream):
+    @statictypes
     def __init__(
         self,
         path: str,
@@ -29,5 +30,5 @@ class AudioVideoPiped(MediaStream):
             audio_flags=MediaStream.REQUIRED,
             video_flags=MediaStream.REQUIRED,
             headers=headers,
-            additional_ffmpeg_parameters=additional_ffmpeg_parameters,
+            ffmpeg_parameters=additional_ffmpeg_parameters,
         )

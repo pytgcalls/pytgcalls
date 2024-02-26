@@ -72,14 +72,6 @@ class AlreadyJoinedError(Exception):
         )
 
 
-class TelegramServerError(Exception):
-    def __init__(self):
-        super().__init__(
-            'Telegram Server is having some '
-            'internal problems',
-        )
-
-
 class ClientNotStarted(Exception):
     def __init__(self):
         super().__init__(
@@ -144,6 +136,20 @@ class ImageSourceFound(Exception):
     def __init__(self, path: str):
         super().__init__(
             f'Found an image source on "{path}"',
+        )
+
+
+class LiveStreamFound(Exception):
+    def __init__(self, path: str):
+        super().__init__(
+            f'Found a livestream on "{path}"',
+        )
+
+
+class YtDlpError(Exception):
+    def __init__(self, message: str):
+        super().__init__(
+            message,
         )
 
 

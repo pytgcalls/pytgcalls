@@ -1,9 +1,12 @@
+import asyncio
 import random
 from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
+
+from ..types import GroupCallParticipant
 
 
 class BridgedClient:
@@ -82,8 +85,31 @@ class BridgedClient:
     def is_connected(self):
         pass
 
+    def no_updates(self):
+        pass
+
     async def start(self):
         pass
+
+    @staticmethod
+    def package_name(obj):
+        return str(obj.__class__.__module__).split('.')[0]
+
+    @staticmethod
+    def parse_participant(participant):
+        return GroupCallParticipant(
+            BridgedClient.chat_id(participant.peer),
+            bool(participant.muted),
+            bool(participant.muted) != bool(participant.can_self_unmute),
+            bool(participant.video) or
+            bool(participant.presentation),
+            bool(participant.presentation),
+            bool(participant.video),
+            bool(participant.raise_hand_rating),
+            participant.volume // 100
+            if participant.volume is not None else 100,
+            bool(participant.left),
+        )
 
     @staticmethod
     def chat_id(input_peer) -> int:
@@ -106,25 +132,54 @@ class BridgedClient:
 
     @staticmethod
     def rnd_id() -> int:
-        return random.randint(0, 2 ** 32 - 1)
+        return random.randint(0, 2147483647)
 
-    def on_closed_voice_chat(self):
-        pass
+    async def _propagate(self, event_name: str, *args, **kwargs):
+        for event in self.HANDLERS_LIST[event_name]:
+            asyncio.ensure_future(event(*args, **kwargs))
 
-    def on_kicked(self):
-        pass
+    def on_closed_voice_chat(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['CLOSED_HANDLER'].append(func)
+            return func
 
-    def on_receive_invite(self):
-        pass
+        return decorator
+
+    def on_kicked(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['KICK_HANDLER'].append(func)
+            return func
+
+        return decorator
+
+    def on_receive_invite(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['INVITE_HANDLER'].append(func)
+            return func
+
+        return decorator
 
     async def get_id(self):
         pass
 
-    def on_left_group(self):
-        pass
+    def on_left_group(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['LEFT_HANDLER'].append(func)
+            return func
 
-    def on_participants_change(self):
-        pass
+        return decorator
+
+    def on_participants_change(self) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            if self is not None:
+                self.HANDLERS_LIST['PARTICIPANTS_HANDLER'].append(func)
+            return func
+
+        return decorator
 
     async def get_full_chat(self, chat_id: int):
         pass

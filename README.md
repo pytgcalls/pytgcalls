@@ -1,8 +1,5 @@
+<img src="https://raw.githubusercontent.com/pytgcalls/pytgcalls/master/.github/images/banner.png" alt="pytgcalls logo" />
 <p align="center">
-    <a href="https://github.com/pytgcalls/pytgcalls">
-        <img src="https://user-images.githubusercontent.com/32808683/111091141-62473b00-8508-11eb-9c05-3e0fd4a21af3.png" alt="pytgcalls logo" />
-    </a>
-    <br>
     <b>A simple and elegant client that allows you to make group voice calls quickly and easily.</b>
     <br>
     <a href="https://github.com/pytgcalls/pytgcalls/tree/master/example">
@@ -26,22 +23,38 @@
     </a>
 </p>
 
-
-# PyTgCalls
-
-[![pre-commit.ci status][pre-commit.ci-badge]][pre-commit.ci]
-[![PyPI](https://img.shields.io/pypi/v/py-tgcalls.svg?style=flat)](https://pypi.org/project/py-tgcalls/)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py-tgcalls)](https://www.python.org/)
-[![GitHub](https://img.shields.io/github/license/pytgcalls/pytgcalls)](https://github.com/pytgcalls/pytgcalls/blob/master/LICENSE)
-![OS](https://img.shields.io/badge/platform-Linux%20%7C%20WSL2.0%20%7C%20Windows%20%7C%20macOS-lightgrey)
-[![Node Version](https://img.shields.io/badge/node-%3E%20%3D%2015.0.0%20-brightgreen)](https://nodejs.org/it/)
-![Architectures](https://img.shields.io/badge/architectures-x86__64%20%7C%20arm64v8%20%7C%20win__amd64%20%7C%20darwin__x64-blue)
-[![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
-
+# PyTgCalls [![PyPI](https://img.shields.io/pypi/v/py-tgcalls.svg?logo=python&logoColor=%23959DA5&label=pypi&labelColor=%23282f37)](https://pypi.org/project/py-tgcalls/) [![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
 This project allows making Telegram group call using MtProto and WebRTC, this is possible thanks to the power of [NTgCalls] library and [@evgeny-nadymov]
 
-## What are the supported clients?
-The supported clients for now are Pyrogram, Telethon and Hydrogram, but we accept other clients too, you can open a pull request with the edits
+#### Example Usage
+```python
+from pytgcalls import PyTgCalls
+from pytgcalls import idle
+from pytgcalls.types import MediaStream
+...
+chat_id = -1001185324811
+app = PyTgCalls(client)
+app.start()
+app.join_group_call(
+    chat_id,
+    MediaStream(
+        'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4',
+    )
+)
+idle()
+```
+
+## Features
+- Prebuilt wheels for macOS, Linux and Windows.
+- Supporting all type of MTProto libraries: Pyrogram, Telethon and Hydrogram.
+- Work with voice chats in channels and chats.
+- Join as channels or chats.
+- Mute/unmute, pause/resume, stop/play, volume control and more...
+
+## Requirements
+- Python 3.7 or higher.
+- An MTProto Client
+- A [Telegram API key](https://docs.pyrogram.org/intro/setup#api-keys).
 
 ## How to install?
 Here's how to install the PyTgCalls lib, the commands are given below:
@@ -54,70 +67,31 @@ pip install git+https://github.com/pytgcalls/pytgcalls -U
 pip install py-tgcalls -U
 ```
 
-## Conversion command (Video)
-From file to raw video
-``` bash
-ffmpeg -i {INPUT_FILE} -f rawvideo -pix_fmt yuv420p -vf scale=640:-1 {OUTPUT_FILE}
-```
+## Key Contributors
+* <b><a href="https://github.com/Laky-64">@Laky-64</a> (DevOps Engineer, Software Architect):</b>
+    * Played a crucial role in developing PyTgCalls being an ex developer of pyservercall and of tgcallsjs.
+    * Automation with GitHub Actions
+* <b><a href="https://github.com/kuogi">@kuogi</a> (Senior UI/UX designer, Documenter):</b>
+    * As a Senior UI/UX Designer, Kuogi has significantly improved the user interface of our documentation,
+      making it more visually appealing and user-friendly.
+    * Played a key role in writing and structuring our documentation, ensuring that it is clear,
+      informative, and accessible to all users.
+* <b><a href="https://github.com/vrumger">@vrumger</a> (Senior Node.js Developer, Software Architect):</b>
+    * Has made important fixes and enhancements to the WebRTC component of the library,
+      improving its stability and performance.
+    * Main developer of TgCallsJS
+* <b><a href="https://github.com/alemidev">@alemidev</a> (Senior Python Developer):</b>
+    * Has made important fixes and enhancements to the async part of the library
 
-From H264/VP8/VP9 to Audio and Video
-``` bash
-ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale={SCALING}:-1 {OUTPUT_VIDEO_FILE}
-```
+## Junior Developers
+* <b><a href="https://github.com/TuriOG">@TuriOG</a> (Junior Python Developer):</b>
+    * Currently working on integrating NTgCalls into <a href="//github.com/pytgcalls/pytgcalls">PyTgCalls</a>, an important step
+      in expanding the functionality and usability of the library.
 
-From YouTube video/live-stream to Audio and Video
-``` bash
-ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -ar {BITRATE} {OUTPUT_AUDIO_FILE} -f rawvideo -r {FRAMERATE} -pix_fmt yuv420p -vf scale={SCALING}:-1 {OUTPUT_VIDEO_FILE}
-```
+## Special Thanks
+* <b><a href="https://github.com/evgeny-nadymov">@evgeny-nadymov</a>:</b>
+  A heartfelt thank you to Evgeny Nadymov for graciously allowing us to use their code from telegram-react.
+  His contribution has been pivotal to the success of this project.
 
-From YouTube Live stream to Video
-
-> ### Important!
-> The max resolution allowed by Telegram is of 720p at 30 fps
-> Here also listed the scaling format
-> - 360p = 640
-> - 480p = 854
-> - 720p = 1280
->
-> If you have any problem with green screen or un-synchronized video, it can be one of these problems:
-> - Invalid FFMPEG command
-> - The video quality specified to convert is higher than the original video one
-> - Invalid PyTgCalls video parameters
-> - If you're using fifo, the Fifo max buffer size is too low and this cause the lag problem.
-
-## Conversion commands
-
-From file to raw format
-``` bash
-ffmpeg -i {INPUT_FILE} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_FILE}
-```
-
-From stream link to raw format
-``` bash
-ffmpeg -y -i {STREAM_LINK} -f s16le -ac 1 -ar {BITRATE} {OUTPUT_FILE}
-```
-
-From YouTube video/live-stream to raw format
-``` bash
-ffmpeg -i "$(youtube-dl -x -g "{YOUTUBE_LINK}")" -f s16le -ac 1 -ar {BITRATE} {OUTPUT_FILE}
-```
-
-## Credits
-
-Many thanks to [@evgeny-nadymov] for graciously permitting us to utilize their code from [telegram-react].
-Additionally, we extend our gratitude to [@alemidev] for their invaluable assistance in reconstructing this library,
-and to [@TuriOG] for implementing NTgCalls within the library.
-
-This library is based on [tgcallsjs] developed [@AndrewLaneX] and pyservercall by [@Laky-64]
-
-[pre-commit.ci-badge]: https://results.pre-commit.ci/badge/github/pytgcalls/pytgcalls/master.svg
-[pre-commit.ci]: https://results.pre-commit.ci/latest/github/pytgcalls/pytgcalls/master
-[@evgeny-nadymov]: https://github.com/evgeny-nadymov/
-[@AndrewLaneX]: https://github.com/AndrewLaneX/
-[telegram-react]: https://github.com/evgeny-nadymov/telegram-react/
-[tgcallsjs]: https://github.com/tgcallsjs/tgcalls
-[pyservercall]: https://github.com/pytgcalls/pyservercall/
-[@Laky-64]: https://github.com/Laky-64/
-[@alemidev]: https://github.com/alemidev/
-[@TuriOG]: https://github.com/TuriOG/
 [NTgCalls]: https://github.com/pytgcalls/ntgcalls
+[@evgeny-nadymov]: https://github.com/evgeny-nadymov/

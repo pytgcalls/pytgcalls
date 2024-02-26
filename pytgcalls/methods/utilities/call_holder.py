@@ -4,6 +4,7 @@ from ntgcalls import StreamStatus
 
 from ...exceptions import GroupCallNotFound
 from ...scaffold import Scaffold
+from ...statictypes import statictypes
 from ...types.groups.group_call import GroupCall
 from ...types.list import List
 
@@ -36,6 +37,7 @@ class CallHolder(Scaffold):
             if calls_list[x] != StreamStatus.Idling
         ])
 
+    @statictypes
     async def get_active_call(
         self,
         chat_id: Union[int, str],
@@ -51,6 +53,7 @@ class CallHolder(Scaffold):
 
         raise GroupCallNotFound(int_id)
 
+    @statictypes
     async def get_call(
         self,
         chat_id: int,

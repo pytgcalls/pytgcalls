@@ -2,11 +2,9 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioParameters
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import Browsers
 from pytgcalls.types import MediaStream
-from pytgcalls.types import VideoParameters
 from pytgcalls.types import VideoQuality
 
 app = Client(
@@ -22,8 +20,8 @@ call_py.join_group_call(
     -1001234567890,
     MediaStream(
         remote,
-        AudioParameters.from_quality(AudioQuality.HIGH),
-        VideoParameters.from_quality(VideoQuality.HD_720p),
+        AudioQuality.HIGH,
+        VideoQuality.HD_720p,
         headers={
             'User-Agent': Browsers().chrome_windows,
         },

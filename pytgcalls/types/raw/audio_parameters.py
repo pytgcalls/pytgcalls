@@ -1,8 +1,12 @@
+from deprecation import deprecated
+
+from ...statictypes import statictypes
 from ..py_object import PyObject
-from .audio_quality import AudioQuality
+from ..stream.audio_quality import AudioQuality
 
 
 class AudioParameters(PyObject):
+    @statictypes
     def __init__(
         self,
         bitrate: int = 48000,
@@ -13,5 +17,11 @@ class AudioParameters(PyObject):
         self.channels: int = min(channels, max_chan)
 
     @staticmethod
+    @deprecated(
+        deprecated_in='2.0.0',
+        details='Use AudioQuality.XXX directly without '
+                'AudioParameters instead.',
+    )
+    @statictypes
     def from_quality(quality: AudioQuality):
         return AudioParameters(*quality.value)

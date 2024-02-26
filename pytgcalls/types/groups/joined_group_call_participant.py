@@ -1,4 +1,4 @@
-from ...types.groups.group_call_participant import GroupCallParticipant
+from ...types.groups import GroupCallParticipant
 from ...types.update import Update
 
 

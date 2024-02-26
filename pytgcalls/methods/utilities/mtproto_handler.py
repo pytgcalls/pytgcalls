@@ -1,7 +1,4 @@
-from ntgcalls import ConnectionNotFound
-
 from ...scaffold import Scaffold
-from ...to_async import ToAsync
 from ...types import Update
 from ...types.groups import GroupCallParticipant
 from ...types.groups import JoinedGroupCallParticipant
@@ -22,32 +19,14 @@ class MTProtoHandler(Scaffold):
     def _handle_mtproto(self):
         @self._app.on_kicked()
         async def kicked_handler(chat_id: int):
-            try:
-                await ToAsync(
-                    self._binding.stop,
-                    chat_id,
-                )
-            except ConnectionNotFound:
-                pass
-
             await self._on_event_update.propagate(
                 'KICK_HANDLER',
                 self,
                 chat_id,
             )
-            self._cache_user_peer.pop(chat_id)
 
         @self._app.on_closed_voice_chat()
         async def closed_voice_chat_handler(chat_id: int):
-            self._cache_user_peer.pop(chat_id)
-            try:
-                await ToAsync(
-                    self._binding.stop,
-                    chat_id,
-                )
-            except ConnectionNotFound:
-                pass
-
             await self._on_event_update.propagate(
                 'CLOSED_HANDLER',
                 self,
@@ -64,14 +43,6 @@ class MTProtoHandler(Scaffold):
 
         @self._app.on_left_group()
         async def left_handler(chat_id: int):
-            self._cache_user_peer.pop(chat_id)
-            try:
-                await ToAsync(
-                    self._binding.stop,
-                    chat_id,
-                )
-            except ConnectionNotFound:
-                pass
             await self._on_event_update.propagate(
                 'LEFT_HANDLER',
                 self,

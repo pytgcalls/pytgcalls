@@ -1,9 +1,11 @@
 from ntgcalls import InputMode
 
+from ...statictypes import statictypes
 from .video_parameters import VideoParameters
 
 
 class VideoStream:
+    @statictypes
     def __init__(
         self,
         input_mode: InputMode,

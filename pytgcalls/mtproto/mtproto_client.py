@@ -4,7 +4,7 @@ from typing import List
 from typing import Optional
 
 from ..exceptions import InvalidMTProtoClient
-from ..types.groups.group_call_participant import GroupCallParticipant
+from ..types.groups import GroupCallParticipant
 from .bridged_client import BridgedClient
 
 
@@ -15,19 +15,20 @@ class MtProtoClient:
         client: Any,
     ):
         self._bind_client: Optional[BridgedClient] = None
-        if client.__class__.__module__ == 'pyrogram.client':
+        self.package_name = BridgedClient.package_name(client)
+        if self.package_name == 'pyrogram':
             from .pyrogram_client import PyrogramClient
             self._bind_client = PyrogramClient(
                 cache_duration,
                 client,
             )
-        elif client.__class__.__module__ == 'telethon.client.telegramclient':
+        elif self.package_name == 'telethon':
             from .telethon_client import TelethonClient
             self._bind_client = TelethonClient(
                 cache_duration,
                 client,
             )
-        elif client.__class__.__module__ == 'hydrogram.client':
+        elif self.package_name == 'hydrogram':
             from .hydrogram_client import HydrogramClient
             self._bind_client = HydrogramClient(
                 cache_duration,
@@ -35,18 +36,6 @@ class MtProtoClient:
             )
         else:
             raise InvalidMTProtoClient()
-
-    @property
-    def client(self):
-        client_name = self._bind_client.__class__.__name__
-        if client_name == 'PyrogramClient':
-            return 'pyrogram'
-        elif client_name == 'TelethonClient':
-            return 'telethon'
-        elif client_name == 'HydrogramClient':
-            return 'hydrogram'
-        else:
-            return 'unknown'
 
     async def get_group_call_participants(
         self,
@@ -163,6 +152,12 @@ class MtProtoClient:
     def is_connected(self) -> bool:
         if self._bind_client is not None:
             return self._bind_client.is_connected()
+        raise InvalidMTProtoClient()
+
+    @property
+    def no_updates(self) -> bool:
+        if self._bind_client is not None:
+            return self._bind_client.no_updates()
         raise InvalidMTProtoClient()
 
     async def start(self):

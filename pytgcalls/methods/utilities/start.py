@@ -1,16 +1,20 @@
 import asyncio
-from asyncio.log import logger
+import logging
 
 from ntgcalls import ConnectionNotFound
 from ntgcalls import MediaState
 from ntgcalls import StreamType
 
 from ...exceptions import PyTgCallsAlreadyRunning
+from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
-from pytgcalls.types import GroupCallParticipant
-from pytgcalls.types import StreamAudioEnded
-from pytgcalls.types import StreamVideoEnded
+from ...to_async import ToAsync
+from ...types import GroupCallParticipant
+from ...types import StreamAudioEnded
+from ...types import StreamVideoEnded
+
+py_logger = logging.getLogger('pytgcalls')
 
 
 class Start(Scaffold):
@@ -24,11 +28,18 @@ class Start(Scaffold):
             just_joined: bool,
             just_left: bool,
         ):
-            if chat_id in self._need_unmute:
-                need_unmute = self._need_unmute[chat_id]
-                if not just_joined and \
+            chat_peer = self._cache_user_peer.get(chat_id)
+            if not chat_peer:
+                return
+            is_self = BridgedClient.chat_id(
+                chat_peer,
+            ) == participant.user_id if chat_peer else False
+            if is_self:
+                if just_left:
+                    await clear_call(chat_id)
+                if chat_id in self._need_unmute and \
+                        not just_joined and \
                         not just_left and \
-                        need_unmute and \
                         not participant.muted_by_admin:
                     try:
                         await update_status(
@@ -37,12 +48,24 @@ class Start(Scaffold):
                         )
                     except ConnectionNotFound:
                         pass
-                self._need_unmute[chat_id] = participant.muted_by_admin
 
-        def stream_upgrade(chat_id: int, state: MediaState):
-            asyncio.run_coroutine_threadsafe(
-                update_status(chat_id, state), loop,
-            )
+                if participant.muted_by_admin and not just_left:
+                    self._need_unmute.add(chat_id)
+                else:
+                    self._need_unmute.discard(chat_id)
+
+        @self._app.on_kicked()
+        @self._app.on_left_group()
+        @self._app.on_closed_voice_chat()
+        async def clear_call(chat_id: int):
+            try:
+                await ToAsync(
+                    self._binding.stop,
+                    chat_id,
+                )
+            except ConnectionNotFound:
+                pass
+            await clear_cache(chat_id)
 
         async def update_status(chat_id: int, state: MediaState):
             try:
@@ -54,28 +77,56 @@ class Start(Scaffold):
                     self._cache_user_peer.get(chat_id),
                 )
             except Exception as e:
-                logger.error(f'SetVideoCallStatus: {e}')
+                py_logger.debug(f'SetVideoCallStatus: {e}')
 
-        def stream_ended(chat_id: int, stream: StreamType):
-            async def async_stream_ended():
-                await self._on_event_update.propagate(
-                    'STREAM_END_HANDLER',
-                    self,
-                    StreamAudioEnded(
-                        chat_id,
-                    ) if stream == stream.Audio else StreamVideoEnded(chat_id),
-                )
+        async def stream_ended(chat_id: int, stream: StreamType):
+            await self._on_event_update.propagate(
+                'STREAM_END_HANDLER',
+                self,
+                StreamAudioEnded(
+                    chat_id,
+                ) if stream == stream.Audio else
+                StreamVideoEnded(
+                    chat_id,
+                ),
+            )
 
-            asyncio.run_coroutine_threadsafe(async_stream_ended(), loop)
+        async def clear_cache(chat_id: int):
+            self._cache_user_peer.pop(chat_id)
+            self._need_unmute.discard(chat_id)
 
         if not self._is_running:
             self._is_running = True
             self._env_checker.check_environment()
             await self._init_mtproto()
-            self._handle_mtproto()
+            if self._app.no_updates:
+                py_logger.warning(
+                    f'Using {self._app.package_name.capitalize()} '
+                    'client in no_updates mode is not recommended. '
+                    'This mode may cause unexpected behavior or '
+                    'limitations.',
+                )
+            else:
+                self._handle_mtproto()
 
-            self._binding.on_stream_end(stream_ended)
-            self._binding.on_upgrade(stream_upgrade)
+            self._binding.on_stream_end(
+                lambda chat_id, stream: asyncio.run_coroutine_threadsafe(
+                    stream_ended(chat_id, stream),
+                    loop,
+                ),
+            )
+            self._binding.on_upgrade(
+                lambda chat_id, state: asyncio.run_coroutine_threadsafe(
+                    update_status(chat_id, state),
+                    loop,
+                ),
+            )
+            self._binding.on_disconnect(
+                lambda chat_id: asyncio.run_coroutine_threadsafe(
+                    clear_cache(chat_id),
+                    loop,
+                ),
+            )
             await PyTgCallsSession().start()
         else:
             raise PyTgCallsAlreadyRunning()

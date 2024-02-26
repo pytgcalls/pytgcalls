@@ -1,18 +1,19 @@
 from deprecation import deprecated
 
-from ...media_devices.device_info import DeviceInfo
-from ...media_devices.screen_info import ScreenInfo
-from .audio_parameters import AudioParameters
-from .media_stream import MediaStream
-from .video_parameters import VideoParameters
+from ....media_devices import DeviceInfo
+from ....media_devices import ScreenInfo
+from ....statictypes import statictypes
+from ...raw import AudioParameters
+from ...raw import VideoParameters
+from ..media_stream import MediaStream
 
 
 @deprecated(
     deprecated_in='1.1.0',
-    details='This class is no longer supported.'
-            'Use pytgcalls.types.input_stream.MediaStream instead.',
+    details='Use pytgcalls.types.MediaStream instead.',
 )
 class CaptureAVDeviceDesktop(MediaStream):
+    @statictypes
     def __init__(
         self,
         audio_info: DeviceInfo,

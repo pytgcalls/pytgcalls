@@ -1,7 +1,6 @@
-import asyncio
 import json
-from typing import Callable
 from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -39,6 +38,7 @@ from pyrogram.raw.types import UpdateNewChannelMessage
 from pyrogram.raw.types import UpdateNewMessage
 from pyrogram.raw.types import Updates
 
+from ..types import GroupCallParticipant
 from ..version_manager import VersionManager
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
@@ -72,16 +72,7 @@ class PyrogramClient(BridgedClient):
                 for participant in participants:
                     result = self._cache.set_participants_cache(
                         update.call.id,
-                        self.chat_id(participant.peer),
-                        participant.muted,
-                        participant.volume,
-                        participant.can_self_unmute,
-                        participant.video is not None or
-                        participant.presentation is not None,
-                        participant.presentation is not None,
-                        participant.video is not None,
-                        participant.raise_hand_rating,
-                        participant.left,
+                        self.parse_participant(participant),
                     )
                     if result is not None:
                         if 'PARTICIPANTS_HANDLER' in self.HANDLERS_LIST:
@@ -209,50 +200,6 @@ class PyrogramClient(BridgedClient):
                                         )
             raise ContinuePropagation()
 
-    async def _propagate(self, event_name: str, *args, **kwargs):
-        for event in self.HANDLERS_LIST[event_name]:
-            asyncio.ensure_future(event(*args, **kwargs))
-
-    def on_closed_voice_chat(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['CLOSED_HANDLER'].append(func)
-            return func
-
-        return decorator
-
-    def on_kicked(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['KICK_HANDLER'].append(func)
-            return func
-
-        return decorator
-
-    def on_receive_invite(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['INVITE_HANDLER'].append(func)
-            return func
-
-        return decorator
-
-    def on_left_group(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['LEFT_HANDLER'].append(func)
-            return func
-
-        return decorator
-
-    def on_participants_change(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['PARTICIPANTS_HANDLER'].append(func)
-            return func
-
-        return decorator
-
     async def get_call(
             self,
             chat_id: int,
@@ -302,18 +249,10 @@ class PyrogramClient(BridgedClient):
     async def get_participants(
             self,
             input_call: InputGroupCall,
-    ):
+    ) -> List[GroupCallParticipant]:
         return [
-            {
-                'user_id': self.chat_id(participant.peer),
-                'muted': participant.muted,
-                'volume': participant.volume,
-                'can_self_unmute': participant.can_self_unmute,
-                'video': participant.video,
-                'presentation': participant.presentation,
-                'raise_hand_rating': participant.raise_hand_rating,
-                'left': participant.left,
-            } for participant in (
+            self.parse_participant(participant)
+            for participant in (
                 await self._app.send(
                     GetGroupParticipants(
                         call=input_call,
@@ -355,16 +294,7 @@ class PyrogramClient(BridgedClient):
                     for participant in participants:
                         self._cache.set_participants_cache(
                             update.call.id,
-                            self.chat_id(participant.peer),
-                            participant.muted,
-                            participant.volume,
-                            participant.can_self_unmute,
-                            participant.video is not None or
-                            participant.presentation is not None,
-                            participant.presentation is not None,
-                            participant.video is not None,
-                            participant.raise_hand_rating,
-                            participant.left,
+                            self.parse_participant(participant),
                         )
                 if isinstance(update, UpdateGroupCallConnection):
                     return update.params.data
@@ -463,6 +393,9 @@ class PyrogramClient(BridgedClient):
 
     def is_connected(self) -> bool:
         return self._app.is_connected
+
+    def no_updates(self):
+        return self._app.no_updates
 
     async def start(self):
         await self._app.start()

@@ -2,17 +2,18 @@ from typing import Optional
 
 from deprecation import deprecated
 
+from ....statictypes import statictypes
+from ...raw import Stream
 from .input_audio_stream import InputAudioStream
 from .input_video_stream import InputVideoStream
-from .stream import Stream
 
 
 @deprecated(
     deprecated_in='1.0.0.dev1',
-    details='This class is no longer supported.'
-            'Use pytgcalls.types.Stream instead.',
+    details='Use pytgcalls.types.Stream instead.',
 )
 class InputStream(Stream):
+    @statictypes
     def __init__(
         self,
         stream_audio: Optional[InputAudioStream] = None,

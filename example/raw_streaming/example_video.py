@@ -1,15 +1,16 @@
 import os
 import time
 
+from ntgcalls import InputMode
 from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioParameters
-from pytgcalls.types.input_stream import InputAudioStream
-from pytgcalls.types.input_stream import InputStream
-from pytgcalls.types.input_stream import InputVideoStream
-from pytgcalls.types.input_stream import VideoParameters
+from pytgcalls.types.raw import AudioParameters
+from pytgcalls.types.raw import AudioStream
+from pytgcalls.types.raw import Stream
+from pytgcalls.types.raw import VideoParameters
+from pytgcalls.types.raw import VideoStream
 
 app = Client(
     'py-tgcalls',
@@ -26,14 +27,16 @@ while not os.path.exists(audio_file) or \
     time.sleep(0.125)
 call_py.join_group_call(
     -1001234567890,
-    InputStream(
-        InputAudioStream(
+    Stream(
+        AudioStream(
+            InputMode.File,
             audio_file,
             AudioParameters(
                 bitrate=48000,
             ),
         ),
-        InputVideoStream(
+        VideoStream(
+            InputMode.File,
             video_file,
             VideoParameters(
                 width=640,

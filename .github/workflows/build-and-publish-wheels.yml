@@ -25,14 +25,14 @@ jobs:
         id: github_info
 
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ steps.github_info.outputs.branch }}
 
       - name: Build wheel
         run: python3 -m pip wheel . --no-deps --wheel-dir wheels
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pytgcalls-wheel
           path: ./wheels/py_tgcalls*.whl

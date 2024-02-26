@@ -1,4 +1,4 @@
-from pytgcalls.types.py_object import PyObject
+from ...types.py_object import PyObject
 
 
 class GroupCallParticipant(PyObject):
@@ -12,6 +12,7 @@ class GroupCallParticipant(PyObject):
         video_camera: bool,
         raised_hand: bool,
         volume: int,
+        left: bool,
     ):
         self.user_id: int = user_id
         self.muted: bool = muted
@@ -21,3 +22,4 @@ class GroupCallParticipant(PyObject):
         self.video_camera: bool = video_camera
         self.raised_hand: bool = raised_hand
         self.volume: int = volume
+        self.left: bool = left

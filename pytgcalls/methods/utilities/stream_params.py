@@ -1,14 +1,11 @@
-import logging
 from typing import Optional
 
 from ntgcalls import AudioDescription
 from ntgcalls import MediaDescription
 from ntgcalls import VideoDescription
 
-from ...types.input_stream.media_stream import MediaStream
-from ...types.input_stream.stream import Stream
-
-py_logger = logging.getLogger('pytgcalls')
+from ...types.raw.stream import Stream
+from ...types.stream.media_stream import MediaStream
 
 
 class StreamParams:
