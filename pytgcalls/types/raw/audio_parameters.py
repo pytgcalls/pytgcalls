@@ -18,7 +18,7 @@ class AudioParameters(PyObject):
 
     @staticmethod
     @deprecated(
-        deprecated_in='2.0.0',
+        deprecated_in='1.2.0',
         details='Use AudioQuality.XXX directly without '
                 'AudioParameters instead.',
     )

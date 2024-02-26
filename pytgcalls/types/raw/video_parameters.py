@@ -22,7 +22,7 @@ class VideoParameters(PyObject):
 
     @staticmethod
     @deprecated(
-        deprecated_in='2.0.0',
+        deprecated_in='1.2.0',
         details='Use VideoQuality.XXX directly without '
                 'VideoParameters instead.',
     )
