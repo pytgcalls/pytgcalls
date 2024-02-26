@@ -364,5 +364,6 @@ class TelethonClient(BridgedClient):
     def no_updates(self):
         return False
 
+    # noinspection PyUnresolvedReferences
     async def start(self):
         await self._app.start()
