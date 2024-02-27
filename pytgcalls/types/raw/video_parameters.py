@@ -1,8 +1,6 @@
-from deprecation import deprecated
-
-from ...statictypes import statictypes
 from ..py_object import PyObject
 from ..stream.video_quality import VideoQuality
+from ...statictypes import statictypes
 
 
 class VideoParameters(PyObject):
@@ -19,13 +17,3 @@ class VideoParameters(PyObject):
         self.width: int = min(width, max_w)
         self.height: int = min(height, max_h)
         self.frame_rate: int = min(frame_rate, max_fps)
-
-    @staticmethod
-    @deprecated(
-        deprecated_in='1.2.0',
-        details='Use VideoQuality.XXX directly without '
-                'VideoParameters instead.',
-    )
-    @statictypes
-    def from_quality(quality: VideoQuality):
-        return VideoParameters(*quality.value)
