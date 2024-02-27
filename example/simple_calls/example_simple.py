@@ -2,8 +2,10 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
+from pytgcalls import filters as fl
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls.types import ChatUpdate
 from pytgcalls.types import MediaStream
 from pytgcalls.types import Update
 
@@ -85,18 +87,18 @@ async def get_play_status(client: Client, message: Message):
     )
 
 
-@call_py.on_kicked()
-async def kicked_handler(_: PyTgCalls, chat_id: int):
-    print(f'Kicked from {chat_id}')
+@call_py.on_update(fl.chat_update(ChatUpdate.KICKED | ChatUpdate.LEFT_GROUP))
+async def kicked_handler(_: PyTgCalls, update: Update):
+    print(f'Kicked from {update.chat_id} or left')
 
 
-@call_py.on_stream_end()
+@call_py.on_update(fl.stream)
 async def stream_end_handler(_: PyTgCalls, update: Update):
     print(f'Stream ended in {update.chat_id}', update)
 
 
-@call_py.on_participants_change()
-async def participant_handler(_: PyTgCalls, update: Update):
+@call_py.on_update()
+async def all_updates(_: PyTgCalls, update: Update):
     print(update)
 
 call_py.start()

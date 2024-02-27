@@ -2,7 +2,7 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import idle
+from pytgcalls import compose
 from pytgcalls import PyTgCalls
 from pytgcalls.types import MediaStream
 
@@ -58,6 +58,4 @@ async def stop_handler2(_: Client, message: Message):
         message.chat.id,
     )
 
-call_py.start()
-call_py2.start()
-idle()
+compose([app, app2])
