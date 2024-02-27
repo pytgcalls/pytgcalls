@@ -1,7 +1,6 @@
 import asyncio
 from typing import Any
 from typing import Callable
-from typing import List
 from typing import NamedTuple
 from typing import Optional
 
@@ -13,7 +12,7 @@ class Callback(NamedTuple):
 
 class HandlersHolder:
     def __init__(self):
-        self._callbacks: List[Callback] = []
+        self._callbacks = []
 
     async def propagate(
         self,

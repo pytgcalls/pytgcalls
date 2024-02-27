@@ -1,9 +1,16 @@
 import inspect
-from typing import Callable, Union, List
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Union
 
 from .mtproto import BridgedClient
 from .pytgcalls import PyTgCalls
-from .types import Update, UpdatedGroupCallParticipant, StreamAudioEnded, StreamVideoEnded, ChatUpdate
+from .types import ChatUpdate
+from .types import StreamAudioEnded
+from .types import StreamVideoEnded
+from .types import Update
+from .types import UpdatedGroupCallParticipant
 
 
 class Filter:
@@ -28,7 +35,11 @@ class InvertFilter(Filter):
         if inspect.iscoroutinefunction(self.base.__call__):
             x = await self.base(client, update)
         else:
-            x = await client.loop.run_in_executor(client.executor, self.base, client, update)
+            x = await client.loop.run_in_executor(
+                client.executor,
+                self.base,
+                client, update,
+            )
 
         return not x
 
@@ -42,7 +53,12 @@ class AndFilter(Filter):
         if inspect.iscoroutinefunction(self.base.__call__):
             x = await self.base(client, update)
         else:
-            x = await client.loop.run_in_executor(client.executor, self.base, client, update)
+            x = await client.loop.run_in_executor(
+                client.executor,
+                self.base,
+                client,
+                update,
+            )
 
         # short circuit
         if not x:
@@ -51,7 +67,12 @@ class AndFilter(Filter):
         if inspect.iscoroutinefunction(self.other.__call__):
             y = await self.other(client, update)
         else:
-            y = await client.loop.run_in_executor(client.executor, self.other, client, update)
+            y = await client.loop.run_in_executor(
+                client.executor,
+                self.other,
+                client,
+                update,
+            )
 
         return x and y
 
@@ -65,7 +86,12 @@ class OrFilter(Filter):
         if inspect.iscoroutinefunction(self.base.__call__):
             x = await self.base(client, update)
         else:
-            x = await client.loop.run_in_executor(client.executor, self.base, client, update)
+            x = await client.loop.run_in_executor(
+                client.executor,
+                self.base,
+                client,
+                update,
+            )
 
         # short circuit
         if x:
@@ -74,19 +100,24 @@ class OrFilter(Filter):
         if inspect.iscoroutinefunction(self.other.__call__):
             y = await self.other(client, update)
         else:
-            y = await client.loop.run_in_executor(client.executor, self.other, client, update)
+            y = await client.loop.run_in_executor(
+                client.executor,
+                self.other,
+                client,
+                update,
+            )
 
         return x or y
 
 
-CUSTOM_FILTER_NAME = "CustomFilter"
+CUSTOM_FILTER_NAME = 'CustomFilter'
 
 
-def create(func: Callable, name: str = None, **kwargs) -> Filter:
+def create(func: Callable, name: Optional[str] = None, **kwargs) -> Filter:
     return type(
         name or func.__name__ or CUSTOM_FILTER_NAME,
         (Filter,),
-        {"__call__": func, **kwargs}
+        {'__call__': func, **kwargs},
     )()
 
 
@@ -112,12 +143,19 @@ stream = create(_stream_filter)
 
 # noinspection PyPep8Naming
 class chat(Filter, set):
-    def __init__(self, chats: Union[int, str, List[Union[int, str]]] = None):
-        chats = [] if chats is None else chats if isinstance(chats, list) else [chats]
+    def __init__(
+        self,
+        chats: Optional[Union[int, str, List[Union[int, str]]]] = None,
+    ):
+        chats = [] if chats is None else chats \
+            if isinstance(chats, list) else [chats]
         super().__init__(chats)
 
     async def __call__(self, client: PyTgCalls, update: Update):
-        return any([await client.resolve_chat_id(c) == update.chat_id for c in self])
+        return any([
+            await client.resolve_chat_id(c) == update.chat_id
+            for c in self
+        ])
 
 
 # noinspection PyPep8Naming

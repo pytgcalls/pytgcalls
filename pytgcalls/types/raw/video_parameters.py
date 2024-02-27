@@ -1,6 +1,6 @@
+from ...statictypes import statictypes
 from ..py_object import PyObject
 from ..stream.video_quality import VideoQuality
-from ...statictypes import statictypes
 
 
 class VideoParameters(PyObject):

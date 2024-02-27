@@ -1,6 +1,6 @@
+from ...statictypes import statictypes
 from ..py_object import PyObject
 from ..stream.audio_quality import AudioQuality
-from ...statictypes import statictypes
 
 
 class AudioParameters(PyObject):
