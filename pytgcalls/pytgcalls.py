@@ -25,9 +25,10 @@ class PyTgCalls(Methods, Scaffold):
         cache_duration: int = CACHE_DURATION,
     ):
         super().__init__()
+        self._mtproto = app
         self._app = MtProtoClient(
             cache_duration,
-            app,
+            self._mtproto,
         )
         self._is_running = False
         self._env_checker = Environment(
@@ -48,3 +49,7 @@ class PyTgCalls(Methods, Scaffold):
     @property
     def cache_user_peer(self) -> Cache:
         return self._cache_user_peer
+
+    @property
+    def mtproto_client(self):
+        return self._mtproto

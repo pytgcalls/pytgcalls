@@ -160,6 +160,12 @@ class MtProtoClient:
             return self._bind_client.no_updates()
         raise InvalidMTProtoClient()
 
+    @property
+    def mtproto_client(self):
+        if self._bind_client is not None:
+            return self._bind_client
+        raise InvalidMTProtoClient()
+
     async def start(self):
         if self._bind_client is not None:
             await self._bind_client.start()
