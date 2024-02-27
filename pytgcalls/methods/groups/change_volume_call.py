@@ -14,7 +14,7 @@ class ChangeVolumeCall(Scaffold):
         chat_id: Union[int, str],
         volume: int,
     ):
-        chat_id = await self._resolve_chat_id(chat_id)
+        chat_id = await self.resolve_chat_id(chat_id)
         chat_call = await self._app.get_full_chat(
             chat_id,
         )

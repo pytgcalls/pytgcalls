@@ -1,9 +1,11 @@
+import asyncio
+import os
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from ntgcalls import NTgCalls
 
 from .environment import Environment
-from .handlers import HandlersHolder
 from .methods import Methods
 from .mtproto import MtProtoClient
 from .scaffold import Scaffold
@@ -12,11 +14,15 @@ from .types import Cache
 
 
 class PyTgCalls(Methods, Scaffold):
+    WORKERS = min(32, (os.cpu_count() or 0) + 4)
+    CACHE_DURATION = 60 * 60
+
     @statictypes
     def __init__(
         self,
         app: Any,
-        cache_duration: int = 120,
+        workers: int = WORKERS,
+        cache_duration: int = CACHE_DURATION,
     ):
         super().__init__()
         self._app = MtProtoClient(
@@ -31,5 +37,14 @@ class PyTgCalls(Methods, Scaffold):
             self._app.package_name,
         )
         self._cache_user_peer = Cache()
-        self._on_event_update = HandlersHolder()
         self._binding = NTgCalls()
+        self.loop = asyncio.get_event_loop()
+        self.workers = workers
+        self.executor = ThreadPoolExecutor(
+            self.workers,
+            thread_name_prefix='Handler',
+        )
+
+    @property
+    def cache_user_peer(self) -> Cache:
+        return self._cache_user_peer

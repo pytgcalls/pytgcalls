@@ -1,30 +1,44 @@
 import asyncio
+from typing import Any
 from typing import Callable
+from typing import List
+from typing import NamedTuple
+from typing import Optional
+
+
+class Callback(NamedTuple):
+    func: Callable
+    filters: Optional[Any]
 
 
 class HandlersHolder:
     def __init__(self):
-        self._on_event_update = {
-            'STREAM_END_HANDLER': [],
-            'INVITE_HANDLER': [],
-            'KICK_HANDLER': [],
-            'CLOSED_HANDLER': [],
-            'LEFT_HANDLER': [],
-            'PARTICIPANTS_LIST': [],
-        }
+        self._callbacks: List[Callback] = []
 
     async def propagate(
         self,
-        event_name: str,
-        *args,
-        **kwargs,
+        update,
+        client=None,
     ):
-        for event in self._on_event_update[event_name]:
-            asyncio.ensure_future(event(*args, **kwargs))
+        if client:
+            tasks = []
+            for callback in self._callbacks:
+                if not callback.filters or \
+                        await callback.filters(client, update):
+                    tasks.append(callback.func(client, update))
+            await asyncio.gather(*tasks)
+        else:
+            await asyncio.gather(
+                *[
+                    callback.func(update)
+                    for callback in self._callbacks
+                ],
+            )
 
     def add_handler(
         self,
-        event_name: str,
         func: Callable,
-    ):
-        self._on_event_update[event_name].append(func)
+        filters=None,
+    ) -> Callable:
+        self._callbacks.append(Callback(func, filters))
+        return func

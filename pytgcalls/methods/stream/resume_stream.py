@@ -16,7 +16,7 @@ class ResumeStream(Scaffold):
         self,
         chat_id: Union[int, str],
     ):
-        chat_id = await self._resolve_chat_id(chat_id)
+        chat_id = await self.resolve_chat_id(chat_id)
         try:
             return await ToAsync(
                 self._binding.resume,

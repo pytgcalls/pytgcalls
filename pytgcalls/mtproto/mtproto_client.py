@@ -166,27 +166,7 @@ class MtProtoClient:
         else:
             raise InvalidMTProtoClient()
 
-    def on_closed_voice_chat(self) -> Callable:
+    def on_update(self) -> Callable:
         if self._bind_client is not None:
-            return self._bind_client.on_closed_voice_chat()
-        raise InvalidMTProtoClient()
-
-    def on_kicked(self) -> Callable:
-        if self._bind_client is not None:
-            return self._bind_client.on_kicked()
-        raise InvalidMTProtoClient()
-
-    def on_receive_invite(self) -> Callable:
-        if self._bind_client is not None:
-            return self._bind_client.on_receive_invite()
-        raise InvalidMTProtoClient()
-
-    def on_left_group(self) -> Callable:
-        if self._bind_client is not None:
-            return self._bind_client.on_left_group()
-        raise InvalidMTProtoClient()
-
-    def on_participants_change(self) -> Callable:
-        if self._bind_client is not None:
-            return self._bind_client.on_participants_change()
+            return self._bind_client.on_update()
         raise InvalidMTProtoClient()

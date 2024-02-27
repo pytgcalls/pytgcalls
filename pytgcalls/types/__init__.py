@@ -1,5 +1,6 @@
 from .browsers import Browsers
 from .cache import Cache
+from .groups import ChatUpdate
 from .groups import GroupCall
 from .groups import GroupCallParticipant
 from .groups import JoinedGroupCallParticipant
@@ -16,6 +17,7 @@ __all__ = (
     'AudioQuality',
     'Browsers',
     'Cache',
+    'ChatUpdate',
     'GroupCall',
     'GroupCallParticipant',
     'JoinedGroupCallParticipant',

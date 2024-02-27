@@ -1,5 +1,5 @@
-from ...types.groups import GroupCallParticipant
-from ...types.update import Update
+from ..groups import GroupCallParticipant
+from ..update import Update
 
 
 class LeftGroupCallParticipant(Update):

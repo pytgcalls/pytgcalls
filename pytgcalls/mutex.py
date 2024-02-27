@@ -16,7 +16,7 @@ def mutex(func):
         if 'chat_id' in bound.arguments:
             chat_id: Optional[int] = None
             try:
-                chat_id = await self._resolve_chat_id(
+                chat_id = await self.resolve_chat_id(
                     bound.arguments['chat_id'],
                 )
             except Exception as e:

@@ -37,7 +37,7 @@ class Play(Scaffold):
         if join_as is None:
             join_as = self._cache_local_peer
 
-        chat_id = await self._resolve_chat_id(chat_id)
+        chat_id = await self.resolve_chat_id(chat_id)
         media_description = await StreamParams.get_stream_params(
             stream,
         )

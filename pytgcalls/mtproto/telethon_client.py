@@ -34,7 +34,9 @@ from telethon.tl.types import UpdateNewChannelMessage
 from telethon.tl.types import UpdateNewMessage
 from telethon.tl.types import Updates
 
+from ..types import ChatUpdate
 from ..types import GroupCallParticipant
+from ..types import UpdatedGroupCallParticipant
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
@@ -45,6 +47,7 @@ class TelethonClient(BridgedClient):
         cache_duration: int,
         client: TelegramClient,
     ):
+        super().__init__()
         self._app: TelegramClient = client
         self._cache: ClientCache = ClientCache(
             cache_duration,
@@ -64,14 +67,12 @@ class TelethonClient(BridgedClient):
                         self.parse_participant(participant),
                     )
                     if result is not None:
-                        if 'PARTICIPANTS_HANDLER' in self.HANDLERS_LIST:
-                            await self._propagate(
-                                'PARTICIPANTS_HANDLER',
+                        await self.propagate(
+                            UpdatedGroupCallParticipant(
                                 self._cache.get_chat_id(update.call.id),
                                 result,
-                                participant.just_joined,
-                                participant.left,
-                            )
+                            ),
+                        )
             if isinstance(
                 update,
                 UpdateGroupCall,
@@ -98,11 +99,12 @@ class TelethonClient(BridgedClient):
                     self._cache.drop_cache(
                         chat_id,
                     )
-                    if 'CLOSED_HANDLER' in self.HANDLERS_LIST:
-                        await self._propagate(
-                            'CLOSED_HANDLER',
+                    await self.propagate(
+                        ChatUpdate(
                             chat_id,
-                        )
+                            ChatUpdate.CLOSED_VOICE_CHAT,
+                        ),
+                    )
             if isinstance(
                 update,
                 UpdateChannel,
@@ -112,41 +114,42 @@ class TelethonClient(BridgedClient):
                     await self._app.get_entity(chat_id)
                 except ChannelPrivateError:
                     self._cache.drop_cache(chat_id)
-                    if 'KICK_HANDLER' in self.HANDLERS_LIST:
-                        await self._propagate(
-                            'KICK_HANDLER',
+                    await self.propagate(
+                        ChatUpdate(
                             chat_id,
-                        )
+                            ChatUpdate.KICKED,
+                        ),
+                    )
 
             if isinstance(
                 update,
-                UpdateNewChannelMessage,
-            ) or isinstance(
-                update,
-                UpdateNewMessage,
+                (UpdateNewChannelMessage, UpdateNewMessage),
             ):
                 if isinstance(
                     update.message,
                     MessageService,
                 ):
+                    chat_id = self.chat_id(update.message.peer_id)
                     if isinstance(
                         update.message.action,
                         MessageActionInviteToGroupCall,
                     ):
-                        if 'INVITE_HANDLER' in self.HANDLERS_LIST:
-                            await self._propagate(
-                                'INVITE_HANDLER',
+                        await self.propagate(
+                            ChatUpdate(
+                                chat_id,
+                                ChatUpdate.INVITED_VOICE_CHAT,
                                 update.message.action,
-                            )
+                            ),
+                        )
                     if isinstance(update.message.out, bool):
                         if update.message.out:
-                            chat_id = self.chat_id(update.message.peer_id)
                             self._cache.drop_cache(chat_id)
-                            if 'LEFT_HANDLER' in self.HANDLERS_LIST:
-                                await self._propagate(
-                                    'LEFT_HANDLER',
+                            await self.propagate(
+                                ChatUpdate(
                                     chat_id,
-                                )
+                                    ChatUpdate.LEFT_GROUP,
+                                ),
+                            )
                     if isinstance(
                         update.message.action,
                         MessageActionChatDeleteUser,
@@ -155,17 +158,17 @@ class TelethonClient(BridgedClient):
                             update.message.peer_id,
                             PeerChat,
                         ):
-                            chat_id = self.chat_id(update.message.peer_id)
                             if isinstance(
                                 await self._app.get_entity(chat_id),
                                 ChatForbidden,
                             ):
                                 self._cache.drop_cache(chat_id)
-                                if 'KICK_HANDLER' in self.HANDLERS_LIST:
-                                    await self._propagate(
-                                        'KICK_HANDLER',
+                                await self.propagate(
+                                    ChatUpdate(
                                         chat_id,
-                                    )
+                                        ChatUpdate.KICKED,
+                                    ),
+                                )
 
     async def get_call(
         self,

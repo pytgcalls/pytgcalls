@@ -12,6 +12,7 @@ class GroupCallParticipant(PyObject):
         video_camera: bool,
         raised_hand: bool,
         volume: int,
+        joined: bool,
         left: bool,
     ):
         self.user_id: int = user_id
@@ -22,4 +23,5 @@ class GroupCallParticipant(PyObject):
         self.video_camera: bool = video_camera
         self.raised_hand: bool = raised_hand
         self.volume: int = volume
+        self.joined: bool = joined
         self.left: bool = left

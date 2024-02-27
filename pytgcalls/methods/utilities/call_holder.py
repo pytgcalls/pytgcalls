@@ -43,7 +43,7 @@ class CallHolder(Scaffold):
         chat_id: Union[int, str],
     ):
         calls_list: dict = self._binding.calls()
-        int_id = await self._resolve_chat_id(chat_id)
+        int_id = await self.resolve_chat_id(chat_id)
 
         if int_id in calls_list:
             if calls_list[int_id] != StreamStatus.Idling:
@@ -59,7 +59,7 @@ class CallHolder(Scaffold):
         chat_id: int,
     ):
         calls_list: dict = self._binding.calls()
-        chat_id = await self._resolve_chat_id(chat_id)
+        chat_id = await self.resolve_chat_id(chat_id)
 
         if chat_id in calls_list:
             return GroupCall(chat_id, self._conversions[calls_list[chat_id]])

@@ -38,7 +38,9 @@ from pyrogram.raw.types import UpdateNewChannelMessage
 from pyrogram.raw.types import UpdateNewMessage
 from pyrogram.raw.types import Updates
 
+from ..types import ChatUpdate
 from ..types import GroupCallParticipant
+from ..types import UpdatedGroupCallParticipant
 from ..version_manager import VersionManager
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
@@ -46,10 +48,11 @@ from .client_cache import ClientCache
 
 class PyrogramClient(BridgedClient):
     def __init__(
-            self,
-            cache_duration: int,
-            client: Client,
+        self,
+        cache_duration: int,
+        client: Client,
     ):
+        super().__init__()
         self._app: Client = client
         if VersionManager.version_tuple(
                 pyrogram.__version__,
@@ -65,8 +68,8 @@ class PyrogramClient(BridgedClient):
         @self._app.on_raw_update()
         async def on_update(_, update, __, data2):
             if isinstance(
-                    update,
-                    UpdateGroupCallParticipants,
+                update,
+                UpdateGroupCallParticipants,
             ):
                 participants = update.participants
                 for participant in participants:
@@ -75,22 +78,20 @@ class PyrogramClient(BridgedClient):
                         self.parse_participant(participant),
                     )
                     if result is not None:
-                        if 'PARTICIPANTS_HANDLER' in self.HANDLERS_LIST:
-                            await self._propagate(
-                                'PARTICIPANTS_HANDLER',
+                        await self.propagate(
+                            UpdatedGroupCallParticipant(
                                 self._cache.get_chat_id(update.call.id),
                                 result,
-                                participant.just_joined,
-                                participant.left,
-                            )
+                            ),
+                        )
             if isinstance(
-                    update,
-                    UpdateGroupCall,
+                update,
+                UpdateGroupCall,
             ):
                 chat_id = self.chat_id(data2[update.chat_id])
                 if isinstance(
-                        update.call,
-                        GroupCall,
+                    update.call,
+                    GroupCall,
                 ):
                     if update.call.schedule_date is None:
                         self._cache.set_cache(
@@ -101,18 +102,19 @@ class PyrogramClient(BridgedClient):
                             ),
                         )
                 if isinstance(
-                        update.call,
-                        GroupCallDiscarded,
+                    update.call,
+                    GroupCallDiscarded,
                 ):
                     self._cache.drop_cache(chat_id)
-                    if 'CLOSED_HANDLER' in self.HANDLERS_LIST:
-                        await self._propagate(
-                            'CLOSED_HANDLER',
+                    await self.propagate(
+                        ChatUpdate(
                             chat_id,
-                        )
+                            ChatUpdate.CLOSED_VOICE_CHAT,
+                        ),
+                    )
             if isinstance(
-                    update,
-                    UpdateChannel,
+                update,
+                UpdateChannel,
             ):
                 chat_id = self.chat_id(update)
                 if len(data2) > 0:
@@ -121,83 +123,83 @@ class PyrogramClient(BridgedClient):
                             ChannelForbidden,
                     ):
                         self._cache.drop_cache(chat_id)
-                        if 'KICK_HANDLER' in self.HANDLERS_LIST:
-                            await self._propagate(
-                                'KICK_HANDLER',
+                        await self.propagate(
+                            ChatUpdate(
                                 chat_id,
-                            )
+                                ChatUpdate.KICKED,
+                            ),
+                        )
             if isinstance(
-                    update,
-                    UpdateNewChannelMessage,
-            ) or isinstance(
                 update,
-                UpdateNewMessage,
+                (UpdateNewChannelMessage, UpdateNewMessage),
             ):
                 if isinstance(
-                        update.message,
-                        MessageService,
+                    update.message,
+                    MessageService,
                 ):
+                    chat_id = self.chat_id(update.message.peer_id)
                     if isinstance(
-                            update.message.action,
-                            MessageActionInviteToGroupCall,
-                    ):
-                        if 'INVITE_HANDLER' in self.HANDLERS_LIST:
-                            await self._propagate(
-                                'INVITE_HANDLER',
-                                update.message.action,
-                            )
-                    if isinstance(
-                            update.message.action,
-                            MessageActionChatDeleteUser,
+                        update.message.action,
+                        MessageActionInviteToGroupCall,
                     ):
                         if isinstance(
-                                update.message.peer_id,
-                                PeerChat,
+                            update.message.peer_id,
+                            PeerChat,
                         ):
-                            chat_id = self.chat_id(update.message.peer_id)
+                            await self.propagate(
+                                ChatUpdate(
+                                    chat_id,
+                                    ChatUpdate.INVITED_VOICE_CHAT,
+                                    update.message.action,
+                                ),
+                            )
+                    if isinstance(
+                        update.message.action,
+                        MessageActionChatDeleteUser,
+                    ):
+                        if isinstance(
+                            update.message.peer_id,
+                            PeerChat,
+                        ):
                             if isinstance(
-                                    data2[update.message.peer_id.chat_id],
-                                    ChatForbidden,
+                                data2[update.message.peer_id.chat_id],
+                                ChatForbidden,
                             ):
                                 self._cache.drop_cache(chat_id)
-                                if 'KICK_HANDLER' in self.HANDLERS_LIST:
-                                    await self._propagate(
-                                        'KICK_HANDLER',
+                                await self.propagate(
+                                    ChatUpdate(
                                         chat_id,
-                                    )
+                                        ChatUpdate.KICKED,
+                                    ),
+                                )
             if isinstance(
-                    data2,
-                    Dict,
+                data2,
+                Dict,
             ):
                 for group_id in data2:
                     if isinstance(
-                            update,
-                            UpdateNewChannelMessage,
-                    ) or isinstance(
                         update,
-                        UpdateNewMessage,
+                        (UpdateNewChannelMessage, UpdateNewMessage),
                     ):
                         if isinstance(
-                                update.message,
-                                MessageService,
+                            update.message,
+                            MessageService,
                         ):
                             if isinstance(
-                                    data2[group_id],
-                                    Channel,
-                            ) or isinstance(
                                 data2[group_id],
-                                Chat,
+                                (Channel, Chat),
                             ):
                                 chat_id = self.chat_id(data2[group_id])
                                 if data2[group_id].left:
                                     self._cache.drop_cache(
                                         chat_id,
                                     )
-                                    if 'LEFT_HANDLER' in self.HANDLERS_LIST:
-                                        await self._propagate(
-                                            'LEFT_HANDLER',
+                                    await self.propagate(
+                                        ChatUpdate(
                                             chat_id,
-                                        )
+                                            ChatUpdate.LEFT_GROUP,
+                                        ),
+                                    )
             raise ContinuePropagation()
 
     async def get_call(
