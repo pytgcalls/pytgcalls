@@ -33,6 +33,7 @@ class LeaveGroupCall(Scaffold):
 
         try:
             await ToAsync(
+                self.loop,
                 self._binding.stop,
                 chat_id,
             )

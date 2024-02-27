@@ -120,19 +120,19 @@ class Start(Scaffold):
             self._binding.on_stream_end(
                 lambda chat_id, stream: asyncio.run_coroutine_threadsafe(
                     stream_ended(chat_id, stream),
-                    loop,
+                    self.loop,
                 ),
             )
             self._binding.on_upgrade(
                 lambda chat_id, state: asyncio.run_coroutine_threadsafe(
                     update_status(chat_id, state),
-                    loop,
+                    self.loop,
                 ),
             )
             self._binding.on_disconnect(
                 lambda chat_id: asyncio.run_coroutine_threadsafe(
                     clear_cache(chat_id),
-                    loop,
+                    self.loop,
                 ),
             )
             await PyTgCallsSession().start()

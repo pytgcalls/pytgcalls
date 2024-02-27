@@ -19,6 +19,7 @@ class MuteStream(Scaffold):
         chat_id = await self.resolve_chat_id(chat_id)
         try:
             return await ToAsync(
+                self.loop,
                 self._binding.mute,
                 chat_id,
             )
