@@ -118,6 +118,7 @@ async def check_stream(
 async def cleanup_commands(
     commands: List[str],
     process_name: Optional[str] = None,
+    blacklist: Optional[List[str]] = None,
 ) -> List[str]:
     try:
         proc_res = await asyncio.create_subprocess_exec(
@@ -142,7 +143,8 @@ async def cleanup_commands(
         for v in commands:
             if len(v) > 0:
                 if v[0] == '-':
-                    ignore_next = v not in supported
+                    ignore_next = v not in supported or \
+                        blacklist is not None and v in blacklist
                 if not ignore_next:
                     new_commands += [v]
         return new_commands

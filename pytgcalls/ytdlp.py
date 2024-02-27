@@ -43,6 +43,11 @@ class YtDlp:
             commands += await cleanup_commands(
                 shlex.split(add_commands),
                 'yt-dlp',
+                [
+                    '-f',
+                    '-g',
+                    '--no-warnings',
+                ],
             )
 
         commands.append(link)
