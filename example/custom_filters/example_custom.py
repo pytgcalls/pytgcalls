@@ -2,11 +2,9 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import filters as fl
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls import idle
 from pytgcalls.filters import Filter
-from pytgcalls.types import ChatUpdate
 from pytgcalls.types import MediaStream
 from pytgcalls.types import Update
 
@@ -33,7 +31,7 @@ async def all_updates(_: PyTgCalls, update: Update):
 
 @app.on_message(filters.regex('!play'))
 async def play_handler(_: Client, message: Message):
-    await call_py.join_group_call(
+    await call_py.play(
         message.chat.id,
         MediaStream(
             test_stream,

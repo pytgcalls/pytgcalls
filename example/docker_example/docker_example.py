@@ -14,7 +14,7 @@ call_py = PyTgCalls(app)
 chat_id = -1001234567890
 call_py.start()
 audio_file = 'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
-call_py.join_group_call(
+call_py.play(
     chat_id,
     MediaStream(
         audio_file,

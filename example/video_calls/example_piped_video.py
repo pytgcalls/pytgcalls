@@ -13,7 +13,7 @@ app = Client(
 call_py = PyTgCalls(app)
 call_py.start()
 video_file = 'test.mkv'
-call_py.join_group_call(
+call_py.play(
     -1001234567890,
     MediaStream(
         video_file,

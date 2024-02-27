@@ -22,17 +22,7 @@ test_stream = 'http://docs.evostream.com/sample_content/assets/' \
 
 @app.on_message(filters.regex('!play'))
 async def play_handler(_: Client, message: Message):
-    await call_py.join_group_call(
-        message.chat.id,
-        MediaStream(
-            test_stream,
-        ),
-    )
-
-
-@app.on_message(filters.regex('!change_stream'))
-async def change_handler(_: Client, message: Message):
-    await call_py.change_stream(
+    await call_py.play(
         message.chat.id,
         MediaStream(
             test_stream,

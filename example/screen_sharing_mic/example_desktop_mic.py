@@ -13,7 +13,7 @@ app = Client(
 
 call_py = PyTgCalls(app)
 call_py.start()
-call_py.join_group_call(
+call_py.play(
     -1001234567890,
     MediaStream(
         MediaDevices.get_screen_devices()[0],

@@ -25,7 +25,7 @@ video_file = 'video.raw'
 while not os.path.exists(audio_file) or \
         not os.path.exists(video_file):
     time.sleep(0.125)
-call_py.join_group_call(
+call_py.play(
     -1001234567890,
     Stream(
         AudioStream(

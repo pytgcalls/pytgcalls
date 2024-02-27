@@ -47,7 +47,7 @@ async def test_handler(client: Client, message: Message):
 
     while not os.path.exists(output_file):
         time.sleep(0.125)
-    await call_py.join_group_call(
+    await call_py.play(
         message.chat.id,
         Stream(
             AudioStream(

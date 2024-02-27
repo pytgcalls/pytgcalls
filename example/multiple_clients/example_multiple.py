@@ -27,7 +27,7 @@ call_py2 = PyTgCalls(app2)
 
 @app.on_message(filters.regex('!p1'))
 async def play_handler(_: Client, message: Message):
-    await call_py.join_group_call(
+    await call_py.play(
         message.chat.id,
         MediaStream(
             test_stream,
@@ -37,7 +37,7 @@ async def play_handler(_: Client, message: Message):
 
 @app.on_message(filters.regex('!p2'))
 async def play_handler2(_: Client, message: Message):
-    await call_py2.join_group_call(
+    await call_py2.play(
         message.chat.id,
         MediaStream(
             test_stream,
