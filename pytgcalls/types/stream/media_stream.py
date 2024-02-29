@@ -28,6 +28,7 @@ class MediaStream(Stream):
     AUTO_DETECT = 1
     IGNORE = 2
     REQUIRED = 4
+    NO_LATENCY = 8
 
     @statictypes
     def __init__(
@@ -82,13 +83,20 @@ class MediaStream(Stream):
 
         self._audio_flags = audio_flags
         self._video_flags = video_flags
+        if audio_flags & ~self.NO_LATENCY == 0:
+            self._audio_flags = self.AUTO_DETECT | self.NO_LATENCY
+        if video_flags & ~self.NO_LATENCY == 0:
+            self._video_flags = self.AUTO_DETECT | self.NO_LATENCY
         self._ffmpeg_parameters = ffmpeg_parameters
         self._ytdlp_parameters = ytdlp_parameters
         self._headers = headers
+
+        audio_add_flags = (InputMode.NoLatency if self._audio_flags & self.NO_LATENCY else 0)
+        video_add_flags = (InputMode.NoLatency if self._video_flags & self.NO_LATENCY else 0)
         super().__init__(
-            stream_audio=None if audio_flags == self.IGNORE else
+            stream_audio=None if audio_flags & self.IGNORE else
             AudioStream(
-                InputMode.Shell,
+                InputMode.Shell | audio_add_flags,
                 ' '.join(
                     build_command(
                         'ffmpeg',
@@ -102,9 +110,9 @@ class MediaStream(Stream):
                 ),
                 self._audio_parameters,
             ),
-            stream_video=None if video_flags == self.IGNORE else
+            stream_video=None if video_flags & self.IGNORE else
             VideoStream(
-                InputMode.Shell,
+                InputMode.Shell | video_add_flags,
                 ' '.join(
                     build_command(
                         'ffmpeg',
@@ -121,7 +129,7 @@ class MediaStream(Stream):
         )
 
     async def check_stream(self):
-        if not self._video_flags == self.IGNORE:
+        if not self._video_flags & self.IGNORE:
             if YtDlp.is_valid(self._media_path):
                 links = await YtDlp.extract(
                     self._media_path,
@@ -163,14 +171,14 @@ class MediaStream(Stream):
                     ),
                 )
             except NoVideoSourceFound as e:
-                if self._video_flags == self.REQUIRED:
+                if self._video_flags & self.REQUIRED:
                     raise e
                 self.stream_video = None
 
         self._audio_path = self._audio_path \
             if self._audio_path else self._media_path
 
-        if not self._audio_flags == self.IGNORE:
+        if not self._audio_flags & self.IGNORE:
             if YtDlp.is_valid(self._audio_path):
                 self._audio_path = (
                     await YtDlp.extract(
@@ -204,6 +212,6 @@ class MediaStream(Stream):
                     ),
                 )
             except NoAudioSourceFound as e:
-                if self._audio_flags == self.REQUIRED:
+                if self._audio_flags & self.REQUIRED:
                     raise e
                 self.stream_audio = None
