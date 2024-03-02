@@ -2,8 +2,8 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import PyTgCalls
 from pytgcalls import idle
+from pytgcalls import PyTgCalls
 from pytgcalls.filters import Filter
 from pytgcalls.types import MediaStream
 from pytgcalls.types import Update
