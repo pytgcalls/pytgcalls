@@ -25,10 +25,10 @@ from ..stream.video_quality import VideoQuality
 
 
 class MediaStream(Stream):
-    AUTO_DETECT = 1
-    IGNORE = 2
-    REQUIRED = 4
-    NO_LATENCY = 8
+    AUTO_DETECT = 1 << 0
+    REQUIRED = 1 << 1
+    IGNORE = 1 << 2
+    NO_LATENCY = 1 << 3
 
     @statictypes
     def __init__(
@@ -81,22 +81,16 @@ class MediaStream(Stream):
         elif isinstance(audio_path, DeviceInfo):
             self._audio_path = audio_path.build_ffmpeg_command()
 
-        self._audio_flags = audio_flags
-        self._video_flags = video_flags
-        if audio_flags & ~self.NO_LATENCY == 0:
-            self._audio_flags = self.AUTO_DETECT | self.NO_LATENCY
-        if video_flags & ~self.NO_LATENCY == 0:
-            self._video_flags = self.AUTO_DETECT | self.NO_LATENCY
+        self._audio_flags = self._filter_flags(audio_flags)
+        self._video_flags = self._filter_flags(video_flags)
         self._ffmpeg_parameters = ffmpeg_parameters
         self._ytdlp_parameters = ytdlp_parameters
         self._headers = headers
 
-        audio_add_flags = (InputMode.NoLatency if self._audio_flags & self.NO_LATENCY else 0)
-        video_add_flags = (InputMode.NoLatency if self._video_flags & self.NO_LATENCY else 0)
         super().__init__(
-            stream_audio=None if audio_flags & self.IGNORE else
+            stream_audio=None if self._audio_flags & self.IGNORE else
             AudioStream(
-                InputMode.Shell | audio_add_flags,
+                self._flags(self._audio_flags),
                 ' '.join(
                     build_command(
                         'ffmpeg',
@@ -110,9 +104,9 @@ class MediaStream(Stream):
                 ),
                 self._audio_parameters,
             ),
-            stream_video=None if video_flags & self.IGNORE else
+            stream_video=None if self._video_flags & self.IGNORE else
             VideoStream(
-                InputMode.Shell | video_add_flags,
+                self._flags(self._video_flags),
                 ' '.join(
                     build_command(
                         'ffmpeg',
@@ -215,3 +209,23 @@ class MediaStream(Stream):
                 if self._audio_flags & self.REQUIRED:
                     raise e
                 self.stream_audio = None
+
+    @staticmethod
+    def _filter_flags(flags: Optional[int]) -> int:
+        combined_flags = [
+            MediaStream.AUTO_DETECT,
+            MediaStream.IGNORE, MediaStream.REQUIRED,
+        ]
+        if not flags:
+            flags = min(combined_flags)
+        if flags & ~sum(combined_flags) != 0:
+            flags |= min(combined_flags)
+        potential_flag = max([flag for flag in combined_flags if flags & flag])
+        return flags & ~sum(combined_flags) | potential_flag
+
+    @staticmethod
+    def _flags(flags: int) -> InputMode:
+        new_flags = InputMode.Shell
+        if flags & MediaStream.NO_LATENCY:
+            new_flags |= InputMode.NoLatency
+        return new_flags
