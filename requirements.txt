@@ -1,6 +1,6 @@
 aiohttp>=3.9.3
 deprecation
-ntgcalls>=1.1.2
+ntgcalls>=1.1.3b6
 psutil
 screeninfo
 setuptools
