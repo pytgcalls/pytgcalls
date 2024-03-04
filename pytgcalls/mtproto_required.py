@@ -1,8 +1,8 @@
 from functools import wraps
 
 from .exceptions import ClientNotStarted
-from .exceptions import NoMTProtoClientSet
 from .exceptions import MTProtoClientNotConnected
+from .exceptions import NoMTProtoClientSet
 
 
 def mtproto_required(func):
