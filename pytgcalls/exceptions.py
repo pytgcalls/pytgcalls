@@ -50,6 +50,11 @@ class NoMTProtoClientSet(Exception):
             'No MTProto client set',
         )
 
+class MTProtoClientNotConnected(Exception):
+    def __init__(self):
+        super().__init__(
+            'MTProto client is not connected.'
+        )
 
 class NoActiveGroupCall(Exception):
     def __init__(self):
