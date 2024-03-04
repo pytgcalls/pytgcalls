@@ -2,6 +2,7 @@ from functools import wraps
 
 from .exceptions import ClientNotStarted
 from .exceptions import NoMTProtoClientSet
+from .exceptions import MTProtoClientNotConnected
 
 
 def mtproto_required(func):
@@ -12,6 +13,9 @@ def mtproto_required(func):
 
         if not self._is_running:
             raise ClientNotStarted()
+
+        if not self._app.is_connected:
+            raise MTProtoClientNotConnected()
 
     @wraps(func)
     async def async_wrapper(*args, **kwargs):
