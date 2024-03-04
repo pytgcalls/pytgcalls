@@ -26,6 +26,8 @@ def mutex(func):
                 )
             if chat_id is not None:
                 name = f'{func.__name__}_{chat_id}'
+                if not hasattr(self, '_lock'):
+                    self._lock = {}
                 if name not in self._lock:
                     self._lock[name] = asyncio.Lock()
                 async with self._lock[name]:
