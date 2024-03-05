@@ -25,14 +25,13 @@ def mutex(func):
                     str(e),
                 )
             if chat_id is not None:
-                name = f'{func.__name__}_{chat_id}'
-                if name not in self._lock:
-                    self._lock[name] = asyncio.Lock()
-                async with self._lock[name]:
+                if chat_id not in self._lock:
+                    self._lock[chat_id] = asyncio.Lock()
+                async with self._lock[chat_id]:
                     try:
                         return await func(*args, **kwargs)
                     finally:
-                        self._lock.pop(name, None)
+                        self._lock.pop(chat_id, None)
 
         return await func(*args, **kwargs)
     return async_wrapper

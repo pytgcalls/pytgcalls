@@ -158,3 +158,10 @@ class UnMuteNeeded(Exception):
         super().__init__(
             'Needed to unmute the userbot',
         )
+
+
+class MTProtoClientNotConnected(Exception):
+    def __init__(self):
+        super().__init__(
+            'MTProto client not connected',
+        )
