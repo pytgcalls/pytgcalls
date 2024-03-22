@@ -15,7 +15,6 @@ from ...mtproto_required import mtproto_required
 from ...mutex import mutex
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
-from ...to_async import ToAsync
 from ...types.raw.stream import Stream
 from ..utilities.stream_params import StreamParams
 
@@ -42,11 +41,9 @@ class Play(Scaffold):
             stream,
         )
 
-        if chat_id in self._binding.calls():
+        if chat_id in await self._binding.calls():
             try:
-                return await ToAsync(
-                    self.loop,
-                    self._binding.change_stream,
+                return await self._binding.change_stream(
                     chat_id,
                     await StreamParams.get_stream_params(stream),
                 )
@@ -68,9 +65,7 @@ class Play(Scaffold):
 
         try:
             for retries in range(4):
-                call_params: str = await ToAsync(
-                    self.loop,
-                    self._binding.create_call,
+                call_params: str = await self._binding.create_call(
                     chat_id,
                     media_description,
                 )
@@ -83,9 +78,7 @@ class Play(Scaffold):
                         media_description.video is None,
                         self._cache_user_peer.get(chat_id),
                     )
-                    await ToAsync(
-                        self.loop,
-                        self._binding.connect,
+                    await self._binding.connect(
                         chat_id,
                         result_params,
                     )
@@ -99,11 +92,7 @@ class Play(Scaffold):
                     )
                 except Exception:
                     try:
-                        await ToAsync(
-                            self.loop,
-                            self._binding.stop,
-                            chat_id,
-                        )
+                        await self._binding.stop(chat_id)
                     except ConnectionNotFound:
                         pass
                     raise

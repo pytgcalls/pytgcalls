@@ -124,7 +124,7 @@ class BridgedClient(HandlersHolder):
 
     @staticmethod
     def rnd_id() -> int:
-        return random.randint(0, 2147483647)
+        return random.randint(0, 0x7FFFFFFF - 1)
 
     def on_update(self) -> Callable:
         def decorator(func: Callable) -> Callable:

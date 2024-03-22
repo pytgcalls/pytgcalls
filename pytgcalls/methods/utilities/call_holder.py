@@ -23,15 +23,15 @@ class CallHolder(Scaffold):
         }
 
     @property
-    def calls(self):
-        calls_list: dict = self._binding.calls()  # type: ignore
+    async def calls(self):
+        calls_list: dict = await self._binding.calls()  # type: ignore
         return List([
             GroupCall(x, self._conversions[calls_list[x]]) for x in calls_list
         ])
 
     @property
-    def active_calls(self):
-        calls_list: dict = self._binding.calls()  # type: ignore
+    async def active_calls(self):
+        calls_list: dict = await self._binding.calls()  # type: ignore
         return List([
             GroupCall(x, self._conversions[calls_list[x]]) for x in calls_list
             if calls_list[x] != StreamStatus.Idling
@@ -42,7 +42,7 @@ class CallHolder(Scaffold):
         self,
         chat_id: Union[int, str],
     ):
-        calls_list: dict = self._binding.calls()
+        calls_list: dict = await self._binding.calls()
         int_id = await self.resolve_chat_id(chat_id)
 
         if int_id in calls_list:
@@ -58,7 +58,7 @@ class CallHolder(Scaffold):
         self,
         chat_id: int,
     ):
-        calls_list: dict = self._binding.calls()
+        calls_list: dict = await self._binding.calls()
         chat_id = await self.resolve_chat_id(chat_id)
 
         if chat_id in calls_list:

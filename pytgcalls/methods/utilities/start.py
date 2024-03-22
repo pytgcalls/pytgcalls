@@ -9,7 +9,6 @@ from ...exceptions import PyTgCallsAlreadyRunning
 from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
-from ...to_async import ToAsync
 from ...types import ChatUpdate
 from ...types import StreamAudioEnded
 from ...types import StreamVideoEnded
@@ -61,11 +60,7 @@ class Start(Scaffold):
 
         async def clear_call(chat_id):
             try:
-                await ToAsync(
-                    self.loop,
-                    self._binding.stop,
-                    chat_id,
-                )
+                await self._binding.stop(chat_id)
             except ConnectionNotFound:
                 pass
             await clear_cache(chat_id)

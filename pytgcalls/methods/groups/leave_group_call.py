@@ -8,7 +8,6 @@ from ...mtproto_required import mtproto_required
 from ...mutex import mutex
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
-from ...to_async import ToAsync
 
 
 class LeaveGroupCall(Scaffold):
@@ -32,11 +31,7 @@ class LeaveGroupCall(Scaffold):
         )
 
         try:
-            await ToAsync(
-                self.loop,
-                self._binding.stop,
-                chat_id,
-            )
+            await self._binding.stop(chat_id)
         except ConnectionNotFound:
             raise NotInGroupCallError()
 
