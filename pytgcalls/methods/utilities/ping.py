@@ -5,7 +5,7 @@ from ...scaffold import Scaffold
 
 class Ping(Scaffold):
     @property
-    async def ping(self) -> float:
+    def ping(self) -> float:
         start_time: float = time()
         self._binding.ping()
 
