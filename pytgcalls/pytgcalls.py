@@ -23,6 +23,7 @@ class PyTgCalls(Methods, Scaffold):
         app: Any,
         workers: int = WORKERS,
         cache_duration: int = CACHE_DURATION,
+        rtc_logs_path: str = None,
     ):
         super().__init__()
         self._mtproto = app
@@ -38,7 +39,7 @@ class PyTgCalls(Methods, Scaffold):
             self._app.package_name,
         )
         self._cache_user_peer = Cache()
-        self._binding = NTgCalls()
+        self._binding = NTgCalls(rtc_logs_path)
         self.loop = asyncio.get_event_loop()
         self.workers = workers
         self.executor = ThreadPoolExecutor(
