@@ -16,7 +16,7 @@ class PyTgCallsSession:
 
     async def start(self):
         if not self.notice_displayed:
-            self.notice_displayed = True
+            PyTgCallsSession.notice_displayed = True
             year = date.today().year
             print(
                 f'PyTgCalls v{__version__} powered by '
