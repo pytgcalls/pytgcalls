@@ -10,29 +10,31 @@ from ...scaffold import Scaffold
 from ...statictypes import statictypes
 
 
-class LeaveGroupCall(Scaffold):
+class LeaveCall(Scaffold):
     @mutex
     @statictypes
     @mtproto_required
-    async def leave_group_call(
+    async def leave_call(
         self,
         chat_id: Union[int, str],
     ):
         chat_id = await self.resolve_chat_id(chat_id)
-        chat_call = await self._app.get_full_chat(
-            chat_id,
-        )
+        if chat_id < 0:  # type: ignore
+            chat_call = await self._app.get_full_chat(
+                chat_id,
+            )
 
-        if chat_call is None:
-            raise NoActiveGroupCall()
+            if chat_call is None:
+                raise NoActiveGroupCall()
 
-        await self._app.leave_group_call(
-            chat_id,
-        )
-
+            await self._app.leave_group_call(
+                chat_id,
+            )
+        else:
+            await self._app.discard_call(chat_id)
         try:
             await self._binding.stop(chat_id)
         except ConnectionNotFound:
             raise NotInGroupCallError()
-
-        self._need_unmute.discard(chat_id)
+        if chat_id < 0:  # type: ignore
+            self._need_unmute.discard(chat_id)

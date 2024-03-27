@@ -3,6 +3,8 @@ from typing import Callable
 from typing import List
 from typing import Optional
 
+from ntgcalls import Protocol
+
 from ..exceptions import InvalidMTProtoClient
 from ..types.groups import GroupCallParticipant
 from .bridged_client import BridgedClient
@@ -64,6 +66,85 @@ class MtProtoClient:
                 have_video,
                 join_as,
             )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def request_call(
+        self,
+        user_id: int,
+        g_a_hash: bytes,
+        protocol: Protocol,
+        video: bool,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.request_call(
+                user_id,
+                g_a_hash,
+                protocol,
+                video,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def accept_call(
+        self,
+        user_id: int,
+        g_b: bytes,
+        protocol: Protocol,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.accept_call(
+                user_id,
+                g_b,
+                protocol,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def discard_call(
+        self,
+        user_id: int,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.discard_call(
+                user_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def confirm_call(
+        self,
+        user_id: int,
+        g_a: bytes,
+        key_fingerprint: int,
+        protocol: Protocol,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.confirm_call(
+                user_id,
+                g_a,
+                key_fingerprint,
+                protocol,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def send_signaling(
+        self,
+        user_id: int,
+        data: bytes,
+    ):
+        if self._bind_client is not None:
+            await self._bind_client.send_signaling(
+                user_id,
+                data,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def get_dhc(self):
+        if self._bind_client is not None:
+            return await self._bind_client.get_dhc()
         else:
             raise InvalidMTProtoClient()
 

@@ -1,11 +1,11 @@
 from .change_volume_call import ChangeVolumeCall
 from .get_participants import GetParticipants
-from .leave_group_call import LeaveGroupCall
+from .leave_call import LeaveCall
 
 
-class Groups(
+class Calls(
     ChangeVolumeCall,
     GetParticipants,
-    LeaveGroupCall,
+    LeaveCall,
 ):
     pass

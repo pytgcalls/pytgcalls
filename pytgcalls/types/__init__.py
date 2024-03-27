@@ -1,7 +1,12 @@
 from .browsers import Browsers
 from .cache import Cache
+from .calls import Call
+from .calls import CallConfig
+from .calls import CallData
+from .calls import CallProtocol
+from .calls import GroupCallConfig
+from .calls import RawCallUpdate
 from .groups import ChatUpdate
-from .groups import GroupCall
 from .groups import GroupCallParticipant
 from .groups import JoinedGroupCallParticipant
 from .groups import LeftGroupCallParticipant
@@ -18,7 +23,12 @@ __all__ = (
     'Browsers',
     'Cache',
     'ChatUpdate',
-    'GroupCall',
+    'Call',
+    'CallConfig',
+    'CallProtocol',
+    'CallData',
+    'RawCallUpdate',
+    'GroupCallConfig',
     'GroupCallParticipant',
     'JoinedGroupCallParticipant',
     'LeftGroupCallParticipant',

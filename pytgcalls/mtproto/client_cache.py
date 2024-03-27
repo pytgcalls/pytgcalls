@@ -22,6 +22,7 @@ class ClientCache:
         self._cache_duration = 1 if app.no_updates() else cache_duration
         self._full_chat_cache = Cache()
         self._call_participants_cache = Cache()
+        self._phone_calls = Cache()
 
     async def get_full_chat(
         self,
@@ -104,7 +105,7 @@ class ClientCache:
         self,
         input_group_call_id: int,
     ) -> Optional[int]:
-        for key in self._call_participants_cache.keys():
+        for key in self._call_participants_cache.keys:
             participants = self._call_participants_cache.get(key)
             if participants is not None:
                 if participants.input_id == input_group_call_id:
@@ -134,3 +135,38 @@ class ClientCache:
     ) -> None:
         self._full_chat_cache.pop(chat_id)
         self._call_participants_cache.pop(chat_id)
+
+    def set_phone_call(
+        self,
+        chat_id: int,
+        phone_call: Any,
+    ) -> None:
+        self._phone_calls.put(
+            chat_id,
+            phone_call,
+        )
+
+    def get_phone_call(
+        self,
+        chat_id: int,
+    ) -> Optional[Any]:
+        return self._phone_calls.get(chat_id)
+
+    def get_user_id(
+        self,
+        phone_call_id: int,
+    ) -> Optional[int]:
+        return next(
+            (
+                user_id
+                for user_id in self._phone_calls.keys
+                if self._phone_calls.get(user_id).id == phone_call_id
+            ),
+            None,
+        )
+
+    def drop_phone_call(
+        self,
+        chat_id: int,
+    ) -> None:
+        self._phone_calls.pop(chat_id)

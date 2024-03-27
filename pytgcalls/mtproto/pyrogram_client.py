@@ -5,17 +5,25 @@ from typing import Optional
 from typing import Union
 
 import pyrogram
+from ntgcalls import Protocol
 from pyrogram import Client
 from pyrogram import ContinuePropagation
 from pyrogram.raw.base import InputPeer
+from pyrogram.raw.base import InputUser
 from pyrogram.raw.functions.channels import GetFullChannel
+from pyrogram.raw.functions.messages import GetDhConfig
 from pyrogram.raw.functions.messages import GetFullChat
+from pyrogram.raw.functions.phone import AcceptCall
+from pyrogram.raw.functions.phone import ConfirmCall
 from pyrogram.raw.functions.phone import CreateGroupCall
+from pyrogram.raw.functions.phone import DiscardCall
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
 from pyrogram.raw.functions.phone import GetGroupCall
 from pyrogram.raw.functions.phone import GetGroupParticipants
 from pyrogram.raw.functions.phone import JoinGroupCall
 from pyrogram.raw.functions.phone import LeaveGroupCall
+from pyrogram.raw.functions.phone import RequestCall
+from pyrogram.raw.functions.phone import SendSignalingData
 from pyrogram.raw.types import Channel
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import Chat
@@ -26,20 +34,32 @@ from pyrogram.raw.types import GroupCallDiscarded
 from pyrogram.raw.types import InputChannel
 from pyrogram.raw.types import InputGroupCall
 from pyrogram.raw.types import InputPeerChannel
+from pyrogram.raw.types import InputPhoneCall
 from pyrogram.raw.types import MessageActionChatDeleteUser
 from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import MessageService
 from pyrogram.raw.types import PeerChat
+from pyrogram.raw.types import PhoneCall
+from pyrogram.raw.types import PhoneCallAccepted
+from pyrogram.raw.types import PhoneCallDiscarded
+from pyrogram.raw.types import PhoneCallDiscardReasonHangup
+from pyrogram.raw.types import PhoneCallProtocol
+from pyrogram.raw.types import PhoneCallRequested
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateGroupCallConnection
 from pyrogram.raw.types import UpdateGroupCallParticipants
 from pyrogram.raw.types import UpdateNewChannelMessage
 from pyrogram.raw.types import UpdateNewMessage
+from pyrogram.raw.types import UpdatePhoneCall
+from pyrogram.raw.types import UpdatePhoneCallSignalingData
 from pyrogram.raw.types import Updates
+from pyrogram.raw.types.messages import DhConfig
 
+from ..types import CallProtocol
 from ..types import ChatUpdate
 from ..types import GroupCallParticipant
+from ..types import RawCallUpdate
 from ..types import UpdatedGroupCallParticipant
 from ..version_manager import VersionManager
 from .bridged_client import BridgedClient
@@ -66,7 +86,85 @@ class PyrogramClient(BridgedClient):
         )
 
         @self._app.on_raw_update()
-        async def on_update(_, update, __, data2):
+        async def on_update(_, update, __, chats):
+            if isinstance(
+                update,
+                UpdatePhoneCallSignalingData,
+            ):
+                await self.propagate(
+                    RawCallUpdate(
+                        self._cache.get_user_id(update.phone_call_id),
+                        RawCallUpdate.SIGNALING_DATA,
+                        signaling_data=update.data,
+                    ),
+                )
+
+            if isinstance(
+                update,
+                UpdatePhoneCall,
+            ):
+                if isinstance(
+                    update.phone_call,
+                    (PhoneCallAccepted, PhoneCallRequested),
+                ):
+                    self._cache.set_phone_call(
+                        self.user_from_call(update.phone_call),
+                        InputPhoneCall(
+                            id=update.phone_call.id,
+                            access_hash=update.phone_call.access_hash,
+                        ),
+                    )
+                if isinstance(update.phone_call, PhoneCallAccepted):
+                    await self.propagate(
+                        RawCallUpdate(
+                            self.user_from_call(update.phone_call),
+                            RawCallUpdate.ACCEPTED,
+                            update.phone_call.g_b,
+                            CallProtocol(
+                                update.phone_call.protocol.library_versions,
+                            ),
+                        ),
+                    )
+                if isinstance(update.phone_call, PhoneCallDiscarded):
+                    user_id = self._cache.get_user_id(update.phone_call.id)
+                    if user_id is not None:
+                        self._cache.drop_phone_call(
+                            user_id,
+                        )
+                        await self.propagate(
+                            ChatUpdate(
+                                user_id,
+                                ChatUpdate.DISCARDED_CALL,
+                            ),
+                        )
+                if isinstance(update.phone_call, PhoneCallRequested):
+                    await self.propagate(
+                        RawCallUpdate(
+                            self.user_from_call(update.phone_call),
+                            RawCallUpdate.REQUESTED,
+                            update.phone_call.g_a_hash,
+                            CallProtocol(
+                                update.phone_call.protocol.library_versions,
+                            ),
+                        ),
+                    )
+                if isinstance(update.phone_call, PhoneCall):
+                    await self.propagate(
+                        RawCallUpdate(
+                            self.user_from_call(update.phone_call),
+                            RawCallUpdate.CONFIRMED,
+                            update.phone_call.g_a_or_b,
+                            CallProtocol(
+                                update.phone_call.protocol.library_versions,
+                                update.phone_call.p2p_allowed,
+                                self.parse_servers(
+                                    update.phone_call.connections,
+                                ),
+                            ),
+                            update.phone_call.key_fingerprint,
+                        ),
+                    )
+
             if isinstance(
                 update,
                 UpdateGroupCallParticipants,
@@ -88,7 +186,7 @@ class PyrogramClient(BridgedClient):
                 update,
                 UpdateGroupCall,
             ):
-                chat_id = self.chat_id(data2[update.chat_id])
+                chat_id = self.chat_id(chats[update.chat_id])
                 if isinstance(
                     update.call,
                     GroupCall,
@@ -117,10 +215,10 @@ class PyrogramClient(BridgedClient):
                 UpdateChannel,
             ):
                 chat_id = self.chat_id(update)
-                if len(data2) > 0:
+                if len(chats) > 0:
                     if isinstance(
-                            data2[update.channel_id],
-                            ChannelForbidden,
+                        chats[update.channel_id],
+                        ChannelForbidden,
                     ):
                         self._cache.drop_cache(chat_id)
                         await self.propagate(
@@ -162,7 +260,7 @@ class PyrogramClient(BridgedClient):
                             PeerChat,
                         ):
                             if isinstance(
-                                data2[update.message.peer_id.chat_id],
+                                chats[update.message.peer_id.chat_id],
                                 ChatForbidden,
                             ):
                                 self._cache.drop_cache(chat_id)
@@ -173,10 +271,10 @@ class PyrogramClient(BridgedClient):
                                     ),
                                 )
             if isinstance(
-                data2,
+                chats,
                 Dict,
             ):
-                for group_id in data2:
+                for group_id in chats:
                     if isinstance(
                         update,
                         (UpdateNewChannelMessage, UpdateNewMessage),
@@ -186,11 +284,11 @@ class PyrogramClient(BridgedClient):
                             MessageService,
                         ):
                             if isinstance(
-                                data2[group_id],
+                                chats[group_id],
                                 (Channel, Chat),
                             ):
-                                chat_id = self.chat_id(data2[group_id])
-                                if data2[group_id].left:
+                                chat_id = self.chat_id(chats[group_id])
+                                if chats[group_id].left:
                                     self._cache.drop_cache(
                                         chat_id,
                                     )
@@ -239,6 +337,14 @@ class PyrogramClient(BridgedClient):
                 return None
 
         return input_call
+
+    async def get_dhc(self) -> DhConfig:
+        return await self._app.send(
+            GetDhConfig(
+                version=0,
+                random_length=256,
+            ),
+        )
 
     async def get_group_call_participants(
             self,
@@ -303,6 +409,72 @@ class PyrogramClient(BridgedClient):
 
         return json.dumps({'transport': None})
 
+    async def request_call(
+        self,
+        user_id: int,
+        g_a_hash: bytes,
+        protocol: Protocol,
+        video: bool,
+    ):
+        await self._app.invoke(
+            RequestCall(
+                user_id=await self.resolve_peer(user_id),
+                random_id=self.rnd_id(),
+                g_a_hash=g_a_hash,
+                protocol=self.parse_protocol(protocol),
+                video=video,
+            ),
+        )
+
+    async def accept_call(
+        self,
+        user_id: int,
+        g_b: bytes,
+        protocol: Protocol,
+    ):
+        await self._app.invoke(
+            AcceptCall(
+                peer=self._cache.get_phone_call(user_id),
+                g_b=g_b,
+                protocol=self.parse_protocol(protocol),
+            ),
+        )
+
+    async def confirm_call(
+        self,
+        user_id: int,
+        g_a: bytes,
+        key_fingerprint: int,
+        protocol: Protocol,
+    ) -> CallProtocol:
+        res = (
+            await self._app.invoke(
+                ConfirmCall(
+                    peer=self._cache.get_phone_call(user_id),
+                    g_a=g_a,
+                    key_fingerprint=key_fingerprint,
+                    protocol=self.parse_protocol(protocol),
+                ),
+            )
+        ).phone_call
+        return CallProtocol(
+            res.protocol.library_versions,
+            res.p2p_allowed,
+            self.parse_servers(res.connections),
+        )
+
+    async def send_signaling(
+        self,
+        user_id: int,
+        data: bytes,
+    ):
+        await self._app.invoke(
+            SendSignalingData(
+                peer=self._cache.get_phone_call(user_id),
+                data=data,
+            ),
+        )
+
     async def create_group_call(
             self,
             chat_id: int,
@@ -343,6 +515,21 @@ class PyrogramClient(BridgedClient):
                     source=0,
                 ),
             )
+
+    async def discard_call(
+        self,
+        chat_id: int,
+    ):
+        await self._app.invoke(
+            DiscardCall(
+                peer=self._cache.get_phone_call(chat_id),
+                duration=0,
+                reason=PhoneCallDiscardReasonHangup(),
+                connection_id=0,
+                video=False,
+            ),
+        )
+        self._cache.drop_phone_call(chat_id)
 
     async def change_volume(
             self,
@@ -387,8 +574,18 @@ class PyrogramClient(BridgedClient):
     async def resolve_peer(
             self,
             user_id: Union[int, str],
-    ) -> InputPeer:
+    ) -> Union[InputPeer, InputUser, InputChannel]:
         return await self._app.resolve_peer(user_id)
+
+    @staticmethod
+    def parse_protocol(protocol: Protocol) -> PhoneCallProtocol:
+        return PhoneCallProtocol(
+            min_layer=protocol.min_layer,
+            max_layer=protocol.max_layer,
+            udp_p2p=protocol.udp_p2p,
+            udp_reflector=protocol.udp_reflector,
+            library_versions=protocol.library_versions,
+        )
 
     async def get_id(self) -> int:
         return (await self._app.get_me()).id

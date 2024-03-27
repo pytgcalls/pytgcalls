@@ -16,6 +16,7 @@ class PyObject:
                 **{
                     attr: vars(obj)[attr]
                     for attr in vars(obj)
+                    if not attr.startswith('_')
                 },
             }
         return {}

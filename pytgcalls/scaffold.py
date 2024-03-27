@@ -22,6 +22,7 @@ class Scaffold(HandlersHolder):
         self.loop = None
         self._need_unmute = set()
         self._lock = dict()
+        self._p2p_configs = dict()
 
     def _handle_mtproto(self):
         pass
@@ -30,9 +31,6 @@ class Scaffold(HandlersHolder):
         pass
 
     async def resolve_chat_id(self, chat_id: Union[int, str]):
-        pass
-
-    async def get_call(self, chat_id: int):
         pass
 
     async def start(self):

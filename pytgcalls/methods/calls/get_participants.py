@@ -15,10 +15,6 @@ class GetParticipants(Scaffold):
         self,
         chat_id: Union[int, str],
     ) -> Optional[List[GroupCallParticipant]]:
-
-        int_id = await self.resolve_chat_id(chat_id)
-        await self.get_call(int_id)
-
         return await self._app.get_group_call_participants(
-            int_id,
+            await self.resolve_chat_id(chat_id),
         )

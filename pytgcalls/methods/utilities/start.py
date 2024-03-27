@@ -9,7 +9,9 @@ from ...exceptions import PyTgCallsAlreadyRunning
 from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
+from ...types import CallData
 from ...types import ChatUpdate
+from ...types import RawCallUpdate
 from ...types import StreamAudioEnded
 from ...types import StreamVideoEnded
 from ...types import Update
@@ -24,8 +26,32 @@ class Start(Scaffold):
         @self._app.on_update()
         async def update_handler(update: Update):
             chat_id = update.chat_id
+            if isinstance(update, RawCallUpdate):
+                if update.chat_id in self._p2p_configs:
+                    if update.status & RawCallUpdate.UPDATED_CALL:
+                        if not self._p2p_configs[chat_id].wait_data.done():
+                            self._p2p_configs[chat_id].wait_data.set_result(
+                                update,
+                            )
+            if isinstance(update, RawCallUpdate):
+                if update.status & RawCallUpdate.REQUESTED:
+                    self._p2p_configs[chat_id] = CallData(
+                        await self._app.get_dhc(),
+                        self.loop,
+                        update.g_a_or_b,
+                    )
+                    update = ChatUpdate(
+                        chat_id,
+                        ChatUpdate.INCOMING_CALL,
+                    )
+            if isinstance(update, RawCallUpdate):
+                if update.status & RawCallUpdate.SIGNALING_DATA:
+                    await self._binding.send_signaling(
+                        update.chat_id,
+                        update.signaling_data,
+                    )
             if isinstance(update, ChatUpdate):
-                if update.status & ChatUpdate.LEFT_VOICE_CHAT:
+                if update.status & ChatUpdate.LEFT_CALL:
                     await clear_call(chat_id)
             if isinstance(update, UpdatedGroupCallParticipant):
                 participant = update.participant
@@ -53,12 +79,14 @@ class Start(Scaffold):
                             self._need_unmute.add(chat_id)
                         else:
                             self._need_unmute.discard(chat_id)
-            await self.propagate(
-                update,
-                self,
-            )
+            if not isinstance(update, RawCallUpdate):
+                await self.propagate(
+                    update,
+                    self,
+                )
 
         async def clear_call(chat_id):
+            self._p2p_configs.pop(chat_id, None)
             try:
                 await self._binding.stop(chat_id)
             except ConnectionNotFound:
@@ -87,6 +115,13 @@ class Start(Scaffold):
                 ),
                 self,
             )
+
+        async def emit_sig_data(chat_id: int, data: bytes):
+            if chat_id in self._p2p_configs:
+                await self._app.send_signaling(
+                    chat_id,
+                    data,
+                )
 
         async def clear_cache(chat_id: int):
             self._cache_user_peer.pop(chat_id)
@@ -127,6 +162,12 @@ class Start(Scaffold):
             self._binding.on_disconnect(
                 lambda chat_id: asyncio.run_coroutine_threadsafe(
                     clear_cache(chat_id),
+                    self.loop,
+                ),
+            )
+            self._binding.on_signaling(
+                lambda chat_id, data: asyncio.run_coroutine_threadsafe(
+                    emit_sig_data(chat_id, data),
                     self.loop,
                 ),
             )

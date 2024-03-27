@@ -58,6 +58,13 @@ class NoActiveGroupCall(Exception):
         )
 
 
+class TimedOutAnswer(Exception):
+    def __init__(self):
+        super().__init__(
+            'Timed out waiting for an answer',
+        )
+
+
 class NotInGroupCallError(Exception):
     def __init__(self):
         super().__init__(

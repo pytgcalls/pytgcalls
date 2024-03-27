@@ -16,7 +16,7 @@ class Cache:
     def __init__(self):
         self._store: Dict[int, CacheEntry] = {}  # type: ignore
 
-    def get(self, chat_id: int) -> Optional[Any]:
+    def get(self, chat_id: int):
         if chat_id in self._store:
             if self._store[chat_id].time == 0 or \
                     self._store[chat_id].time - int(time()) > 0:
@@ -32,8 +32,9 @@ class Cache:
             data=data,
         )
 
+    @property
     def keys(self):
-        return [key for key in self._store]
+        return list(self._store)
 
     def pop(self, chat_id: int) -> Optional[Any]:
         return self._store.pop(chat_id, None)
