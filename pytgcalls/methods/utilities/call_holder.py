@@ -1,14 +1,24 @@
+from ntgcalls import StreamStatus
+
 from ...scaffold import Scaffold
 from ...types import Call
 from ...types.list import List
 
 
 class CallHolder(Scaffold):
+    def __init__(self):
+        super().__init__()
+        self._conversions = {
+            StreamStatus.Playing: Call.Status.PLAYING,
+            StreamStatus.Paused: Call.Status.PAUSED,
+            StreamStatus.Idling: Call.Status.IDLE,
+        }
+
     @property
     async def calls(self):
         calls_list: dict = await self._binding.calls()  # type: ignore
         return List([
-            Call(x, calls_list[x]) for x in calls_list
+            Call(x, self._conversions[calls_list[x]]) for x in calls_list
         ])
 
     @property

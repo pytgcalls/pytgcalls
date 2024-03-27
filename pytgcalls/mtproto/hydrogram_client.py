@@ -86,7 +86,7 @@ class HydrogramClient(BridgedClient):
                 await self.propagate(
                     RawCallUpdate(
                         self._cache.get_user_id(update.phone_call_id),
-                        RawCallUpdate.SIGNALING_DATA,
+                        RawCallUpdate.Type.SIGNALING_DATA,
                         signaling_data=update.data,
                     ),
                 )
@@ -110,7 +110,7 @@ class HydrogramClient(BridgedClient):
                     await self.propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
-                            RawCallUpdate.ACCEPTED,
+                            RawCallUpdate.Type.ACCEPTED,
                             update.phone_call.g_b,
                             CallProtocol(
                                 update.phone_call.protocol.library_versions,
@@ -126,14 +126,14 @@ class HydrogramClient(BridgedClient):
                         await self.propagate(
                             ChatUpdate(
                                 user_id,
-                                ChatUpdate.DISCARDED_CALL,
+                                ChatUpdate.Status.DISCARDED_CALL,
                             ),
                         )
                 if isinstance(update.phone_call, PhoneCallRequested):
                     await self.propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
-                            RawCallUpdate.REQUESTED,
+                            RawCallUpdate.Type.REQUESTED,
                             update.phone_call.g_a_hash,
                             CallProtocol(
                                 update.phone_call.protocol.library_versions,
@@ -144,7 +144,7 @@ class HydrogramClient(BridgedClient):
                     await self.propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
-                            RawCallUpdate.CONFIRMED,
+                            RawCallUpdate.Type.CONFIRMED,
                             update.phone_call.g_a_or_b,
                             CallProtocol(
                                 update.phone_call.protocol.library_versions,
@@ -199,7 +199,7 @@ class HydrogramClient(BridgedClient):
                     await self.propagate(
                         ChatUpdate(
                             chat_id,
-                            ChatUpdate.CLOSED_VOICE_CHAT,
+                            ChatUpdate.Status.CLOSED_VOICE_CHAT,
                         ),
                     )
             if isinstance(
@@ -216,7 +216,7 @@ class HydrogramClient(BridgedClient):
                         await self.propagate(
                             ChatUpdate(
                                 chat_id,
-                                ChatUpdate.KICKED,
+                                ChatUpdate.Status.KICKED,
                             ),
                         )
             if isinstance(
@@ -239,7 +239,7 @@ class HydrogramClient(BridgedClient):
                             await self.propagate(
                                 ChatUpdate(
                                     chat_id,
-                                    ChatUpdate.INVITED_VOICE_CHAT,
+                                    ChatUpdate.Status.INVITED_VOICE_CHAT,
                                     update.message.action,
                                 ),
                             )
@@ -259,7 +259,7 @@ class HydrogramClient(BridgedClient):
                                 await self.propagate(
                                     ChatUpdate(
                                         chat_id,
-                                        ChatUpdate.KICKED,
+                                        ChatUpdate.Status.KICKED,
                                     ),
                                 )
             if isinstance(
@@ -287,7 +287,7 @@ class HydrogramClient(BridgedClient):
                                     await self.propagate(
                                         ChatUpdate(
                                             chat_id,
-                                            ChatUpdate.LEFT_GROUP,
+                                            ChatUpdate.Status.LEFT_GROUP,
                                         ),
                                     )
             raise ContinuePropagation()

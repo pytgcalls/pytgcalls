@@ -1,19 +1,22 @@
-from typing import Optional, Any
+from enum import auto
+from enum import Flag
+from typing import Optional
 
 from pytgcalls.types.update import Update
 
 
 class RawCallUpdate(Update):
-    ACCEPTED = 1 << 0
-    CONFIRMED = 1 << 1
-    REQUESTED = 1 << 2
-    UPDATED_CALL = ACCEPTED | CONFIRMED
-    SIGNALING_DATA = 1 << 3
+    class Type(Flag):
+        ACCEPTED = auto()
+        CONFIRMED = auto()
+        REQUESTED = auto()
+        UPDATED_CALL = ACCEPTED | CONFIRMED
+        SIGNALING_DATA = auto()
 
     def __init__(
         self,
         chat_id: int,
-        status: int,
+        status: Type,
         g_a_or_b: Optional[bytes] = None,
         protocol=None,
         fingerprint: int = 0,

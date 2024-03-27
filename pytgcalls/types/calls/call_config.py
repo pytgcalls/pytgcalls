@@ -1,6 +1,3 @@
-from typing import Optional
-
-
 class CallConfig:
     def __init__(
         self,

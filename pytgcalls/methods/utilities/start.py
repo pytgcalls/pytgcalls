@@ -28,13 +28,13 @@ class Start(Scaffold):
             chat_id = update.chat_id
             if isinstance(update, RawCallUpdate):
                 if update.chat_id in self._p2p_configs:
-                    if update.status & RawCallUpdate.UPDATED_CALL:
+                    if update.status & RawCallUpdate.Type.UPDATED_CALL:
                         if not self._p2p_configs[chat_id].wait_data.done():
                             self._p2p_configs[chat_id].wait_data.set_result(
                                 update,
                             )
             if isinstance(update, RawCallUpdate):
-                if update.status & RawCallUpdate.REQUESTED:
+                if update.status & RawCallUpdate.Type.REQUESTED:
                     self._p2p_configs[chat_id] = CallData(
                         await self._app.get_dhc(),
                         self.loop,
@@ -42,16 +42,16 @@ class Start(Scaffold):
                     )
                     update = ChatUpdate(
                         chat_id,
-                        ChatUpdate.INCOMING_CALL,
+                        ChatUpdate.Status.INCOMING_CALL,
                     )
             if isinstance(update, RawCallUpdate):
-                if update.status & RawCallUpdate.SIGNALING_DATA:
+                if update.status & RawCallUpdate.Type.SIGNALING_DATA:
                     await self._binding.send_signaling(
                         update.chat_id,
                         update.signaling_data,
                     )
             if isinstance(update, ChatUpdate):
-                if update.status & ChatUpdate.LEFT_CALL:
+                if update.status & ChatUpdate.Status.LEFT_CALL:
                     await clear_call(chat_id)
             if isinstance(update, UpdatedGroupCallParticipant):
                 participant = update.participant

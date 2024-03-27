@@ -135,7 +135,7 @@ class Play(Scaffold):
                                 result.g_a_or_b,
                                 result.fingerprint,
                             )
-                            if result.status & RawCallUpdate.ACCEPTED:
+                            if result.status & RawCallUpdate.Type.ACCEPTED:
                                 result.protocol = await self._app.confirm_call(
                                     chat_id,
                                     auth_params.g_a_or_b,

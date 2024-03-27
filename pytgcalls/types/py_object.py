@@ -1,3 +1,4 @@
+from enum import Enum
 from json import dumps
 from typing import Any
 from typing import Dict
@@ -9,6 +10,8 @@ class PyObject:
     @staticmethod
     def default(obj) -> Union[str, Dict[str, str], List[Any]]:
         if isinstance(obj, bytes):
+            return repr(obj)
+        if isinstance(obj, Enum):
             return repr(obj)
         if hasattr(obj, '__dict__'):
             return {

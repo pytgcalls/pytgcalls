@@ -160,7 +160,7 @@ class chat(Filter, set):
 
 # noinspection PyPep8Naming
 class chat_update(Filter):
-    def __init__(self, flags: int):
+    def __init__(self, flags: ChatUpdate.Status):
         self.flags = flags
 
     async def __call__(self, client: PyTgCalls, update: Update):
