@@ -47,14 +47,14 @@ async def play_handler2(_: Client, message: Message):
 
 @app.on_message(filters.regex('!s1'))
 async def stop_handler(_: Client, message: Message):
-    await call_py.leave_group_call(
+    await call_py.leave_call(
         message.chat.id,
     )
 
 
 @app.on_message(filters.regex('!s2'))
 async def stop_handler2(_: Client, message: Message):
-    await call_py2.leave_group_call(
+    await call_py2.leave_call(
         message.chat.id,
     )
 

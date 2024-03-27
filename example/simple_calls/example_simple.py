@@ -56,7 +56,7 @@ async def resume_handler(_: Client, message: Message):
 
 @app.on_message(filters.regex('!stop'))
 async def stop_handler(_: Client, message: Message):
-    await call_py.leave_group_call(
+    await call_py.leave_call(
         message.chat.id,
     )
 
@@ -77,7 +77,7 @@ async def get_play_status(client: Client, message: Message):
     )
 
 
-@call_py.on_update(fl.chat_update(ChatUpdate.KICKED | ChatUpdate.LEFT_GROUP))
+@call_py.on_update(fl.chat_update(ChatUpdate.Status.KICKED | ChatUpdate.Status.LEFT_GROUP))
 async def kicked_handler(_: PyTgCalls, update: Update):
     print(f'Kicked from {update.chat_id} or left')
 
