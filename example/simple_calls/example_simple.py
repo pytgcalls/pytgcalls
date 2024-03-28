@@ -77,7 +77,11 @@ async def get_play_status(client: Client, message: Message):
     )
 
 
-@call_py.on_update(fl.chat_update(ChatUpdate.Status.KICKED | ChatUpdate.Status.LEFT_GROUP))
+@call_py.on_update(
+    fl.chat_update(
+        ChatUpdate.Status.KICKED | ChatUpdate.Status.LEFT_GROUP,
+    ),
+)
 async def kicked_handler(_: PyTgCalls, update: Update):
     print(f'Kicked from {update.chat_id} or left')
 

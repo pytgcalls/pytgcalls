@@ -1,8 +1,12 @@
-from pyrogram import Client, filters
+from pyrogram import Client
+from pyrogram import filters
 from pyrogram.types import Message
+
 from pytgcalls import filters as fl
 from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream, ChatUpdate, Update
+from pytgcalls.types import ChatUpdate
+from pytgcalls.types import MediaStream
+from pytgcalls.types import Update
 
 app = Client(
     'py-tgcalls',
