@@ -74,14 +74,12 @@ class MtProtoClient:
         user_id: int,
         g_a_hash: bytes,
         protocol: Protocol,
-        video: bool,
     ):
         if self._bind_client is not None:
             return await self._bind_client.request_call(
                 user_id,
                 g_a_hash,
                 protocol,
-                video,
             )
         else:
             raise InvalidMTProtoClient()

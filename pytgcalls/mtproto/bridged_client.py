@@ -34,7 +34,6 @@ class BridgedClient(HandlersHolder):
         user_id: int,
         g_a_hash: bytes,
         protocol: Protocol,
-        video: bool,
     ):
         pass
 

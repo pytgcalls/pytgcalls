@@ -384,7 +384,6 @@ class TelethonClient(BridgedClient):
         user_id: int,
         g_a_hash: bytes,
         protocol: Protocol,
-        video: bool,
     ):
         return await self._app(
             RequestCallRequest(
@@ -392,7 +391,7 @@ class TelethonClient(BridgedClient):
                 random_id=self.rnd_id(),
                 g_a_hash=g_a_hash,
                 protocol=self.parse_protocol(protocol),
-                video=video,
+                video=False,
             ),
         )
 

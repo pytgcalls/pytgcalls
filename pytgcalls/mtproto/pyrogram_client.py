@@ -302,8 +302,8 @@ class PyrogramClient(BridgedClient):
             raise ContinuePropagation()
 
     async def get_call(
-            self,
-            chat_id: int,
+        self,
+        chat_id: int,
     ) -> Optional[InputGroupCall]:
         chat = await self._app.resolve_peer(chat_id)
         if isinstance(chat, InputPeerChannel):
@@ -348,16 +348,16 @@ class PyrogramClient(BridgedClient):
         )
 
     async def get_group_call_participants(
-            self,
-            chat_id: int,
+        self,
+        chat_id: int,
     ):
         return await self._cache.get_participant_list(
             chat_id,
         )
 
     async def get_participants(
-            self,
-            input_call: InputGroupCall,
+        self,
+        input_call: InputGroupCall,
     ) -> List[GroupCallParticipant]:
         return [
             self.parse_participant(participant)
@@ -375,12 +375,12 @@ class PyrogramClient(BridgedClient):
         ]
 
     async def join_group_call(
-            self,
-            chat_id: int,
-            json_join: str,
-            invite_hash: str,
-            have_video: bool,
-            join_as: InputPeer,
+        self,
+        chat_id: int,
+        json_join: str,
+        invite_hash: str,
+        have_video: bool,
+        join_as: InputPeer,
     ) -> str:
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
@@ -415,7 +415,6 @@ class PyrogramClient(BridgedClient):
         user_id: int,
         g_a_hash: bytes,
         protocol: Protocol,
-        video: bool,
     ):
         await self._app.invoke(
             RequestCall(
@@ -423,7 +422,7 @@ class PyrogramClient(BridgedClient):
                 random_id=self.rnd_id(),
                 g_a_hash=g_a_hash,
                 protocol=self.parse_protocol(protocol),
-                video=video,
+                video=False,
             ),
         )
 
@@ -536,10 +535,10 @@ class PyrogramClient(BridgedClient):
         self._cache.drop_phone_call(chat_id)
 
     async def change_volume(
-            self,
-            chat_id: int,
-            volume: int,
-            participant: InputPeer,
+        self,
+        chat_id: int,
+        volume: int,
+        participant: InputPeer,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
@@ -553,12 +552,12 @@ class PyrogramClient(BridgedClient):
             )
 
     async def set_call_status(
-            self,
-            chat_id: int,
-            muted_status: Optional[bool],
-            paused_status: Optional[bool],
-            stopped_status: Optional[bool],
-            participant: InputPeer,
+        self,
+        chat_id: int,
+        muted_status: Optional[bool],
+        paused_status: Optional[bool],
+        stopped_status: Optional[bool],
+        participant: InputPeer,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:

@@ -407,7 +407,6 @@ class HydrogramClient(BridgedClient):
         user_id: int,
         g_a_hash: bytes,
         protocol: Protocol,
-        video: bool,
     ):
         await self._app.invoke(
             RequestCall(
@@ -415,7 +414,7 @@ class HydrogramClient(BridgedClient):
                 random_id=self.rnd_id(),
                 g_a_hash=g_a_hash,
                 protocol=self.parse_protocol(protocol),
-                video=video,
+                video=False,
             ),
         )
 

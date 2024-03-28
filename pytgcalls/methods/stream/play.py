@@ -121,7 +121,6 @@ class Play(Scaffold):
                                 chat_id,
                                 data.g_a_or_b,
                                 self._binding.get_protocol(),
-                                media_description.video is not None,
                             )
 
                         try:
