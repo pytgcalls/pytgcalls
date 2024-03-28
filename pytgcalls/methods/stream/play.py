@@ -131,7 +131,6 @@ class Play(Scaffold):
                             )
                             auth_params = await self._binding.exchange_keys(
                                 chat_id,
-                                data.p,
                                 result.g_a_or_b,
                                 result.fingerprint,
                             )
