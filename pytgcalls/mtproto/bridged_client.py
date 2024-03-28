@@ -150,15 +150,10 @@ class BridgedClient(HandlersHolder):
         class_name = input_peer.__class__.__name__
         if class_name in ['PeerUser', 'InputPeerUser']:
             return input_peer.user_id
-        elif (
-            hasattr(input_peer, 'channel_id') or
-            class_name in ['Channel', 'ChannelForbidden']
-        ):
-            return -1000000000000 - getattr(
-                input_peer,
-                'channel_id',
-                input_peer.id,
-            )
+        elif class_name in ['Channel', 'ChannelForbidden']:
+            return -1000000000000 - input_peer.id
+        elif hasattr(input_peer, 'channel_id'):
+            return -1000000000000 - input_peer.channel_id
         elif class_name == 'Chat':
             return -input_peer.id
         else:
