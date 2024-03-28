@@ -44,4 +44,4 @@ async def incoming_handler(_: PyTgCalls, update: Update):
             test_stream,
         ),
     )
-app.run()
+call_py.run()
