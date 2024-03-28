@@ -65,10 +65,17 @@ class TimedOutAnswer(Exception):
         )
 
 
-class NotInGroupCallError(Exception):
+class CallDeclined(Exception):
+    def __init__(self, user_id: int):
+        super().__init__(
+            f'Call declined by {user_id}',
+        )
+
+
+class NotInCallError(Exception):
     def __init__(self):
         super().__init__(
-            'The userbot there isn\'t in a group call',
+            'The userbot is not in a call',
         )
 
 

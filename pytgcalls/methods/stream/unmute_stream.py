@@ -2,7 +2,7 @@ from typing import Union
 
 from ntgcalls import ConnectionNotFound
 
-from ...exceptions import NotInGroupCallError
+from ...exceptions import NotInCallError
 from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
@@ -19,4 +19,4 @@ class UnMuteStream(Scaffold):
         try:
             return await self._binding.unmute(chat_id)
         except ConnectionNotFound:
-            raise NotInGroupCallError()
+            raise NotInCallError()

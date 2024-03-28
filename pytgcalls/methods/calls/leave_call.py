@@ -3,7 +3,7 @@ from typing import Union
 from ntgcalls import ConnectionNotFound
 
 from ...exceptions import NoActiveGroupCall
-from ...exceptions import NotInGroupCallError
+from ...exceptions import NotInCallError
 from ...mtproto_required import mtproto_required
 from ...mutex import mutex
 from ...scaffold import Scaffold
@@ -35,6 +35,6 @@ class LeaveCall(Scaffold):
         try:
             await self._binding.stop(chat_id)
         except ConnectionNotFound:
-            raise NotInGroupCallError()
+            raise NotInCallError()
         if chat_id < 0:  # type: ignore
             self._need_unmute.discard(chat_id)

@@ -168,7 +168,7 @@ class BridgedClient(HandlersHolder):
     @staticmethod
     def user_from_call(call) -> Optional[int]:
         class_name = call.__class__.__name__
-        if class_name == 'PhoneCallAccepted':
+        if class_name in ['PhoneCallAccepted', 'PhoneCallWaiting']:
             return call.participant_id
         elif class_name in ['PhoneCallRequested', 'PhoneCall']:
             return call.admin_id

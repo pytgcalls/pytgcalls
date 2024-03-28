@@ -45,6 +45,7 @@ from pyrogram.raw.types import PhoneCallDiscarded
 from pyrogram.raw.types import PhoneCallDiscardReasonHangup
 from pyrogram.raw.types import PhoneCallProtocol
 from pyrogram.raw.types import PhoneCallRequested
+from pyrogram.raw.types import PhoneCallWaiting
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateGroupCallConnection
@@ -105,7 +106,7 @@ class PyrogramClient(BridgedClient):
             ):
                 if isinstance(
                     update.phone_call,
-                    (PhoneCallAccepted, PhoneCallRequested),
+                    (PhoneCallAccepted, PhoneCallRequested, PhoneCallWaiting),
                 ):
                     self._cache.set_phone_call(
                         self.user_from_call(update.phone_call),
@@ -520,9 +521,12 @@ class PyrogramClient(BridgedClient):
         self,
         chat_id: int,
     ):
+        peer = self._cache.get_phone_call(chat_id)
+        if peer is None:
+            return
         await self._app.invoke(
             DiscardCall(
-                peer=self._cache.get_phone_call(chat_id),
+                peer=peer,
                 duration=0,
                 reason=PhoneCallDiscardReasonHangup(),
                 connection_id=0,

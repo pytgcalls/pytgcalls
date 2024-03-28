@@ -5,6 +5,7 @@ from ntgcalls import ConnectionNotFound
 from ntgcalls import MediaState
 from ntgcalls import StreamType
 
+from ...exceptions import CallDeclined
 from ...exceptions import PyTgCallsAlreadyRunning
 from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
@@ -26,12 +27,19 @@ class Start(Scaffold):
         @self._app.on_update()
         async def update_handler(update: Update):
             chat_id = update.chat_id
-            if isinstance(update, RawCallUpdate):
-                if update.chat_id in self._p2p_configs:
-                    if update.status & RawCallUpdate.Type.UPDATED_CALL:
-                        if not self._p2p_configs[chat_id].wait_data.done():
+            if update.chat_id in self._p2p_configs:
+                if not self._p2p_configs[chat_id].wait_data.done():
+                    if isinstance(update, RawCallUpdate):
+                        if update.status & RawCallUpdate.Type.UPDATED_CALL:
                             self._p2p_configs[chat_id].wait_data.set_result(
                                 update,
+                            )
+                    if isinstance(update, ChatUpdate):
+                        if update.status & ChatUpdate.Status.DISCARDED_CALL:
+                            self._p2p_configs[chat_id].wait_data.set_exception(
+                                CallDeclined(
+                                    chat_id,
+                                ),
                             )
             if isinstance(update, RawCallUpdate):
                 if update.status & RawCallUpdate.Type.REQUESTED:
@@ -86,7 +94,6 @@ class Start(Scaffold):
                 )
 
         async def clear_call(chat_id):
-            self._p2p_configs.pop(chat_id, None)
             try:
                 await self._binding.stop(chat_id)
             except ConnectionNotFound:
@@ -123,7 +130,13 @@ class Start(Scaffold):
                     data,
                 )
 
+        async def disconnected(chat_id: int):
+            if chat_id > 0:
+                await self._app.discard_call(chat_id)
+            await clear_call(chat_id)
+
         async def clear_cache(chat_id: int):
+            self._p2p_configs.pop(chat_id, None)
             self._cache_user_peer.pop(chat_id)
             self._need_unmute.discard(chat_id)
 
@@ -161,7 +174,7 @@ class Start(Scaffold):
             )
             self._binding.on_disconnect(
                 lambda chat_id: asyncio.run_coroutine_threadsafe(
-                    clear_cache(chat_id),
+                    disconnected(chat_id),
                     self.loop,
                 ),
             )

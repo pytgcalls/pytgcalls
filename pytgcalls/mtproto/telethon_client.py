@@ -39,6 +39,7 @@ from telethon.tl.types import PhoneCallDiscarded
 from telethon.tl.types import PhoneCallDiscardReasonHangup
 from telethon.tl.types import PhoneCallProtocol
 from telethon.tl.types import PhoneCallRequested
+from telethon.tl.types import PhoneCallWaiting
 from telethon.tl.types import TypeInputChannel
 from telethon.tl.types import TypeInputPeer
 from telethon.tl.types import TypeInputUser
@@ -95,7 +96,7 @@ class TelethonClient(BridgedClient):
             ):
                 if isinstance(
                     update.phone_call,
-                    (PhoneCallAccepted, PhoneCallRequested),
+                    (PhoneCallAccepted, PhoneCallRequested, PhoneCallWaiting),
                 ):
                     self._cache.set_phone_call(
                         self.user_from_call(update.phone_call),
@@ -489,9 +490,12 @@ class TelethonClient(BridgedClient):
         self,
         chat_id: int,
     ):
+        peer = self._cache.get_phone_call(chat_id)
+        if peer is None:
+            return
         await self._app(
             DiscardCallRequest(
-                peer=self._cache.get_phone_call(chat_id),
+                peer=peer,
                 duration=0,
                 reason=PhoneCallDiscardReasonHangup(),
                 connection_id=0,
