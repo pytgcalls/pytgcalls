@@ -37,13 +37,10 @@ class Play(Scaffold):
         config: Optional[Union[CallConfig, GroupCallConfig]] = None,
     ):
         chat_id = await self.resolve_chat_id(chat_id)
+        is_p2p = chat_id < 0  # type: ignore
         if config is None:
-            config = GroupCallConfig() \
-                if chat_id < 0 else CallConfig()  # type: ignore
-        if (
-            chat_id < 0 and  # type: ignore
-            not isinstance(config, GroupCallConfig)
-        ):
+            config = GroupCallConfig() if is_p2p else CallConfig()
+        if is_p2p and not isinstance(config, GroupCallConfig):
             raise ValueError(
                 'Group call config must be provided for group calls',
             )
@@ -153,7 +150,7 @@ class Play(Scaffold):
                             self._p2p_configs.pop(chat_id, None)
                     break
                 except TelegramServerError:
-                    if retries == 3:
+                    if retries == 3 or is_p2p:
                         raise
                     (py_logger.warning if retries >= 1 else py_logger.info)(
                         f'Telegram is having some internal server issues. '

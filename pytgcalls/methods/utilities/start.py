@@ -116,7 +116,7 @@ class Start(Scaffold):
             await self.propagate(
                 StreamAudioEnded(
                     chat_id,
-                ) if stream == stream.Audio else
+                ) if stream == StreamType.AUDIO else
                 StreamVideoEnded(
                     chat_id,
                 ),

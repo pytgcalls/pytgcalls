@@ -240,7 +240,7 @@ class MediaStream(Stream):
 
     @staticmethod
     def _flags(flags: Flags) -> InputMode:
-        new_flags = InputMode.Shell
+        new_flags = InputMode.SHELL
         if flags & MediaStream.Flags.NO_LATENCY:
-            new_flags |= InputMode.NoLatency
+            new_flags |= InputMode.NO_LATENCY
         return new_flags
