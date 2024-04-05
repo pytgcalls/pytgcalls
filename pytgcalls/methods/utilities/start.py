@@ -2,10 +2,13 @@ import asyncio
 import logging
 
 from ntgcalls import ConnectionNotFound
+from ntgcalls import ConnectionState
 from ntgcalls import MediaState
 from ntgcalls import StreamType
+from ntgcalls import TelegramServerError
 
 from ...exceptions import CallDeclined
+from ...exceptions import CallDiscarded
 from ...exceptions import PyTgCallsAlreadyRunning
 from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
@@ -41,6 +44,15 @@ class Start(Scaffold):
                                     chat_id,
                                 ),
                             )
+            if chat_id in self._wait_connect and \
+                    not self._wait_connect[chat_id].done():
+                if isinstance(update, ChatUpdate):
+                    if update.status & ChatUpdate.Status.DISCARDED_CALL:
+                        self._wait_connect[chat_id].set_exception(
+                            CallDiscarded(
+                                chat_id,
+                            ),
+                        )
             if isinstance(update, RawCallUpdate):
                 if update.status & RawCallUpdate.Type.REQUESTED:
                     self._p2p_configs[chat_id] = CallData(
@@ -130,10 +142,23 @@ class Start(Scaffold):
                     data,
                 )
 
-        async def disconnected(chat_id: int):
-            if chat_id > 0:
-                await self._app.discard_call(chat_id)
-            await clear_call(chat_id)
+        async def connection_changed(chat_id: int, state: ConnectionState):
+            if chat_id in self._wait_connect:
+                if state == ConnectionState.CONNECTED:
+                    self._wait_connect[chat_id].set_result(None)
+                elif state == ConnectionState.FAILED or\
+                        state == ConnectionState.TIMEOUT:
+                    self._wait_connect[chat_id].set_exception(
+                        TelegramServerError(),
+                    )
+                    await clear_call(chat_id)
+
+            if state == ConnectionState.FAILED or \
+                    state == ConnectionState.TIMEOUT or \
+                    state == ConnectionState.CLOSED:
+                if chat_id > 0:
+                    await self._app.discard_call(chat_id)
+                await clear_call(chat_id)
 
         async def clear_cache(chat_id: int):
             self._p2p_configs.pop(chat_id, None)
@@ -172,9 +197,9 @@ class Start(Scaffold):
                     self.loop,
                 ),
             )
-            self._binding.on_disconnect(
-                lambda chat_id: asyncio.run_coroutine_threadsafe(
-                    disconnected(chat_id),
+            self._binding.on_connection_change(
+                lambda chat_id, state: asyncio.run_coroutine_threadsafe(
+                    connection_changed(chat_id, state),
                     self.loop,
                 ),
             )

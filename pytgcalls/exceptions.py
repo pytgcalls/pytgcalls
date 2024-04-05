@@ -72,6 +72,13 @@ class CallDeclined(Exception):
         )
 
 
+class CallDiscarded(Exception):
+    def __init__(self, user_id: int):
+        super().__init__(
+            f'Call discarded by {user_id}',
+        )
+
+
 class NotInCallError(Exception):
     def __init__(self):
         super().__init__(

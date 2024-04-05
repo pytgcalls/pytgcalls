@@ -78,6 +78,7 @@ class Play(Scaffold):
         try:
             for retries in range(4):
                 try:
+                    self._wait_connect[chat_id] = self.loop.create_future()
                     if isinstance(config, GroupCallConfig):
                         call_params: str = await self._binding.create_call(
                             chat_id,
@@ -148,6 +149,7 @@ class Play(Scaffold):
                             raise TimedOutAnswer()
                         finally:
                             self._p2p_configs.pop(chat_id, None)
+                    await self._wait_connect[chat_id]
                     break
                 except TelegramServerError:
                     if retries == 3 or is_p2p:
@@ -162,6 +164,8 @@ class Play(Scaffold):
                     except ConnectionNotFound:
                         pass
                     raise
+                finally:
+                    self._wait_connect.pop(chat_id, None)
 
             if isinstance(config, GroupCallConfig):
                 participants = await self._app.get_group_call_participants(
