@@ -37,10 +37,10 @@ class Play(Scaffold):
         config: Optional[Union[CallConfig, GroupCallConfig]] = None,
     ):
         chat_id = await self.resolve_chat_id(chat_id)
-        is_p2p = chat_id < 0  # type: ignore
+        is_p2p = chat_id > 0  # type: ignore
         if config is None:
-            config = GroupCallConfig() if is_p2p else CallConfig()
-        if is_p2p and not isinstance(config, GroupCallConfig):
+            config = GroupCallConfig() if not is_p2p else CallConfig()
+        if not is_p2p and not isinstance(config, GroupCallConfig):
             raise ValueError(
                 'Group call config must be provided for group calls',
             )
