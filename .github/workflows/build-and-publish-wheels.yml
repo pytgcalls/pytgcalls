@@ -2,18 +2,13 @@
 
 name: Build Wheels
 on:
-  push:
-    branches: [ master, dev ]
-    paths-ignore:
-      - '.gitignore'
-      - '.pre-commit-config.yaml'
-      - 'CODE_OF_CONDUCT.md'
-      - 'CONTRIBUTING.md'
-      - 'LICENSE'
-      - 'README.md'
-      - 'example/*'
-      - '.github/*'
   workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish to PyPi'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -22,14 +17,8 @@ jobs:
       id-token: write
 
     steps:
-      - name: Get Branch Name
-        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-        id: github_info
-
       - name: Check out the repo
         uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.github_info.outputs.branch }}
 
       - name: Build wheel
         run: python3 -m pip wheel . --no-deps --wheel-dir wheels
@@ -41,7 +30,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish a Python distribution to PyPI.
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+        if: ${{ github.event.inputs.publish == true }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           skip-existing: true
