@@ -30,7 +30,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish a Python distribution to PyPI.
-        if: ${{ github.event.inputs.publish == true }}
+        if: github.event.inputs.publish == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           skip-existing: true
