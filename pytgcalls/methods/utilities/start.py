@@ -3,6 +3,7 @@ import logging
 
 from ntgcalls import ConnectionNotFound
 from ntgcalls import ConnectionState
+from ntgcalls import ConnectionError
 from ntgcalls import MediaState
 from ntgcalls import StreamType
 from ntgcalls import TelegramServerError
@@ -136,26 +137,27 @@ class Start(Scaffold):
             )
 
         async def emit_sig_data(chat_id: int, data: bytes):
-            if chat_id in self._p2p_configs:
+            try:
                 await self._app.send_signaling(
                     chat_id,
                     data,
                 )
+            except (ConnectionError, ConnectionNotFound):
+                pass
 
         async def connection_changed(chat_id: int, state: ConnectionState):
+            if state == ConnectionState.CONNECTING:
+                return
             if chat_id in self._wait_connect:
                 if state == ConnectionState.CONNECTED:
                     self._wait_connect[chat_id].set_result(None)
-                elif state == ConnectionState.FAILED or\
-                        state == ConnectionState.TIMEOUT:
+                else:
                     self._wait_connect[chat_id].set_exception(
                         TelegramServerError(),
                     )
                     await clear_call(chat_id)
 
-            if state == ConnectionState.FAILED or \
-                    state == ConnectionState.TIMEOUT or \
-                    state == ConnectionState.CLOSED:
+            if state != ConnectionState.CONNECTED:
                 if chat_id > 0:
                     await self._app.discard_call(chat_id)
                 await clear_call(chat_id)
