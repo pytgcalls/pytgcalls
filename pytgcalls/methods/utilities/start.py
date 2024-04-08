@@ -91,7 +91,7 @@ class Start(Scaffold):
                             try:
                                 await update_status(
                                     chat_id,
-                                    self._binding.get_state(chat_id),
+                                    await self._binding.get_state(chat_id),
                                 )
                             except ConnectionNotFound:
                                 pass
