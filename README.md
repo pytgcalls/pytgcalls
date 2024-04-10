@@ -52,7 +52,7 @@ idle()
 - Mute/unmute, pause/resume, stop/play, volume control and more...
 
 ## Requirements
-- Python 3.7 or higher.
+- Python 3.8 or higher.
 - An MTProto Client
 - A [Telegram API key](https://docs.pyrogram.org/intro/setup#api-keys).
 
