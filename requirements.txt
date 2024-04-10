@@ -1,6 +1,0 @@
-aiohttp>=3.9.3
-deprecation
-ntgcalls>=1.2.0.b6
-psutil
-screeninfo
-setuptools
