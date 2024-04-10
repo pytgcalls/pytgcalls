@@ -32,6 +32,10 @@ class LeaveCall(Scaffold):
             )
         else:
             await self._app.discard_call(chat_id)
+        if chat_id in self._p2p_configs and \
+                not self._p2p_configs[chat_id].outgoing:
+            self._p2p_configs.pop(chat_id)
+            return
         try:
             await self._binding.stop(chat_id)
         except ConnectionNotFound:

@@ -32,15 +32,17 @@ class Start(Scaffold):
         async def update_handler(update: Update):
             chat_id = update.chat_id
             if update.chat_id in self._p2p_configs:
-                if not self._p2p_configs[chat_id].wait_data.done():
+                p2p_config = self._p2p_configs[chat_id]
+                if not p2p_config.wait_data.done() and \
+                        p2p_config.outgoing:
                     if isinstance(update, RawCallUpdate):
                         if update.status & RawCallUpdate.Type.UPDATED_CALL:
-                            self._p2p_configs[chat_id].wait_data.set_result(
+                            p2p_config.wait_data.set_result(
                                 update,
                             )
                     if isinstance(update, ChatUpdate):
                         if update.status & ChatUpdate.Status.DISCARDED_CALL:
-                            self._p2p_configs[chat_id].wait_data.set_exception(
+                            p2p_config.wait_data.set_exception(
                                 CallDeclined(
                                     chat_id,
                                 ),
