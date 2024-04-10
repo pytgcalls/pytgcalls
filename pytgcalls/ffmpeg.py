@@ -48,12 +48,10 @@ async def check_stream(
     except FileNotFoundError:
         raise FFmpegError('ffprobe not installed')
 
-    stream_list = []
-    format_content = []
     try:
         stdout, stderr = await asyncio.wait_for(
             ffprobe.communicate(),
-            timeout=30,
+            timeout=20,
         )
         result = loads(stdout.decode('utf-8')) or {}
         stream_list = result.get('streams', [])
@@ -61,7 +59,8 @@ async def check_stream(
         if 'No such file' in stderr.decode('utf-8'):
             raise FileNotFoundError()
     except (subprocess.TimeoutExpired, JSONDecodeError):
-        pass
+        ffprobe.terminate()
+        raise
 
     have_video = False
     is_image = False
@@ -127,15 +126,15 @@ async def cleanup_commands(
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        result = ''
         try:
             stdout, _ = await asyncio.wait_for(
                 proc_res.communicate(),
-                timeout=30,
+                timeout=20,
             )
             result = stdout.decode('utf-8')
         except (subprocess.TimeoutExpired, JSONDecodeError):
-            pass
+            proc_res.terminate()
+            raise
         supported = re.findall(r'(?m)^ *(-.*?)\s+', result)
         new_commands = []
         ignore_next = False

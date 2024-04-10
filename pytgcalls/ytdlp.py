@@ -58,7 +58,14 @@ class YtDlp:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
-            stdout, stderr = await proc.communicate()
+            try:
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(),
+                    20,
+                )
+            except asyncio.TimeoutError:
+                proc.terminate()
+                raise YtDlpError('yt-dlp process timeout')
             if stderr:
                 raise YtDlpError(stderr.decode())
             data = stdout.decode().strip().split('\n')
