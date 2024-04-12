@@ -82,13 +82,15 @@ class TelethonClient(BridgedClient):
                 update,
                 UpdatePhoneCallSignalingData,
             ):
-                await self.propagate(
-                    RawCallUpdate(
-                        self._cache.get_user_id(update.phone_call_id),
-                        RawCallUpdate.Type.SIGNALING_DATA,
-                        signaling_data=update.data,
-                    ),
-                )
+                user_id = self._cache.get_user_id(update.phone_call_id)
+                if user_id is not None:
+                    await self.propagate(
+                        RawCallUpdate(
+                            user_id,
+                            RawCallUpdate.Type.SIGNALING_DATA,
+                            signaling_data=update.data,
+                        ),
+                    )
 
             if isinstance(
                 update,

@@ -33,14 +33,14 @@ class Start(Scaffold):
             chat_id = update.chat_id
             if update.chat_id in self._p2p_configs:
                 p2p_config = self._p2p_configs[chat_id]
-                if not p2p_config.wait_data.done() and \
-                        p2p_config.outgoing:
+                if not p2p_config.wait_data.done():
                     if isinstance(update, RawCallUpdate):
                         if update.status & RawCallUpdate.Type.UPDATED_CALL:
                             p2p_config.wait_data.set_result(
                                 update,
                             )
-                    if isinstance(update, ChatUpdate):
+                    if isinstance(update, ChatUpdate) and \
+                            p2p_config.outgoing:
                         if update.status & ChatUpdate.Status.DISCARDED_CALL:
                             p2p_config.wait_data.set_exception(
                                 CallDeclined(
@@ -69,10 +69,13 @@ class Start(Scaffold):
                     )
             if isinstance(update, RawCallUpdate):
                 if update.status & RawCallUpdate.Type.SIGNALING_DATA:
-                    await self._binding.send_signaling(
-                        update.chat_id,
-                        update.signaling_data,
-                    )
+                    try:
+                        await self._binding.send_signaling(
+                            update.chat_id,
+                            update.signaling_data,
+                        )
+                    except (ConnectionNotFound, ConnectionError):
+                        pass
             if isinstance(update, ChatUpdate):
                 if update.status & ChatUpdate.Status.LEFT_CALL:
                     await clear_call(chat_id)

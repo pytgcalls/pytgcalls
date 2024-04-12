@@ -6,7 +6,7 @@ from typing import Optional
 from ntgcalls import Protocol
 
 from ..exceptions import InvalidMTProtoClient
-from ..types.groups import GroupCallParticipant
+from ..types.chats import GroupCallParticipant
 from .bridged_client import BridgedClient
 
 
