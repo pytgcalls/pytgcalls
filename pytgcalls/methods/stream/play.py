@@ -102,9 +102,7 @@ class Play(Scaffold):
                         )
                         data.g_a_or_b = await self._binding.create_p2p_call(
                             chat_id,
-                            data.g,
-                            data.p,
-                            data.random,
+                            data.dh_config,
                             data.g_a_or_b,
                             media_description,
                         )
