@@ -5,7 +5,7 @@ from typing import Union
 from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
-from ...types.groups import GroupCallParticipant
+from ...types.chats import GroupCallParticipant
 
 
 class GetParticipants(Scaffold):

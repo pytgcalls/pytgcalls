@@ -1,6 +1,6 @@
 from typing import Dict
 
-from ..types.groups import GroupCallParticipant
+from ..types.chats import GroupCallParticipant
 from ..types.list import List
 
 

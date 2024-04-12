@@ -1,4 +1,4 @@
-from ..groups import GroupCallParticipant
+from ..chats import GroupCallParticipant
 from ..update import Update
 
 

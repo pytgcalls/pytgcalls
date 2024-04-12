@@ -6,11 +6,9 @@ from .calls import CallData
 from .calls import CallProtocol
 from .calls import GroupCallConfig
 from .calls import RawCallUpdate
-from .groups import ChatUpdate
-from .groups import GroupCallParticipant
-from .groups import JoinedGroupCallParticipant
-from .groups import LeftGroupCallParticipant
-from .groups import UpdatedGroupCallParticipant
+from .chats import ChatUpdate
+from .chats import GroupCallParticipant
+from .chats import UpdatedGroupCallParticipant
 from .stream import AudioQuality
 from .stream import MediaStream
 from .stream import StreamAudioEnded
@@ -30,8 +28,6 @@ __all__ = (
     'RawCallUpdate',
     'GroupCallConfig',
     'GroupCallParticipant',
-    'JoinedGroupCallParticipant',
-    'LeftGroupCallParticipant',
     'MediaStream',
     'StreamAudioEnded',
     'StreamVideoEnded',

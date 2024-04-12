@@ -5,7 +5,7 @@ from typing import List
 from typing import Optional
 
 from ..types import Cache
-from ..types.groups import GroupCallParticipant
+from ..types.chats import GroupCallParticipant
 from ..types.participant_list import ParticipantList
 from .bridged_client import BridgedClient
 

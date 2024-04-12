@@ -138,7 +138,7 @@ async def _stream_filter(_, __, u: Update):
     return isinstance(u, (StreamVideoEnded, StreamAudioEnded))
 
 
-stream = create(_stream_filter)
+stream_ended = create(_stream_filter)
 
 
 # noinspection PyPep8Naming

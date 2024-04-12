@@ -15,7 +15,6 @@ app = Client(
     api_hash='abcdef12345',
 )
 call_py = PyTgCalls(app)
-
 test_stream = 'http://docs.evostream.com/sample_content/assets/' \
               'sintel1m720p.mp4'
 
@@ -86,7 +85,7 @@ async def kicked_handler(_: PyTgCalls, update: Update):
     print(f'Kicked from {update.chat_id} or left')
 
 
-@call_py.on_update(fl.stream)
+@call_py.on_update(fl.stream_ended)
 async def stream_end_handler(_: PyTgCalls, update: Update):
     print(f'Stream ended in {update.chat_id}', update)
 
