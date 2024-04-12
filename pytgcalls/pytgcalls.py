@@ -41,6 +41,7 @@ class PyTgCalls(Methods, Scaffold):
         self._binding = NTgCalls()
         self.loop = asyncio.get_event_loop()
         self.workers = workers
+        self._lock = asyncio.Lock()
         self.executor = ThreadPoolExecutor(
             self.workers,
             thread_name_prefix='Handler',

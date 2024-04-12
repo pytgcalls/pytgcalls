@@ -21,7 +21,6 @@ class Scaffold(HandlersHolder):
         self._binding = None
         self.loop = None
         self._need_unmute = set()
-        self._lock = dict()
         self._p2p_configs = dict()
         self._wait_connect = dict()
 
