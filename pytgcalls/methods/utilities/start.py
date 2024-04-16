@@ -1,9 +1,9 @@
 import asyncio
 import logging
 
+from ntgcalls import ConnectionError
 from ntgcalls import ConnectionNotFound
 from ntgcalls import ConnectionState
-from ntgcalls import ConnectionError
 from ntgcalls import MediaState
 from ntgcalls import StreamType
 from ntgcalls import TelegramServerError

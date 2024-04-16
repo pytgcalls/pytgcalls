@@ -1,5 +1,6 @@
 import os
 from typing import Dict
+
 from setuptools import setup
 
 base_path = os.path.abspath(os.path.dirname(__file__))
