@@ -6,6 +6,7 @@ from pytgcalls import filters as fl
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls.types import ChatUpdate
+from pytgcalls.types import GroupCallParticipant
 from pytgcalls.types import MediaStream
 from pytgcalls.types import Update
 
@@ -91,7 +92,7 @@ async def stream_end_handler(_: PyTgCalls, update: Update):
 
 
 @call_py.on_update(
-    fl.call_participant(fl.call_participant.Action.JOINED),
+    fl.call_participant(GroupCallParticipant.Action.JOINED),
 )
 async def participant_handler(_: PyTgCalls, update: Update):
     print(f'Participant joined in {update.chat_id}', update)
