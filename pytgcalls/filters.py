@@ -1,4 +1,6 @@
 import inspect
+from enum import auto
+from enum import Flag
 from typing import Callable
 from typing import List
 from typing import Optional
@@ -166,4 +168,31 @@ class chat_update(Filter):
     async def __call__(self, client: PyTgCalls, update: Update):
         if isinstance(update, ChatUpdate):
             return self.flags & update.status
+        return False
+
+
+class call_participant(Filter):
+    class Action(Flag):
+        JOINED = auto()
+        LEFT = auto()
+        MUTED_BY_ADMIN = auto()
+        RAISED_HAND = auto()
+
+    def __init__(self, flags: Optional[Action] = None):
+        self.flags = flags
+
+    async def __call__(self, client: PyTgCalls, update: Update):
+        if isinstance(update, UpdatedGroupCallParticipant):
+            if self.flags is None:
+                return True
+            tmp_flags = self.Action(0)
+            if update.participant.joined:
+                tmp_flags |= self.Action.JOINED
+            if update.participant.left:
+                tmp_flags |= self.Action.LEFT
+            if update.participant.muted_by_admin:
+                tmp_flags |= self.Action.MUTED_BY_ADMIN
+            if update.participant.raised_hand:
+                tmp_flags |= self.Action.RAISED_HAND
+            self.flags & tmp_flags
         return False
