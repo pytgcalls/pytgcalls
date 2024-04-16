@@ -1,6 +1,4 @@
 import inspect
-from enum import auto
-from enum import Flag
 from typing import Callable
 from typing import List
 from typing import Optional
@@ -9,6 +7,7 @@ from typing import Union
 from .mtproto import BridgedClient
 from .pytgcalls import PyTgCalls
 from .types import ChatUpdate
+from .types import GroupCallParticipant
 from .types import StreamAudioEnded
 from .types import StreamVideoEnded
 from .types import Update
@@ -172,27 +171,12 @@ class chat_update(Filter):
 
 
 class call_participant(Filter):
-    class Action(Flag):
-        JOINED = auto()
-        LEFT = auto()
-        MUTED_BY_ADMIN = auto()
-        RAISED_HAND = auto()
-
-    def __init__(self, flags: Optional[Action] = None):
+    def __init__(self, flags: Optional[GroupCallParticipant.Action] = None):
         self.flags = flags
 
     async def __call__(self, client: PyTgCalls, update: Update):
         if isinstance(update, UpdatedGroupCallParticipant):
             if self.flags is None:
                 return True
-            tmp_flags = self.Action(0)
-            if update.participant.joined:
-                tmp_flags |= self.Action.JOINED
-            if update.participant.left:
-                tmp_flags |= self.Action.LEFT
-            if update.participant.muted_by_admin:
-                tmp_flags |= self.Action.MUTED_BY_ADMIN
-            if update.participant.raised_hand:
-                tmp_flags |= self.Action.RAISED_HAND
-            self.flags & tmp_flags
+            self.flags & update.participant.action
         return False

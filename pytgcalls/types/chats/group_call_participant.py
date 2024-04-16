@@ -1,7 +1,15 @@
+from enum import auto
+from enum import Flag
+
 from ...types.py_object import PyObject
 
 
 class GroupCallParticipant(PyObject):
+    class Action(Flag):
+        JOINED = auto()
+        LEFT = auto()
+        UPDATED = auto()
+
     def __init__(
         self,
         user_id: int,
@@ -23,5 +31,9 @@ class GroupCallParticipant(PyObject):
         self.video_camera: bool = video_camera
         self.raised_hand: bool = raised_hand
         self.volume: int = volume
-        self.joined: bool = joined
-        self.left: bool = left
+        if joined:
+            self.action = self.Action.JOINED
+        elif left:
+            self.action = self.Action.LEFT
+        else:
+            self.action = self.Action.UPDATED

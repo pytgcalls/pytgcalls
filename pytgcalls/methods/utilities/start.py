@@ -16,6 +16,7 @@ from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
 from ...types import CallData
 from ...types import ChatUpdate
+from ...types import GroupCallParticipant
 from ...types import RawCallUpdate
 from ...types import StreamAudioEnded
 from ...types import StreamVideoEnded
@@ -81,18 +82,20 @@ class Start(Scaffold):
                     await clear_call(chat_id)
             if isinstance(update, UpdatedGroupCallParticipant):
                 participant = update.participant
+                action = participant.action
                 chat_peer = self._cache_user_peer.get(chat_id)
                 if chat_peer:
                     is_self = BridgedClient.chat_id(
                         chat_peer,
                     ) == participant.user_id if chat_peer else False
                     if is_self:
-                        if participant.left:
+                        if action == GroupCallParticipant.Action.LEFT:
                             await clear_call(chat_id)
-                        if chat_id in self._need_unmute and \
-                                not participant.joined and \
-                                not participant.left and \
-                                not participant.muted_by_admin:
+                        if (
+                            chat_id in self._need_unmute and
+                            action == GroupCallParticipant.Action.UPDATED and
+                            not participant.muted_by_admin
+                        ):
                             try:
                                 await update_status(
                                     chat_id,
@@ -101,7 +104,10 @@ class Start(Scaffold):
                             except ConnectionNotFound:
                                 pass
 
-                        if participant.muted_by_admin and not participant.left:
+                        if (
+                            participant.muted_by_admin and
+                            action != GroupCallParticipant.Action.LEFT
+                        ):
                             self._need_unmute.add(chat_id)
                         else:
                             self._need_unmute.discard(chat_id)
