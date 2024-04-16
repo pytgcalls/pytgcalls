@@ -90,6 +90,13 @@ async def stream_end_handler(_: PyTgCalls, update: Update):
     print(f'Stream ended in {update.chat_id}', update)
 
 
+@call_py.on_update(
+    fl.call_participant(fl.call_participant.Action.JOINED),
+)
+async def participant_handler(_: PyTgCalls, update: Update):
+    print(f'Participant joined in {update.chat_id}', update)
+
+
 @call_py.on_update()
 async def all_updates(_: PyTgCalls, update: Update):
     print(update)

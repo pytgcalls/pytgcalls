@@ -2,9 +2,9 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
+from pytgcalls import filters as fl
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.filters import Filter
 from pytgcalls.types import MediaStream
 from pytgcalls.types import Update
 
@@ -19,12 +19,11 @@ test_stream = 'http://docs.evostream.com/sample_content/assets/' \
               'sintel1m720p.mp4'
 
 
-class CustomFilter(Filter):
-    async def __call__(self, client: PyTgCalls, update: Update):
-        return update.chat_id in client.calls
+async def custom_filter(_, client: PyTgCalls, update: Update):
+    return update.chat_id in client.calls
 
 
-@call_py.on_update(CustomFilter())
+@call_py.on_update(fl.create(custom_filter))
 async def all_updates(_: PyTgCalls, update: Update):
     print(update)
 
