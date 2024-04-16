@@ -10,8 +10,8 @@ class RawCallUpdate(Update):
         ACCEPTED = auto()
         CONFIRMED = auto()
         REQUESTED = auto()
-        UPDATED_CALL = ACCEPTED | CONFIRMED
         SIGNALING_DATA = auto()
+        UPDATED_CALL = ACCEPTED | CONFIRMED
 
     def __init__(
         self,
