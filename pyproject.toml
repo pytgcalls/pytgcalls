@@ -1,0 +1,54 @@
+[project]
+dynamic = ["version"]
+name = "py-tgcalls"
+description = "Async client API for the Telegram Calls."
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+    'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+]
+authors = [
+    {name = "Laky-64", email = "iraci.matteo@gmail.com"},
+]
+keywords = [
+    "audio", "python", "library", "video", "telegram", "stream",
+    "ffmpeg", "cpp", "webrtc", "voice-chat", "voip", "group-chat",
+    "video-calls", "calls", "video-chat", "pytgcalls", "ntgcalls",
+    "tgcalls", "py-tgcalls", "pyrogram", "telethon", "hydrogram"
+]
+requires-python = ">=3.8"
+dependencies = [
+    "aiohttp>=3.9.3",
+    "ntgcalls>=1.2.0.b12",
+    "psutil",
+    "screeninfo",
+    "deprecation",
+]
+
+[project.optional-dependencies]
+pyrogram = ["pyrogram>=1.2.20"]
+telethon = ["telethon>=1.24.0"]
+hydrogram = ["hydrogram>=0.1.4"]
+
+[project.urls]
+Homepage = "https://pytgcalls.github.io/"
+Repository = "https://github.com/pytgcalls/pytgcalls.git"
+Documentation = "https://pytgcalls.github.io/PyTgCalls"
+Changelog = "https://pytgcalls.github.io/PyTgCalls/Changelogs"
+
+[tool.setuptools]
+include-package-data = true
+
+[build-system]
+requires = ["setuptools >= 69.2.0", "wheel >= 0.43.0"]
+
+[tool.setuptools.packages.find]
+include = ["pytgcalls*"]

@@ -3,8 +3,10 @@ from typing import Callable
 from typing import List
 from typing import Optional
 
+from ntgcalls import Protocol
+
 from ..exceptions import InvalidMTProtoClient
-from ..types.groups import GroupCallParticipant
+from ..types.chats import GroupCallParticipant
 from .bridged_client import BridgedClient
 
 
@@ -64,6 +66,83 @@ class MtProtoClient:
                 have_video,
                 join_as,
             )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def request_call(
+        self,
+        user_id: int,
+        g_a_hash: bytes,
+        protocol: Protocol,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.request_call(
+                user_id,
+                g_a_hash,
+                protocol,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def accept_call(
+        self,
+        user_id: int,
+        g_b: bytes,
+        protocol: Protocol,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.accept_call(
+                user_id,
+                g_b,
+                protocol,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def discard_call(
+        self,
+        user_id: int,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.discard_call(
+                user_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def confirm_call(
+        self,
+        user_id: int,
+        g_a: bytes,
+        key_fingerprint: int,
+        protocol: Protocol,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.confirm_call(
+                user_id,
+                g_a,
+                key_fingerprint,
+                protocol,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def send_signaling(
+        self,
+        user_id: int,
+        data: bytes,
+    ):
+        if self._bind_client is not None:
+            await self._bind_client.send_signaling(
+                user_id,
+                data,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def get_dhc(self):
+        if self._bind_client is not None:
+            return await self._bind_client.get_dhc()
         else:
             raise InvalidMTProtoClient()
 
@@ -160,33 +239,19 @@ class MtProtoClient:
             return self._bind_client.no_updates()
         raise InvalidMTProtoClient()
 
+    @property
+    def mtproto_client(self):
+        if self._bind_client is not None:
+            return self._bind_client
+        raise InvalidMTProtoClient()
+
     async def start(self):
         if self._bind_client is not None:
             await self._bind_client.start()
         else:
             raise InvalidMTProtoClient()
 
-    def on_closed_voice_chat(self) -> Callable:
+    def on_update(self) -> Callable:
         if self._bind_client is not None:
-            return self._bind_client.on_closed_voice_chat()
-        raise InvalidMTProtoClient()
-
-    def on_kicked(self) -> Callable:
-        if self._bind_client is not None:
-            return self._bind_client.on_kicked()
-        raise InvalidMTProtoClient()
-
-    def on_receive_invite(self) -> Callable:
-        if self._bind_client is not None:
-            return self._bind_client.on_receive_invite()
-        raise InvalidMTProtoClient()
-
-    def on_left_group(self) -> Callable:
-        if self._bind_client is not None:
-            return self._bind_client.on_left_group()
-        raise InvalidMTProtoClient()
-
-    def on_participants_change(self) -> Callable:
-        if self._bind_client is not None:
-            return self._bind_client.on_participants_change()
+            return self._bind_client.on_update()
         raise InvalidMTProtoClient()

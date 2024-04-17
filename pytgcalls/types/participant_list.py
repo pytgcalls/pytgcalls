@@ -1,6 +1,6 @@
 from typing import Dict
 
-from ..types.groups import GroupCallParticipant
+from ..types.chats import GroupCallParticipant
 from ..types.list import List
 
 
@@ -17,7 +17,7 @@ class ParticipantList:
         self,
         participant: GroupCallParticipant,
     ):
-        if participant.left:
+        if participant.action == GroupCallParticipant.Action.LEFT:
             if participant.user_id in self._list_participants:
                 del self._list_participants[participant.user_id]
         else:

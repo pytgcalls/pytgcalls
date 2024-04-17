@@ -9,8 +9,6 @@ from signal import SIGTERM
 
 py_logger = logging.getLogger('pytgcalls')
 
-is_idling = False
-
 # Signal number to name
 signals = {
     k: v for v, k in signal.__dict__.items()
@@ -19,14 +17,19 @@ signals = {
 
 
 async def idle():
-    global is_idling
+    task = None
 
     def signal_handler(signum, __):
-        global is_idling
-        py_logger.info(f'Stop signal received ({signals[signum]}). Exiting...')
-        is_idling = False
+        py_logger.info(f"Stop signal received ({signals[signum]}). Exiting...")
+        asyncio.get_event_loop().run_in_executor(None, task.cancel)
+
     for s in (SIGINT, SIGTERM, SIGABRT):
         signal_fn(s, signal_handler)
-    is_idling = True
-    while is_idling:
-        await asyncio.sleep(1)
+
+    while True:
+        task = asyncio.create_task(asyncio.sleep(600))
+
+        try:
+            await task
+        except asyncio.CancelledError:
+            break

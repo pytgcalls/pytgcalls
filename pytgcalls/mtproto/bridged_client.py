@@ -1,22 +1,17 @@
-import asyncio
 import random
 from typing import Any
 from typing import Callable
-from typing import Dict
 from typing import List
 from typing import Optional
 
+from ntgcalls import Protocol
+from ntgcalls import RTCServer
+
+from ..handlers import HandlersHolder
 from ..types import GroupCallParticipant
 
 
-class BridgedClient:
-    HANDLERS_LIST: Dict[str, List[Callable]] = {
-        'CLOSED_HANDLER': [],
-        'KICK_HANDLER': [],
-        'INVITE_HANDLER': [],
-        'LEFT_HANDLER': [],
-        'PARTICIPANTS_HANDLER': [],
-    }
+class BridgedClient(HandlersHolder):
 
     async def get_call(
         self,
@@ -31,6 +26,44 @@ class BridgedClient:
         invite_hash: str,
         have_video: bool,
         join_as: Any,
+    ):
+        pass
+
+    async def request_call(
+        self,
+        user_id: int,
+        g_a_hash: bytes,
+        protocol: Protocol,
+    ):
+        pass
+
+    async def accept_call(
+        self,
+        user_id: int,
+        g_b: bytes,
+        protocol: Protocol,
+    ):
+        pass
+
+    async def confirm_call(
+        self,
+        user_id: int,
+        g_a: bytes,
+        key_fingerprint: int,
+        protocol: Protocol,
+    ):
+        pass
+
+    async def send_signaling(
+        self,
+        user_id: int,
+        data: bytes,
+    ):
+        pass
+
+    async def discard_call(
+        self,
+        chat_id: int,
     ):
         pass
 
@@ -108,78 +141,78 @@ class BridgedClient:
             bool(participant.raise_hand_rating),
             participant.volume // 100
             if participant.volume is not None else 100,
+            bool(participant.just_joined),
             bool(participant.left),
         )
 
     @staticmethod
     def chat_id(input_peer) -> int:
-        is_channel = hasattr(input_peer, 'channel_id')
-        is_channel_update = input_peer.__class__.__name__ == 'Channel'
-        is_chat = input_peer.__class__.__name__ == 'Chat'
-        is_user = input_peer.__class__.__name__ == 'PeerUser' or \
-            input_peer.__class__.__name__ == 'InputPeerUser'
-        is_forbidden = input_peer.__class__.__name__ == 'ChannelForbidden'
-        if is_user:
+        class_name = input_peer.__class__.__name__
+        if class_name in ['PeerUser', 'InputPeerUser']:
             return input_peer.user_id
-        elif is_channel:
-            return -1000000000000 - input_peer.channel_id
-        elif is_channel_update or is_forbidden:
+        elif class_name in ['Channel', 'ChannelForbidden']:
             return -1000000000000 - input_peer.id
-        elif is_chat:
+        elif hasattr(input_peer, 'channel_id'):
+            return -1000000000000 - input_peer.channel_id
+        elif class_name == 'Chat':
             return -input_peer.id
         else:
             return -input_peer.chat_id
 
     @staticmethod
+    def user_from_call(call) -> Optional[int]:
+        class_name = call.__class__.__name__
+        if class_name in ['PhoneCallAccepted', 'PhoneCallWaiting']:
+            return call.participant_id
+        elif class_name in ['PhoneCallRequested', 'PhoneCall']:
+            return call.admin_id
+        return None
+
+    @staticmethod
+    def parse_servers(servers) -> List[RTCServer]:
+        return [
+            RTCServer(
+                server.id,
+                server.ip,
+                server.ipv6,
+                server.port,
+                server.username,
+                server.password,
+                server.turn,
+                server.stun,
+                False,
+                None,
+            ) if server.__class__.__name__ == 'PhoneConnectionWebrtc' else
+            RTCServer(
+                server.id,
+                server.ip,
+                server.ipv6,
+                server.port,
+                None,
+                None,
+                True,
+                False,
+                server.tcp,
+                server.peer_tag,
+            )
+            for server in servers
+        ]
+
+    @staticmethod
     def rnd_id() -> int:
-        return random.randint(0, 2147483647)
+        return random.randint(0, 0x7FFFFFFF - 1)
 
-    async def _propagate(self, event_name: str, *args, **kwargs):
-        for event in self.HANDLERS_LIST[event_name]:
-            asyncio.ensure_future(event(*args, **kwargs))
+    async def get_dhc(self):
+        pass
 
-    def on_closed_voice_chat(self) -> Callable:
+    def on_update(self) -> Callable:
         def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['CLOSED_HANDLER'].append(func)
-            return func
-
-        return decorator
-
-    def on_kicked(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['KICK_HANDLER'].append(func)
-            return func
-
-        return decorator
-
-    def on_receive_invite(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['INVITE_HANDLER'].append(func)
-            return func
+            return self.add_handler(func)
 
         return decorator
 
     async def get_id(self):
         pass
-
-    def on_left_group(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['LEFT_HANDLER'].append(func)
-            return func
-
-        return decorator
-
-    def on_participants_change(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            if self is not None:
-                self.HANDLERS_LIST['PARTICIPANTS_HANDLER'].append(func)
-            return func
-
-        return decorator
 
     async def get_full_chat(self, chat_id: int):
         pass

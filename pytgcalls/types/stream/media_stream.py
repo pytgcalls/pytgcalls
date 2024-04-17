@@ -1,3 +1,5 @@
+from enum import auto
+from enum import Flag
 from pathlib import Path
 from typing import Dict
 from typing import Optional
@@ -25,9 +27,15 @@ from ..stream.video_quality import VideoQuality
 
 
 class MediaStream(Stream):
-    AUTO_DETECT = 1
-    IGNORE = 2
-    REQUIRED = 4
+    class Flags(Flag):
+        AUTO_DETECT = auto()
+        REQUIRED = auto()
+        IGNORE = auto()
+        NO_LATENCY = auto()
+
+        def __repr__(self):
+            cls_name = self.__class__.__name__
+            return f'{cls_name}.{self.name}'
 
     @statictypes
     def __init__(
@@ -42,8 +50,8 @@ class MediaStream(Stream):
             VideoQuality,
         ] = VideoQuality.SD_480p,
         audio_path: Optional[Union[str, Path, DeviceInfo]] = None,
-        audio_flags: Optional[int] = AUTO_DETECT,
-        video_flags: Optional[int] = AUTO_DETECT,
+        audio_flags: Optional[Flags] = Flags.AUTO_DETECT,
+        video_flags: Optional[Flags] = Flags.AUTO_DETECT,
         headers: Optional[Dict[str, str]] = None,
         ffmpeg_parameters: Optional[str] = None,
         ytdlp_parameters: Optional[str] = None,
@@ -80,15 +88,17 @@ class MediaStream(Stream):
         elif isinstance(audio_path, DeviceInfo):
             self._audio_path = audio_path.build_ffmpeg_command()
 
-        self._audio_flags = audio_flags
-        self._video_flags = video_flags
+        self._audio_flags = self._filter_flags(audio_flags)
+        self._video_flags = self._filter_flags(video_flags)
         self._ffmpeg_parameters = ffmpeg_parameters
         self._ytdlp_parameters = ytdlp_parameters
         self._headers = headers
+
         super().__init__(
-            stream_audio=None if audio_flags == self.IGNORE else
+            stream_audio=None
+            if self._audio_flags & MediaStream.Flags.IGNORE else
             AudioStream(
-                InputMode.Shell,
+                self._flags(self._audio_flags),
                 ' '.join(
                     build_command(
                         'ffmpeg',
@@ -102,9 +112,10 @@ class MediaStream(Stream):
                 ),
                 self._audio_parameters,
             ),
-            stream_video=None if video_flags == self.IGNORE else
+            stream_video=None
+            if self._video_flags & MediaStream.Flags.IGNORE else
             VideoStream(
-                InputMode.Shell,
+                self._flags(self._video_flags),
                 ' '.join(
                     build_command(
                         'ffmpeg',
@@ -121,7 +132,7 @@ class MediaStream(Stream):
         )
 
     async def check_stream(self):
-        if not self._video_flags == self.IGNORE:
+        if not self._video_flags & MediaStream.Flags.IGNORE:
             if YtDlp.is_valid(self._media_path):
                 links = await YtDlp.extract(
                     self._media_path,
@@ -163,14 +174,14 @@ class MediaStream(Stream):
                     ),
                 )
             except NoVideoSourceFound as e:
-                if self._video_flags == self.REQUIRED:
+                if self._video_flags & MediaStream.Flags.REQUIRED:
                     raise e
                 self.stream_video = None
 
         self._audio_path = self._audio_path \
             if self._audio_path else self._media_path
 
-        if not self._audio_flags == self.IGNORE:
+        if not self._audio_flags & MediaStream.Flags.IGNORE:
             if YtDlp.is_valid(self._audio_path):
                 self._audio_path = (
                     await YtDlp.extract(
@@ -204,6 +215,32 @@ class MediaStream(Stream):
                     ),
                 )
             except NoAudioSourceFound as e:
-                if self._audio_flags == self.REQUIRED:
+                if self._audio_flags & MediaStream.Flags.REQUIRED:
                     raise e
                 self.stream_audio = None
+
+    @staticmethod
+    def _filter_flags(flags: Optional[Flags]) -> Flags:
+        combined_flags = [
+            MediaStream.Flags.AUTO_DETECT,
+            MediaStream.Flags.IGNORE, MediaStream.Flags.REQUIRED,
+        ]
+        combined_flags_value = MediaStream.Flags(
+            sum([flag.value for flag in combined_flags]),
+        )
+        if not flags:
+            flags = min(combined_flags, key=lambda flag: flag.value)
+        if flags & ~combined_flags_value != 0:
+            flags |= min(combined_flags, key=lambda flag: flag.value)
+        potential_flag = max(
+            [flag for flag in combined_flags if flags & flag],
+            key=lambda flag: flag.value,
+        )
+        return flags & ~combined_flags_value | potential_flag
+
+    @staticmethod
+    def _flags(flags: Flags) -> InputMode:
+        new_flags = InputMode.SHELL
+        if flags & MediaStream.Flags.NO_LATENCY:
+            new_flags |= InputMode.NO_LATENCY
+        return new_flags

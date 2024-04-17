@@ -58,10 +58,31 @@ class NoActiveGroupCall(Exception):
         )
 
 
-class NotInGroupCallError(Exception):
+class TimedOutAnswer(Exception):
     def __init__(self):
         super().__init__(
-            'The userbot there isn\'t in a group call',
+            'Timed out waiting for an answer',
+        )
+
+
+class CallDeclined(Exception):
+    def __init__(self, user_id: int):
+        super().__init__(
+            f'Call declined by {user_id}',
+        )
+
+
+class CallDiscarded(Exception):
+    def __init__(self, user_id: int):
+        super().__init__(
+            f'Call discarded by {user_id}',
+        )
+
+
+class NotInCallError(Exception):
+    def __init__(self):
+        super().__init__(
+            'The userbot is not in a call',
         )
 
 
@@ -157,4 +178,11 @@ class UnMuteNeeded(Exception):
     def __init__(self):
         super().__init__(
             'Needed to unmute the userbot',
+        )
+
+
+class MTProtoClientNotConnected(Exception):
+    def __init__(self):
+        super().__init__(
+            'MTProto client not connected',
         )
