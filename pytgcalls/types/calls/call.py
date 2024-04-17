@@ -27,7 +27,6 @@ class Call(PyObject):
         chat_id: int,
         status: Status,
     ):
-        self.chat_id: int = chat_id
         self.call_type = Call.Type.GROUP \
             if chat_id < 0 else Call.Type.PRIVATE
         self.status = status
