@@ -90,7 +90,14 @@ class Start(Scaffold):
                     ) == participant.user_id if chat_peer else False
                     if is_self:
                         if action == GroupCallParticipant.Action.LEFT:
-                            await clear_call(chat_id)
+                            if await clear_call(chat_id):
+                                await self.propagate(
+                                    ChatUpdate(
+                                        chat_id,
+                                        ChatUpdate.Status.KICKED,
+                                    ),
+                                    self,
+                                )
                         if (
                             chat_id in self._need_unmute and
                             action == GroupCallParticipant.Action.UPDATED and
@@ -117,12 +124,15 @@ class Start(Scaffold):
                     self,
                 )
 
-        async def clear_call(chat_id):
+        async def clear_call(chat_id) -> bool:
+            res = False
             try:
                 await self._binding.stop(chat_id)
+                res = True
             except ConnectionNotFound:
                 pass
             await clear_cache(chat_id)
+            return res
 
         async def update_status(chat_id: int, state: MediaState):
             try:
