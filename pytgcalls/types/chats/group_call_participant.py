@@ -1,7 +1,7 @@
 from enum import auto
-from enum import Flag
 
 from ...types.py_object import PyObject
+from ..flag import Flag
 
 
 class GroupCallParticipant(PyObject):

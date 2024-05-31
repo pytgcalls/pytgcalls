@@ -1,7 +1,7 @@
 from enum import auto
-from enum import Flag
 
 from ...types.py_object import PyObject
+from ..flag import Flag
 
 
 class Call(PyObject):
@@ -10,17 +10,9 @@ class Call(PyObject):
         PAUSED = auto()
         IDLE = auto()
 
-        def __repr__(self):
-            cls_name = self.__class__.__name__
-            return f'{cls_name}.{self.name}'
-
     class Type(Flag):
         GROUP = auto()
         PRIVATE = auto()
-
-        def __repr__(self):
-            cls_name = self.__class__.__name__
-            return f'{cls_name}.{self.name}'
 
     def __init__(
         self,
