@@ -72,9 +72,11 @@ class MediaDevices:
             except subprocess.TimeoutExpired:
                 return list_devices
             if platform == 'win32':
-                list_raw = result.split('DirectShow audio devices')[1]
+                list_raw = result.split('DirectShow audio devices')
+                if len(list_raw) < 2:
+                    return list_devices
                 output = re.findall(
-                    '\\[.*?].*?"(.*?)".*?\n\\[.*?].*?"(.*?)"', list_raw,
+                    '\\[.*?].*?"(.*?)".*?\n\\[.*?].*?"(.*?)"', list_raw[1],
                 )
                 for device in output:
                     list_devices.append(
