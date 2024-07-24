@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import re
 import shlex
 from typing import Optional
@@ -7,6 +8,8 @@ from typing import Tuple
 from .exceptions import YtDlpError
 from .ffmpeg import cleanup_commands
 from .types.raw import VideoParameters
+
+py_logger = logging.getLogger('pytgcalls')
 
 
 class YtDlp:
@@ -34,8 +37,10 @@ class YtDlp:
             'yt-dlp',
             '-g',
             '-f',
-            f'best[width<=?{video_parameters.width}]'
-            f'[height<=?{video_parameters.height}]',
+            'bestvideo[vcodec~=\'(vp09|avc1)\']+m4a/best',
+            '-S',
+            'res:'
+            f'{min(video_parameters.width, video_parameters.height)}',
             '--no-warnings',
         ]
 
@@ -52,6 +57,10 @@ class YtDlp:
 
         commands.append(link)
 
+        py_logger.log(
+            logging.DEBUG,
+            f'Running with "{" ".join(commands)}" command',
+        )
         try:
             proc = await asyncio.create_subprocess_exec(
                 *commands,
