@@ -52,7 +52,7 @@ class Play(Scaffold):
             try:
                 return await self._binding.change_stream(
                     chat_id,
-                    await StreamParams.get_stream_params(stream),
+                    media_description,
                 )
             except FileError as e:
                 raise FileNotFoundError(e)
