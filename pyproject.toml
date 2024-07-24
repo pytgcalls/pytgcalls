@@ -27,7 +27,7 @@ keywords = [
 requires-python = ">=3.8"
 dependencies = [
     "aiohttp>=3.9.3",
-    "ntgcalls>=1.2.0",
+    "ntgcalls>=1.2.1",
     "psutil",
     "screeninfo",
     "deprecation",
