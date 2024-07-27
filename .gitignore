@@ -12,3 +12,4 @@ venv/
 tests/
 env/
 lib/
+example/
