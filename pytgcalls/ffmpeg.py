@@ -285,6 +285,8 @@ def _build_ffmpeg_options(
         options.extend([
             'rawvideo',
             '-r', str(stream_parameters.frame_rate),
+            '-pix_fmt',
+            'yuv420p',
             '-vf',
             f'scale={stream_parameters.width}:{stream_parameters.height}',
         ])
