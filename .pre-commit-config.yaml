@@ -42,4 +42,4 @@ repos:
       hooks:
           - id: mypy
             exclude: ^example/
-            additional_dependencies: [types-all]
+            additional_dependencies: [types-requests, types-setuptools]
