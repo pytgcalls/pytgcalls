@@ -361,19 +361,24 @@ class PyrogramClient(BridgedClient):
         self,
         input_call: InputGroupCall,
     ) -> List[GroupCallParticipant]:
+        participants = []
+        next_offset = ''
+        while True:
+            result = await self._app.send(
+                GetGroupParticipants(
+                    call=input_call,
+                    ids=[],
+                    sources=[],
+                    offset=next_offset,
+                    limit=0,
+                ),
+            )
+            participants.extend(result.participants)
+            if not (next_offset := result.next_offset):
+                break
         return [
             self.parse_participant(participant)
-            for participant in (
-                await self._app.send(
-                    GetGroupParticipants(
-                        call=input_call,
-                        ids=[],
-                        sources=[],
-                        offset='',
-                        limit=500,
-                    ),
-                )
-            ).participants
+            for participant in participants
         ]
 
     async def join_group_call(
