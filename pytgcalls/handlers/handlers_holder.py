@@ -41,3 +41,9 @@ class HandlersHolder:
     ) -> Callable:
         self._callbacks.append(Callback(func, filters))
         return func
+
+    def remove_handler(
+        self,
+        func: Callable
+    ):
+        self._callbacks = [x for x in self._callbacks if x.func != func]
