@@ -44,6 +44,6 @@ class HandlersHolder:
 
     def remove_handler(
         self,
-        func: Callable
+        func: Callable,
     ):
         self._callbacks = [x for x in self._callbacks if x.func != func]
