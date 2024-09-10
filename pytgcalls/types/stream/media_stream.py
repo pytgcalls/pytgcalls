@@ -64,7 +64,7 @@ class MediaStream(Stream):
         elif isinstance(video_parameters, VideoQuality):
             self._video_parameters = VideoParameters(
                 *video_parameters.value,
-                ratio_adjust=True,
+                adjust_by_height=False,
             )
 
         self._media_path: Optional[str] = None

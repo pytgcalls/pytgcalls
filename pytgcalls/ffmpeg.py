@@ -97,7 +97,7 @@ async def check_stream(
 
         if (
             new_h > stream_parameters.height and
-            not stream_parameters.ratio_adjust
+            stream_parameters.adjust_by_height
         ):
             new_h = stream_parameters.height
             new_w = int(new_h * ratio)
