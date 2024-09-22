@@ -5,19 +5,18 @@ from typing import Dict
 from typing import List
 from typing import Union
 
-
 class PyObject:
     @staticmethod
-    def default(obj) -> Union[str, Dict[str, str], List[Any]]:
+    def default(obj: Any) -> Union[str, Dict[str, Union[str, Any]], List[Any]]:
         if isinstance(obj, bytes):
             return repr(obj)
         if isinstance(obj, Enum):
-            return repr(obj)
+            return obj.name 
         if hasattr(obj, '__dict__'):
             return {
                 '_': obj.__class__.__name__,
                 **{
-                    attr: vars(obj)[attr]
+                    attr: getattr(obj, attr) 
                     for attr in vars(obj)
                     if not attr.startswith('_')
                 },
