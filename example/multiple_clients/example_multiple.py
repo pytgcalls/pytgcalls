@@ -58,4 +58,4 @@ async def stop_handler2(_: Client, message: Message):
         message.chat.id,
     )
 
-compose([app, app2])
+compose([call_py, call_py2])
