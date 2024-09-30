@@ -9,7 +9,7 @@ class CallHolder(Scaffold):
     def __init__(self):
         super().__init__()
         self._conversions = {
-            StreamStatus.PLAYING: Call.Status.PLAYING,
+            StreamStatus.ACTIVE: Call.Status.ACTIVE,
             StreamStatus.PAUSED: Call.Status.PAUSED,
             StreamStatus.IDLING: Call.Status.IDLE,
         }

@@ -8,8 +8,7 @@ from .mtproto import BridgedClient
 from .pytgcalls import PyTgCalls
 from .types import ChatUpdate
 from .types import GroupCallParticipant
-from .types import StreamAudioEnded
-from .types import StreamVideoEnded
+from .types import StreamEnded
 from .types import Update
 from .types import UpdatedGroupCallParticipant
 
@@ -136,7 +135,7 @@ me = create(_me_filter)
 
 
 async def _stream_filter(_, __, u: Update):
-    return isinstance(u, (StreamVideoEnded, StreamAudioEnded))
+    return isinstance(u, StreamEnded)
 
 
 stream_end = create(_stream_filter)

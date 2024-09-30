@@ -1,9 +1,12 @@
 from typing import Optional
+from typing import Union
 
 from ntgcalls import AudioDescription
 from ntgcalls import MediaDescription
 from ntgcalls import VideoDescription
 
+from ...types.raw import AudioStream
+from ...types.raw import VideoStream
 from ...types.raw.stream import Stream
 from ...types.stream.media_stream import MediaStream
 
@@ -11,32 +14,43 @@ from ...types.stream.media_stream import MediaStream
 class StreamParams:
     @staticmethod
     async def get_stream_params(stream: Optional[Stream]) -> MediaDescription:
-        audio_description = None
-        video_description = None
+        def parse_media_description(
+            media: Optional[Union[AudioStream, VideoStream]],
+        ) -> Optional[Union[AudioDescription, VideoDescription]]:
+            if media is not None:
+                if isinstance(media, AudioStream):
+                    return AudioDescription(
+                        input_mode=media.input_mode,
+                        input=media.path,
+                        sample_rate=media.parameters.bitrate,
+                        bits_per_sample=16,
+                        channel_count=media.parameters.channels,
+                    )
+                elif isinstance(media, VideoStream):
+                    return VideoDescription(
+                        input_mode=media.input_mode,
+                        input=media.path,
+                        width=media.parameters.width,
+                        height=media.parameters.height,
+                        fps=media.parameters.frame_rate,
+                    )
+            return None
 
         if stream is not None:
             if isinstance(stream, MediaStream):
                 await stream.check_stream()
 
-            if stream.stream_audio is not None:
-                audio_description = AudioDescription(
-                    input_mode=stream.stream_audio.input_mode,
-                    input=stream.stream_audio.path,
-                    sample_rate=stream.stream_audio.parameters.bitrate,
-                    bits_per_sample=16,
-                    channel_count=stream.stream_audio.parameters.channels,
-                )
-
-            if stream.stream_video is not None:
-                video_description = VideoDescription(
-                    input_mode=stream.stream_video.input_mode,
-                    input=stream.stream_video.path,
-                    width=stream.stream_video.parameters.width,
-                    height=stream.stream_video.parameters.height,
-                    fps=stream.stream_video.parameters.frame_rate,
-                )
-
         return MediaDescription(
-            audio=audio_description,
-            video=video_description,
+            microphone=parse_media_description(
+                None if stream is None else stream.microphone,
+            ),
+            speaker=parse_media_description(
+                None if stream is None else stream.speaker,
+            ),
+            camera=parse_media_description(
+                None if stream is None else stream.camera,
+            ),
+            screen=parse_media_description(
+                None if stream is None else stream.screen,
+            ),
         )

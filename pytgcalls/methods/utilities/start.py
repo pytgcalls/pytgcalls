@@ -5,6 +5,7 @@ from ntgcalls import ConnectionError
 from ntgcalls import ConnectionNotFound
 from ntgcalls import ConnectionState
 from ntgcalls import MediaState
+from ntgcalls import StreamDevice
 from ntgcalls import StreamType
 from ntgcalls import TelegramServerError
 
@@ -18,8 +19,7 @@ from ...types import CallData
 from ...types import ChatUpdate
 from ...types import GroupCallParticipant
 from ...types import RawCallUpdate
-from ...types import StreamAudioEnded
-from ...types import StreamVideoEnded
+from ...types import StreamEnded
 from ...types import Update
 from ...types import UpdatedGroupCallParticipant
 
@@ -146,13 +146,16 @@ class Start(Scaffold):
             except Exception as e:
                 py_logger.debug(f'SetVideoCallStatus: {e}')
 
-        async def stream_ended(chat_id: int, stream: StreamType):
+        async def stream_ended(
+            chat_id: int,
+            stream_type: StreamType,
+            device: StreamDevice,
+        ):
             await self.propagate(
-                StreamAudioEnded(
+                StreamEnded(
                     chat_id,
-                ) if stream == StreamType.AUDIO else
-                StreamVideoEnded(
-                    chat_id,
+                    stream_type,
+                    device,
                 ),
                 self,
             )
@@ -209,13 +212,15 @@ class Start(Scaffold):
                 self._handle_mtproto()
 
             self._binding.on_stream_end(
-                lambda chat_id, stream: asyncio.run_coroutine_threadsafe(
-                    stream_ended(chat_id, stream),
+                lambda chat_id, stream_type, device:
+                asyncio.run_coroutine_threadsafe(
+                    stream_ended(chat_id, stream_type, device),
                     self.loop,
                 ),
             )
             self._binding.on_upgrade(
-                lambda chat_id, state: asyncio.run_coroutine_threadsafe(
+                lambda chat_id, state:
+                asyncio.run_coroutine_threadsafe(
                     update_status(chat_id, state),
                     self.loop,
                 ),

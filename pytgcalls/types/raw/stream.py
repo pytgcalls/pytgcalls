@@ -10,8 +10,12 @@ class Stream(PyObject):
     @statictypes
     def __init__(
         self,
-        stream_audio: Optional[AudioStream] = None,
-        stream_video: Optional[VideoStream] = None,
+        microphone: Optional[AudioStream] = None,
+        speaker: Optional[AudioStream] = None,
+        camera: Optional[VideoStream] = None,
+        screen: Optional[VideoStream] = None,
     ):
-        self.stream_audio: Optional[AudioStream] = stream_audio
-        self.stream_video: Optional[VideoStream] = stream_video
+        self.microphone: Optional[AudioStream] = microphone
+        self.speaker: Optional[AudioStream] = speaker
+        self.camera: Optional[VideoStream] = camera
+        self.screen: Optional[VideoStream] = screen

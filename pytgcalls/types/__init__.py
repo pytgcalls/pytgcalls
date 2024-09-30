@@ -11,8 +11,7 @@ from .chats import GroupCallParticipant
 from .chats import UpdatedGroupCallParticipant
 from .stream import AudioQuality
 from .stream import MediaStream
-from .stream import StreamAudioEnded
-from .stream import StreamVideoEnded
+from .stream import StreamEnded
 from .stream import VideoQuality
 from .update import Update
 
@@ -29,8 +28,7 @@ __all__ = (
     'GroupCallConfig',
     'GroupCallParticipant',
     'MediaStream',
-    'StreamAudioEnded',
-    'StreamVideoEnded',
+    'StreamEnded',
     'Update',
     'UpdatedGroupCallParticipant',
     'VideoQuality',

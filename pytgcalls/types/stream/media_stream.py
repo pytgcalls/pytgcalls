@@ -31,7 +31,6 @@ class MediaStream(Stream):
         AUTO_DETECT = auto()
         REQUIRED = auto()
         IGNORE = auto()
-        NO_LATENCY = auto()
 
     @statictypes
     def __init__(
@@ -94,10 +93,10 @@ class MediaStream(Stream):
         self._headers = headers
 
         super().__init__(
-            stream_audio=None
+            microphone=None
             if self._audio_flags & MediaStream.Flags.IGNORE else
             AudioStream(
-                self._flags(self._audio_flags),
+                InputMode.SHELL,
                 ' '.join(
                     build_command(
                         'ffmpeg',
@@ -111,10 +110,10 @@ class MediaStream(Stream):
                 ),
                 self._audio_parameters,
             ),
-            stream_video=None
+            camera=None
             if self._video_flags & MediaStream.Flags.IGNORE else
             VideoStream(
-                self._flags(self._video_flags),
+                InputMode.SHELL,
                 ' '.join(
                     build_command(
                         'ffmpeg',
@@ -161,7 +160,7 @@ class MediaStream(Stream):
                     ]
                 except LiveStreamFound:
                     live_stream = True
-                self.stream_video.path = ' '.join(
+                self.camera.path = ' '.join(
                     build_command(
                         'ffmpeg',
                         self._ffmpeg_parameters,
@@ -175,7 +174,7 @@ class MediaStream(Stream):
             except NoVideoSourceFound as e:
                 if self._video_flags & MediaStream.Flags.REQUIRED:
                     raise e
-                self.stream_video = None
+                self.camera = None
 
         self._audio_path = self._audio_path \
             if self._audio_path else self._media_path
@@ -202,7 +201,7 @@ class MediaStream(Stream):
                     )
                 except LiveStreamFound:
                     live_stream = True
-                self.stream_audio.path = ' '.join(
+                self.microphone.path = ' '.join(
                     build_command(
                         'ffmpeg',
                         self._ffmpeg_parameters,
@@ -216,7 +215,7 @@ class MediaStream(Stream):
             except NoAudioSourceFound as e:
                 if self._audio_flags & MediaStream.Flags.REQUIRED:
                     raise e
-                self.stream_audio = None
+                self.microphone = None
 
     @staticmethod
     def _filter_flags(flags: Optional[Flags]) -> Flags:
@@ -236,10 +235,3 @@ class MediaStream(Stream):
             key=lambda flag: flag.value,
         )
         return flags & ~combined_flags_value | potential_flag
-
-    @staticmethod
-    def _flags(flags: Flags) -> InputMode:
-        new_flags = InputMode.SHELL
-        if flags & MediaStream.Flags.NO_LATENCY:
-            new_flags |= InputMode.NO_LATENCY
-        return new_flags

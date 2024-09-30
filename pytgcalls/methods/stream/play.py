@@ -50,7 +50,7 @@ class Play(Scaffold):
 
         if chat_id in await self._binding.calls():
             try:
-                return await self._binding.change_stream(
+                return await self._binding.set_stream_sources(
                     chat_id,
                     media_description,
                 )
@@ -88,7 +88,8 @@ class Play(Scaffold):
                             chat_id,
                             call_params,
                             config.invite_hash,
-                            media_description.video is None,
+                            media_description.camera is None and
+                            media_description.screen is None,
                             self._cache_user_peer.get(chat_id),
                         )
                         await self._binding.connect(
@@ -100,11 +101,14 @@ class Play(Scaffold):
                             chat_id,
                             CallData(await self._app.get_dhc(), self.loop),
                         )
-                        data.g_a_or_b = await self._binding.create_p2p_call(
+                        await self._binding.create_p2p_call(
+                            chat_id,
+                            media_description,
+                        )
+                        data.g_a_or_b = await self._binding.init_exchange(
                             chat_id,
                             data.dh_config,
                             data.g_a_or_b,
-                            media_description,
                         )
                         if not data.outgoing:
                             await self._app.accept_call(

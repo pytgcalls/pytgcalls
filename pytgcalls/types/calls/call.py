@@ -6,7 +6,7 @@ from ..flag import Flag
 
 class Call(PyObject):
     class Status(Flag):
-        PLAYING = auto()
+        ACTIVE = auto()
         PAUSED = auto()
         IDLE = auto()
 
