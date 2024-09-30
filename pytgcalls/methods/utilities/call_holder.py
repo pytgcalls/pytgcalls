@@ -18,7 +18,7 @@ class CallHolder(Scaffold):
     async def calls(self):
         calls_list = await self._binding.calls()
         return Dict({
-            x: Call(x, self._conversions[calls_list[x]])
+            x: Call(x, self._conversions[calls_list[x].playback], self._conversions[calls_list[x].capture])
             for x in calls_list
         })
 
