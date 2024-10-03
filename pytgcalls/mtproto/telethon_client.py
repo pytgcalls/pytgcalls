@@ -531,8 +531,9 @@ class TelethonClient(BridgedClient):
         self,
         chat_id: int,
         muted_status: Optional[bool],
-        paused_status: Optional[bool],
-        stopped_status: Optional[bool],
+        video_paused: Optional[bool],
+        video_stopped: Optional[bool],
+        presentation_paused: Optional[bool],
         participant: TypeInputPeer,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
@@ -542,8 +543,9 @@ class TelethonClient(BridgedClient):
                     call=chat_call,
                     participant=participant,
                     muted=muted_status,
-                    video_stopped=stopped_status,
-                    video_paused=paused_status,
+                    video_paused=video_paused,
+                    video_stopped=video_stopped,
+                    presentation_paused=presentation_paused,
                 ),
             )
 

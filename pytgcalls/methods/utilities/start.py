@@ -141,6 +141,7 @@ class Start(Scaffold):
                     state.muted,
                     state.video_paused,
                     state.video_stopped,
+                    state.presentation_paused,
                     self._cache_user_peer.get(chat_id),
                 )
             except Exception as e:

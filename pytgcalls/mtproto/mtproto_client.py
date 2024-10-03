@@ -187,16 +187,18 @@ class MtProtoClient:
         self,
         chat_id: int,
         muted_status: Optional[bool],
-        paused_status: Optional[bool],
-        stopped_status: Optional[bool],
+        video_paused: Optional[bool],
+        video_stopped: Optional[bool],
+        presentation_paused: Optional[bool],
         participant: Any,
     ):
         if self._bind_client is not None:
             await self._bind_client.set_call_status(
                 chat_id,
                 muted_status,
-                paused_status,
-                stopped_status,
+                video_paused,
+                video_stopped,
+                presentation_paused,
                 participant,
             )
         else:
