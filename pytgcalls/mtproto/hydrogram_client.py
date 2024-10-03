@@ -19,7 +19,9 @@ from hydrogram.raw.functions.phone import EditGroupCallParticipant
 from hydrogram.raw.functions.phone import GetGroupCall
 from hydrogram.raw.functions.phone import GetGroupParticipants
 from hydrogram.raw.functions.phone import JoinGroupCall
+from hydrogram.raw.functions.phone import JoinGroupCallPresentation
 from hydrogram.raw.functions.phone import LeaveGroupCall
+from hydrogram.raw.functions.phone import LeaveGroupCallPresentation
 from hydrogram.raw.functions.phone import RequestCall
 from hydrogram.raw.functions.phone import SendSignalingData
 from hydrogram.raw.types import Channel
@@ -408,6 +410,37 @@ class HydrogramClient(BridgedClient):
                     return update.params.data
 
         return json.dumps({'transport': None})
+
+    async def join_presentation(
+        self,
+        chat_id: int,
+        json_join: str,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            result: Updates = await self._app.invoke(
+                JoinGroupCallPresentation(
+                    call=chat_call,
+                    params=DataJSON(data=json_join),
+                ),
+            )
+            for update in result.updates:
+                if isinstance(update, UpdateGroupCallConnection):
+                    return update.params.data
+
+        return json.dumps({'transport': None})
+
+    async def leave_presentation(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._app.invoke(
+                LeaveGroupCallPresentation(
+                    call=chat_call,
+                ),
+            )
 
     async def request_call(
         self,

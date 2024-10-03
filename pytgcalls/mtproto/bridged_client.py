@@ -29,6 +29,19 @@ class BridgedClient(HandlersHolder):
     ):
         pass
 
+    async def join_presentation(
+        self,
+        chat_id: int,
+        json_join: str,
+    ):
+        pass
+
+    async def leave_presentation(
+        self,
+        chat_id: int,
+    ):
+        pass
+
     async def request_call(
         self,
         user_id: int,

@@ -36,6 +36,11 @@ class Play(Scaffold):
         stream: Optional[Stream] = None,
         config: Optional[Union[CallConfig, GroupCallConfig]] = None,
     ):
+        def log_retries(r: int):
+            (py_logger.warning if r >= 1 else py_logger.info)(
+                f'Telegram is having some internal server issues. '
+                f'Retrying {r + 1} of 3',
+            )
         chat_id = await self.resolve_chat_id(chat_id)
         is_p2p = chat_id > 0  # type: ignore
         if config is None:
@@ -80,13 +85,13 @@ class Play(Scaffold):
                 try:
                     self._wait_connect[chat_id] = self.loop.create_future()
                     if isinstance(config, GroupCallConfig):
-                        call_params: str = await self._binding.create_call(
+                        payload: str = await self._binding.create_call(
                             chat_id,
                             media_description,
                         )
                         result_params = await self._app.join_group_call(
                             chat_id,
-                            call_params,
+                            payload,
                             config.invite_hash,
                             media_description.camera is None and
                             media_description.screen is None,
@@ -95,6 +100,7 @@ class Play(Scaffold):
                         await self._binding.connect(
                             chat_id,
                             result_params,
+                            False,
                         )
                     else:
                         data = self._p2p_configs.setdefault(
@@ -156,10 +162,7 @@ class Play(Scaffold):
                 except TelegramServerError:
                     if retries == 3 or is_p2p:
                         raise
-                    (py_logger.warning if retries >= 1 else py_logger.info)(
-                        f'Telegram is having some internal server issues. '
-                        f'Retrying {retries + 1} of 3',
-                    )
+                    log_retries(retries)
                 except Exception:
                     try:
                         await self._binding.stop(chat_id)
@@ -168,6 +171,38 @@ class Play(Scaffold):
                     raise
                 finally:
                     self._wait_connect.pop(chat_id, None)
+
+            if isinstance(config, GroupCallConfig):
+                if media_description.screen is not None:
+                    for retries in range(4):
+                        try:
+                            self._wait_connect[
+                                chat_id
+                            ] = self.loop.create_future()
+                            payload = await self._binding.init_presentation(
+                                chat_id,
+                            )
+                            result_params = await self._app.join_presentation(
+                                chat_id,
+                                payload,
+                            )
+                            await self._binding.connect(
+                                chat_id,
+                                result_params,
+                                True,
+                            )
+                            await self._wait_connect[chat_id]
+                            self._presentations.add(chat_id)
+                        except TelegramServerError:
+                            if retries == 3:
+                                raise
+                            log_retries(retries)
+                        finally:
+                            self._wait_connect.pop(chat_id, None)
+                elif chat_id in self._presentations:
+                    await self._binding.stop_presentation(chat_id)
+                    await self._app.leave_presentation(chat_id)
+                    self._presentations.discard(chat_id)
 
             if isinstance(config, GroupCallConfig):
                 participants = await self._app.get_group_call_participants(

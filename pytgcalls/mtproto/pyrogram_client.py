@@ -21,7 +21,9 @@ from pyrogram.raw.functions.phone import EditGroupCallParticipant
 from pyrogram.raw.functions.phone import GetGroupCall
 from pyrogram.raw.functions.phone import GetGroupParticipants
 from pyrogram.raw.functions.phone import JoinGroupCall
+from pyrogram.raw.functions.phone import JoinGroupCallPresentation
 from pyrogram.raw.functions.phone import LeaveGroupCall
+from pyrogram.raw.functions.phone import LeaveGroupCallPresentation
 from pyrogram.raw.functions.phone import RequestCall
 from pyrogram.raw.functions.phone import SendSignalingData
 from pyrogram.raw.types import Channel
@@ -403,8 +405,8 @@ class PyrogramClient(BridgedClient):
             )
             for update in result.updates:
                 if isinstance(
-                        update,
-                        UpdateGroupCallParticipants,
+                    update,
+                    UpdateGroupCallParticipants,
                 ):
                     participants = update.participants
                     for participant in participants:
@@ -416,6 +418,37 @@ class PyrogramClient(BridgedClient):
                     return update.params.data
 
         return json.dumps({'transport': None})
+
+    async def join_presentation(
+        self,
+        chat_id: int,
+        json_join: str,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            result: Updates = await self._app.send(
+                JoinGroupCallPresentation(
+                    call=chat_call,
+                    params=DataJSON(data=json_join),
+                ),
+            )
+            for update in result.updates:
+                if isinstance(update, UpdateGroupCallConnection):
+                    return update.params.data
+
+        return json.dumps({'transport': None})
+
+    async def leave_presentation(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._app.send(
+                LeaveGroupCallPresentation(
+                    call=chat_call,
+                ),
+            )
 
     async def request_call(
         self,

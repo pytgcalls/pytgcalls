@@ -23,6 +23,7 @@ class Scaffold(HandlersHolder):
         self._need_unmute = set()
         self._p2p_configs = dict()
         self._wait_connect = dict()
+        self._presentations = set()
 
     def _handle_mtproto(self):
         pass

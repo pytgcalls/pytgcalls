@@ -69,6 +69,30 @@ class MtProtoClient:
         else:
             raise InvalidMTProtoClient()
 
+    async def join_presentation(
+        self,
+        chat_id: int,
+        json_join: str,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.join_presentation(
+                chat_id,
+                json_join,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def leave_presentation(
+        self,
+        chat_id: int,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.leave_presentation(
+                chat_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
     async def request_call(
         self,
         user_id: int,

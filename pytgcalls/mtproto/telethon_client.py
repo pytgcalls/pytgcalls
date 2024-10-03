@@ -17,7 +17,9 @@ from telethon.tl.functions.phone import DiscardCallRequest
 from telethon.tl.functions.phone import EditGroupCallParticipantRequest
 from telethon.tl.functions.phone import GetGroupCallRequest
 from telethon.tl.functions.phone import GetGroupParticipantsRequest
+from telethon.tl.functions.phone import JoinGroupCallPresentationRequest
 from telethon.tl.functions.phone import JoinGroupCallRequest
+from telethon.tl.functions.phone import LeaveGroupCallPresentationRequest
 from telethon.tl.functions.phone import LeaveGroupCallRequest
 from telethon.tl.functions.phone import RequestCallRequest
 from telethon.tl.functions.phone import SendSignalingDataRequest
@@ -385,6 +387,37 @@ class TelethonClient(BridgedClient):
                     return update.params.data
 
         return json.dumps({'transport': None})
+
+    async def join_presentation(
+        self,
+        chat_id: int,
+        json_join: str,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            result: Updates = await self._app(
+                JoinGroupCallPresentationRequest(
+                    call=chat_call,
+                    params=DataJSON(data=json_join),
+                ),
+            )
+            for update in result.updates:
+                if isinstance(update, UpdateGroupCallConnection):
+                    return update.params.data
+
+        return json.dumps({'transport': None})
+
+    async def leave_presentation(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._app(
+                LeaveGroupCallPresentationRequest(
+                    call=chat_call,
+                ),
+            )
 
     async def request_call(
         self,
