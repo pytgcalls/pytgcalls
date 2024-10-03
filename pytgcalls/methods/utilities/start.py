@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from ntgcalls import CallNetworkState
 from ntgcalls import ConnectionError
 from ntgcalls import ConnectionNotFound
 from ntgcalls import ConnectionState
@@ -170,7 +171,11 @@ class Start(Scaffold):
             except (ConnectionError, ConnectionNotFound):
                 pass
 
-        async def connection_changed(chat_id: int, state: ConnectionState):
+        async def connection_changed(
+            chat_id: int,
+            net_state: CallNetworkState,
+        ):
+            state = net_state.connection_state
             if state == ConnectionState.CONNECTING:
                 return
             if chat_id in self._wait_connect:
@@ -227,8 +232,8 @@ class Start(Scaffold):
                 ),
             )
             self._binding.on_connection_change(
-                lambda chat_id, state: asyncio.run_coroutine_threadsafe(
-                    connection_changed(chat_id, state),
+                lambda chat_id, net_state: asyncio.run_coroutine_threadsafe(
+                    connection_changed(chat_id, net_state),
                     self.loop,
                 ),
             )
