@@ -55,10 +55,10 @@ async def check_stream(
         )
 
         if proc_res.returncode != 0:
-            if 'No such file' in proc_res.stderr:
+            if 'No such file' in result.stdout.splitlines():
                 raise FileNotFoundError()
-            raise FFmpegError(f"Error in ffprobe execution: {proc_res.stderr}")
-        result = loads(proc_res.stdout) or {}
+            raise FFmpegError(f"Error in ffprobe execution: {result.stdout.splitlines()}")
+        result = loads(result.stdout.splitlines()) or {}
         stream_list = result.get('streams', [])
         format_content = result.get('format', {})
 
