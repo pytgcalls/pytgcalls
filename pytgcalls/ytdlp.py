@@ -57,7 +57,7 @@ class YtDlp:
             )
 
         commands.append(link)
- 
+
         py_logger.log(
             logging.DEBUG,
             f'Running with "{" ".join(commands)}" command',
