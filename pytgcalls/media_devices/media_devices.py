@@ -54,21 +54,25 @@ class MediaDevices:
                     'list',
                     'sources',
                 ]
-            ffmpeg = await asyncio.create_subprocess_exec(
-                *tuple(commands),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
             try:
-                stdout, stderr = await asyncio.wait_for(
-                    ffmpeg.communicate(),
-                    timeout=3,
+                loop = asyncio.get_event_loop()
+                ffmpeg = await loop.run_in_executor(
+                    None,
+                    lambda: subprocess.run(
+                        commands,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        timeout=3,
+                    ),
                 )
+                stdout: str = ffmpeg.stdout
+                stderr: str = ffmpeg.stderr
                 result: str = ''
                 if platform == 'win32':
-                    result = stderr.decode('utf-8')
+                    result = stderr
                 elif platform != 'darwin':
-                    result = stdout.decode('utf-8')
+                    result = stdout
             except subprocess.TimeoutExpired:
                 return list_devices
             if platform == 'win32':
