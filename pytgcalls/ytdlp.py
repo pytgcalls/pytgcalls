@@ -10,6 +10,9 @@ from .ffmpeg import cleanup_commands
 from .types.raw import VideoParameters
 
 
+py_logger = logging.getLogger('pytgcalls')
+
+
 class YtDlp:
     YOUTUBE_REGX = re.compile(
         r'^((?:https?:)?//)?((?:www|m)\.)?'
