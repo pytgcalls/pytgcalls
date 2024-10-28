@@ -1,8 +1,8 @@
-import subprocess
 import asyncio
 import logging
 import re
 import shlex
+import subprocess
 from typing import Optional
 from typing import Tuple
 
