@@ -284,7 +284,7 @@ def _build_ffmpeg_options(
             '-ar', str(stream_parameters.bitrate),
         ])
     elif isinstance(stream_parameters, VideoParameters):
-       options.extend([
+        options.extend([
             'rawvideo',
             '-r', str(stream_parameters.frame_rate),
             '-pix_fmt',
