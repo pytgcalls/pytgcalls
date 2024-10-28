@@ -146,12 +146,13 @@ async def cleanup_commands(
         result = proc_res.stdout
         supported = re.findall(r'(?m)^ *(-.*?)\s+', result)
 
-        new_commands = [
-            v for v in commands if v and (
-                v[0] != '-' or (v in supported and (not blacklist or v not in blacklist))
-            )
-        ]
-
+        for v in commands:
+            if len(v) > 0:
+                if v[0] == '-':
+                    ignore_next = v not in supported or \
+                        blacklist is not None and v in blacklist
+                if not ignore_next:
+                    new_commands += [v]
         return new_commands
 
     except subprocess.TimeoutExpired:
