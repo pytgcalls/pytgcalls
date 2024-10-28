@@ -1,5 +1,6 @@
 import asyncio
 import re
+import logging
 import shlex
 import subprocess
 from typing import Optional
