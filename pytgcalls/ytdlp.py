@@ -9,16 +9,6 @@ from .ffmpeg import cleanup_commands
 from .types.raw import VideoParameters
 
 
-import asyncio
-import re
-import shlex
-from typing import Optional, Tuple
-
-from .exceptions import YtDlpError
-from .ffmpeg import cleanup_commands
-from .types.raw import VideoParameters
-
-
 class YtDlp:
     YOUTUBE_REGX = re.compile(
         r'^((?:https?:)?//)?((?:www|m)\.)?'
@@ -71,8 +61,8 @@ class YtDlp:
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
-                    timeout=20
-                )
+                    timeout=20,
+                ),
             )
             if proc_res.returncode != 0:
                 raise YtDlpError(proc_res.stderr)

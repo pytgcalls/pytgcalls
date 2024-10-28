@@ -59,12 +59,12 @@ class MediaDevices:
                 result = await loop.run_in_executor(
                     None,
                     lambda: subprocess.run(
-                          commands,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
-                          text=True,
-                          timeout=3
-                    )
+                        commands,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        timeout=3,
+                    ),
                 )
                 stdout, stderr = result
                 result: str = ''

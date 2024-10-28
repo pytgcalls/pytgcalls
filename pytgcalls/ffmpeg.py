@@ -50,8 +50,8 @@ async def check_stream(
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=20
-            )
+                timeout=20,
+            ),
         )
 
         if proc_res.returncode != 0:
@@ -63,11 +63,11 @@ async def check_stream(
         format_content = result.get('format', {})
 
     except subprocess.TimeoutExpired:
-        raise FFmpegError("Command timed out")
+        raise FFmpegError('Command timed out')
     except FileNotFoundError:
         raise FFmpegError('ffprobe not installed')
     except JSONDecodeError:
-        raise FFmpegError("Failed to parse ffprobe output")
+        raise FFmpegError('Failed to parse ffprobe output')
 
     have_video, is_image, have_audio, have_valid_video = False, False, False, False
     original_width, original_height = 0, 0
@@ -76,7 +76,7 @@ async def check_stream(
         codec_type = stream.get('codec_type', '')
         codec_name = stream.get('codec_name', '')
         image_codecs = ['png', 'jpeg', 'jpg', 'mjpeg']
-        
+
         if codec_type == 'video':
             is_image = codec_name in image_codecs
             have_video = True
@@ -91,7 +91,7 @@ async def check_stream(
         if not have_video:
             raise NoVideoSourceFound(path)
         if not have_valid_video:
-            raise InvalidVideoProportion("Video proportion not found")
+            raise InvalidVideoProportion('Video proportion not found')
 
         ratio = float(original_width) / original_height
         new_w = min(original_width, stream_parameters.width)
@@ -117,7 +117,6 @@ async def check_stream(
         raise LiveStreamFound(path)
 
 
-
 async def cleanup_commands(
     commands: List[str],
     process_name: Optional[str] = None,
@@ -133,8 +132,8 @@ async def cleanup_commands(
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=20
-            )
+                timeout=20,
+            ),
         )
 
         if proc_res.returncode != 0:
@@ -148,13 +147,14 @@ async def cleanup_commands(
                 v[0] != '-' or (v in supported and (not blacklist or v not in blacklist))
             )
         ]
-        
+
         return new_commands
 
     except subprocess.TimeoutExpired:
-        raise FFmpegError("Command timed out")
+        raise FFmpegError('Command timed out')
     except FileNotFoundError:
         raise FFmpegError(f'{commands[0]} not installed')
+
 
 def build_command(
     name: str,
@@ -292,4 +292,3 @@ def _build_ffmpeg_options(
         ])
 
     return options
-    
