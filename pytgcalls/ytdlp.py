@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import re
 import shlex
 from typing import Optional
@@ -9,7 +8,15 @@ from .exceptions import YtDlpError
 from .ffmpeg import cleanup_commands
 from .types.raw import VideoParameters
 
-py_logger = logging.getLogger('pytgcalls')
+
+import asyncio
+import re
+import shlex
+from typing import Optional, Tuple
+
+from .exceptions import YtDlpError
+from .ffmpeg import cleanup_commands
+from .types.raw import VideoParameters
 
 
 class YtDlp:
@@ -37,10 +44,8 @@ class YtDlp:
             'yt-dlp',
             '-g',
             '-f',
-            'bestvideo[vcodec~=\'(vp09|avc1)\']+m4a/best',
-            '-S',
-            'res:'
-            f'{min(video_parameters.width, video_parameters.height)}',
+            f'best[width<=?{video_parameters.width}]'
+            f'[height<=?{video_parameters.height}]',
             '--no-warnings',
         ]
 
@@ -57,29 +62,27 @@ class YtDlp:
 
         commands.append(link)
 
-        py_logger.log(
-            logging.DEBUG,
-            f'Running with "{" ".join(commands)}" command',
-        )
+        loop = asyncio.get_running_loop()
         try:
-            proc = await asyncio.create_subprocess_exec(
-                *commands,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            try:
-                stdout, stderr = await asyncio.wait_for(
-                    proc.communicate(),
-                    20,
+            proc_res = await loop.run_in_executor(
+                None,
+                lambda: subprocess.run(
+                    commands,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=20
                 )
-            except asyncio.TimeoutError:
-                proc.terminate()
-                raise YtDlpError('yt-dlp process timeout')
-            if stderr:
-                raise YtDlpError(stderr.decode())
-            data = stdout.decode().strip().split('\n')
+            )
+            if proc_res.returncode != 0:
+                raise YtDlpError(proc_res.stderr)
+
+            data = proc_res.stdout.strip().split('\n')
             if data:
                 return data[0], data[1] if len(data) >= 2 else data[0]
             raise YtDlpError('No video URLs found')
+
+        except subprocess.TimeoutExpired:
+            raise YtDlpError('yt-dlp process timeout')
         except FileNotFoundError:
             raise YtDlpError('yt-dlp is not installed on your system')
