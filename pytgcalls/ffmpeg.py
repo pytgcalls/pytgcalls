@@ -30,49 +30,53 @@ async def check_stream(
     headers: Optional[Dict[str, str]] = None,
 ):
     try:
-        ffprobe = await asyncio.create_subprocess_exec(
-            *await cleanup_commands(
-                build_command(
-                    'ffprobe',
-                    ffmpeg_parameters,
-                    path,
-                    stream_parameters,
-                    before_commands,
-                    headers,
-                    False,
-                ),
+        command = await cleanup_commands(
+            build_command(
+                'ffprobe',
+                ffmpeg_parameters,
+                path,
+                stream_parameters,
+                before_commands,
+                headers,
+                False,
             ),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
         )
+
+        loop = asyncio.get_running_loop()
+        proc_res = await loop.run_in_executor(
+            None,
+            lambda: subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=20
+            )
+        )
+
+        if proc_res.returncode != 0:
+            if 'No such file' in proc_res.stderr:
+                raise FileNotFoundError()
+            raise FFmpegError(f"Error in ffprobe execution: {proc_res.stderr}")
+        result = loads(proc_res.stdout) or {}
+        stream_list = result.get('streams', [])
+        format_content = result.get('format', {})
+
+    except subprocess.TimeoutExpired:
+        raise FFmpegError("Command timed out")
     except FileNotFoundError:
         raise FFmpegError('ffprobe not installed')
+    except JSONDecodeError:
+        raise FFmpegError("Failed to parse ffprobe output")
 
-    try:
-        stdout, stderr = await asyncio.wait_for(
-            ffprobe.communicate(),
-            timeout=20,
-        )
-        result = loads(stdout.decode('utf-8')) or {}
-        stream_list = result.get('streams', [])
-        format_content = result.get('format', [])
-        if 'No such file' in stderr.decode('utf-8'):
-            raise FileNotFoundError()
-    except (subprocess.TimeoutExpired, JSONDecodeError):
-        ffprobe.terminate()
-        raise
-
-    have_video = False
-    is_image = False
-    have_audio = False
-    have_valid_video = False
-
+    have_video, is_image, have_audio, have_valid_video = False, False, False, False
     original_width, original_height = 0, 0
 
     for stream in stream_list:
         codec_type = stream.get('codec_type', '')
         codec_name = stream.get('codec_name', '')
         image_codecs = ['png', 'jpeg', 'jpg', 'mjpeg']
+        
         if codec_type == 'video':
             is_image = codec_name in image_codecs
             have_video = True
@@ -87,18 +91,13 @@ async def check_stream(
         if not have_video:
             raise NoVideoSourceFound(path)
         if not have_valid_video:
-            raise InvalidVideoProportion(
-                'Video proportion not found',
-            )
+            raise InvalidVideoProportion("Video proportion not found")
 
         ratio = float(original_width) / original_height
         new_w = min(original_width, stream_parameters.width)
         new_h = int(new_w / ratio)
 
-        if (
-            new_h > stream_parameters.height and
-            stream_parameters.adjust_by_height
-        ):
+        if new_h > stream_parameters.height:
             new_h = stream_parameters.height
             new_w = int(new_h * ratio)
 
@@ -106,6 +105,7 @@ async def check_stream(
         new_h = new_h - 1 if new_h % 2 else new_h
         stream_parameters.height = new_h
         stream_parameters.width = new_w
+
         if is_image:
             stream_parameters.frame_rate = 1
             raise ImageSourceFound(path)
@@ -117,42 +117,44 @@ async def check_stream(
         raise LiveStreamFound(path)
 
 
+
 async def cleanup_commands(
     commands: List[str],
     process_name: Optional[str] = None,
     blacklist: Optional[List[str]] = None,
 ) -> List[str]:
     try:
-        proc_res = await asyncio.create_subprocess_exec(
-            commands[0] if not process_name else process_name,
-            '-h',
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        try:
-            stdout, _ = await asyncio.wait_for(
-                proc_res.communicate(),
-                timeout=20,
+        loop = asyncio.get_running_loop()
+        cmd = [commands[0] if not process_name else process_name, '-h']
+        proc_res = await loop.run_in_executor(
+            None,
+            lambda: subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=20
             )
-            result = stdout.decode('utf-8')
-        except (subprocess.TimeoutExpired, JSONDecodeError):
-            proc_res.terminate()
-            raise
-        supported = re.findall(r'(?m)^ *(-.*?)\s+', result)
-        new_commands = []
-        ignore_next = False
+        )
 
-        for v in commands:
-            if len(v) > 0:
-                if v[0] == '-':
-                    ignore_next = v not in supported or \
-                        blacklist is not None and v in blacklist
-                if not ignore_next:
-                    new_commands += [v]
+        if proc_res.returncode != 0:
+            raise FFmpegError(f"Error running {cmd[0]}: {proc_res.stderr}")
+
+        result = proc_res.stdout
+        supported = re.findall(r'(?m)^ *(-.*?)\s+', result)
+
+        new_commands = [
+            v for v in commands if v and (
+                v[0] != '-' or (v in supported and (not blacklist or v not in blacklist))
+            )
+        ]
+        
         return new_commands
+
+    except subprocess.TimeoutExpired:
+        raise FFmpegError("Command timed out")
     except FileNotFoundError:
         raise FFmpegError(f'{commands[0]} not installed')
-
 
 def build_command(
     name: str,
@@ -285,10 +287,9 @@ def _build_ffmpeg_options(
         options.extend([
             'rawvideo',
             '-r', str(stream_parameters.frame_rate),
-            '-pix_fmt',
-            'yuv420p',
             '-vf',
             f'scale={stream_parameters.width}:{stream_parameters.height}',
         ])
 
     return options
+    
