@@ -69,7 +69,12 @@ async def check_stream(
     except JSONDecodeError:
         raise FFmpegError('Failed to parse ffprobe output')
 
-    have_video, is_image, have_audio, have_valid_video = False, False, False, False
+
+    have_video = False
+    is_image = False
+    have_audio = False
+    have_valid_video = False
+
     original_width, original_height = 0, 0
 
     for stream in stream_list:
