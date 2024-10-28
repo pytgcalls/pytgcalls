@@ -1,6 +1,6 @@
 import asyncio
-import re
 import logging
+import re
 import shlex
 import subprocess
 from typing import Optional
@@ -59,7 +59,7 @@ class YtDlp:
         py_logger.log(
             logging.DEBUG,
             f'Running with "{" ".join(commands)}" command',
-         )
+        )
         loop = asyncio.get_running_loop()
         try:
             proc_res = await loop.run_in_executor(
