@@ -10,7 +10,6 @@ from .exceptions import YtDlpError
 from .ffmpeg import cleanup_commands
 from .types.raw import VideoParameters
 
-
 py_logger = logging.getLogger('pytgcalls')
 
 
