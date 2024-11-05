@@ -173,11 +173,10 @@ class chat_update(Filter):
 class call_participant(Filter):
     def __init__(self, flags: GroupCallParticipant.Action):
         self.flags = flags
-        
+
     async def __call__(self, client: PyTgCalls, update: Update) -> bool:
         if isinstance(update, UpdatedGroupCallParticipant):
             participant = update.participant
-            if participant and hasattr(participant, "action"):
+            if participant and hasattr(participant, 'action'):
                 return bool(self.flags & participant.action)
         return False
-        
