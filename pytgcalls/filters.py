@@ -171,10 +171,12 @@ class chat_update(Filter):
 
 
 class call_participant(Filter):
-    def __init__(self, flags: GroupCallParticipant.Action):
+    def __init__(self, flags: Optional[GroupCallParticipant.Action] = None):
         self.flags = flags
 
     async def __call__(self, client: PyTgCalls, update: Update):
         if isinstance(update, UpdatedGroupCallParticipant):
+            if self.flags is None:
+                return True
             return self.flags & update.participant.action
         return False
