@@ -6,6 +6,7 @@ from typing import Union
 from ntgcalls import ConnectionNotFound
 from ntgcalls import FileError
 from ntgcalls import InvalidParams
+from ntgcalls import StreamMode
 from ntgcalls import TelegramServerError
 
 from ...exceptions import NoActiveGroupCall
@@ -57,6 +58,7 @@ class Play(Scaffold):
             try:
                 return await self._binding.set_stream_sources(
                     chat_id,
+                    StreamMode.CAPTURE,
                     media_description,
                 )
             except FileError as e:
