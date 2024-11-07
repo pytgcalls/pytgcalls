@@ -296,20 +296,26 @@ class TelethonClient(BridgedClient):
                     GetFullChatRequest(chat_id),
                 )
             ).full_chat.call
+
         if input_call is not None:
-            try:
-                call: GroupCall = (
-                    await self._app(
-                        GetGroupCallRequest(
-                            call=input_call,
-                            limit=-1,
-                        ),
-                    )
-                ).call
-                if call.schedule_date is not None:
-                    return None
-            except Exception as e:
-                print(e)
+            raw_call = (
+                await self._app(
+                    GetGroupCallRequest(
+                        call=input_call,
+                        limit=-1,
+                    ),
+                )
+            )
+            call: GroupCall = raw_call.call
+            participants: List[GroupCallParticipant] = raw_call.participants
+            for participant in participants:
+                self._cache.set_participants_cache(
+                    call.id,
+                    self.parse_participant(participant),
+                )
+            if call.schedule_date is not None:
+                return None
+
         return input_call
 
     async def get_dhc(self) -> DhConfig:
