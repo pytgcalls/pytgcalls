@@ -46,23 +46,52 @@ class ClientCache:
                 pass
         return None
 
-    def set_participants_cache(
+    def set_participants_cache_call(
         self,
         input_id: int,
         participant: GroupCallParticipant,
     ) -> Optional[GroupCallParticipant]:
         chat_id = self.get_chat_id(input_id)
         if chat_id is not None:
-            participants: Optional[
-                ParticipantList
-            ] = self._call_participants_cache.get(
+            return self._internal_set_participants_cache(
                 chat_id,
+                participant,
             )
-            if participants is not None:
-                participants.last_mtproto_update = (
-                    int(time()) + self._cache_duration
-                )
-                return participants.update_participant(participant)
+        return None
+
+    def set_participants_cache_chat(
+        self,
+        chat_id: int,
+        call_id: int,
+        participant: GroupCallParticipant,
+    ) -> Optional[GroupCallParticipant]:
+        if self._call_participants_cache.get(chat_id) is None:
+            self._call_participants_cache.put(
+                chat_id,
+                ParticipantList(
+                    call_id,
+                ),
+            )
+        return self._internal_set_participants_cache(
+            chat_id,
+            participant,
+        )
+
+    def _internal_set_participants_cache(
+        self,
+        chat_id: int,
+        participant: GroupCallParticipant,
+    ) -> Optional[GroupCallParticipant]:
+        participants: Optional[
+            ParticipantList
+        ] = self._call_participants_cache.get(
+            chat_id,
+        )
+        if participants is not None:
+            participants.last_mtproto_update = (
+                int(time()) + self._cache_duration
+            )
+            return participants.update_participant(participant)
         return None
 
     async def get_participant_list(
@@ -90,7 +119,7 @@ class ClientCache:
                             input_call,
                         )
                         for participant in list_participants:
-                            self.set_participants_cache(
+                            self.set_participants_cache_call(
                                 input_call.id,
                                 participant,
                             )
@@ -122,12 +151,13 @@ class ClientCache:
             input_call,
             self._cache_duration,
         )
-        self._call_participants_cache.put(
-            chat_id,
-            ParticipantList(
-                input_call.id,
-            ),
-        )
+        if self._call_participants_cache.get(chat_id) is None:
+            self._call_participants_cache.put(
+                chat_id,
+                ParticipantList(
+                    input_call.id,
+                ),
+            )
 
     def drop_cache(
         self,

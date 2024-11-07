@@ -168,7 +168,7 @@ class HydrogramClient(BridgedClient):
             ):
                 participants = update.participants
                 for participant in participants:
-                    result = self._cache.set_participants_cache(
+                    result = self._cache.set_participants_cache_call(
                         update.call.id,
                         self.parse_participant(participant),
                     )
@@ -332,7 +332,8 @@ class HydrogramClient(BridgedClient):
             call: GroupCall = raw_call.call
             participants: List[GroupCallParticipant] = raw_call.participants
             for participant in participants:
-                self._cache.set_participants_cache(
+                self._cache.set_participants_cache_chat(
+                    chat_id,
                     call.id,
                     self.parse_participant(participant),
                 )
@@ -403,12 +404,12 @@ class HydrogramClient(BridgedClient):
             )
             for update in result.updates:
                 if isinstance(
-                        update,
-                        UpdateGroupCallParticipants,
+                    update,
+                    UpdateGroupCallParticipants,
                 ):
                     participants = update.participants
                     for participant in participants:
-                        self._cache.set_participants_cache(
+                        self._cache.set_participants_cache_call(
                             update.call.id,
                             self.parse_participant(participant),
                         )
