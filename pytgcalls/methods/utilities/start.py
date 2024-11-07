@@ -85,6 +85,44 @@ class Start(Scaffold):
                 participant = update.participant
                 action = participant.action
                 chat_peer = self._cache_user_peer.get(chat_id)
+                user_id = participant.user_id
+                was_camera = user_id in self._videos_id
+                was_screen = user_id in self._presentations_id
+
+                if was_camera != participant.video_camera:
+                    if participant.video_info:
+                        self._videos_id[
+                            user_id
+                        ] = participant.video_info.endpoint
+                        self._binding.add_incoming_video(
+                            chat_id,
+                            participant.video_info.endpoint,
+                            participant.video_info.sources,
+                        )
+                    else:
+                        self._binding.remove_incoming_video(
+                            chat_id,
+                            self._videos_id[user_id],
+                        )
+                        self._videos_id.pop(user_id)
+
+                if was_screen != participant.screen_sharing:
+                    if participant.presentation_info:
+                        self._presentations_id[
+                            user_id
+                        ] = participant.presentation_info.endpoint
+                        self._binding.add_incoming_video(
+                            chat_id,
+                            participant.presentation_info.endpoint,
+                            participant.presentation_info.sources,
+                        )
+                    else:
+                        self._binding.remove_incoming_video(
+                            chat_id,
+                            self._presentations_id[user_id],
+                        )
+                        self._presentations_id.pop(user_id)
+
                 if chat_peer:
                     is_self = BridgedClient.chat_id(
                         chat_peer,

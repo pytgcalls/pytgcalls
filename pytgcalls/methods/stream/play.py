@@ -211,6 +211,24 @@ class Play(Scaffold):
                     chat_id,
                 )
                 for x in participants:
+                    if x.video_info is not None:
+                        self._videos_id[
+                            chat_id
+                        ] = x.video_info.endpoint
+                        self._binding.add_incoming_video(
+                            chat_id,
+                            x.video_info.endpoint,
+                            x.video_info.sources,
+                        )
+                    if x.presentation_info is not None:
+                        self._presentations_id[
+                            chat_id
+                        ] = x.presentation_info.endpoint
+                        self._binding.add_incoming_video(
+                            chat_id,
+                            x.presentation_info.endpoint,
+                            x.presentation_info.sources,
+                        )
                     if x.user_id == BridgedClient.chat_id(
                         self._cache_local_peer,
                     ) and x.muted_by_admin:
