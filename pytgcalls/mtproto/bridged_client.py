@@ -6,6 +6,7 @@ from typing import Optional
 
 from ntgcalls import Protocol
 from ntgcalls import RTCServer
+from ntgcalls import SsrcGroup
 
 from ..handlers import HandlersHolder
 from ..types import GroupCallParticipant
@@ -143,6 +144,21 @@ class BridgedClient(HandlersHolder):
         return str(obj.__class__.__module__).split('.')[0]
 
     @staticmethod
+    def parse_source(source) -> Optional[GroupCallParticipant.SourceInfo]:
+        if not source:
+            return None
+        return GroupCallParticipant.SourceInfo(
+            source.endpoint,
+            [
+                SsrcGroup(
+                    source_group.semantics,
+                    source_group.sources,
+                )
+                for source_group in source.source_groups
+            ],
+        )
+
+    @staticmethod
     def parse_participant(participant):
         return GroupCallParticipant(
             BridgedClient.chat_id(participant.peer),
@@ -157,6 +173,8 @@ class BridgedClient(HandlersHolder):
             if participant.volume is not None else 100,
             bool(participant.just_joined),
             bool(participant.left),
+            BridgedClient.parse_source(participant.video),
+            BridgedClient.parse_source(participant.presentation),
         )
 
     @staticmethod
