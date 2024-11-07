@@ -4,7 +4,7 @@ from typing import Dict
 from typing import Optional
 from typing import Union
 
-from ntgcalls import InputMode
+from ntgcalls import MediaSource
 
 from ...exceptions import ImageSourceFound
 from ...exceptions import LiveStreamFound
@@ -96,7 +96,7 @@ class MediaStream(Stream):
             microphone=None
             if self._audio_flags & MediaStream.Flags.IGNORE else
             AudioStream(
-                InputMode.SHELL,
+                MediaSource.SHELL,
                 ' '.join(
                     build_command(
                         'ffmpeg',
@@ -113,7 +113,7 @@ class MediaStream(Stream):
             camera=None
             if self._video_flags & MediaStream.Flags.IGNORE else
             VideoStream(
-                InputMode.SHELL,
+                MediaSource.SHELL,
                 ' '.join(
                     build_command(
                         'ffmpeg',

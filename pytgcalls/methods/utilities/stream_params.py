@@ -20,7 +20,7 @@ class StreamParams:
             if media is not None:
                 if isinstance(media, AudioStream):
                     return AudioDescription(
-                        input_mode=media.input_mode,
+                        media_source=media.media_source,
                         input=media.path,
                         sample_rate=media.parameters.bitrate,
                         bits_per_sample=16,
@@ -28,7 +28,7 @@ class StreamParams:
                     )
                 elif isinstance(media, VideoStream):
                     return VideoDescription(
-                        input_mode=media.input_mode,
+                        media_source=media.media_source,
                         input=media.path,
                         width=media.parameters.width,
                         height=media.parameters.height,
