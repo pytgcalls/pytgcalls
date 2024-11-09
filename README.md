@@ -23,7 +23,7 @@
     </a>
 </p>
 
-# PyTgCalls [![PyPI](https://img.shields.io/pypi/v/py-tgcalls.svg?logo=python&logoColor=%23959DA5&label=pypi&labelColor=%23282f37)](https://pypi.org/project/py-tgcalls/) [![Downloads](https://pepy.tech/badge/py-tgcalls)](https://pepy.tech/project/py-tgcalls)
+# PyTgCalls [![PyPI](https://img.shields.io/pypi/v/py-tgcalls.svg?logo=python&logoColor=%23959DA5&label=pypi&labelColor=%23282f37)](https://pypi.org/project/py-tgcalls/) [![Downloads](https://img.shields.io/pepy/dt/py-tgcalls?logoColor=%23959DA5&labelColor=%23282f37&color=%2328A745)](https://pepy.tech/project/py-tgcalls)
 This project allows making Telegram call using MtProto and WebRTC, this is possible thanks to the power of [NTgCalls] library and [@evgeny-nadymov]
 
 #### Example Usage
