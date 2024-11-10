@@ -24,22 +24,30 @@ class RecordStream(Stream):
         camera: bool = False,
         screen: bool = False,
     ):
-        if isinstance(audio_parameters, AudioParameters):
-            raw_audio_parameters = audio_parameters
-        elif isinstance(audio_parameters, AudioQuality):
-            raw_audio_parameters = AudioParameters(*audio_parameters.value)
-        else:
-            raise ValueError('Invalid audio parameters')
+        raw_audio_parameters = (
+            audio_parameters
+            if isinstance(audio_parameters, AudioParameters)
+            else AudioParameters(*audio_parameters.value)
+            if isinstance(audio_parameters, AudioQuality)
+            else ValueError('Invalid audio parameters')
+        )
+        super().__init__(
+            microphone=self._get_audio_stream(audio, raw_audio_parameters),
+            speaker=None,
+            camera=self._get_video_stream(camera),
+            screen=self._get_video_stream(screen),
+        )
 
-        microphone = None
+    @staticmethod
+    def _get_audio_stream(audio, raw_audio_parameters):
         if isinstance(audio, bool) and audio:
-            microphone = AudioStream(
+            return AudioStream(
                 media_source=MediaSource.EXTERNAL,
                 path='',
                 parameters=raw_audio_parameters,
             )
-        elif isinstance(audio, str):
-            is_lossless = audio_parameters.bitrate > 48000
+        if isinstance(audio, str):
+            is_lossless = raw_audio_parameters.bitrate > 48000
             commands = [
                 'ffmpeg',
                 '-loglevel',
@@ -56,22 +64,22 @@ class RecordStream(Stream):
                 'flac' if is_lossless else 'libmp3lame',
                 audio,
             ]
-            microphone = AudioStream(
+            return AudioStream(
                 media_source=MediaSource.SHELL,
                 path=' '.join(commands),
                 parameters=raw_audio_parameters,
             )
-        elif isinstance(audio, SpeakerDevice):
-            microphone = AudioStream(
+        if isinstance(audio, SpeakerDevice):
+            return AudioStream(
                 media_source=MediaSource.DEVICE,
                 path=audio.metadata,
                 parameters=raw_audio_parameters,
             )
 
-        super().__init__(
-            microphone=microphone,
-            speaker=None,
-            camera=None if not camera else VideoStream(
+    @staticmethod
+    def _get_video_stream(enable):
+        return (
+            VideoStream(
                 media_source=MediaSource.EXTERNAL,
                 path='',
                 parameters=VideoParameters(
@@ -79,14 +87,7 @@ class RecordStream(Stream):
                     height=-1,
                     frame_rate=-1,
                 ),
-            ),
-            screen=None if not screen else VideoStream(
-                media_source=MediaSource.EXTERNAL,
-                path='',
-                parameters=VideoParameters(
-                    width=-1,
-                    height=-1,
-                    frame_rate=-1,
-                ),
-            ),
+            )
+            if enable
+            else None
         )
