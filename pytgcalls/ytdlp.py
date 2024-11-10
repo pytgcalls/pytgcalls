@@ -2,6 +2,7 @@ import asyncio
 import logging
 import re
 import shlex
+import subprocess
 from typing import Optional
 from typing import Tuple
 
@@ -61,23 +62,24 @@ class YtDlp:
             logging.DEBUG,
             f'Running with "{" ".join(commands)}" command',
         )
+        loop = asyncio.get_running_loop()
         try:
-            proc = await asyncio.create_subprocess_exec(
-                *commands,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+            proc_res = await loop.run_in_executor(
+                None,
+                lambda: subprocess.run(
+                    commands,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=20,
+                ),
             )
-            try:
-                stdout, stderr = await asyncio.wait_for(
-                    proc.communicate(),
-                    20,
-                )
-            except asyncio.TimeoutError:
-                proc.terminate()
-                raise YtDlpError('yt-dlp process timeout')
-            if stderr:
-                raise YtDlpError(stderr.decode())
-            data = stdout.decode().strip().split('\n')
+            if proc_res.returncode != 0:
+                raise YtDlpError(proc_res.stderr)
+
+            stdout: str = proc_res.stdout
+
+            data = stdout.strip().split('\n')
             if data:
                 return data[0], data[1] if len(data) >= 2 else data[0]
             raise YtDlpError('No video URLs found')
