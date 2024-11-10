@@ -1,4 +1,5 @@
 from enum import auto
+
 from ...types.update import Update
 from ..flag import Flag
 

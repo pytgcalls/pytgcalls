@@ -1,15 +1,17 @@
 import logging
-from typing import Union, Optional
+from typing import Optional
+from typing import Union
 
-from ntgcalls import StreamMode
 from ntgcalls import FileError
+from ntgcalls import StreamMode
 
-from ..utilities.stream_params import StreamParams
 from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
-from ...types import CallConfig, GroupCallConfig
+from ...types import CallConfig
+from ...types import GroupCallConfig
 from ...types.raw import Stream
+from ..utilities.stream_params import StreamParams
 
 py_logger = logging.getLogger('pytgcalls')
 

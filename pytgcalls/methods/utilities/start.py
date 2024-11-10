@@ -2,13 +2,13 @@ import asyncio
 import logging
 
 from ntgcalls import CallNetworkState
-from ntgcalls import StreamMode
-from ntgcalls import FrameData
 from ntgcalls import ConnectionError
 from ntgcalls import ConnectionNotFound
 from ntgcalls import ConnectionState
+from ntgcalls import FrameData
 from ntgcalls import MediaState
 from ntgcalls import StreamDevice
+from ntgcalls import StreamMode
 from ntgcalls import StreamType
 from ntgcalls import TelegramServerError
 
@@ -19,11 +19,11 @@ from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
 from ...types import CallData
-from ...types import StreamFrame
 from ...types import ChatUpdate
 from ...types import GroupCallParticipant
 from ...types import RawCallUpdate
 from ...types import StreamEnded
+from ...types import StreamFrame
 from ...types import Update
 from ...types import UpdatedGroupCallParticipant
 
@@ -211,7 +211,6 @@ class Start(Scaffold):
                 )
             except (ConnectionError, ConnectionNotFound):
                 pass
-
 
         async def stream_frame(
             chat_id: int,

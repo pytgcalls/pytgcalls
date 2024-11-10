@@ -1,10 +1,10 @@
 from ntgcalls import DeviceInfo as RawDeviceInfo
 from ntgcalls import NTgCalls
 
+from ..types.list import List
 from .input_device import InputDevice
 from .screen_device import ScreenDevice
 from .speaker_device import SpeakerDevice
-from ..types.list import List
 
 
 class MediaDevices:
