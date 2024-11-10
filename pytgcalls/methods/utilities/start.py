@@ -2,6 +2,8 @@ import asyncio
 import logging
 
 from ntgcalls import CallNetworkState
+from ntgcalls import StreamMode
+from ntgcalls import FrameData
 from ntgcalls import ConnectionError
 from ntgcalls import ConnectionNotFound
 from ntgcalls import ConnectionState
@@ -17,6 +19,7 @@ from ...mtproto import BridgedClient
 from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
 from ...types import CallData
+from ...types import StreamFrame
 from ...types import ChatUpdate
 from ...types import GroupCallParticipant
 from ...types import RawCallUpdate
@@ -209,6 +212,45 @@ class Start(Scaffold):
             except (ConnectionError, ConnectionNotFound):
                 pass
 
+
+        async def stream_frame(
+            chat_id: int,
+            source_id: int,
+            mode: StreamMode,
+            device: StreamDevice,
+            frame: bytes,
+            frame_info: FrameData,
+        ):
+            if device == StreamDevice.MICROPHONE:
+                parsed_device = StreamFrame.Device.MICROPHONE
+            elif device == StreamDevice.SPEAKER:
+                parsed_device = StreamFrame.Device.SPEAKER
+            elif device == StreamDevice.CAMERA:
+                parsed_device = StreamFrame.Device.CAMERA
+            elif device == StreamDevice.SCREEN:
+                parsed_device = StreamFrame.Device.SCREEN
+            else:
+                logging.error('Received unknown device type')
+                return
+            await self.propagate(
+                StreamFrame(
+                    chat_id,
+                    source_id,
+                    StreamFrame.Direction.OUTGOING
+                    if mode == StreamMode.CAPTURE else
+                    StreamFrame.Direction.INCOMING,
+                    parsed_device,
+                    frame,
+                    StreamFrame.Info(
+                        frame_info.absolute_capture_timestamp_ms,
+                        frame_info.width,
+                        frame_info.height,
+                        frame_info.rotation,
+                    ),
+                ),
+                self,
+            )
+
         async def connection_changed(
             chat_id: int,
             net_state: CallNetworkState,
@@ -278,6 +320,20 @@ class Start(Scaffold):
             self._binding.on_signaling(
                 lambda chat_id, data: asyncio.run_coroutine_threadsafe(
                     emit_sig_data(chat_id, data),
+                    self.loop,
+                ),
+            )
+            self._binding.on_frame(
+                lambda chat_id, source_id, mode, device, frame, info:
+                asyncio.run_coroutine_threadsafe(
+                    stream_frame(
+                        chat_id,
+                        source_id,
+                        mode,
+                        device,
+                        frame,
+                        info,
+                    ),
                     self.loop,
                 ),
             )

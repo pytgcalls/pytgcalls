@@ -39,5 +39,8 @@ class Scaffold(HandlersHolder):
     async def start(self):
         pass
 
+    async def play(self, chat_id: Union[int, str], stream=None, config=None):
+        pass
+
     def on_update(self, filters=None):
         pass

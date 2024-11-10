@@ -9,6 +9,7 @@ from .pytgcalls import PyTgCalls
 from .types import ChatUpdate
 from .types import GroupCallParticipant
 from .types import StreamEnded
+from .types import StreamFrame
 from .types import Update
 from .types import UpdatedGroupCallParticipant
 
@@ -178,4 +179,27 @@ class call_participant(Filter):
             if self.flags is None:
                 return True
             return self.flags & update.participant.action
+        return False
+
+
+class stream_frame(Filter):
+    def __init__(
+        self,
+        directions: Optional[StreamFrame.Direction],
+        devices: Optional[StreamFrame.Device],
+    ):
+        self.directions = directions
+        self.devices = devices
+
+    async def __call__(self, client: PyTgCalls, update: Update):
+        if isinstance(update, StreamFrame):
+            return (
+                (
+                    self.directions is None or
+                    self.directions & update.direction
+                ) and (
+                    self.devices is None or
+                    self.devices & update.device
+                )
+            )
         return False
