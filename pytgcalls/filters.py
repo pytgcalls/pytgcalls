@@ -185,8 +185,8 @@ class call_participant(Filter):
 class stream_frame(Filter):
     def __init__(
         self,
-        directions: Optional[StreamFrame.Direction],
-        devices: Optional[StreamFrame.Device],
+        directions: Optional[StreamFrame.Direction] = None,
+        devices: Optional[StreamFrame.Device] = None,
     ):
         self.directions = directions
         self.devices = devices
