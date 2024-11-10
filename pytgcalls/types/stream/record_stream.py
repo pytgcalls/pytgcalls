@@ -1,6 +1,7 @@
 from typing import Union
 
 from ntgcalls import MediaSource
+
 from ...media_devices.speaker_device import SpeakerDevice
 from ...statictypes import statictypes
 from ..raw.audio_parameters import AudioParameters
