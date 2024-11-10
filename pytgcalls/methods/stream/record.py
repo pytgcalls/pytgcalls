@@ -26,7 +26,7 @@ class Record(Scaffold):
         config: Optional[Union[CallConfig, GroupCallConfig]] = None,
     ):
         chat_id = await self.resolve_chat_id(chat_id)
-        media_description = await StreamParams.get_stream_params(
+        media_description = await StreamParams.get_record_params(
             stream,
         )
         if chat_id not in await self._binding.calls():
