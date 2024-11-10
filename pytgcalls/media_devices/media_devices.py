@@ -1,101 +1,50 @@
-import asyncio
-import re
-import subprocess
-from sys import platform
+from ntgcalls import DeviceInfo as RawDeviceInfo
+from ntgcalls import NTgCalls
 
-from screeninfo import get_monitors
-from screeninfo import ScreenInfoError
-
+from .input_device import InputDevice
+from .screen_device import ScreenDevice
+from .speaker_device import SpeakerDevice
 from ..types.list import List
-from .device_info import DeviceInfo
-from .screen_info import ScreenInfo
 
 
 class MediaDevices:
     @staticmethod
-    async def get_screen_devices() -> List:
-        list_screens: List = List()
-        if platform != 'darwin':
-            try:
-                for screen in get_monitors():
-                    list_screens.append(
-                        ScreenInfo(
-                            screen.x,
-                            screen.y,
-                            screen.width,
-                            screen.height,
-                            screen.is_primary,
-                            screen.name,
-                        ),
-                    )
-            except ScreenInfoError:
-                pass
-        return list_screens
+    def _parse_devices(devices: list[RawDeviceInfo], is_video: bool) -> List:
+        return List(
+            InputDevice(device.name, device.metadata, is_video)
+            for device in devices
+        )
 
     @staticmethod
-    async def get_audio_devices() -> List:
-        list_devices: List = List()
-        if platform == 'darwin':
-            return list_devices
-        try:
-            if platform == 'win32':
-                commands = [
-                    'ffmpeg',
-                    '-list_devices',
-                    'true',
-                    '-f',
-                    'dshow',
-                    '-i',
-                    'dummy',
-                ]
-            else:
-                commands = [
-                    'pactl',
-                    'list',
-                    'sources',
-                ]
-            ffmpeg = await asyncio.create_subprocess_exec(
-                *tuple(commands),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+    def microphone_devices() -> List:
+        return MediaDevices._parse_devices(
+            NTgCalls.get_media_devices().microphone,
+            False,
+        )
+
+    @staticmethod
+    def speaker_devices() -> List:
+        return List(
+            SpeakerDevice(
+                device.name,
+                device.metadata,
             )
-            try:
-                stdout, stderr = await asyncio.wait_for(
-                    ffmpeg.communicate(),
-                    timeout=3,
-                )
-                result: str = ''
-                if platform == 'win32':
-                    result = stderr.decode('utf-8')
-                elif platform != 'darwin':
-                    result = stdout.decode('utf-8')
-            except subprocess.TimeoutExpired:
-                return list_devices
-            if platform == 'win32':
-                list_raw = result.split('DirectShow audio devices')
-                if len(list_raw) < 2:
-                    return list_devices
-                output = re.findall(
-                    '\\[.*?].*?"(.*?)".*?\n\\[.*?].*?"(.*?)"', list_raw[1],
-                )
-                for device in output:
-                    list_devices.append(
-                        DeviceInfo(
-                            device[1],
-                            device[0],
-                        ),
-                    )
-            else:
-                output = re.findall(
-                    'Name: (.*?)\n.*?Description: (.*?)\n', result,
-                )
-                for device in output:
-                    list_devices.append(
-                        DeviceInfo(
-                            device[0],
-                            device[1],
-                        ),
-                    )
-        except FileNotFoundError:
-            pass
-        return list_devices
+            for device in NTgCalls.get_media_devices().speaker
+        )
+
+    @staticmethod
+    def camera_devices() -> List:
+        return MediaDevices._parse_devices(
+            NTgCalls.get_media_devices().camera,
+            True,
+        )
+
+    @staticmethod
+    def screen_devices() -> List:
+        return List(
+            ScreenDevice(
+                device.name,
+                device.metadata,
+            )
+            for device in NTgCalls.get_media_devices().screen
+        )

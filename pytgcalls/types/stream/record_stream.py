@@ -2,18 +2,21 @@ from typing import Union
 
 from ntgcalls import MediaSource
 
-from .. import AudioQuality
-from ..raw import AudioParameters
+from ...media_devices.speaker_device import SpeakerDevice
+from ...statictypes import statictypes
+from ..raw.audio_parameters import AudioParameters
 from ..raw.audio_stream import AudioStream
 from ..raw.stream import Stream
 from ..raw.video_parameters import VideoParameters
 from ..raw.video_stream import VideoStream
+from ..stream.audio_quality import AudioQuality
 
 
 class RecordStream(Stream):
+    @statictypes
     def __init__(
         self,
-        audio: Union[bool, str] = False,
+        audio: Union[bool, str, SpeakerDevice] = False,
         audio_parameters: Union[
             AudioParameters,
             AudioQuality,
@@ -56,6 +59,12 @@ class RecordStream(Stream):
             microphone = AudioStream(
                 media_source=MediaSource.SHELL,
                 path=' '.join(commands),
+                parameters=raw_audio_parameters,
+            )
+        elif isinstance(audio, SpeakerDevice):
+            microphone = AudioStream(
+                media_source=MediaSource.DEVICE,
+                path=audio.metadata,
                 parameters=raw_audio_parameters,
             )
 

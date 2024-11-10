@@ -1,20 +1,13 @@
-from sys import platform
-
-
 class DeviceInfo:
     def __init__(
         self,
-        identifier: str,
-        title: str,
+        name: str,
+        metadata: str,
+        is_video: bool,
     ):
-        self.identifier = identifier
-        self.title = title
-        self.ffmpeg_parameters = ['-f']
+        self.title = name
+        self.metadata = metadata
+        self.is_video = is_video
 
-    def build_ffmpeg_command(self):
-        if platform == 'win32':
-            self.ffmpeg_parameters += ['dshow']
-            return f'audio={self.identifier}'
-        else:
-            self.ffmpeg_parameters += ['pulse']
-        return self.identifier
+    def __repr__(self):
+        return self.title

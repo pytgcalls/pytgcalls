@@ -12,8 +12,8 @@ from ...exceptions import NoAudioSourceFound
 from ...exceptions import NoVideoSourceFound
 from ...ffmpeg import build_command
 from ...ffmpeg import check_stream
-from ...media_devices import DeviceInfo
-from ...media_devices import ScreenInfo
+from ...media_devices.input_device import InputDevice
+from ...media_devices.screen_device import ScreenDevice
 from ...statictypes import statictypes
 from ...ytdlp import YtDlp
 from ..flag import Flag
@@ -35,7 +35,7 @@ class MediaStream(Stream):
     @statictypes
     def __init__(
         self,
-        media_path: Union[str, Path, ScreenInfo, DeviceInfo],
+        media_path: Union[str, Path, InputDevice],
         audio_parameters: Union[
             AudioParameters,
             AudioQuality,
@@ -44,7 +44,7 @@ class MediaStream(Stream):
             VideoParameters,
             VideoQuality,
         ] = VideoQuality.SD_480p,
-        audio_path: Optional[Union[str, Path, DeviceInfo]] = None,
+        audio_path: Optional[Union[str, Path, InputDevice]] = None,
         audio_flags: Optional[Flags] = Flags.AUTO_DETECT,
         video_flags: Optional[Flags] = Flags.AUTO_DETECT,
         headers: Optional[Dict[str, str]] = None,
@@ -72,19 +72,20 @@ class MediaStream(Stream):
             self._media_path = media_path
         elif isinstance(media_path, Path):
             self._media_path = str(media_path)
-        elif isinstance(media_path, DeviceInfo):
-            self._media_path = media_path.build_ffmpeg_command()
-        elif isinstance(media_path, ScreenInfo):
-            self._media_path = media_path.build_ffmpeg_command(
-                self._video_parameters.frame_rate,
-            )
+        elif isinstance(media_path, InputDevice):
+            if media_path.is_video:
+                self._media_path = media_path.metadata
+            else:
+                self._audio_path = media_path.metadata
 
         if isinstance(audio_path, str):
             self._audio_path = audio_path
         elif isinstance(audio_path, Path):
             self._audio_path = str(audio_path)
-        elif isinstance(audio_path, DeviceInfo):
-            self._audio_path = audio_path.build_ffmpeg_command()
+        elif isinstance(audio_path, InputDevice):
+            if audio_path.is_video:
+                raise ValueError('Audio path must be an audio device')
+            self._audio_path = audio_path.metadata
 
         self._audio_flags = self._filter_flags(audio_flags)
         self._video_flags = self._filter_flags(video_flags)
@@ -95,6 +96,12 @@ class MediaStream(Stream):
         super().__init__(
             microphone=None
             if self._audio_flags & MediaStream.Flags.IGNORE else
+            AudioStream(
+                MediaSource.DEVICE,
+                self._audio_path,
+                self._audio_parameters,
+            )
+            if isinstance(audio_path, InputDevice) else
             AudioStream(
                 MediaSource.SHELL,
                 ' '.join(
@@ -112,6 +119,13 @@ class MediaStream(Stream):
             ),
             camera=None
             if self._video_flags & MediaStream.Flags.IGNORE else
+            VideoStream(
+                MediaSource.DESKTOP if isinstance(audio_path, ScreenDevice)
+                else MediaSource.DEVICE,
+                self._media_path,
+                self._video_parameters,
+            )
+            if isinstance(audio_path, InputDevice) else
             VideoStream(
                 MediaSource.SHELL,
                 ' '.join(
