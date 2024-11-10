@@ -1,8 +1,8 @@
 from pyrogram import Client
 
 from pytgcalls import idle
+from pytgcalls import MediaDevices
 from pytgcalls import PyTgCalls
-from pytgcalls.media_devices import MediaDevices
 from pytgcalls.types import MediaStream
 
 app = Client(
@@ -16,8 +16,8 @@ call_py.start()
 call_py.play(
     -1001234567890,
     MediaStream(
-        MediaDevices.get_screen_devices()[0],
-        audio_path=MediaDevices.get_audio_devices()[0],
+        MediaDevices.screen_devices()[0],
+        audio_path=MediaDevices.microphone_devices()[0],
     ),
 )
 idle()

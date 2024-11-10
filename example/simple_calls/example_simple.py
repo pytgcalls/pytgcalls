@@ -8,6 +8,7 @@ from pytgcalls import PyTgCalls
 from pytgcalls.types import ChatUpdate
 from pytgcalls.types import GroupCallParticipant
 from pytgcalls.types import MediaStream
+from pytgcalls.types import RecordStream
 from pytgcalls.types import Update
 
 app = Client(
@@ -26,6 +27,16 @@ async def play_handler(_: Client, message: Message):
         message.chat.id,
         MediaStream(
             test_stream,
+        ),
+    )
+
+
+@app.on_message(filters.regex('!record'))
+async def record_handler(_: Client, message: Message):
+    await call_py.record(
+        message.chat.id,
+        RecordStream(
+            'record.mp3',
         ),
     )
 
