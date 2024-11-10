@@ -84,7 +84,7 @@ async def change_volume_handler(_: Client, message: Message):
 async def get_play_status(client: Client, message: Message):
     await client.send_message(
         message.chat.id,
-        f'Current seconds {await call_py.played_time(message.chat.id)}',
+        f'Current seconds {await call_py.time(message.chat.id)}',
     )
 
 
