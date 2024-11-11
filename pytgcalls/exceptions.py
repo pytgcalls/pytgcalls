@@ -191,12 +191,12 @@ class MTProtoClientNotConnected(Exception):
 class InvalidAudioConfiguration(Exception):
     def __init__(self, message: str):
         super().__init__(
-            f'Audio configuration error: {message}', 
+            f'Audio configuration error: {message}',
         )
 
 
 class InvalidVideoConfiguration(Exception):
     def __init__(self, message: str):
         super().__init__(
-            f'Video configuration error: {message}', 
+            f'Video configuration error: {message}',
         )
