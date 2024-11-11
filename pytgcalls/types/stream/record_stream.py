@@ -4,17 +4,15 @@ from ntgcalls import MediaSource
 
 from ...media_devices.speaker_device import SpeakerDevice
 from ...statictypes import statictypes
+from ..exceptions import InvalidAudioConfiguration
+from ..exceptions import InvalidVideoConfiguration
 from ..raw.audio_parameters import AudioParameters
 from ..raw.audio_stream import AudioStream
 from ..raw.stream import Stream
 from ..raw.video_parameters import VideoParameters
 from ..raw.video_stream import VideoStream
 from ..stream.audio_quality import AudioQuality
-from ..exceptions import (
-       InvalidAudioConfiguration, 
-       InvalidVideoConfiguration
-) 
-       
+
 
 class RecordStream(Stream):
     @statictypes
@@ -36,7 +34,9 @@ class RecordStream(Stream):
             else ValueError('Invalid audio parameters')
         )
         if not isinstance(raw_audio_parameters, AudioParameters):
-            raise InvalidAudioConfiguration('Provided audio parameters are invalid')
+            raise InvalidAudioConfiguration(
+                'Provided audio parameters are invalid',
+            )
 
         super().__init__(
             microphone=self._get_audio_stream(audio, raw_audio_parameters),
@@ -72,7 +72,9 @@ class RecordStream(Stream):
                 audio,
             ]
             if not commands:
-                raise InvalidAudioConfiguration('Audio stream commands are not properly set up')
+                raise InvalidAudioConfiguration(
+                    'Audio stream commands are not properly set up',
+                )
             return AudioStream(
                 media_source=MediaSource.SHELL,
                 path=' '.join(commands),
