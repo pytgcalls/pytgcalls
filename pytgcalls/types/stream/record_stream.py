@@ -10,7 +10,11 @@ from ..raw.stream import Stream
 from ..raw.video_parameters import VideoParameters
 from ..raw.video_stream import VideoStream
 from ..stream.audio_quality import AudioQuality
-
+from ..exceptions import (
+       InvalidAudioConfiguration, 
+       InvalidVideoConfiguration
+) 
+       
 
 class RecordStream(Stream):
     @statictypes
@@ -31,6 +35,9 @@ class RecordStream(Stream):
             if isinstance(audio_parameters, AudioQuality)
             else ValueError('Invalid audio parameters')
         )
+        if not isinstance(raw_audio_parameters, AudioParameters):
+            raise InvalidAudioConfiguration('Provided audio parameters are invalid')
+
         super().__init__(
             microphone=self._get_audio_stream(audio, raw_audio_parameters),
             speaker=None,
@@ -64,6 +71,8 @@ class RecordStream(Stream):
                 'flac' if is_lossless else 'libmp3lame',
                 audio,
             ]
+            if not commands:
+                raise InvalidAudioConfiguration('Audio stream commands are not properly set up')
             return AudioStream(
                 media_source=MediaSource.SHELL,
                 path=' '.join(commands),
@@ -75,9 +84,12 @@ class RecordStream(Stream):
                 path=audio.metadata,
                 parameters=raw_audio_parameters,
             )
+        raise InvalidAudioConfiguration('Unsupported audio input type')
 
     @staticmethod
     def _get_video_stream(enable):
+        if not enable:
+            raise InvalidVideoConfiguration('Video streaming is disabled')
         return (
             VideoStream(
                 media_source=MediaSource.EXTERNAL,
