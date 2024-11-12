@@ -155,7 +155,10 @@ class Play(Scaffold):
                                 result.protocol.p2p_allowed,
                             )
                         except asyncio.TimeoutError:
-                            self._binding.stop(chat_id)
+                            try:
+                                await self._binding.stop(chat_id)
+                            except ConnectionNotFound:
+                                pass
                             raise TimedOutAnswer()
                         finally:
                             self._p2p_configs.pop(chat_id, None)

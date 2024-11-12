@@ -99,16 +99,22 @@ class Start(Scaffold):
                         self._videos_id[
                             user_id
                         ] = participant.video_info.endpoint
-                        self._binding.add_incoming_video(
-                            chat_id,
-                            participant.video_info.endpoint,
-                            participant.video_info.sources,
-                        )
+                        try:
+                            await self._binding.add_incoming_video(
+                                chat_id,
+                                participant.video_info.endpoint,
+                                participant.video_info.sources,
+                            )
+                        except ConnectionNotFound:
+                            pass
                     else:
-                        self._binding.remove_incoming_video(
-                            chat_id,
-                            self._videos_id[user_id],
-                        )
+                        try:
+                            await self._binding.remove_incoming_video(
+                                chat_id,
+                                self._videos_id[user_id],
+                            )
+                        except ConnectionNotFound:
+                            pass
                         self._videos_id.pop(user_id)
 
                 if was_screen != participant.screen_sharing:
@@ -116,16 +122,22 @@ class Start(Scaffold):
                         self._presentations_id[
                             user_id
                         ] = participant.presentation_info.endpoint
-                        self._binding.add_incoming_video(
-                            chat_id,
-                            participant.presentation_info.endpoint,
-                            participant.presentation_info.sources,
-                        )
+                        try:
+                            await self._binding.add_incoming_video(
+                                chat_id,
+                                participant.presentation_info.endpoint,
+                                participant.presentation_info.sources,
+                            )
+                        except ConnectionNotFound:
+                            pass
                     else:
-                        self._binding.remove_incoming_video(
-                            chat_id,
-                            self._presentations_id[user_id],
-                        )
+                        try:
+                            await self._binding.remove_incoming_video(
+                                chat_id,
+                                self._presentations_id[user_id],
+                            )
+                        except ConnectionNotFound:
+                            pass
                         self._presentations_id.pop(user_id)
 
                 if chat_peer:
