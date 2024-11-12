@@ -7,6 +7,8 @@ from typing import Union
 from .mtproto import BridgedClient
 from .pytgcalls import PyTgCalls
 from .types import ChatUpdate
+from .types import Device
+from .types import Direction
 from .types import GroupCallParticipant
 from .types import StreamEnded
 from .types import StreamFrame
@@ -135,12 +137,26 @@ async def _me_filter(_, client: PyTgCalls, u: Update):
 me = create(_me_filter)
 
 
-async def _stream_filter(_, __, u: Update):
-    return isinstance(u, StreamEnded)
+class stream_end(Filter):
+    def __init__(
+        self,
+        stream_type: Optional[StreamEnded.Type] = None,
+        device: Optional[Device] = None,
+    ):
+        self.stream_type = stream_type
+        self.device = device
 
-
-stream_end = create(_stream_filter)
-
+    async def __call__(self, client: PyTgCalls, update: Update):
+        if isinstance(update, StreamEnded):
+            return (
+                (
+                    self.stream_type is None or
+                    self.stream_type & update.stream_type
+                ) and (
+                    self.device is None or
+                    self.device & update.device
+                )
+            )
 
 # noinspection PyPep8Naming
 class chat(Filter, set):
@@ -185,8 +201,8 @@ class call_participant(Filter):
 class stream_frame(Filter):
     def __init__(
         self,
-        directions: Optional[StreamFrame.Direction] = None,
-        devices: Optional[StreamFrame.Device] = None,
+        directions: Optional[Direction] = None,
+        devices: Optional[Device] = None,
     ):
         self.directions = directions
         self.devices = devices

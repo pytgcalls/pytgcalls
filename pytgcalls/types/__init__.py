@@ -10,6 +10,8 @@ from .chats import ChatUpdate
 from .chats import GroupCallParticipant
 from .chats import UpdatedGroupCallParticipant
 from .stream import AudioQuality
+from .stream import Device
+from .stream import Direction
 from .stream import MediaStream
 from .stream import RecordStream
 from .stream import StreamEnded
@@ -19,6 +21,8 @@ from .update import Update
 
 __all__ = (
     'AudioQuality',
+    'Device',
+    'Direction',
     'Browsers',
     'Cache',
     'ChatUpdate',

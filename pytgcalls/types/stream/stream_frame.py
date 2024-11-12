@@ -1,19 +1,9 @@
-from enum import auto
-
 from ...types.update import Update
-from ..flag import Flag
+from .device import Device
+from .direction import Direction
 
 
 class StreamFrame(Update):
-    class Direction(Flag):
-        OUTGOING = auto()
-        INCOMING = auto()
-
-    class Device(Flag):
-        MICROPHONE = auto()
-        SPEAKER = auto()
-        CAMERA = auto()
-        SCREEN = auto()
 
     class Info:
         def __init__(

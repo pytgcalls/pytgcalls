@@ -20,6 +20,8 @@ from ...pytgcalls_session import PyTgCallsSession
 from ...scaffold import Scaffold
 from ...types import CallData
 from ...types import ChatUpdate
+from ...types import Device
+from ...types import Direction
 from ...types import GroupCallParticipant
 from ...types import RawCallUpdate
 from ...types import StreamEnded
@@ -197,8 +199,8 @@ class Start(Scaffold):
             await self.propagate(
                 StreamEnded(
                     chat_id,
-                    stream_type,
-                    device,
+                    StreamEnded.Type.from_raw(stream_type),
+                    Device.from_raw(device),
                 ),
                 self,
             )
@@ -220,25 +222,12 @@ class Start(Scaffold):
             frame: bytes,
             frame_info: FrameData,
         ):
-            if device == StreamDevice.MICROPHONE:
-                parsed_device = StreamFrame.Device.MICROPHONE
-            elif device == StreamDevice.SPEAKER:
-                parsed_device = StreamFrame.Device.SPEAKER
-            elif device == StreamDevice.CAMERA:
-                parsed_device = StreamFrame.Device.CAMERA
-            elif device == StreamDevice.SCREEN:
-                parsed_device = StreamFrame.Device.SCREEN
-            else:
-                logging.error('Received unknown device type')
-                return
             await self.propagate(
                 StreamFrame(
                     chat_id,
                     source_id,
-                    StreamFrame.Direction.OUTGOING
-                    if mode == StreamMode.CAPTURE else
-                    StreamFrame.Direction.INCOMING,
-                    parsed_device,
+                    Direction.from_raw(mode),
+                    Device.from_raw(device),
                     frame,
                     StreamFrame.Info(
                         frame_info.absolute_capture_timestamp_ms,
