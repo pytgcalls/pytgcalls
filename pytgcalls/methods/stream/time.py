@@ -15,7 +15,7 @@ class Time(Scaffold):
     async def time(
         self,
         chat_id: Union[int, str],
-        stream_mode: StreamMode = StreamMode.PLAYBACK,
+        stream_mode: StreamMode = StreamMode.CAPTURE,
     ):
         chat_id = await self.resolve_chat_id(chat_id)
         try:
