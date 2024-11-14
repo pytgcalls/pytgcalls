@@ -97,7 +97,7 @@ async def kicked_handler(_: PyTgCalls, update: Update):
     print(f'Kicked from {update.chat_id} or left')
 
 
-@call_py.on_update(fl.stream_end)
+@call_py.on_update(fl.stream_end())
 async def stream_end_handler(_: PyTgCalls, update: Update):
     print(f'Stream ended in {update.chat_id}', update)
 
