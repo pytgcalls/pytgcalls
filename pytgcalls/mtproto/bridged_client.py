@@ -152,7 +152,7 @@ class BridgedClient(HandlersHolder):
             [
                 SsrcGroup(
                     source_group.semantics,
-                    source_group.sources,
+                    [ssrc for ssrc in source_group.ssrcs],
                 )
                 for source_group in source.source_groups
             ],
