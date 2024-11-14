@@ -107,7 +107,7 @@ class Start(Scaffold):
                             )
                         except ConnectionNotFound:
                             pass
-                    else:
+                    elif user_id in self._videos_id:
                         try:
                             await self._binding.remove_incoming_video(
                                 chat_id,
@@ -130,7 +130,7 @@ class Start(Scaffold):
                             )
                         except ConnectionNotFound:
                             pass
-                    else:
+                    elif user_id in self._presentations_id:
                         try:
                             await self._binding.remove_incoming_video(
                                 chat_id,
