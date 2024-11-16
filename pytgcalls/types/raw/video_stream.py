@@ -1,10 +1,11 @@
 from ntgcalls import MediaSource
 
 from ...statictypes import statictypes
+from ..py_object import PyObject
 from .video_parameters import VideoParameters
 
 
-class VideoStream:
+class VideoStream(PyObject):
     @statictypes
     def __init__(
         self,
