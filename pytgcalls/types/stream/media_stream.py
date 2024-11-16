@@ -68,31 +68,36 @@ class MediaStream(Stream):
 
         self._media_path: Optional[str] = None
         self._audio_path: Optional[str] = None
+        self._is_media_device: bool = False
+        self._is_audio_device: bool = False
         if isinstance(media_path, str):
             self._media_path = media_path
         elif isinstance(media_path, Path):
             self._media_path = str(media_path)
-        elif isinstance(media_path, InputDevice):
+        elif isinstance(media_path, (InputDevice, ScreenDevice)):
+            print('MediaStream', media_path.is_video)
             if media_path.is_video:
                 self._media_path = media_path.metadata
+                self._is_media_device = True
             else:
                 self._audio_path = media_path.metadata
+                self._is_audio_device = True
 
         if isinstance(audio_path, str):
             self._audio_path = audio_path
         elif isinstance(audio_path, Path):
             self._audio_path = str(audio_path)
-        elif isinstance(audio_path, InputDevice):
+        elif isinstance(audio_path, (InputDevice, ScreenDevice)):
             if audio_path.is_video:
                 raise ValueError('Audio path must be an audio device')
             self._audio_path = audio_path.metadata
+            self._is_audio_device = True
 
         self._audio_flags = self._filter_flags(audio_flags)
         self._video_flags = self._filter_flags(video_flags)
         self._ffmpeg_parameters = ffmpeg_parameters
         self._ytdlp_parameters = ytdlp_parameters
         self._headers = headers
-
         super().__init__(
             microphone=None
             if self._audio_flags & MediaStream.Flags.IGNORE else
@@ -101,7 +106,7 @@ class MediaStream(Stream):
                 self._audio_path,
                 self._audio_parameters,
             )
-            if isinstance(audio_path, InputDevice) else
+            if self._is_audio_device else
             AudioStream(
                 MediaSource.SHELL,
                 ' '.join(
@@ -120,12 +125,12 @@ class MediaStream(Stream):
             camera=None
             if self._video_flags & MediaStream.Flags.IGNORE else
             VideoStream(
-                MediaSource.DESKTOP if isinstance(audio_path, ScreenDevice)
+                MediaSource.DESKTOP if isinstance(media_path, ScreenDevice)
                 else MediaSource.DEVICE,
                 self._media_path,
                 self._video_parameters,
             )
-            if isinstance(audio_path, InputDevice) else
+            if self._is_media_device else
             VideoStream(
                 MediaSource.SHELL,
                 ' '.join(
@@ -145,90 +150,103 @@ class MediaStream(Stream):
 
     async def check_stream(self):
         if not self._video_flags & MediaStream.Flags.IGNORE:
-            if YtDlp.is_valid(self._media_path):
-                links = await YtDlp.extract(
-                    self._media_path,
-                    self._video_parameters,
-                    self._ytdlp_parameters,
-                )
-                self._media_path = links[0]
-                if not self._audio_path:
-                    self._audio_path = links[1]
-            try:
-                image_commands = []
-                live_stream = False
-                try:
-                    await check_stream(
-                        self._ffmpeg_parameters,
+            if self._is_media_device:
+                if not self._media_path:
+                    self.camera = None
+            elif self._media_path:
+                if YtDlp.is_valid(self._media_path):
+                    links = await YtDlp.extract(
                         self._media_path,
-                        self._video_parameters,
-                        [],
-                        self._headers,
-                    )
-                except ImageSourceFound:
-                    image_commands = [
-                        '-loop',
-                        '1',
-                        '-framerate',
-                        '1',
-                    ]
-                except LiveStreamFound:
-                    live_stream = True
-                self.camera.path = ' '.join(
-                    build_command(
-                        'ffmpeg',
-                        self._ffmpeg_parameters,
-                        self._media_path,
-                        self._video_parameters,
-                        image_commands,
-                        self._headers,
-                        live_stream,
-                    ),
-                )
-            except NoVideoSourceFound as e:
-                if self._video_flags & MediaStream.Flags.REQUIRED:
-                    raise e
-                self.camera = None
-
-        self._audio_path = self._audio_path \
-            if self._audio_path else self._media_path
-
-        if not self._audio_flags & MediaStream.Flags.IGNORE:
-            if YtDlp.is_valid(self._audio_path):
-                self._audio_path = (
-                    await YtDlp.extract(
-                        self._audio_path,
                         self._video_parameters,
                         self._ytdlp_parameters,
                     )
-                )[1]
-
-            try:
-                live_stream = False
+                    self._media_path = links[0]
+                    if not self._audio_path:
+                        self._audio_path = links[1]
                 try:
-                    await check_stream(
-                        self._ffmpeg_parameters,
-                        self._audio_path,
-                        self._audio_parameters,
-                        [],
-                        self._headers,
+                    image_commands = []
+                    live_stream = False
+                    try:
+                        await check_stream(
+                            self._ffmpeg_parameters,
+                            self._media_path,
+                            self._video_parameters,
+                            [],
+                            self._headers,
+                        )
+                    except ImageSourceFound:
+                        image_commands = [
+                            '-loop',
+                            '1',
+                            '-framerate',
+                            '1',
+                        ]
+                    except LiveStreamFound:
+                        live_stream = True
+                    self.camera.path = ' '.join(
+                        build_command(
+                            'ffmpeg',
+                            self._ffmpeg_parameters,
+                            self._media_path,
+                            self._video_parameters,
+                            image_commands,
+                            self._headers,
+                            live_stream,
+                        ),
                     )
-                except LiveStreamFound:
-                    live_stream = True
-                self.microphone.path = ' '.join(
-                    build_command(
-                        'ffmpeg',
-                        self._ffmpeg_parameters,
-                        self._audio_path,
-                        self._audio_parameters,
-                        [],
-                        self._headers,
-                        live_stream,
-                    ),
-                )
-            except NoAudioSourceFound as e:
-                if self._audio_flags & MediaStream.Flags.REQUIRED:
-                    raise e
+                except NoVideoSourceFound as e:
+                    if self._video_flags & MediaStream.Flags.REQUIRED:
+                        raise e
+                    self.camera = None
+            else:
+                self.camera = None
+
+        if not self._is_media_device:
+            self._audio_path = self._audio_path \
+                if self._audio_path else self._media_path
+
+        if not self._audio_flags & MediaStream.Flags.IGNORE:
+            if self._is_audio_device:
+                if not self._audio_path:
+                    self.microphone = None
+            elif self._audio_path:
+                if YtDlp.is_valid(self._audio_path):
+                    self._audio_path = (
+                        await YtDlp.extract(
+                            self._audio_path,
+                            self._video_parameters,
+                            self._ytdlp_parameters,
+                        )
+                    )[1]
+
+                try:
+                    live_stream = False
+                    try:
+                        await check_stream(
+                            self._ffmpeg_parameters,
+                            self._audio_path,
+                            self._audio_parameters,
+                            [],
+                            self._headers,
+                        )
+                    except LiveStreamFound:
+                        live_stream = True
+                    self.microphone.path = ' '.join(
+                        build_command(
+                            'ffmpeg',
+                            self._ffmpeg_parameters,
+                            self._audio_path,
+                            self._audio_parameters,
+                            [],
+                            self._headers,
+                            live_stream,
+                        ),
+                    )
+                except NoAudioSourceFound as e:
+                    if self._audio_flags & MediaStream.Flags.REQUIRED:
+                        raise e
+                    self.microphone = None
+            else:
                 self.microphone = None
 
     @staticmethod
