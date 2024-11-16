@@ -158,6 +158,7 @@ class stream_end(Filter):
                 )
             )
 
+
 # noinspection PyPep8Naming
 class chat(Filter, set):
     def __init__(
