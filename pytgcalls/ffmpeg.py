@@ -30,36 +30,41 @@ async def check_stream(
     headers: Optional[Dict[str, str]] = None,
 ):
     try:
-        ffprobe = await asyncio.create_subprocess_exec(
-            *await cleanup_commands(
-                build_command(
-                    'ffprobe',
-                    ffmpeg_parameters,
-                    path,
-                    stream_parameters,
-                    before_commands,
-                    headers,
-                    False,
-                ),
+        command = await cleanup_commands(
+            build_command(
+                'ffprobe',
+                ffmpeg_parameters,
+                path,
+                stream_parameters,
+                before_commands,
+                headers,
+                False,
             ),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        )
+
+        loop = asyncio.get_running_loop()
+        proc_res = await loop.run_in_executor(
+            None,
+            lambda: subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=20,
+            ),
         )
     except FileNotFoundError:
         raise FFmpegError('ffprobe not installed')
 
     try:
-        stdout, stderr = await asyncio.wait_for(
-            ffprobe.communicate(),
-            timeout=20,
-        )
-        result = loads(stdout.decode('utf-8')) or {}
+        stdout: str = proc_res.stdout
+        stderr: str = proc_res.stderr
+        result = loads(stdout) or {}
         stream_list = result.get('streams', [])
         format_content = result.get('format', [])
-        if 'No such file' in stderr.decode('utf-8'):
+        if 'No such file' in stderr:
             raise FileNotFoundError()
-    except (subprocess.TimeoutExpired, JSONDecodeError):
-        ffprobe.terminate()
+    except JSONDecodeError:
         raise
 
     have_video = False
@@ -123,20 +128,22 @@ async def cleanup_commands(
     blacklist: Optional[List[str]] = None,
 ) -> List[str]:
     try:
-        proc_res = await asyncio.create_subprocess_exec(
-            commands[0] if not process_name else process_name,
-            '-h',
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        loop = asyncio.get_running_loop()
+        cmd = [commands[0] if not process_name else process_name, '-h']
+        proc_res = await loop.run_in_executor(
+            None,
+            lambda: subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=20,
+            ),
         )
         try:
-            stdout, _ = await asyncio.wait_for(
-                proc_res.communicate(),
-                timeout=20,
-            )
-            result = stdout.decode('utf-8')
-        except (subprocess.TimeoutExpired, JSONDecodeError):
-            proc_res.terminate()
+            stdout: str = proc_res.stdout
+            result = stdout
+        except JSONDecodeError:
             raise
         supported = re.findall(r'(?m)^ *(-.*?)\s+', result)
         new_commands = []
