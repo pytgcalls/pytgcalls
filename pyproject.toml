@@ -1,9 +1,12 @@
 [project]
+# General Project Information
 dynamic = ["version"]
 name = "py-tgcalls"
-description = "Async client API for the Telegram Calls."
+description = "Async client API for Telegram Calls"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
+
+# Classifiers to specify metadata about the project
 classifiers = [
     'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
     'Operating System :: OS Independent',
@@ -15,40 +18,56 @@ classifiers = [
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
 ]
+
+# Authors' Information
 authors = [
-    {name = "Laky-64", email = "iraci.matteo@gmail.com"},
+    { name = "Laky-64", email = "iraci.matteo@gmail.com" }
 ]
+
+# Keywords to improve searchability
 keywords = [
     "audio", "python", "library", "video", "telegram", "stream",
     "ffmpeg", "cpp", "webrtc", "voice-chat", "voip", "group-chat",
     "video-calls", "calls", "video-chat", "pytgcalls", "ntgcalls",
     "tgcalls", "py-tgcalls", "pyrogram", "telethon", "hydrogram"
 ]
+
+# Minimum Python version required
 requires-python = ">=3.8"
+
+# Core dependencies
 dependencies = [
-    "aiohttp>=3.9.3",
-    "ntgcalls>=1.2.0,<1.3.0",
-    "psutil",
-    "screeninfo",
-    "deprecation",
+    "aiohttp>=3.9.3",        # Asynchronous HTTP client/server framework
+    "ntgcalls>=1.2.0,<1.3.0", # Package for interacting with Telegram Calls
+    "psutil",                # System and process utilities
+    "screeninfo",            # Cross-platform library for retrieving display information
+    "deprecation",           # Deprecation warnings for API compatibility
 ]
 
+# Optional dependencies for enhanced features
 [project.optional-dependencies]
 pyrogram = ["pyrogram>=1.2.20"]
 telethon = ["telethon>=1.24.0"]
 hydrogram = ["hydrogram>=0.1.4"]
 
+# URLs related to the project
 [project.urls]
 Homepage = "https://pytgcalls.github.io/"
 Repository = "https://github.com/pytgcalls/pytgcalls.git"
 Documentation = "https://pytgcalls.github.io/PyTgCalls"
 Changelog = "https://pytgcalls.github.io/PyTgCalls/Changelogs"
 
+# Setuptools configuration
 [tool.setuptools]
 include-package-data = true
 
+# Build system configuration
 [build-system]
-requires = ["setuptools >= 69.2.0", "wheel >= 0.43.0"]
+requires = [
+    "setuptools >= 69.2.0",  # Setuptools version requirement
+    "wheel >= 0.43.0"        # Wheel package for building wheels
+]
 
+# Package discovery settings
 [tool.setuptools.packages.find]
 include = ["pytgcalls*"]
