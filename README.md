@@ -47,8 +47,7 @@ idle()
 ## Features 🌟
 - Prebuilt wheels for macOS, Linux, and Windows.
 - Full support for all types of MTProto libraries: Pyrogram, Telethon, and Hydrogram.
-- Works seamlessly with voice chats in channels and groups.
-- Join as channels or groups.
+- Work with voice chats in channels and chats.
 - Extensive controls: mute/unmute, pause/resume, stop/play, volume adjustments, and more...
 
 ## Requirements 🛠️
