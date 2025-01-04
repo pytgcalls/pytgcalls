@@ -2,13 +2,15 @@ import asyncio
 import logging
 import re
 import shlex
-from typing import Optional, Tuple
+from typing import Optional
+from typing import Tuple
 
 from .exceptions import YtDlpError
 from .ffmpeg import cleanup_commands
 from .types.raw import VideoParameters
 
 py_logger = logging.getLogger('pytgcalls')
+
 
 class YtDlp:
     YOUTUBE_REGX = re.compile(
