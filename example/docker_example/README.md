@@ -11,7 +11,7 @@ Just follow these steps
 ``` bash
 docker build . -t docker_example
 ```
-2. Run the **Docker Image**
+1. Run the **Docker Image**
 ``` bash
 docker run -v "$PWD":/usr/src/mnt pytgcalls_machine ./linux_mount.sh
 ```
