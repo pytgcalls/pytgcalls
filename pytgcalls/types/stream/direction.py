@@ -11,8 +11,8 @@ class Direction(Flag):
 
     @staticmethod
     def from_raw(direction: StreamMode):
-        if direction == StreamMode.OUTGOING:
+        if direction == StreamMode.CAPTURE:
             return Direction.OUTGOING
-        if direction == StreamMode.INCOMING:
+        if direction == StreamMode.PLAYBACK:
             return Direction.INCOMING
         return None
