@@ -50,6 +50,7 @@ class RecordStream(Stream):
             is_lossless = raw_audio_parameters.bitrate > 48000
             commands = [
                 'ffmpeg',
+                '-y',
                 '-loglevel',
                 'quiet',
                 '-f',
@@ -62,6 +63,8 @@ class RecordStream(Stream):
                 'pipe:0',
                 '-codec:a',
                 'flac' if is_lossless else 'libmp3lame',
+                '-flush_packets',
+                '1',
                 audio,
             ]
             return AudioStream(
