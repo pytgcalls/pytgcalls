@@ -34,6 +34,7 @@ from telethon.tl.types import InputPhoneCall
 from telethon.tl.types import MessageActionChatDeleteUser
 from telethon.tl.types import MessageActionInviteToGroupCall
 from telethon.tl.types import MessageService
+from telethon.tl.types import PeerChannel
 from telethon.tl.types import PeerChat
 from telethon.tl.types import PhoneCall
 from telethon.tl.types import PhoneCallAccepted
@@ -182,7 +183,9 @@ class TelethonClient(BridgedClient):
                 UpdateGroupCall,
             ):
                 chat_id = self.chat_id(
-                    await self._app.get_entity(update.chat_id),
+                    await self._get_entity_group(
+                        update.chat_id,
+                    ),
                 )
                 if isinstance(
                     update.call,
@@ -215,7 +218,9 @@ class TelethonClient(BridgedClient):
             ):
                 chat_id = self.chat_id(update)
                 try:
-                    await self._app.get_entity(chat_id)
+                    await self._app.get_entity(
+                        PeerChannel(chat_id),
+                    )
                 except ChannelPrivateError:
                     self._cache.drop_cache(chat_id)
                     await self.propagate(
@@ -273,6 +278,16 @@ class TelethonClient(BridgedClient):
                                         ChatUpdate.Status.KICKED,
                                     ),
                                 )
+
+    async def _get_entity_group(self, chat_id):
+        try:
+            return await self._app.get_entity(
+                PeerChannel(chat_id),
+            )
+        except ValueError:
+            return await self._app.get_entity(
+                PeerChat(chat_id),
+            )
 
     async def get_call(
         self,
