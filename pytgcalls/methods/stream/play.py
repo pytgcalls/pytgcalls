@@ -5,9 +5,9 @@ from typing import Union
 
 from ntgcalls import ConnectionNotFound
 from ntgcalls import FileError
-from ntgcalls import InvalidParams
 from ntgcalls import StreamMode
 from ntgcalls import TelegramServerError
+from ntgcalls import TransportParseException
 
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import TimedOutAnswer
@@ -238,7 +238,7 @@ class Play(Scaffold):
                         self._need_unmute.add(chat_id)
         except FileError as e:
             raise FileNotFoundError(e)
-        except InvalidParams:
+        except TransportParseException:
             raise UnMuteNeeded()
         except Exception:
             if isinstance(config, GroupCallConfig):
