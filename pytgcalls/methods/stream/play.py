@@ -159,6 +159,7 @@ class Play(Scaffold):
                                 await self._binding.stop(chat_id)
                             except ConnectionNotFound:
                                 pass
+                            await self._app.discard_call(chat_id, True)
                             raise TimedOutAnswer()
                         finally:
                             self._p2p_configs.pop(chat_id, None)

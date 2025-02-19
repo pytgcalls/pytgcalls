@@ -78,6 +78,7 @@ class BridgedClient(HandlersHolder):
     async def discard_call(
         self,
         chat_id: int,
+        is_missed: bool,
     ):
         pass
 

@@ -43,6 +43,7 @@ from hydrogram.raw.types import PhoneCall
 from hydrogram.raw.types import PhoneCallAccepted
 from hydrogram.raw.types import PhoneCallDiscarded
 from hydrogram.raw.types import PhoneCallDiscardReasonHangup
+from hydrogram.raw.types import PhoneCallDiscardReasonMissed
 from hydrogram.raw.types import PhoneCallProtocol
 from hydrogram.raw.types import PhoneCallRequested
 from hydrogram.raw.types import PhoneCallWaiting
@@ -558,15 +559,21 @@ class HydrogramClient(BridgedClient):
     async def discard_call(
         self,
         chat_id: int,
+        is_missed: bool,
     ):
         peer = self._cache.get_phone_call(chat_id)
         if peer is None:
             return
+        reason = (
+            PhoneCallDiscardReasonMissed()
+            if is_missed
+            else PhoneCallDiscardReasonHangup()
+        )
         await self._app.invoke(
             DiscardCall(
                 peer=peer,
                 duration=0,
-                reason=PhoneCallDiscardReasonHangup(),
+                reason=reason,
                 connection_id=0,
                 video=False,
             ),

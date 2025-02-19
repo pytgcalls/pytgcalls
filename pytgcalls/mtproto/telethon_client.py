@@ -40,6 +40,7 @@ from telethon.tl.types import PhoneCall
 from telethon.tl.types import PhoneCallAccepted
 from telethon.tl.types import PhoneCallDiscarded
 from telethon.tl.types import PhoneCallDiscardReasonHangup
+from telethon.tl.types import PhoneCallDiscardReasonMissed
 from telethon.tl.types import PhoneCallProtocol
 from telethon.tl.types import PhoneCallRequested
 from telethon.tl.types import PhoneCallWaiting
@@ -550,15 +551,21 @@ class TelethonClient(BridgedClient):
     async def discard_call(
         self,
         chat_id: int,
+        is_missed: bool,
     ):
         peer = self._cache.get_phone_call(chat_id)
         if peer is None:
             return
+        reason = (
+            PhoneCallDiscardReasonMissed()
+            if is_missed
+            else PhoneCallDiscardReasonHangup()
+        )
         await self._app(
             DiscardCallRequest(
                 peer=peer,
                 duration=0,
-                reason=PhoneCallDiscardReasonHangup(),
+                reason=reason,
                 connection_id=0,
                 video=False,
             ),

@@ -45,6 +45,7 @@ from pyrogram.raw.types import PhoneCall
 from pyrogram.raw.types import PhoneCallAccepted
 from pyrogram.raw.types import PhoneCallDiscarded
 from pyrogram.raw.types import PhoneCallDiscardReasonHangup
+from pyrogram.raw.types import PhoneCallDiscardReasonMissed
 from pyrogram.raw.types import PhoneCallProtocol
 from pyrogram.raw.types import PhoneCallRequested
 from pyrogram.raw.types import PhoneCallWaiting
@@ -566,15 +567,21 @@ class PyrogramClient(BridgedClient):
     async def discard_call(
         self,
         chat_id: int,
+        is_missed: bool,
     ):
         peer = self._cache.get_phone_call(chat_id)
         if peer is None:
             return
+        reason = (
+            PhoneCallDiscardReasonMissed()
+            if is_missed
+            else PhoneCallDiscardReasonHangup()
+        )
         await self._app.invoke(
             DiscardCall(
                 peer=peer,
                 duration=0,
-                reason=PhoneCallDiscardReasonHangup(),
+                reason=reason,
                 connection_id=0,
                 video=False,
             ),

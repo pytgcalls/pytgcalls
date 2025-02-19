@@ -40,7 +40,7 @@ class LeaveCall(Scaffold):
                 chat_id,
             )
         else:
-            await self._app.discard_call(chat_id)
+            await self._app.discard_call(chat_id, False)
         if is_p2p_waiting:
             self._p2p_configs.pop(chat_id)
             return

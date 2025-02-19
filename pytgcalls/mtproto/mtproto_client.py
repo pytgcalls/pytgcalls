@@ -126,10 +126,12 @@ class MtProtoClient:
     async def discard_call(
         self,
         user_id: int,
+        is_missed: bool,
     ):
         if self._bind_client is not None:
             return await self._bind_client.discard_call(
                 user_id,
+                is_missed,
             )
         else:
             raise InvalidMTProtoClient()
