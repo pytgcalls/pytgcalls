@@ -15,9 +15,9 @@ AUDIO_QUALITY = AudioQuality.HIGH
 model = AIModel(AUDIO_QUALITY)
 
 app = Client(
-    'py-tgcalls', 
-    api_id=12345, 
-    api_hash="0123456789abcdef0123456789abcdef",
+    'py-tgcalls',
+    api_id=12345,
+    api_hash='0123456789abcdef0123456789abcdef',
 )
 
 call_py = PyTgCalls(app)
@@ -31,9 +31,10 @@ call_py.record(
     ),
 )
 
+
 @call_py.on_update(
     filters.stream_frame(
-        Direction.INCOMING, 
+        Direction.INCOMING,
         Device.MICROPHONE,
     ),
 )
