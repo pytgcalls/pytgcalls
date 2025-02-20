@@ -270,7 +270,7 @@ def _extract_stream_params(command: List[str]):
 def _build_ffmpeg_options(
         stream_parameters: Union[AudioParameters, VideoParameters],
 ) -> List[str]:
-    log_level = logging.getLogger().level
+    log_level = logging.getLogger('ffmpeg').level
     ffmpeg_level = 'info' if log_level == logging.DEBUG else 'quiet'
 
     options = ['-v', ffmpeg_level, '-f']
