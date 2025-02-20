@@ -4,6 +4,7 @@ from typing import Optional
 
 import numpy as np
 from faster_whisper import WhisperModel
+
 from pytgcalls.types import AudioQuality
 
 
@@ -11,7 +12,7 @@ class AIModel:
     def __init__(
         self,
         quality: AudioQuality,
-        model_size: str = "base",
+        model_size: str = 'base',
         silence_threshold: float = 0.01,
         silence_duration: int = 2,
         use_context: bool = True,
@@ -20,7 +21,7 @@ class AIModel:
         language: Optional[str] = None,
     ):
         try:
-            torch = __import__("torch")
+            torch = __import__('torch')
             use_cuda = torch.cuda.is_available()
         except ImportError:
             use_cuda = False
@@ -28,21 +29,21 @@ class AIModel:
         if use_cuda:
             self._model = WhisperModel(
                 model_size,
-                device="cuda",
-                compute_type="float16"
+                device='cuda',
+                compute_type='float16',
             )
         else:
             self._model = WhisperModel(
                 model_size,
-                device="cpu",
-                compute_type="int8"
+                device='cpu',
+                compute_type='int8',
             )
         self._sample_rate = quality.value[0]
         self._channels = quality.value[1]
         self._temp_file = BytesIO()
         self._silent_frames = 0
         self._not_transcribed = False
-        self._current_context = ""
+        self._current_context = ''
         self._silence_threshold = silence_threshold
         self._silence_duration = silence_duration
         self._use_context = use_context
@@ -80,7 +81,7 @@ class AIModel:
             block_align,
             16,
             b'data',
-            sub_chunk2_size
+            sub_chunk2_size,
         )
         return wav_header + data
 
@@ -116,14 +117,14 @@ class AIModel:
             language=self._language,
             initial_prompt=self._current_context if self._use_context else None,
             condition_on_previous_text=self._condition_on_prev_text,
-            multilingual=self._multilingual
+            multilingual=self._multilingual,
         )
         if info.duration_after_vad < 1:
             return None
-        message = ""
+        message = ''
         for segment in segments:
-            txt = segment.text.lstrip(" ")
-            message += txt + " "
+            txt = segment.text.lstrip(' ')
+            message += txt + ' '
             if self._use_context:
-                self._current_context += txt + " "
-        return message.lstrip(" ")
+                self._current_context += txt + ' '
+        return message.lstrip(' ')
