@@ -3,6 +3,7 @@ from .pause_stream import PauseStream
 from .play import Play
 from .record import Record
 from .resume_stream import ResumeStream
+from .send_frame import SendFrame
 from .time import Time
 from .unmute_stream import UnMuteStream
 
@@ -12,6 +13,7 @@ class StreamMethods(
     PauseStream,
     Play,
     Record,
+    SendFrame,
     Time,
     ResumeStream,
     UnMuteStream,

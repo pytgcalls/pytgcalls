@@ -22,3 +22,15 @@ class Device(Flag):
         if device == StreamDevice.SCREEN:
             return Device.SCREEN
         return None
+
+    @staticmethod
+    def to_raw(device: 'Device'):
+        if device == Device.MICROPHONE:
+            return StreamDevice.MICROPHONE
+        if device == Device.SPEAKER:
+            return StreamDevice.SPEAKER
+        if device == Device.CAMERA:
+            return StreamDevice.CAMERA
+        if device == Device.SCREEN:
+            return StreamDevice.SCREEN
+        return None
