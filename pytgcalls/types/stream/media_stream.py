@@ -1,3 +1,4 @@
+import logging
 from enum import auto
 from pathlib import Path
 from typing import Dict
@@ -24,6 +25,9 @@ from ..raw.video_parameters import VideoParameters
 from ..raw.video_stream import VideoStream
 from ..stream.audio_quality import AudioQuality
 from ..stream.video_quality import VideoQuality
+from .external_media import ExternalMedia
+
+py_logger = logging.getLogger('pytgcalls')
 
 
 class MediaStream(Stream):
@@ -35,7 +39,7 @@ class MediaStream(Stream):
     @statictypes
     def __init__(
         self,
-        media_path: Union[str, Path, InputDevice],
+        media_path: Union[str, Path, InputDevice, ExternalMedia],
         audio_parameters: Union[
             AudioParameters,
             AudioQuality,
@@ -44,7 +48,12 @@ class MediaStream(Stream):
             VideoParameters,
             VideoQuality,
         ] = VideoQuality.SD_480p,
-        audio_path: Optional[Union[str, Path, InputDevice]] = None,
+        audio_path: Optional[
+            Union[
+                str, Path,
+                InputDevice, ExternalMedia,
+            ]
+        ] = None,
         audio_flags: Optional[Flags] = Flags.AUTO_DETECT,
         video_flags: Optional[Flags] = Flags.AUTO_DETECT,
         headers: Optional[Dict[str, str]] = None,
@@ -70,10 +79,18 @@ class MediaStream(Stream):
         self._audio_path: Optional[str] = None
         self._is_media_device: bool = False
         self._is_audio_device: bool = False
+        self._is_audio_external: bool = False
+        self._is_video_external: bool = False
         if isinstance(media_path, str):
             self._media_path = media_path
         elif isinstance(media_path, Path):
             self._media_path = str(media_path)
+        elif isinstance(media_path, ExternalMedia):
+            self._media_path = ''
+            if media_path & ExternalMedia.AUDIO:
+                self._is_audio_external = True
+            if media_path & ExternalMedia.VIDEO:
+                self._is_video_external = True
         elif isinstance(media_path, (InputDevice, ScreenDevice)):
             print('MediaStream', media_path.is_video)
             if media_path.is_video:
@@ -87,6 +104,17 @@ class MediaStream(Stream):
             self._audio_path = audio_path
         elif isinstance(audio_path, Path):
             self._audio_path = str(audio_path)
+        elif isinstance(audio_path, ExternalMedia):
+            self._audio_path = ''
+            if audio_path == ExternalMedia.AUDIO:
+                if self._is_audio_external:
+                    py_logger.warning(
+                        'Audio path is already an audio source, '
+                        'ignoring audio path',
+                    )
+                self._is_audio_external = True
+            else:
+                raise ValueError('Audio path must be an audio source')
         elif isinstance(audio_path, (InputDevice, ScreenDevice)):
             if audio_path.is_video:
                 raise ValueError('Audio path must be an audio device')
@@ -107,6 +135,12 @@ class MediaStream(Stream):
                 self._audio_parameters,
             )
             if self._is_audio_device else
+            AudioStream(
+                MediaSource.EXTERNAL,
+                '',
+                self._audio_parameters,
+            )
+            if self._is_audio_external else
             AudioStream(
                 MediaSource.SHELL,
                 ' '.join(
@@ -131,6 +165,12 @@ class MediaStream(Stream):
                 self._video_parameters,
             )
             if self._is_media_device else
+            VideoStream(
+                MediaSource.EXTERNAL,
+                '',
+                self._video_parameters,
+            )
+            if self._is_video_external else
             VideoStream(
                 MediaSource.SHELL,
                 ' '.join(

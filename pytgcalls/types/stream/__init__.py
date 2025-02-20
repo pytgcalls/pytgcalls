@@ -1,6 +1,7 @@
 from .audio_quality import AudioQuality
 from .device import Device
 from .direction import Direction
+from .external_media import ExternalMedia
 from .media_stream import MediaStream
 from .record_stream import RecordStream
 from .stream_ended import StreamEnded
@@ -11,6 +12,7 @@ __all__ = (
     'AudioQuality',
     'Device',
     'Direction',
+    'ExternalMedia',
     'MediaStream',
     'RecordStream',
     'StreamEnded',
