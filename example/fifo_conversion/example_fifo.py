@@ -5,7 +5,7 @@ import signal
 import subprocess
 import time
 
-from ntgcalls import InputMode
+from ntgcalls import MediaSource
 from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
@@ -51,8 +51,8 @@ async def test_handler(client: Client, message: Message):
         message.chat.id,
         Stream(
             AudioStream(
-                input_mode=InputMode.File,
-                path=output_file,
+                MediaSource.FILE,
+                output_file,
             ),
         ),
     )

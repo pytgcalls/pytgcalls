@@ -35,7 +35,7 @@ call_py.play(
                 bitrate=48000,
             ),
         ),
-        VideoStream(
+        camera=VideoStream(
             MediaSource.FILE,
             video_file,
             VideoParameters(

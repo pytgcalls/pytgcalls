@@ -5,8 +5,8 @@ from pyrogram.types import Message
 from pytgcalls import filters as fl
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls.types import Device
 from pytgcalls.types import RecordStream
-from pytgcalls.types import StreamFrame
 from pytgcalls.types.raw import AudioParameters
 
 app = Client(
@@ -41,8 +41,7 @@ async def stream_frame_handler(_, update):
 
 @call_py.on_update(
     fl.stream_frame(
-        devices=StreamFrame.Device.MICROPHONE |
-        StreamFrame.Device.SPEAKER,
+        devices=Device.MICROPHONE | Device.SPEAKER,
     ),
 )
 async def stream_audio_frame_handler(_, update):
