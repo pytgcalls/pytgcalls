@@ -115,7 +115,8 @@ class AIModel:
             wav_file,
             vad_filter=True,
             language=self._language,
-            initial_prompt=self._current_context if self._use_context else None,
+            initial_prompt=self._current_context \
+                if self._use_context else None,
             condition_on_previous_text=self._condition_on_prev_text,
             multilingual=self._multilingual,
         )
