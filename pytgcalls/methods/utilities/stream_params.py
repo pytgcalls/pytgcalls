@@ -5,6 +5,7 @@ from ntgcalls import AudioDescription
 from ntgcalls import MediaDescription
 from ntgcalls import VideoDescription
 
+from ...types import RecordStream
 from ...types.raw import AudioStream
 from ...types.raw import Stream
 from ...types.raw import VideoStream
@@ -19,6 +20,11 @@ class StreamParams:
         if stream is not None:
             if isinstance(stream, MediaStream):
                 await stream.check_stream()
+            elif isinstance(stream, RecordStream):
+                raise ValueError(
+                    'Stream should be an instance of '
+                    'MediaStream or a raw Stream',
+                )
 
         return MediaDescription(
             microphone=StreamParams._parse_media_description(
