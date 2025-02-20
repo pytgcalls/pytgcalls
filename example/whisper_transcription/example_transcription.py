@@ -1,8 +1,14 @@
-from pyrogram import Client, idle
-from pytgcalls import PyTgCalls, filters
-from pytgcalls.types import Device, Direction, RecordStream, AudioQuality
-from pytgcalls.types import StreamFrame
 from ai_model import AIModel
+from pyrogram import Client
+from pyrogram import idle
+
+from pytgcalls import filters
+from pytgcalls import PyTgCalls
+from pytgcalls.types import AudioQuality
+from pytgcalls.types import Device
+from pytgcalls.types import Direction
+from pytgcalls.types import RecordStream
+from pytgcalls.types import StreamFrame
 
 AUDIO_QUALITY = AudioQuality.HIGH
 
