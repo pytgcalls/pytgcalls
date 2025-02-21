@@ -1,0 +1,68 @@
+name: 🐞 Bug or error report
+description: Report an anomaly or unexpected behavior with Py-TgCalls.
+labels: ['Needs: Triage :mag:', 'type:bug-suspected']
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      - [x] Bug Report
+
+      Thank you for reporting a bug in Py-TgCalls! Please use the sections below to provide detailed information about the issue.
+
+      - We appreciate your feedback and are committed to fixing issues promptly.
+      - Py-TgCalls is maintained by volunteers, so please be courteous and patient.
+      - Provide sufficient details to help us understand and resolve the issue.
+      - If you have multiple issues, please submit them separately.
+      - Pull requests are welcome if you have a fix.
+
+      *Incomplete reports may be automatically closed.*
+- type: input
+  id: bug-description
+  validations:
+    required: true
+  attributes:
+    label: Short Description
+    description: Provide a brief summary of the bug.
+    placeholder: e.g., Unexpected error when dialing a number.
+- type: textarea
+  id: what-happened
+  validations:
+    required: true
+  attributes:
+    label: What happened?
+    description: Describe the observed behavior in detail.
+    placeholder: Describe what occurred.
+- type: textarea
+  id: steps
+  validations:
+    required: true
+  attributes:
+    label: Steps to reproduce
+    description: Provide a step-by-step list of actions to reproduce the bug.
+    value: |
+      1.
+      2.
+      3.
+- type: textarea
+  id: expected
+  validations:
+    required: true
+  attributes:
+    label: Expected behavior
+    description: What did you expect to happen when following the steps above?
+    placeholder: Describe the expected outcome.
+- type: input
+  id: environment
+  validations:
+    required: true
+  attributes:
+    label: Environment
+    description: Provide details about your environment (e.g., Operating System, Py-TgCalls version, browser if applicable).
+    placeholder: e.g., Windows 10, Py-TgCalls v1.2.3, Chrome 90.
+- type: textarea
+  id: additional-info
+  attributes:
+    label: Additional Information
+    description: Include any other details, logs, or screenshots that may help us diagnose the issue.
+    placeholder: Provide extra context or links to logs, if available.
