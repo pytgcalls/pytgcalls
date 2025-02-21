@@ -86,7 +86,6 @@ class MediaStream(Stream):
         elif isinstance(media_path, Path):
             self._media_path = str(media_path)
         elif isinstance(media_path, ExternalMedia):
-            self._media_path = ''
             if media_path & ExternalMedia.AUDIO:
                 self._is_audio_external = True
             if media_path & ExternalMedia.VIDEO:
@@ -128,7 +127,11 @@ class MediaStream(Stream):
         self._headers = headers
         super().__init__(
             microphone=None
-            if self._audio_flags & MediaStream.Flags.IGNORE else
+            if (
+                self._audio_flags & MediaStream.Flags.IGNORE or
+                self._media_path is None and
+                self._audio_path is None
+            ) and not self._is_audio_external else
             AudioStream(
                 MediaSource.DEVICE,
                 self._audio_path,
@@ -157,7 +160,10 @@ class MediaStream(Stream):
                 self._audio_parameters,
             ),
             camera=None
-            if self._video_flags & MediaStream.Flags.IGNORE else
+            if (
+                self._video_flags & MediaStream.Flags.IGNORE or
+                self._media_path is None
+            ) and not self._is_video_external else
             VideoStream(
                 MediaSource.DESKTOP if isinstance(media_path, ScreenDevice)
                 else MediaSource.DEVICE,
