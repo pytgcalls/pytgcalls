@@ -14,12 +14,12 @@ from ...types import StreamFrame
 class SendFrame(Scaffold):
     @statictypes
     @mtproto_required
-    async def resume_stream(
+    async def send_frame(
         self,
         chat_id: Union[int, str],
         device: Device,
         data: bytes,
-        frame_data: StreamFrame.Info,
+        frame_data: StreamFrame.Info = StreamFrame.Info(),
     ):
         chat_id = await self.resolve_chat_id(chat_id)
         try:
