@@ -195,7 +195,8 @@ class MediaStream(Stream):
         )
 
     async def check_stream(self):
-        if not self._video_flags & MediaStream.Flags.IGNORE:
+        if not self._video_flags & MediaStream.Flags.IGNORE and \
+                not self._is_video_external:
             if self._is_media_device:
                 if not self._media_path:
                     self.camera = None
@@ -251,7 +252,8 @@ class MediaStream(Stream):
             self._audio_path = self._audio_path \
                 if self._audio_path else self._media_path
 
-        if not self._audio_flags & MediaStream.Flags.IGNORE:
+        if not self._audio_flags & MediaStream.Flags.IGNORE and \
+                not self._is_audio_external:
             if self._is_audio_device:
                 if not self._audio_path:
                     self.microphone = None
