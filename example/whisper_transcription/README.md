@@ -10,7 +10,7 @@ Just follow these steps
 ``` bash
 pip3 install faster-whisper
 ```
-2. Edit the config to best suit your needs (for example a faster or more accurated model)
+2. Edit the config to best suit your needs (for example a faster or more accurate model)
 3. Run the example
 ``` bash
 python3 example_transcription.py
