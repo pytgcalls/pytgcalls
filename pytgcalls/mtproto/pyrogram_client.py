@@ -670,8 +670,7 @@ class PyrogramClient(BridgedClient):
                     join_muted=mute,
                 ),
             )
-        except Exception as e:
-            py_logger.error(f"Failed to toggle group call mute: {e}")
+        except Exception:
             raise UnMuteNeeded('Failed to unmute the userbot.')
 
     def is_connected(self) -> bool:
