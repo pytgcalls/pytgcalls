@@ -1,11 +1,8 @@
-from ...types.update import Update
-from .device import Device
-from .direction import Direction
+from ...types.update import PyObject
 
 
-class StreamFrame(Update):
-
-    class Info:
+class Frame(PyObject):
+    class Info(PyObject):
         def __init__(
             self,
             capture_time: int = 0,
@@ -20,16 +17,10 @@ class StreamFrame(Update):
 
     def __init__(
         self,
-        chat_id: int,
         ssrc: int,
-        direction: Direction,
-        device: Device,
         frame: bytes,
         info: Info,
     ):
-        super().__init__(chat_id)
         self.ssrc = ssrc
-        self.direction = direction
-        self.device = device
         self.frame = frame
         self.info = info

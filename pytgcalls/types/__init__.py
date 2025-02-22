@@ -13,10 +13,11 @@ from .stream import AudioQuality
 from .stream import Device
 from .stream import Direction
 from .stream import ExternalMedia
+from .stream import Frame
 from .stream import MediaStream
 from .stream import RecordStream
 from .stream import StreamEnded
-from .stream import StreamFrame
+from .stream import StreamFrames
 from .stream import VideoQuality
 from .update import Update
 
@@ -25,6 +26,7 @@ __all__ = (
     'Device',
     'Direction',
     'ExternalMedia',
+    'Frame',
     'Browsers',
     'Cache',
     'ChatUpdate',
@@ -38,7 +40,7 @@ __all__ = (
     'RecordStream',
     'MediaStream',
     'StreamEnded',
-    'StreamFrame',
+    'StreamFrames',
     'Update',
     'UpdatedGroupCallParticipant',
     'VideoQuality',

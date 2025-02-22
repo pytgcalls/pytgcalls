@@ -8,7 +8,7 @@ from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
 from ...types import Device
-from ...types import StreamFrame
+from ...types import Frame
 
 
 class SendFrame(Scaffold):
@@ -19,7 +19,7 @@ class SendFrame(Scaffold):
         chat_id: Union[int, str],
         device: Device,
         data: bytes,
-        frame_data: StreamFrame.Info = StreamFrame.Info(),
+        frame_data: Frame.Info = Frame.Info(),
     ):
         chat_id = await self.resolve_chat_id(chat_id)
         try:

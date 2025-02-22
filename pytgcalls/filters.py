@@ -11,7 +11,7 @@ from .types import Device
 from .types import Direction
 from .types import GroupCallParticipant
 from .types import StreamEnded
-from .types import StreamFrame
+from .types import StreamFrames
 from .types import Update
 from .types import UpdatedGroupCallParticipant
 
@@ -209,7 +209,7 @@ class stream_frame(Filter):
         self.devices = devices
 
     async def __call__(self, client: PyTgCalls, update: Update):
-        if isinstance(update, StreamFrame):
+        if isinstance(update, StreamFrames):
             return (
                 (
                     self.directions is None or

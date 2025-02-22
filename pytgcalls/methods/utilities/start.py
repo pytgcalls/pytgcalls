@@ -1,11 +1,12 @@
 import asyncio
 import logging
+from typing import List
 
 from ntgcalls import CallNetworkState
 from ntgcalls import ConnectionError
 from ntgcalls import ConnectionNotFound
 from ntgcalls import ConnectionState
-from ntgcalls import FrameData
+from ntgcalls import Frame as RawFrame
 from ntgcalls import MediaState
 from ntgcalls import StreamDevice
 from ntgcalls import StreamMode
@@ -22,10 +23,11 @@ from ...types import CallData
 from ...types import ChatUpdate
 from ...types import Device
 from ...types import Direction
+from ...types import Frame
 from ...types import GroupCallParticipant
 from ...types import RawCallUpdate
 from ...types import StreamEnded
-from ...types import StreamFrame
+from ...types import StreamFrames
 from ...types import Update
 from ...types import UpdatedGroupCallParticipant
 
@@ -229,25 +231,27 @@ class Start(Scaffold):
 
         async def stream_frame(
             chat_id: int,
-            source_id: int,
             mode: StreamMode,
             device: StreamDevice,
-            frame: bytes,
-            frame_info: FrameData,
+            frames: List[RawFrame],
         ):
             await self.propagate(
-                StreamFrame(
+                StreamFrames(
                     chat_id,
-                    source_id,
                     Direction.from_raw(mode),
                     Device.from_raw(device),
-                    frame,
-                    StreamFrame.Info(
-                        frame_info.absolute_capture_timestamp_ms,
-                        frame_info.width,
-                        frame_info.height,
-                        frame_info.rotation,
-                    ),
+                    [
+                        Frame(
+                            x.ssrc,
+                            x.data,
+                            Frame.Info(
+                                x.frame_data.absolute_capture_timestamp_ms,
+                                x.frame_data.width,
+                                x.frame_data.height,
+                                x.frame_data.rotation,
+                            ),
+                        ) for x in frames
+                    ],
                 ),
                 self,
             )
@@ -324,16 +328,14 @@ class Start(Scaffold):
                     self.loop,
                 ),
             )
-            self._binding.on_frame(
-                lambda chat_id, source_id, mode, device, frame, info:
+            self._binding.on_frames(
+                lambda chat_id, mode, device, frames:
                 asyncio.run_coroutine_threadsafe(
                     stream_frame(
                         chat_id,
-                        source_id,
                         mode,
                         device,
-                        frame,
-                        info,
+                        frames,
                     ),
                     self.loop,
                 ),
