@@ -58,7 +58,7 @@ body:
     required: true
   attributes:
     label: Environment
-    description: Provide details about your environment (e.g., Operating System, Py-TgCalls version, browser if applicable).
+    description: Provide details about your environment (e.g., Operating System, Py-TgCalls version).
     placeholder: e.g., Windows 10, Py-TgCalls v1.2.3, Chrome 90.
 - type: textarea
   id: additional-info
