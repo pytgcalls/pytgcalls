@@ -24,13 +24,13 @@ class RecordStream(Stream):
         camera: bool = False,
         screen: bool = False,
     ):
-        raw_audio_parameters = (
-            audio_parameters
-            if isinstance(audio_parameters, AudioParameters)
-            else AudioParameters(*audio_parameters.value)
-            if isinstance(audio_parameters, AudioQuality)
-            else ValueError('Invalid audio parameters')
-        )
+        if isinstance(audio_parameters, AudioQuality):
+            raw_audio_parameters = AudioParameters(*audio_parameters.value)
+        elif isinstance(audio_parameters, AudioParameters):
+            raw_audio_parameters = audio_parameters
+        else:
+            raise ValueError('Invalid audio parameters')
+
         super().__init__(
             microphone=self._get_audio_stream(audio, raw_audio_parameters),
             speaker=None,
