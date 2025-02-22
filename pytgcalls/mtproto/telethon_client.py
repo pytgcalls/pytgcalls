@@ -66,7 +66,7 @@ from ..types import RawCallUpdate
 from ..types import UpdatedGroupCallParticipant
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
-
+from ...exceptions import UnMuteNeeded
 
 class TelethonClient(BridgedClient):
     def __init__(
