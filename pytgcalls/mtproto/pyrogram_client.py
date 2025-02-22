@@ -17,7 +17,6 @@ from pyrogram.raw.functions.phone import AcceptCall
 from pyrogram.raw.functions.phone import ConfirmCall
 from pyrogram.raw.functions.phone import CreateGroupCall
 from pyrogram.raw.functions.phone import DiscardCall
-from pyrogram.raw.functions.phone import ToggleGroupCallSettings
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
 from pyrogram.raw.functions.phone import GetGroupCall
 from pyrogram.raw.functions.phone import GetGroupParticipants
@@ -27,6 +26,7 @@ from pyrogram.raw.functions.phone import LeaveGroupCall
 from pyrogram.raw.functions.phone import LeaveGroupCallPresentation
 from pyrogram.raw.functions.phone import RequestCall
 from pyrogram.raw.functions.phone import SendSignalingData
+from pyrogram.raw.functions.phone import ToggleGroupCallSettings
 from pyrogram.raw.types import Channel
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import Chat
@@ -667,11 +667,11 @@ class PyrogramClient(BridgedClient):
                 ToggleGroupCallSettings(
                     call=await self._app.resolve_peer(chat_id),
                     join_muted=mute,
-                )
+                ),
             )
         except Exception as e:
             py_logger.error(f"Failed to toggle group call mute: {e}")
-            raise UnMuteNeeded("Failed to unmute the userbot.")
+            raise UnMuteNeeded('Failed to unmute the userbot.')
 
     def is_connected(self) -> bool:
         return self._app.is_connected
