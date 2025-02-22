@@ -6,6 +6,7 @@ from typing import Union
 
 import pyrogram
 from ntgcalls import Protocol
+from ...exceptions import UnMuteNeeded
 from pyrogram import Client
 from pyrogram import ContinuePropagation
 from pyrogram.raw.base import InputPeer
