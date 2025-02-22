@@ -59,6 +59,7 @@ from telethon.tl.types import UpdatePhoneCallSignalingData
 from telethon.tl.types import Updates
 from telethon.tl.types.messages import DhConfig
 
+from ...exceptions import UnMuteNeeded
 from ..types import CallProtocol
 from ..types import ChatUpdate
 from ..types import GroupCallParticipant
@@ -66,7 +67,7 @@ from ..types import RawCallUpdate
 from ..types import UpdatedGroupCallParticipant
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
-from ...exceptions import UnMuteNeeded
+
 
 class TelethonClient(BridgedClient):
     def __init__(
