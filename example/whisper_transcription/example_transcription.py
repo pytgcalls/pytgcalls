@@ -8,7 +8,7 @@ from pytgcalls.types import AudioQuality
 from pytgcalls.types import Device
 from pytgcalls.types import Direction
 from pytgcalls.types import RecordStream
-from pytgcalls.types import StreamFrame
+from pytgcalls.types import StreamFrames
 
 AUDIO_QUALITY = AudioQuality.HIGH
 
@@ -38,8 +38,9 @@ call_py.record(
         Device.MICROPHONE,
     ),
 )
-async def audio_data(_: PyTgCalls, update: StreamFrame):
-    stt = model.transcribe(update.frame)
+async def audio_data(_: PyTgCalls, update: StreamFrames):
+    # Transcribe just one user
+    stt = model.transcribe(update.frames[0].frame)
     if stt:
         print(stt, flush=True)
 

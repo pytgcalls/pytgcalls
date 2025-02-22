@@ -7,6 +7,7 @@ from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls.types import Device
 from pytgcalls.types import RecordStream
+from pytgcalls.types import StreamFrames
 from pytgcalls.types.raw import AudioParameters
 
 app = Client(
@@ -34,7 +35,7 @@ async def play_handler(_: Client, message: Message):
 
 
 @call_py.on_update(fl.stream_frame())
-async def stream_frame_handler(_, update):
+async def stream_frame_handler(_, update: StreamFrames):
     # Receive all kind of stream frame
     print(update)
 
@@ -44,7 +45,7 @@ async def stream_frame_handler(_, update):
         devices=Device.MICROPHONE | Device.SPEAKER,
     ),
 )
-async def stream_audio_frame_handler(_, update):
+async def stream_audio_frame_handler(_, update: StreamFrames):
     # Receive only all kind of audio stream frame
     print(update)
 

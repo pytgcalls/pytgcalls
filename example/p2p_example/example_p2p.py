@@ -6,7 +6,6 @@ from pytgcalls import filters as fl
 from pytgcalls import PyTgCalls
 from pytgcalls.types import ChatUpdate
 from pytgcalls.types import MediaStream
-from pytgcalls.types import Update
 
 app = Client(
     'py-tgcalls',
@@ -37,7 +36,7 @@ async def stop_handler(_: Client, message: Message):
 
 
 @call_py.on_update(fl.chat_update(ChatUpdate.Status.INCOMING_CALL))
-async def incoming_handler(_: PyTgCalls, update: Update):
+async def incoming_handler(_: PyTgCalls, update: ChatUpdate):
     await call_py.mtproto_client.send_message(
         update.chat_id,
         'You are calling me!',

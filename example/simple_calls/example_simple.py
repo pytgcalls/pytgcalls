@@ -9,7 +9,9 @@ from pytgcalls.types import ChatUpdate
 from pytgcalls.types import GroupCallParticipant
 from pytgcalls.types import MediaStream
 from pytgcalls.types import RecordStream
+from pytgcalls.types import StreamEnded
 from pytgcalls.types import Update
+from pytgcalls.types import UpdatedGroupCallParticipant
 
 app = Client(
     'py-tgcalls',
@@ -93,19 +95,22 @@ async def get_play_status(client: Client, message: Message):
         ChatUpdate.Status.KICKED | ChatUpdate.Status.LEFT_GROUP,
     ),
 )
-async def kicked_handler(_: PyTgCalls, update: Update):
+async def kicked_handler(_: PyTgCalls, update: ChatUpdate):
     print(f'Kicked from {update.chat_id} or left')
 
 
 @call_py.on_update(fl.stream_end())
-async def stream_end_handler(_: PyTgCalls, update: Update):
+async def stream_end_handler(_: PyTgCalls, update: StreamEnded):
     print(f'Stream ended in {update.chat_id}', update)
 
 
 @call_py.on_update(
     fl.call_participant(GroupCallParticipant.Action.JOINED),
 )
-async def participant_handler(_: PyTgCalls, update: Update):
+async def participant_handler(
+    _: PyTgCalls,
+    update: UpdatedGroupCallParticipant,
+):
     print(f'Participant joined in {update.chat_id}', update)
 
 
