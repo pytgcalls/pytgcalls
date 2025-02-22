@@ -236,7 +236,7 @@ class Play(Scaffold):
                     if x.user_id == BridgedClient.chat_id(
                         self._cache_local_peer,
                     ) and x.muted_by_admin:
-                        await self.toggle_group_call_mute(chat_id, False)
+                        await self._app.toggle_group_call_mute(chat_id, False)
                         self._need_unmute.add(chat_id)
         except FileError as e:
             raise FileNotFoundError(e)
