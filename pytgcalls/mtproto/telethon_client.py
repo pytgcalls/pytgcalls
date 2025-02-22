@@ -4,8 +4,8 @@ from typing import Optional
 from typing import Union
 
 from ntgcalls import Protocol
+from telethon import functions
 from telethon import TelegramClient
-from telethon import functions 
 from telethon.errors import ChannelPrivateError
 from telethon.errors import ChatAdminRequiredError
 from telethon.events import Raw
