@@ -6,6 +6,7 @@ from typing import Union
 from ntgcalls import Protocol
 from telethon import TelegramClient
 from telethon.errors import ChannelPrivateError
+from telethon.errors import ChatAdminRequiredError
 from telethon.events import Raw
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetDhConfigRequest
@@ -23,7 +24,6 @@ from telethon.tl.functions.phone import LeaveGroupCallPresentationRequest
 from telethon.tl.functions.phone import LeaveGroupCallRequest
 from telethon.tl.functions.phone import RequestCallRequest
 from telethon.tl.functions.phone import SendSignalingDataRequest
-from telethon.errors import ChatAdminRequiredError
 from telethon.tl.types import ChatForbidden
 from telethon.tl.types import DataJSON
 from telethon.tl.types import GroupCall
@@ -634,6 +634,7 @@ class TelethonClient(BridgedClient):
     async def get_id(self) -> int:
         return (await self._app.get_me()).id
 
+
 async def toggle_group_call_mute(
     self,
     chat_id: Union[int, str],
@@ -647,30 +648,34 @@ async def toggle_group_call_mute(
         mute: If True, mute the userbot. If False, unmute the userbot.
     """
     try:
-        full_chat = await self._app(functions.channels.GetFullChannelRequest(
-            channel=await self._app.get_input_entity(chat_id)
-        ))
-        
+        full_chat = await self._app(
+            functions.channels.GetFullChannelRequest(
+                channel=await self._app.get_input_entity(chat_id),
+            ),
+        )
+
         if not full_chat.full_chat.call:
-            raise UnMuteNeeded("No active group call found")
-            
+            raise UnMuteNeeded('No active group call found')
+
         call = InputGroupCall(
             id=full_chat.full_chat.call.id,
-            access_hash=full_chat.full_chat.call.access_hash
+            access_hash=full_chat.full_chat.call.access_hash,
         )
         me = await self._app.get_me()
         participant = self._app._get_input_user(me)
-        await self._app(EditGroupCallParticipantRequest(
-            call=call,
-            participant=participant,
-            muted=mute
-        ))
+        await self._app(
+            EditGroupCallParticipantRequest(
+                call=call,
+                participant=participant,
+                muted=mute,
+            ),
+        )
 
     except ChatAdminRequiredError:
-        raise UnMuteNeeded("Bot needs admin rights to unmute")
+        raise UnMuteNeeded('Bot needs admin rights to unmute')
     except Exception as e:
         py_logger.error(f"Failed to toggle group call mute: {e}")
-        raise UnMuteNeeded("Failed to unmute the userbot")
+        raise UnMuteNeeded('Failed to unmute the userbot')
 
     def is_connected(self) -> bool:
         return self._app.is_connected()
