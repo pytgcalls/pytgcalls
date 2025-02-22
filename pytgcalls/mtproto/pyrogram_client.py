@@ -6,7 +6,6 @@ from typing import Union
 
 import pyrogram
 from ntgcalls import Protocol
-from ...exceptions import UnMuteNeeded
 from pyrogram import Client
 from pyrogram import ContinuePropagation
 from pyrogram.raw.base import InputPeer
@@ -62,6 +61,7 @@ from pyrogram.raw.types import UpdatePhoneCallSignalingData
 from pyrogram.raw.types import Updates
 from pyrogram.raw.types.messages import DhConfig
 
+from ...exceptions import UnMuteNeeded
 from ..types import CallProtocol
 from ..types import ChatUpdate
 from ..types import GroupCallParticipant
