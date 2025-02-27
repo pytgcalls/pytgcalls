@@ -118,7 +118,7 @@ class Start(Scaffold):
                             )
                         except ConnectionNotFound:
                             pass
-                        self._videos_id.pop(user_id)
+                        self._videos_id.pop(user_id, None)
 
                 if was_screen != participant.screen_sharing:
                     if participant.presentation_info:
@@ -141,7 +141,7 @@ class Start(Scaffold):
                             )
                         except ConnectionNotFound:
                             pass
-                        self._presentations_id.pop(user_id)
+                        self._presentations_id.pop(user_id, None)
 
                 if chat_peer:
                     is_self = BridgedClient.chat_id(
