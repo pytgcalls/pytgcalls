@@ -174,6 +174,7 @@ class BridgedClient(HandlersHolder):
             if participant.volume is not None else 100,
             bool(participant.just_joined),
             bool(participant.left),
+            participant.source,
             BridgedClient.parse_source(participant.video),
             BridgedClient.parse_source(participant.presentation),
         )

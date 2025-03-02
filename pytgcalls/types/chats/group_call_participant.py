@@ -35,6 +35,7 @@ class GroupCallParticipant(PyObject):
         volume: int,
         joined: bool,
         left: bool,
+        source: int,
         video_info: Optional[SourceInfo],
         presentation_info: Optional[SourceInfo],
     ):
@@ -43,6 +44,7 @@ class GroupCallParticipant(PyObject):
         self.muted_by_admin: bool = muted_by_admin
         self.video: bool = video
         self.screen_sharing: bool = screen_sharing
+        self.source: int = source
         self.video_camera: bool = video_camera
         self.raised_hand: bool = raised_hand
         self.volume: int = volume
