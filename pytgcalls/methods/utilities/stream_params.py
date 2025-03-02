@@ -26,20 +26,7 @@ class StreamParams:
                     'MediaStream or a raw Stream',
                 )
 
-        return MediaDescription(
-            microphone=StreamParams._parse_media_description(
-                None if stream is None else stream.microphone,
-            ),
-            speaker=StreamParams._parse_media_description(
-                None if stream is None else stream.speaker,
-            ),
-            camera=StreamParams._parse_media_description(
-                None if stream is None else stream.camera,
-            ),
-            screen=StreamParams._parse_media_description(
-                None if stream is None else stream.screen,
-            ),
-        )
+        return StreamParams._parse_stream_description(stream)
 
     @staticmethod
     def _parse_media_description(
@@ -64,15 +51,9 @@ class StreamParams:
         return None
 
     @staticmethod
-    async def get_record_params(
-        stream: Optional[Stream],
+    def _parse_stream_description(
+        stream: Stream,
     ) -> MediaDescription:
-        if stream is not None:
-            if isinstance(stream, MediaStream):
-                raise ValueError(
-                    'Stream should be an instance of '
-                    'RecordStream or a raw Stream',
-                )
         return MediaDescription(
             microphone=StreamParams._parse_media_description(
                 None if stream is None else stream.microphone,
@@ -87,3 +68,15 @@ class StreamParams:
                 None if stream is None else stream.screen,
             ),
         )
+
+    @staticmethod
+    async def get_record_params(
+        stream: Optional[Stream],
+    ) -> MediaDescription:
+        if stream is not None:
+            if isinstance(stream, MediaStream):
+                raise ValueError(
+                    'Stream should be an instance of '
+                    'RecordStream or a raw Stream',
+                )
+        return StreamParams._parse_stream_description(stream)
