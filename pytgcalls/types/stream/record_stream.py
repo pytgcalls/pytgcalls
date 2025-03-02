@@ -86,9 +86,9 @@ class RecordStream(Stream):
                 media_source=MediaSource.EXTERNAL,
                 path='',
                 parameters=VideoParameters(
-                    width=-1,
-                    height=-1,
-                    frame_rate=-1,
+                    width=0,
+                    height=0,
+                    frame_rate=0,
                 ),
             )
             if enable
