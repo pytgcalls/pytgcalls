@@ -52,7 +52,7 @@ class StreamParams:
 
     @staticmethod
     def _parse_stream_description(
-        stream: Stream,
+        stream: Optional[Stream],
     ) -> MediaDescription:
         return MediaDescription(
             microphone=StreamParams._parse_media_description(
