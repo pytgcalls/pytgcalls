@@ -199,6 +199,7 @@ class Play(Scaffold):
                             )
                             await self._wait_connect[chat_id]
                             self._presentations.add(chat_id)
+                            break
                         except TelegramServerError:
                             if retries == 3:
                                 raise
