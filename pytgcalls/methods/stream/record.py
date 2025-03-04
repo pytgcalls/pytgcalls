@@ -37,5 +37,11 @@ class Record(Scaffold):
                 StreamMode.PLAYBACK,
                 media_description,
             )
+            if isinstance(chat_id, int) and chat_id < 0:
+                await self._join_presentation(
+                    chat_id,
+                    media_description.screen is not None,
+                )
+                await self._update_sources(chat_id)
         except FileError as e:
             raise FileNotFoundError(e)
