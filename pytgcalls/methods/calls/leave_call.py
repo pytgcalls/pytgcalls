@@ -46,4 +46,5 @@ class LeaveCall(Scaffold):
             return
         if chat_id < 0:  # type: ignore
             self._need_unmute.discard(chat_id)
+            self._presentations.discard(chat_id)
             self._call_sources.pop(chat_id, None)
