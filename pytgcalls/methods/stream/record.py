@@ -32,7 +32,7 @@ class Record(Scaffold):
         if chat_id not in await self._binding.calls():
             await self.play(chat_id, config=config)
         try:
-            return await self._binding.set_stream_sources(
+            await self._binding.set_stream_sources(
                 chat_id,
                 StreamMode.PLAYBACK,
                 media_description,
