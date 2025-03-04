@@ -219,7 +219,7 @@ class Play(Scaffold):
                         self._videos_id[
                             chat_id
                         ] = x.video_info.endpoint
-                        self._binding.add_incoming_video(
+                        await self._binding.add_incoming_video(
                             chat_id,
                             x.video_info.endpoint,
                             x.video_info.sources,
@@ -228,7 +228,7 @@ class Play(Scaffold):
                         self._presentations_id[
                             chat_id
                         ] = x.presentation_info.endpoint
-                        self._binding.add_incoming_video(
+                        await self._binding.add_incoming_video(
                             chat_id,
                             x.presentation_info.endpoint,
                             x.presentation_info.sources,
