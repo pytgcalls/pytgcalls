@@ -108,7 +108,7 @@ class Start(Scaffold):
                                 participant.video_info.endpoint,
                                 participant.video_info.sources,
                             )
-                        except ConnectionNotFound:
+                        except (ConnectionNotFound, ConnectionError):
                             pass
                     elif user_id in self._videos_id:
                         try:
@@ -116,7 +116,7 @@ class Start(Scaffold):
                                 chat_id,
                                 self._videos_id[user_id],
                             )
-                        except ConnectionNotFound:
+                        except (ConnectionNotFound, ConnectionError):
                             pass
                         self._videos_id.pop(user_id, None)
 
@@ -131,7 +131,7 @@ class Start(Scaffold):
                                 participant.presentation_info.endpoint,
                                 participant.presentation_info.sources,
                             )
-                        except ConnectionNotFound:
+                        except (ConnectionNotFound, ConnectionError):
                             pass
                     elif user_id in self._presentations_id:
                         try:
@@ -139,7 +139,7 @@ class Start(Scaffold):
                                 chat_id,
                                 self._presentations_id[user_id],
                             )
-                        except ConnectionNotFound:
+                        except (ConnectionNotFound, ConnectionError):
                             pass
                         self._presentations_id.pop(user_id, None)
 
