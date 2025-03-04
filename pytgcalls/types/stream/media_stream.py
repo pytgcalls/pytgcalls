@@ -91,7 +91,6 @@ class MediaStream(Stream):
             if media_path & ExternalMedia.VIDEO:
                 self._is_video_external = True
         elif isinstance(media_path, (InputDevice, ScreenDevice)):
-            print('MediaStream', media_path.is_video)
             if media_path.is_video:
                 self._media_path = media_path.metadata
                 self._is_media_device = True
