@@ -26,6 +26,7 @@ async def custom_api_request(request: dict):
         'response': 'BYE',
     }
 
+
 @app.on_message(filters.regex('!test'))
 def test_handler(client: Client, message: Message):
     response = requests.post(
@@ -34,6 +35,7 @@ def test_handler(client: Client, message: Message):
     ).json()
     print('Response from CustomApi:', response)
     message.reply_text(f"CustomApi Response: {response}")
+
 
 app.start()
 ca.start()
