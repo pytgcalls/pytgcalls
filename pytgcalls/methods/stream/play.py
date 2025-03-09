@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 from typing import Optional
 from typing import Union
 
@@ -12,6 +13,7 @@ from ntgcalls import TransportParseException
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import TimedOutAnswer
 from ...exceptions import UnMuteNeeded
+from ...media_devices.input_device import InputDevice
 from ...mtproto_required import mtproto_required
 from ...mutex import mutex
 from ...scaffold import Scaffold
@@ -33,7 +35,7 @@ class Play(Scaffold):
     async def play(
         self,
         chat_id: Union[int, str],
-        stream: Optional[Stream] = None,
+        stream: Optional[Union[str, Path, InputDevice, Stream]] = None,
         config: Optional[Union[CallConfig, GroupCallConfig]] = None,
     ):
         chat_id = await self.resolve_chat_id(chat_id)

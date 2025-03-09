@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 from typing import Union
 
@@ -5,6 +6,7 @@ from ntgcalls import AudioDescription
 from ntgcalls import MediaDescription
 from ntgcalls import VideoDescription
 
+from ...media_devices.input_device import InputDevice
 from ...types import RecordStream
 from ...types.raw import AudioStream
 from ...types.raw import Stream
@@ -15,9 +17,11 @@ from ...types.stream.media_stream import MediaStream
 class StreamParams:
     @staticmethod
     async def get_stream_params(
-        stream: Optional[Stream],
+        stream: Optional[Union[str, Path, InputDevice, Stream]],
     ) -> MediaDescription:
         if stream is not None:
+            if isinstance(stream, (str, Path, InputDevice)):
+                stream = MediaStream(stream)
             if isinstance(stream, MediaStream):
                 await stream.check_stream()
             elif isinstance(stream, RecordStream):
