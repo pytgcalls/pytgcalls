@@ -5,7 +5,6 @@ from pyrogram.types import Message
 from pytgcalls import filters as fl
 from pytgcalls import PyTgCalls
 from pytgcalls.types import ChatUpdate
-from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -22,9 +21,7 @@ test_stream = 'http://docs.evostream.com/sample_content/assets/' \
 async def play_handler(_: Client, message: Message):
     await call_py.play(
         message.chat.id,
-        MediaStream(
-            test_stream,
-        ),
+        test_stream,
     )
 
 
@@ -43,8 +40,6 @@ async def incoming_handler(_: PyTgCalls, update: ChatUpdate):
     )
     await call_py.play(
         update.chat_id,
-        MediaStream(
-            test_stream,
-        ),
+        test_stream,
     )
 call_py.run()

@@ -2,7 +2,6 @@ from pyrogram import Client
 
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -12,11 +11,8 @@ app = Client(
 
 call_py = PyTgCalls(app)
 call_py.start()
-video_file = 'test.mkv'
 call_py.play(
     -1001234567890,
-    MediaStream(
-        video_file,
-    ),
+    'test.mkv',
 )
 idle()

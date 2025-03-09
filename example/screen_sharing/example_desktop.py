@@ -3,7 +3,6 @@ from pyrogram import Client
 from pytgcalls import idle
 from pytgcalls import MediaDevices
 from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -15,8 +14,6 @@ call_py = PyTgCalls(app)
 call_py.start()
 call_py.play(
     -1001234567890,
-    MediaStream(
-        MediaDevices.screen_devices()[0],
-    ),
+    MediaDevices.screen_devices()[0],
 )
 idle()

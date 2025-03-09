@@ -4,7 +4,6 @@ from pyrogram.types import Message
 
 from pytgcalls import compose
 from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream
 
 app = Client(
     'py-tgcalls',
@@ -29,9 +28,7 @@ call_py2 = PyTgCalls(app2)
 async def play_handler(_: Client, message: Message):
     await call_py.play(
         message.chat.id,
-        MediaStream(
-            test_stream,
-        ),
+        test_stream,
     )
 
 
@@ -39,9 +36,7 @@ async def play_handler(_: Client, message: Message):
 async def play_handler2(_: Client, message: Message):
     await call_py2.play(
         message.chat.id,
-        MediaStream(
-            test_stream,
-        ),
+        test_stream,
     )
 
 
