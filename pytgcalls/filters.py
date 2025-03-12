@@ -137,6 +137,7 @@ async def _me_filter(_, client: PyTgCalls, u: Update):
 me = create(_me_filter)
 
 
+# noinspection PyPep8Naming
 class stream_end(Filter):
     def __init__(
         self,
@@ -187,6 +188,7 @@ class chat_update(Filter):
         return False
 
 
+# noinspection PyPep8Naming
 class call_participant(Filter):
     def __init__(self, flags: Optional[GroupCallParticipant.Action] = None):
         self.flags = flags
@@ -199,6 +201,7 @@ class call_participant(Filter):
         return False
 
 
+# noinspection PyPep8Naming
 class stream_frame(Filter):
     def __init__(
         self,
