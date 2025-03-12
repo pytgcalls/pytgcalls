@@ -2,12 +2,12 @@ import asyncio
 import logging
 from typing import List
 
-from ntgcalls import CallNetworkState
 from ntgcalls import ConnectionError
 from ntgcalls import ConnectionNotFound
 from ntgcalls import ConnectionState
 from ntgcalls import Frame as RawFrame
 from ntgcalls import MediaState
+from ntgcalls import NetworkInfo
 from ntgcalls import StreamDevice
 from ntgcalls import StreamMode
 from ntgcalls import StreamType
@@ -270,7 +270,7 @@ class Start(Scaffold):
 
         async def connection_changed(
             chat_id: int,
-            net_state: CallNetworkState,
+            net_state: NetworkInfo,
         ):
             state = net_state.connection_state
             if state == ConnectionState.CONNECTING:
