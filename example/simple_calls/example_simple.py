@@ -50,14 +50,14 @@ async def ping_handler(_: Client, _m: Message):
 
 @app.on_message(filters.regex('!pause'))
 async def pause_handler(_: Client, message: Message):
-    await call_py.pause_stream(
+    await call_py.pause(
         message.chat.id,
     )
 
 
 @app.on_message(filters.regex('!resume'))
 async def resume_handler(_: Client, message: Message):
-    await call_py.resume_stream(
+    await call_py.resume(
         message.chat.id,
     )
 
