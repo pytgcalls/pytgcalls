@@ -1,5 +1,6 @@
 from typing import Union
 
+from ntgcalls import ConnectionError
 from ntgcalls import TelegramServerError
 
 from ...scaffold import Scaffold
@@ -40,7 +41,10 @@ class JoinPresentation(Scaffold):
                     self._log_retries(retries)
                 finally:
                     self._wait_connect.pop(chat_id, None)
-        elif chat_id in self._call_sources:
-            await self._binding.stop_presentation(chat_id)
-            await self._app.leave_presentation(chat_id)
+        elif chat_id in self._presentations:
+            try:
+                await self._binding.stop_presentation(chat_id)
+                await self._app.leave_presentation(chat_id)
+            except ConnectionError:
+                pass
             self._presentations.discard(chat_id)
