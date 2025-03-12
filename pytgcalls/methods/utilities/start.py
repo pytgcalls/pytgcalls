@@ -162,7 +162,7 @@ class Start(Scaffold):
                     if is_self:
                         if action == GroupCallParticipant.Action.LEFT:
                             if await clear_call(chat_id):
-                                await self.propagate(
+                                await self._propagate(
                                     ChatUpdate(
                                         chat_id,
                                         ChatUpdate.Status.KICKED,
@@ -190,7 +190,7 @@ class Start(Scaffold):
                         else:
                             self._need_unmute.discard(chat_id)
             if not isinstance(update, RawCallUpdate):
-                await self.propagate(
+                await self._propagate(
                     update,
                     self,
                 )
@@ -223,7 +223,7 @@ class Start(Scaffold):
             stream_type: StreamType,
             device: StreamDevice,
         ):
-            await self.propagate(
+            await self._propagate(
                 StreamEnded(
                     chat_id,
                     StreamEnded.Type.from_raw(stream_type),
@@ -247,7 +247,7 @@ class Start(Scaffold):
             device: StreamDevice,
             frames: List[RawFrame],
         ):
-            await self.propagate(
+            await self._propagate(
                 StreamFrames(
                     chat_id,
                     Direction.from_raw(mode),

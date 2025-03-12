@@ -89,7 +89,7 @@ class HydrogramClient(BridgedClient):
             ):
                 user_id = self._cache.get_user_id(update.phone_call_id)
                 if user_id is not None:
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             user_id,
                             RawCallUpdate.Type.SIGNALING_DATA,
@@ -113,7 +113,7 @@ class HydrogramClient(BridgedClient):
                         ),
                     )
                 if isinstance(update.phone_call, PhoneCallAccepted):
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
                             RawCallUpdate.Type.ACCEPTED,
@@ -129,14 +129,14 @@ class HydrogramClient(BridgedClient):
                         self._cache.drop_phone_call(
                             user_id,
                         )
-                        await self.propagate(
+                        await self._propagate(
                             ChatUpdate(
                                 user_id,
                                 ChatUpdate.Status.DISCARDED_CALL,
                             ),
                         )
                 if isinstance(update.phone_call, PhoneCallRequested):
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
                             RawCallUpdate.Type.REQUESTED,
@@ -147,7 +147,7 @@ class HydrogramClient(BridgedClient):
                         ),
                     )
                 if isinstance(update.phone_call, PhoneCall):
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
                             RawCallUpdate.Type.CONFIRMED,
@@ -174,7 +174,7 @@ class HydrogramClient(BridgedClient):
                         self.parse_participant(participant),
                     )
                     if result is not None:
-                        await self.propagate(
+                        await self._propagate(
                             UpdatedGroupCallParticipant(
                                 self._cache.get_chat_id(update.call.id),
                                 result,
@@ -202,7 +202,7 @@ class HydrogramClient(BridgedClient):
                     GroupCallDiscarded,
                 ):
                     self._cache.drop_cache(chat_id)
-                    await self.propagate(
+                    await self._propagate(
                         ChatUpdate(
                             chat_id,
                             ChatUpdate.Status.CLOSED_VOICE_CHAT,
@@ -219,7 +219,7 @@ class HydrogramClient(BridgedClient):
                         ChannelForbidden,
                     ):
                         self._cache.drop_cache(chat_id)
-                        await self.propagate(
+                        await self._propagate(
                             ChatUpdate(
                                 chat_id,
                                 ChatUpdate.Status.KICKED,
@@ -242,7 +242,7 @@ class HydrogramClient(BridgedClient):
                             update.message.peer_id,
                             PeerChat,
                         ):
-                            await self.propagate(
+                            await self._propagate(
                                 ChatUpdate(
                                     chat_id,
                                     ChatUpdate.Status.INVITED_VOICE_CHAT,
@@ -262,7 +262,7 @@ class HydrogramClient(BridgedClient):
                                 ChatForbidden,
                             ):
                                 self._cache.drop_cache(chat_id)
-                                await self.propagate(
+                                await self._propagate(
                                     ChatUpdate(
                                         chat_id,
                                         ChatUpdate.Status.KICKED,
@@ -290,7 +290,7 @@ class HydrogramClient(BridgedClient):
                                     self._cache.drop_cache(
                                         chat_id,
                                     )
-                                    await self.propagate(
+                                    await self._propagate(
                                         ChatUpdate(
                                             chat_id,
                                             ChatUpdate.Status.LEFT_GROUP,

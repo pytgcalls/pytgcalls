@@ -14,7 +14,7 @@ class HandlersHolder:
     def __init__(self):
         self._callbacks = []
 
-    async def propagate(
+    async def _propagate(
         self,
         update,
         client=None,
