@@ -186,3 +186,10 @@ class MTProtoClientNotConnected(Exception):
         super().__init__(
             'MTProto client not connected',
         )
+
+
+class UnsupportedMethod(Exception):
+    def __init__(self):
+        super().__init__(
+            'Unsupported method for this kind of call',
+        )
