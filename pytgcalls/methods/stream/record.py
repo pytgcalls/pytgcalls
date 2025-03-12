@@ -1,10 +1,12 @@
 import logging
+from pathlib import Path
 from typing import Optional
 from typing import Union
 
 from ntgcalls import FileError
 from ntgcalls import StreamMode
 
+from ...media_devices import SpeakerDevice
 from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
@@ -22,7 +24,7 @@ class Record(Scaffold):
     async def record(
         self,
         chat_id: Union[int, str],
-        stream: Optional[Stream] = None,
+        stream: Optional[Union[str, Path, Stream, SpeakerDevice]] = None,
         config: Optional[Union[CallConfig, GroupCallConfig]] = None,
     ):
         chat_id = await self.resolve_chat_id(chat_id)

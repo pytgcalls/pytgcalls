@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Union
 
 from ntgcalls import MediaSource
@@ -16,7 +17,7 @@ class RecordStream(Stream):
     @statictypes
     def __init__(
         self,
-        audio: Union[bool, str, SpeakerDevice] = False,
+        audio: Union[bool, str, Path, SpeakerDevice] = False,
         audio_parameters: Union[
             AudioParameters,
             AudioQuality,
@@ -46,6 +47,8 @@ class RecordStream(Stream):
                 path='',
                 parameters=raw_audio_parameters,
             )
+        if isinstance(audio, Path):
+            audio = str(audio)
         if isinstance(audio, str):
             is_lossless = raw_audio_parameters.bitrate > 48000
             commands = [
