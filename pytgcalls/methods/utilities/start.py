@@ -272,7 +272,7 @@ class Start(Scaffold):
             chat_id: int,
             net_state: NetworkInfo,
         ):
-            state = net_state.connection_state
+            state = net_state.state
             if state == ConnectionState.CONNECTING:
                 return
             if chat_id in self._wait_connect:
