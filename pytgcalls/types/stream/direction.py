@@ -16,3 +16,10 @@ class Direction(Flag):
         if direction == StreamMode.PLAYBACK:
             return Direction.INCOMING
         return None
+
+    def to_raw(self):
+        if self is Direction.OUTGOING:
+            return StreamMode.CAPTURE
+        if self is Direction.INCOMING:
+            return StreamMode.PLAYBACK
+        return None
