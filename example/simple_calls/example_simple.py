@@ -7,7 +7,6 @@ from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls.types import ChatUpdate
 from pytgcalls.types import GroupCallParticipant
-from pytgcalls.types import RecordStream
 from pytgcalls.types import StreamEnded
 from pytgcalls.types import Update
 from pytgcalls.types import UpdatedGroupCallParticipant
@@ -32,9 +31,7 @@ async def play_handler(_: Client, message: Message):
 async def record_handler(_: Client, message: Message):
     await call_py.record(
         message.chat.id,
-        RecordStream(
-            'record.mp3',
-        ),
+        'record.mp3',
     )
 
 
