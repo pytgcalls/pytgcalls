@@ -13,16 +13,15 @@ class PyObject:
             return repr(obj)
         if isinstance(obj, Enum):
             return repr(obj)
-        if hasattr(obj, '__dict__'):
-            return {
-                '_': obj.__class__.__name__,
-                **{
-                    attr: vars(obj)[attr]
-                    for attr in vars(obj)
-                    if not attr.startswith('_')
-                },
-            }
-        return {}
+        return {
+            '_': obj.__class__.__name__,
+            **{
+                attr: getattr(obj, attr)
+                for attr in dir(obj)
+                if not attr.startswith('_') and
+                not callable(getattr(obj, attr)) and not attr == 'default'
+            },
+        }
 
     def __str__(self) -> str:
         return dumps(
