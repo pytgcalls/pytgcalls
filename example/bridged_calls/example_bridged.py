@@ -13,9 +13,9 @@ from pytgcalls.types import StreamFrames
 from pytgcalls.types.raw import AudioParameters
 
 app = Client(
-    'tgcalls',
-    api_id=10029733,
-    api_hash='d0d81009d46e774f78c0e0e622f5fa21',
+    'py-tgcalls',
+    api_id=12345,
+    api_hash='0123456789abcdef0123456789abcdef',
 )
 call_py = PyTgCalls(app)
 call_py.start()
