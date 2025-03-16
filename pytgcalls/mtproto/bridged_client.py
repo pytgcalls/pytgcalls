@@ -6,6 +6,7 @@ from typing import Optional
 
 from ntgcalls import Protocol
 from ntgcalls import RTCServer
+from ntgcalls import SsrcGroup
 
 from ..handlers import HandlersHolder
 from ..types import GroupCallParticipant
@@ -26,6 +27,19 @@ class BridgedClient(HandlersHolder):
         invite_hash: str,
         have_video: bool,
         join_as: Any,
+    ):
+        pass
+
+    async def join_presentation(
+        self,
+        chat_id: int,
+        json_join: str,
+    ):
+        pass
+
+    async def leave_presentation(
+        self,
+        chat_id: int,
     ):
         pass
 
@@ -64,6 +78,7 @@ class BridgedClient(HandlersHolder):
     async def discard_call(
         self,
         chat_id: int,
+        is_missed: bool,
     ):
         pass
 
@@ -97,8 +112,9 @@ class BridgedClient(HandlersHolder):
         self,
         chat_id: int,
         muted_status: Optional[bool],
-        paused_status: Optional[bool],
-        stopped_status: Optional[bool],
+        video_paused: Optional[bool],
+        video_stopped: Optional[bool],
+        presentation_paused: Optional[bool],
         participant: Any,
     ):
         pass
@@ -129,6 +145,21 @@ class BridgedClient(HandlersHolder):
         return str(obj.__class__.__module__).split('.')[0]
 
     @staticmethod
+    def parse_source(source) -> Optional[GroupCallParticipant.SourceInfo]:
+        if not source:
+            return None
+        return GroupCallParticipant.SourceInfo(
+            source.endpoint,
+            [
+                SsrcGroup(
+                    source_group.semantics,
+                    [(ssrc & 0xFFFFFFFF) for ssrc in source_group.sources],
+                )
+                for source_group in source.source_groups
+            ],
+        )
+
+    @staticmethod
     def parse_participant(participant):
         return GroupCallParticipant(
             BridgedClient.chat_id(participant.peer),
@@ -143,6 +174,9 @@ class BridgedClient(HandlersHolder):
             if participant.volume is not None else 100,
             bool(participant.just_joined),
             bool(participant.left),
+            participant.source,
+            BridgedClient.parse_source(participant.video),
+            BridgedClient.parse_source(participant.presentation),
         )
 
     @staticmethod

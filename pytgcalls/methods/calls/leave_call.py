@@ -40,9 +40,11 @@ class LeaveCall(Scaffold):
                 chat_id,
             )
         else:
-            await self._app.discard_call(chat_id)
+            await self._app.discard_call(chat_id, False)
         if is_p2p_waiting:
             self._p2p_configs.pop(chat_id)
             return
         if chat_id < 0:  # type: ignore
             self._need_unmute.discard(chat_id)
+            self._presentations.discard(chat_id)
+            self._call_sources.pop(chat_id, None)

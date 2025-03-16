@@ -22,7 +22,9 @@ class Scaffold(HandlersHolder):
         self.loop = None
         self._need_unmute = set()
         self._p2p_configs = dict()
+        self._call_sources = dict()
         self._wait_connect = dict()
+        self._presentations = set()
 
     def _handle_mtproto(self):
         pass
@@ -34,6 +36,19 @@ class Scaffold(HandlersHolder):
         pass
 
     async def start(self):
+        pass
+
+    async def play(self, chat_id: Union[int, str], stream=None, config=None):
+        pass
+
+    async def _update_sources(self, chat_id: Union[int, str]):
+        pass
+
+    async def _join_presentation(self, chat_id: Union[int, str], join: bool):
+        pass
+
+    @staticmethod
+    def _log_retries(r: int):
         pass
 
     def on_update(self, filters=None):

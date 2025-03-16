@@ -74,7 +74,7 @@ async def check_stream(
         codec_name = stream.get('codec_name', '')
         image_codecs = ['png', 'jpeg', 'jpg', 'mjpeg']
         if codec_type == 'video':
-            is_image = codec_name in image_codecs
+            is_image &= codec_name in image_codecs
             have_video = True
             original_width = int(stream.get('width', 0))
             original_height = int(stream.get('height', 0))
@@ -270,7 +270,7 @@ def _extract_stream_params(command: List[str]):
 def _build_ffmpeg_options(
         stream_parameters: Union[AudioParameters, VideoParameters],
 ) -> List[str]:
-    log_level = logging.getLogger().level
+    log_level = logging.getLogger('ffmpeg').level
     ffmpeg_level = 'info' if log_level == logging.DEBUG else 'quiet'
 
     options = ['-v', ffmpeg_level, '-f']

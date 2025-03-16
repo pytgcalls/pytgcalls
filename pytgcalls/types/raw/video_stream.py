@@ -1,17 +1,18 @@
-from ntgcalls import InputMode
+from ntgcalls import MediaSource
 
 from ...statictypes import statictypes
+from ..py_object import PyObject
 from .video_parameters import VideoParameters
 
 
-class VideoStream:
+class VideoStream(PyObject):
     @statictypes
     def __init__(
         self,
-        input_mode: InputMode,
+        media_source: MediaSource,
         path: str,
         parameters: VideoParameters = VideoParameters(),
     ):
-        self.input_mode: InputMode = input_mode
+        self.media_source: MediaSource = media_source
         self.path: str = path
         self.parameters: VideoParameters = parameters

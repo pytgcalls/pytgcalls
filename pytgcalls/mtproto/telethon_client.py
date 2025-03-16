@@ -17,7 +17,9 @@ from telethon.tl.functions.phone import DiscardCallRequest
 from telethon.tl.functions.phone import EditGroupCallParticipantRequest
 from telethon.tl.functions.phone import GetGroupCallRequest
 from telethon.tl.functions.phone import GetGroupParticipantsRequest
+from telethon.tl.functions.phone import JoinGroupCallPresentationRequest
 from telethon.tl.functions.phone import JoinGroupCallRequest
+from telethon.tl.functions.phone import LeaveGroupCallPresentationRequest
 from telethon.tl.functions.phone import LeaveGroupCallRequest
 from telethon.tl.functions.phone import RequestCallRequest
 from telethon.tl.functions.phone import SendSignalingDataRequest
@@ -32,11 +34,13 @@ from telethon.tl.types import InputPhoneCall
 from telethon.tl.types import MessageActionChatDeleteUser
 from telethon.tl.types import MessageActionInviteToGroupCall
 from telethon.tl.types import MessageService
+from telethon.tl.types import PeerChannel
 from telethon.tl.types import PeerChat
 from telethon.tl.types import PhoneCall
 from telethon.tl.types import PhoneCallAccepted
 from telethon.tl.types import PhoneCallDiscarded
 from telethon.tl.types import PhoneCallDiscardReasonHangup
+from telethon.tl.types import PhoneCallDiscardReasonMissed
 from telethon.tl.types import PhoneCallProtocol
 from telethon.tl.types import PhoneCallRequested
 from telethon.tl.types import PhoneCallWaiting
@@ -84,7 +88,7 @@ class TelethonClient(BridgedClient):
             ):
                 user_id = self._cache.get_user_id(update.phone_call_id)
                 if user_id is not None:
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             user_id,
                             RawCallUpdate.Type.SIGNALING_DATA,
@@ -108,7 +112,7 @@ class TelethonClient(BridgedClient):
                         ),
                     )
                 if isinstance(update.phone_call, PhoneCallAccepted):
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
                             RawCallUpdate.Type.ACCEPTED,
@@ -124,14 +128,14 @@ class TelethonClient(BridgedClient):
                         self._cache.drop_phone_call(
                             user_id,
                         )
-                        await self.propagate(
+                        await self._propagate(
                             ChatUpdate(
                                 user_id,
                                 ChatUpdate.Status.DISCARDED_CALL,
                             ),
                         )
                 if isinstance(update.phone_call, PhoneCallRequested):
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
                             RawCallUpdate.Type.REQUESTED,
@@ -142,7 +146,7 @@ class TelethonClient(BridgedClient):
                         ),
                     )
                 if isinstance(update.phone_call, PhoneCall):
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
                             RawCallUpdate.Type.CONFIRMED,
@@ -164,12 +168,12 @@ class TelethonClient(BridgedClient):
             ):
                 participants = update.participants
                 for participant in participants:
-                    result = self._cache.set_participants_cache(
+                    result = self._cache.set_participants_cache_call(
                         update.call.id,
                         self.parse_participant(participant),
                     )
                     if result is not None:
-                        await self.propagate(
+                        await self._propagate(
                             UpdatedGroupCallParticipant(
                                 self._cache.get_chat_id(update.call.id),
                                 result,
@@ -180,7 +184,9 @@ class TelethonClient(BridgedClient):
                 UpdateGroupCall,
             ):
                 chat_id = self.chat_id(
-                    await self._app.get_entity(update.chat_id),
+                    await self._get_entity_group(
+                        update.chat_id,
+                    ),
                 )
                 if isinstance(
                     update.call,
@@ -201,7 +207,7 @@ class TelethonClient(BridgedClient):
                     self._cache.drop_cache(
                         chat_id,
                     )
-                    await self.propagate(
+                    await self._propagate(
                         ChatUpdate(
                             chat_id,
                             ChatUpdate.Status.CLOSED_VOICE_CHAT,
@@ -213,10 +219,12 @@ class TelethonClient(BridgedClient):
             ):
                 chat_id = self.chat_id(update)
                 try:
-                    await self._app.get_entity(chat_id)
+                    await self._app.get_entity(
+                        PeerChannel(chat_id),
+                    )
                 except ChannelPrivateError:
                     self._cache.drop_cache(chat_id)
-                    await self.propagate(
+                    await self._propagate(
                         ChatUpdate(
                             chat_id,
                             ChatUpdate.Status.KICKED,
@@ -236,7 +244,7 @@ class TelethonClient(BridgedClient):
                         update.message.action,
                         MessageActionInviteToGroupCall,
                     ):
-                        await self.propagate(
+                        await self._propagate(
                             ChatUpdate(
                                 chat_id,
                                 ChatUpdate.Status.INVITED_VOICE_CHAT,
@@ -246,7 +254,7 @@ class TelethonClient(BridgedClient):
                     if isinstance(update.message.out, bool):
                         if update.message.out:
                             self._cache.drop_cache(chat_id)
-                            await self.propagate(
+                            await self._propagate(
                                 ChatUpdate(
                                     chat_id,
                                     ChatUpdate.Status.LEFT_GROUP,
@@ -265,12 +273,22 @@ class TelethonClient(BridgedClient):
                                 ChatForbidden,
                             ):
                                 self._cache.drop_cache(chat_id)
-                                await self.propagate(
+                                await self._propagate(
                                     ChatUpdate(
                                         chat_id,
                                         ChatUpdate.Status.KICKED,
                                     ),
                                 )
+
+    async def _get_entity_group(self, chat_id):
+        try:
+            return await self._app.get_entity(
+                PeerChannel(chat_id),
+            )
+        except ValueError:
+            return await self._app.get_entity(
+                PeerChat(chat_id),
+            )
 
     async def get_call(
         self,
@@ -294,20 +312,27 @@ class TelethonClient(BridgedClient):
                     GetFullChatRequest(chat_id),
                 )
             ).full_chat.call
+
         if input_call is not None:
-            try:
-                call: GroupCall = (
-                    await self._app(
-                        GetGroupCallRequest(
-                            call=input_call,
-                            limit=-1,
-                        ),
-                    )
-                ).call
-                if call.schedule_date is not None:
-                    return None
-            except Exception as e:
-                print(e)
+            raw_call = (
+                await self._app(
+                    GetGroupCallRequest(
+                        call=input_call,
+                        limit=-1,
+                    ),
+                )
+            )
+            call: GroupCall = raw_call.call
+            participants: List[GroupCallParticipant] = raw_call.participants
+            for participant in participants:
+                self._cache.set_participants_cache_chat(
+                    chat_id,
+                    call.id,
+                    self.parse_participant(participant),
+                )
+            if call.schedule_date is not None:
+                return None
+
         return input_call
 
     async def get_dhc(self) -> DhConfig:
@@ -377,7 +402,7 @@ class TelethonClient(BridgedClient):
                 ):
                     participants = update.participants
                     for participant in participants:
-                        self._cache.set_participants_cache(
+                        self._cache.set_participants_cache_call(
                             update.call.id,
                             self.parse_participant(participant),
                         )
@@ -385,6 +410,37 @@ class TelethonClient(BridgedClient):
                     return update.params.data
 
         return json.dumps({'transport': None})
+
+    async def join_presentation(
+        self,
+        chat_id: int,
+        json_join: str,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            result: Updates = await self._app(
+                JoinGroupCallPresentationRequest(
+                    call=chat_call,
+                    params=DataJSON(data=json_join),
+                ),
+            )
+            for update in result.updates:
+                if isinstance(update, UpdateGroupCallConnection):
+                    return update.params.data
+
+        return json.dumps({'transport': None})
+
+    async def leave_presentation(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._app(
+                LeaveGroupCallPresentationRequest(
+                    call=chat_call,
+                ),
+            )
 
     async def request_call(
         self,
@@ -495,15 +551,21 @@ class TelethonClient(BridgedClient):
     async def discard_call(
         self,
         chat_id: int,
+        is_missed: bool,
     ):
         peer = self._cache.get_phone_call(chat_id)
         if peer is None:
             return
+        reason = (
+            PhoneCallDiscardReasonMissed()
+            if is_missed
+            else PhoneCallDiscardReasonHangup()
+        )
         await self._app(
             DiscardCallRequest(
                 peer=peer,
                 duration=0,
-                reason=PhoneCallDiscardReasonHangup(),
+                reason=reason,
                 connection_id=0,
                 video=False,
             ),
@@ -531,8 +593,9 @@ class TelethonClient(BridgedClient):
         self,
         chat_id: int,
         muted_status: Optional[bool],
-        paused_status: Optional[bool],
-        stopped_status: Optional[bool],
+        video_paused: Optional[bool],
+        video_stopped: Optional[bool],
+        presentation_paused: Optional[bool],
         participant: TypeInputPeer,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
@@ -542,8 +605,9 @@ class TelethonClient(BridgedClient):
                     call=chat_call,
                     participant=participant,
                     muted=muted_status,
-                    video_stopped=stopped_status,
-                    video_paused=paused_status,
+                    video_paused=video_paused,
+                    video_stopped=video_stopped,
+                    presentation_paused=presentation_paused,
                 ),
             )
 

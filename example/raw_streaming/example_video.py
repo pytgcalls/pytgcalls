@@ -1,7 +1,7 @@
 import os
 import time
 
-from ntgcalls import InputMode
+from ntgcalls import MediaSource
 from pyrogram import Client
 
 from pytgcalls import idle
@@ -29,14 +29,14 @@ call_py.play(
     -1001234567890,
     Stream(
         AudioStream(
-            InputMode.File,
+            MediaSource.FILE,
             audio_file,
             AudioParameters(
                 bitrate=48000,
             ),
         ),
-        VideoStream(
-            InputMode.File,
+        camera=VideoStream(
+            MediaSource.FILE,
             video_file,
             VideoParameters(
                 width=640,

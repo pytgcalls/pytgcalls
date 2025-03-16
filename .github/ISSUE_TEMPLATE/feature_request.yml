@@ -9,14 +9,14 @@ body:
       # Feature Request
 
       Thank you for taking the time to suggest a new feature or enhancement for Py-TgCalls!
-      
+
       Please use the sections below to provide detailed information about your suggestion.
-      
+
       - Make sure your idea is clearly explained.
       - Describe the benefits and context for this feature.
       - If you have ideas for implementation, feel free to share them.
       - Check for duplicate requests before submitting.
-      
+
       *Incomplete requests may be automatically closed.*
 - type: input
   id: feature-summary

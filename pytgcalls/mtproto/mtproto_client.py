@@ -69,6 +69,30 @@ class MtProtoClient:
         else:
             raise InvalidMTProtoClient()
 
+    async def join_presentation(
+        self,
+        chat_id: int,
+        json_join: str,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.join_presentation(
+                chat_id,
+                json_join,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def leave_presentation(
+        self,
+        chat_id: int,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.leave_presentation(
+                chat_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
     async def request_call(
         self,
         user_id: int,
@@ -102,10 +126,12 @@ class MtProtoClient:
     async def discard_call(
         self,
         user_id: int,
+        is_missed: bool,
     ):
         if self._bind_client is not None:
             return await self._bind_client.discard_call(
                 user_id,
+                is_missed,
             )
         else:
             raise InvalidMTProtoClient()
@@ -187,16 +213,18 @@ class MtProtoClient:
         self,
         chat_id: int,
         muted_status: Optional[bool],
-        paused_status: Optional[bool],
-        stopped_status: Optional[bool],
+        video_paused: Optional[bool],
+        video_stopped: Optional[bool],
+        presentation_paused: Optional[bool],
         participant: Any,
     ):
         if self._bind_client is not None:
             await self._bind_client.set_call_status(
                 chat_id,
                 muted_status,
-                paused_status,
-                stopped_status,
+                video_paused,
+                video_stopped,
+                presentation_paused,
                 participant,
             )
         else:

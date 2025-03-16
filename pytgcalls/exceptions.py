@@ -37,13 +37,6 @@ class TooOldHydrogramVersion(Exception):
         )
 
 
-class InvalidStreamMode(Exception):
-    def __init__(self):
-        super().__init__(
-            'Invalid stream mode',
-        )
-
-
 class NoMTProtoClientSet(Exception):
     def __init__(self):
         super().__init__(
@@ -86,13 +79,6 @@ class NotInCallError(Exception):
         )
 
 
-class AlreadyJoinedError(Exception):
-    def __init__(self):
-        super().__init__(
-            'Already joined into group call',
-        )
-
-
 class ClientNotStarted(Exception):
     def __init__(self):
         super().__init__(
@@ -112,16 +98,6 @@ class TooManyCustomApiDecorators(Exception):
     def __init__(self):
         super().__init__(
             'Too Many Custom Api Decorators',
-        )
-
-
-class GroupCallNotFound(Exception):
-    def __init__(
-            self,
-            chat_id: int,
-    ):
-        super().__init__(
-            f'Group call not found with the chat id {chat_id}',
         )
 
 
@@ -185,4 +161,11 @@ class MTProtoClientNotConnected(Exception):
     def __init__(self):
         super().__init__(
             'MTProto client not connected',
+        )
+
+
+class UnsupportedMethod(Exception):
+    def __init__(self):
+        super().__init__(
+            'Unsupported method for this kind of call',
         )

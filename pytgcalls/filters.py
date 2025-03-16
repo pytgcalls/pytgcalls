@@ -7,9 +7,11 @@ from typing import Union
 from .mtproto import BridgedClient
 from .pytgcalls import PyTgCalls
 from .types import ChatUpdate
+from .types import Device
+from .types import Direction
 from .types import GroupCallParticipant
-from .types import StreamAudioEnded
-from .types import StreamVideoEnded
+from .types import StreamEnded
+from .types import StreamFrames
 from .types import Update
 from .types import UpdatedGroupCallParticipant
 
@@ -135,11 +137,27 @@ async def _me_filter(_, client: PyTgCalls, u: Update):
 me = create(_me_filter)
 
 
-async def _stream_filter(_, __, u: Update):
-    return isinstance(u, (StreamVideoEnded, StreamAudioEnded))
+# noinspection PyPep8Naming
+class stream_end(Filter):
+    def __init__(
+        self,
+        stream_type: Optional[StreamEnded.Type] = None,
+        device: Optional[Device] = None,
+    ):
+        self.stream_type = stream_type
+        self.device = device
 
-
-stream_end = create(_stream_filter)
+    async def __call__(self, client: PyTgCalls, update: Update):
+        if isinstance(update, StreamEnded):
+            return (
+                (
+                    self.stream_type is None or
+                    self.stream_type & update.stream_type
+                ) and (
+                    self.device is None or
+                    self.device & update.device
+                )
+            )
 
 
 # noinspection PyPep8Naming
@@ -170,6 +188,7 @@ class chat_update(Filter):
         return False
 
 
+# noinspection PyPep8Naming
 class call_participant(Filter):
     def __init__(self, flags: Optional[GroupCallParticipant.Action] = None):
         self.flags = flags
@@ -179,4 +198,28 @@ class call_participant(Filter):
             if self.flags is None:
                 return True
             return self.flags & update.participant.action
+        return False
+
+
+# noinspection PyPep8Naming
+class stream_frame(Filter):
+    def __init__(
+        self,
+        directions: Optional[Direction] = None,
+        devices: Optional[Device] = None,
+    ):
+        self.directions = directions
+        self.devices = devices
+
+    async def __call__(self, client: PyTgCalls, update: Update):
+        if isinstance(update, StreamFrames):
+            return (
+                (
+                    self.directions is None or
+                    self.directions & update.direction
+                ) and (
+                    self.devices is None or
+                    self.devices & update.device
+                )
+            )
         return False

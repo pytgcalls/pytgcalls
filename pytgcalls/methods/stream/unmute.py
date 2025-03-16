@@ -8,15 +8,15 @@ from ...scaffold import Scaffold
 from ...statictypes import statictypes
 
 
-class PlayedTime(Scaffold):
+class UnMute(Scaffold):
     @statictypes
     @mtproto_required
-    async def played_time(
+    async def unmute(
         self,
         chat_id: Union[int, str],
     ):
         chat_id = await self.resolve_chat_id(chat_id)
         try:
-            return await self._binding.time(chat_id)
+            return await self._binding.unmute(chat_id)
         except ConnectionNotFound:
             raise NotInCallError()

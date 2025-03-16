@@ -1,4 +1,8 @@
 from enum import auto
+from typing import List
+from typing import Optional
+
+from ntgcalls import SsrcGroup
 
 from ...types.py_object import PyObject
 from ..flag import Flag
@@ -9,6 +13,15 @@ class GroupCallParticipant(PyObject):
         JOINED = auto()
         LEFT = auto()
         UPDATED = auto()
+
+    class SourceInfo(PyObject):
+        def __init__(
+            self,
+            endpoint: str,
+            sources: List[SsrcGroup],
+        ):
+            self.endpoint: str = endpoint
+            self.sources: List[SsrcGroup] = sources
 
     def __init__(
         self,
@@ -22,12 +35,16 @@ class GroupCallParticipant(PyObject):
         volume: int,
         joined: bool,
         left: bool,
+        source: int,
+        video_info: Optional[SourceInfo],
+        presentation_info: Optional[SourceInfo],
     ):
         self.user_id: int = user_id
         self.muted: bool = muted
         self.muted_by_admin: bool = muted_by_admin
         self.video: bool = video
         self.screen_sharing: bool = screen_sharing
+        self.source: int = source
         self.video_camera: bool = video_camera
         self.raised_hand: bool = raised_hand
         self.volume: int = volume
@@ -37,3 +54,9 @@ class GroupCallParticipant(PyObject):
             self.action = self.Action.LEFT
         else:
             self.action = self.Action.UPDATED
+        self.video_info: Optional[
+            GroupCallParticipant.SourceInfo
+        ] = video_info
+        self.presentation_info: Optional[
+            GroupCallParticipant.SourceInfo
+        ] = presentation_info

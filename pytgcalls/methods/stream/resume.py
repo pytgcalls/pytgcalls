@@ -8,15 +8,15 @@ from ...scaffold import Scaffold
 from ...statictypes import statictypes
 
 
-class MuteStream(Scaffold):
+class Resume(Scaffold):
     @statictypes
     @mtproto_required
-    async def mute_stream(
+    async def resume(
         self,
         chat_id: Union[int, str],
     ):
         chat_id = await self.resolve_chat_id(chat_id)
         try:
-            return await self._binding.mute(chat_id)
+            return await self._binding.resume(chat_id)
         except ConnectionNotFound:
             raise NotInCallError()

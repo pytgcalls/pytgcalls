@@ -1,17 +1,21 @@
-from .mute_stream import MuteStream
-from .pause_stream import PauseStream
+from .mute import Mute
+from .pause import Pause
 from .play import Play
-from .played_time import PlayedTime
-from .resume_stream import ResumeStream
-from .unmute_stream import UnMuteStream
+from .record import Record
+from .resume import Resume
+from .send_frame import SendFrame
+from .time import Time
+from .unmute import UnMute
 
 
 class StreamMethods(
-    MuteStream,
-    PauseStream,
+    Mute,
+    Pause,
     Play,
-    PlayedTime,
-    ResumeStream,
-    UnMuteStream,
+    Record,
+    SendFrame,
+    Time,
+    Resume,
+    UnMute,
 ):
     pass

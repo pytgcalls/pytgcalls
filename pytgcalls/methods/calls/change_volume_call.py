@@ -1,6 +1,7 @@
 from typing import Union
 
 from ...exceptions import NoActiveGroupCall
+from ...exceptions import UnsupportedMethod
 from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
@@ -15,6 +16,8 @@ class ChangeVolumeCall(Scaffold):
         volume: int,
     ):
         chat_id = await self.resolve_chat_id(chat_id)
+        if chat_id >= 0:  # type: ignore
+            raise UnsupportedMethod()
         chat_call = await self._app.get_full_chat(
             chat_id,
         )

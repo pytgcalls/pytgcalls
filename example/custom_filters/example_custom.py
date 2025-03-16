@@ -5,7 +5,6 @@ from pyrogram.types import Message
 from pytgcalls import filters as fl
 from pytgcalls import idle
 from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream
 from pytgcalls.types import Update
 
 app = Client(
@@ -14,9 +13,6 @@ app = Client(
     api_hash='abcdef12345',
 )
 call_py = PyTgCalls(app)
-
-test_stream = 'http://docs.evostream.com/sample_content/assets/' \
-              'sintel1m720p.mp4'
 
 
 async def custom_filter(_, client: PyTgCalls, update: Update):
@@ -32,9 +28,7 @@ async def all_updates(_: PyTgCalls, update: Update):
 async def play_handler(_: Client, message: Message):
     await call_py.play(
         message.chat.id,
-        MediaStream(
-            test_stream,
-        ),
+        'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4',
     )
 
 call_py.start()

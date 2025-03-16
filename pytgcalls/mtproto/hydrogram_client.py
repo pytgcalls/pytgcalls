@@ -19,7 +19,9 @@ from hydrogram.raw.functions.phone import EditGroupCallParticipant
 from hydrogram.raw.functions.phone import GetGroupCall
 from hydrogram.raw.functions.phone import GetGroupParticipants
 from hydrogram.raw.functions.phone import JoinGroupCall
+from hydrogram.raw.functions.phone import JoinGroupCallPresentation
 from hydrogram.raw.functions.phone import LeaveGroupCall
+from hydrogram.raw.functions.phone import LeaveGroupCallPresentation
 from hydrogram.raw.functions.phone import RequestCall
 from hydrogram.raw.functions.phone import SendSignalingData
 from hydrogram.raw.types import Channel
@@ -41,6 +43,7 @@ from hydrogram.raw.types import PhoneCall
 from hydrogram.raw.types import PhoneCallAccepted
 from hydrogram.raw.types import PhoneCallDiscarded
 from hydrogram.raw.types import PhoneCallDiscardReasonHangup
+from hydrogram.raw.types import PhoneCallDiscardReasonMissed
 from hydrogram.raw.types import PhoneCallProtocol
 from hydrogram.raw.types import PhoneCallRequested
 from hydrogram.raw.types import PhoneCallWaiting
@@ -86,7 +89,7 @@ class HydrogramClient(BridgedClient):
             ):
                 user_id = self._cache.get_user_id(update.phone_call_id)
                 if user_id is not None:
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             user_id,
                             RawCallUpdate.Type.SIGNALING_DATA,
@@ -110,7 +113,7 @@ class HydrogramClient(BridgedClient):
                         ),
                     )
                 if isinstance(update.phone_call, PhoneCallAccepted):
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
                             RawCallUpdate.Type.ACCEPTED,
@@ -126,14 +129,14 @@ class HydrogramClient(BridgedClient):
                         self._cache.drop_phone_call(
                             user_id,
                         )
-                        await self.propagate(
+                        await self._propagate(
                             ChatUpdate(
                                 user_id,
                                 ChatUpdate.Status.DISCARDED_CALL,
                             ),
                         )
                 if isinstance(update.phone_call, PhoneCallRequested):
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
                             RawCallUpdate.Type.REQUESTED,
@@ -144,7 +147,7 @@ class HydrogramClient(BridgedClient):
                         ),
                     )
                 if isinstance(update.phone_call, PhoneCall):
-                    await self.propagate(
+                    await self._propagate(
                         RawCallUpdate(
                             self.user_from_call(update.phone_call),
                             RawCallUpdate.Type.CONFIRMED,
@@ -166,12 +169,12 @@ class HydrogramClient(BridgedClient):
             ):
                 participants = update.participants
                 for participant in participants:
-                    result = self._cache.set_participants_cache(
+                    result = self._cache.set_participants_cache_call(
                         update.call.id,
                         self.parse_participant(participant),
                     )
                     if result is not None:
-                        await self.propagate(
+                        await self._propagate(
                             UpdatedGroupCallParticipant(
                                 self._cache.get_chat_id(update.call.id),
                                 result,
@@ -199,7 +202,7 @@ class HydrogramClient(BridgedClient):
                     GroupCallDiscarded,
                 ):
                     self._cache.drop_cache(chat_id)
-                    await self.propagate(
+                    await self._propagate(
                         ChatUpdate(
                             chat_id,
                             ChatUpdate.Status.CLOSED_VOICE_CHAT,
@@ -216,7 +219,7 @@ class HydrogramClient(BridgedClient):
                         ChannelForbidden,
                     ):
                         self._cache.drop_cache(chat_id)
-                        await self.propagate(
+                        await self._propagate(
                             ChatUpdate(
                                 chat_id,
                                 ChatUpdate.Status.KICKED,
@@ -239,7 +242,7 @@ class HydrogramClient(BridgedClient):
                             update.message.peer_id,
                             PeerChat,
                         ):
-                            await self.propagate(
+                            await self._propagate(
                                 ChatUpdate(
                                     chat_id,
                                     ChatUpdate.Status.INVITED_VOICE_CHAT,
@@ -259,7 +262,7 @@ class HydrogramClient(BridgedClient):
                                 ChatForbidden,
                             ):
                                 self._cache.drop_cache(chat_id)
-                                await self.propagate(
+                                await self._propagate(
                                     ChatUpdate(
                                         chat_id,
                                         ChatUpdate.Status.KICKED,
@@ -287,7 +290,7 @@ class HydrogramClient(BridgedClient):
                                     self._cache.drop_cache(
                                         chat_id,
                                     )
-                                    await self.propagate(
+                                    await self._propagate(
                                         ChatUpdate(
                                             chat_id,
                                             ChatUpdate.Status.LEFT_GROUP,
@@ -319,15 +322,22 @@ class HydrogramClient(BridgedClient):
             ).full_chat.call
 
         if input_call is not None:
-            call: GroupCall = (
+            raw_call = (
                 await self._app.invoke(
                     GetGroupCall(
                         call=input_call,
                         limit=-1,
                     ),
                 )
-            ).call
-
+            )
+            call: GroupCall = raw_call.call
+            participants: List[GroupCallParticipant] = raw_call.participants
+            for participant in participants:
+                self._cache.set_participants_cache_chat(
+                    chat_id,
+                    call.id,
+                    self.parse_participant(participant),
+                )
             if call.schedule_date is not None:
                 return None
 
@@ -395,12 +405,12 @@ class HydrogramClient(BridgedClient):
             )
             for update in result.updates:
                 if isinstance(
-                        update,
-                        UpdateGroupCallParticipants,
+                    update,
+                    UpdateGroupCallParticipants,
                 ):
                     participants = update.participants
                     for participant in participants:
-                        self._cache.set_participants_cache(
+                        self._cache.set_participants_cache_call(
                             update.call.id,
                             self.parse_participant(participant),
                         )
@@ -408,6 +418,37 @@ class HydrogramClient(BridgedClient):
                     return update.params.data
 
         return json.dumps({'transport': None})
+
+    async def join_presentation(
+        self,
+        chat_id: int,
+        json_join: str,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            result: Updates = await self._app.invoke(
+                JoinGroupCallPresentation(
+                    call=chat_call,
+                    params=DataJSON(data=json_join),
+                ),
+            )
+            for update in result.updates:
+                if isinstance(update, UpdateGroupCallConnection):
+                    return update.params.data
+
+        return json.dumps({'transport': None})
+
+    async def leave_presentation(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._app.invoke(
+                LeaveGroupCallPresentation(
+                    call=chat_call,
+                ),
+            )
 
     async def request_call(
         self,
@@ -518,15 +559,21 @@ class HydrogramClient(BridgedClient):
     async def discard_call(
         self,
         chat_id: int,
+        is_missed: bool,
     ):
         peer = self._cache.get_phone_call(chat_id)
         if peer is None:
             return
+        reason = (
+            PhoneCallDiscardReasonMissed()
+            if is_missed
+            else PhoneCallDiscardReasonHangup()
+        )
         await self._app.invoke(
             DiscardCall(
                 peer=peer,
                 duration=0,
-                reason=PhoneCallDiscardReasonHangup(),
+                reason=reason,
                 connection_id=0,
                 video=False,
             ),
@@ -554,8 +601,9 @@ class HydrogramClient(BridgedClient):
         self,
         chat_id: int,
         muted_status: Optional[bool],
-        paused_status: Optional[bool],
-        stopped_status: Optional[bool],
+        video_paused: Optional[bool],
+        video_stopped: Optional[bool],
+        presentation_paused: Optional[bool],
         participant: InputPeer,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
@@ -565,8 +613,9 @@ class HydrogramClient(BridgedClient):
                     call=chat_call,
                     participant=participant,
                     muted=muted_status,
-                    video_stopped=stopped_status,
-                    video_paused=paused_status,
+                    video_paused=video_paused,
+                    video_stopped=video_stopped,
+                    presentation_paused=presentation_paused,
                 ),
             )
 
