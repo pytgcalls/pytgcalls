@@ -47,7 +47,7 @@ class MediaStream(Stream):
         video_parameters: Union[
             VideoParameters,
             VideoQuality,
-        ] = VideoQuality.SD_480p,
+        ] = VideoQuality.HD_720p,
         audio_path: Optional[
             Union[
                 str, Path,
