@@ -282,9 +282,7 @@ class Start(Scaffold):
                     self._wait_connect[chat_id].set_exception(
                         TelegramServerError(),
                     )
-                    await clear_cache(chat_id)
-
-            if state != ConnectionState.CONNECTED:
+            elif state != ConnectionState.CONNECTED:
                 if chat_id > 0:
                     await self._app.discard_call(chat_id)
                 await clear_cache(chat_id)
