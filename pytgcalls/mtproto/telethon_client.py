@@ -380,7 +380,7 @@ class TelethonClient(BridgedClient):
         chat_id: int,
         json_join: str,
         invite_hash: str,
-        have_video: bool,
+        video_stopped: bool,
         join_as: TypeInputPeer,
     ) -> str:
         chat_call = await self._cache.get_full_chat(chat_id)
@@ -391,7 +391,7 @@ class TelethonClient(BridgedClient):
                     params=DataJSON(data=json_join),
                     muted=False,
                     join_as=join_as,
-                    video_stopped=have_video,
+                    video_stopped=video_stopped,
                     invite_hash=invite_hash,
                 ),
             )
