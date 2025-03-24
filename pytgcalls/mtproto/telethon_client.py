@@ -449,13 +449,20 @@ class TelethonClient(BridgedClient):
         protocol: Protocol,
         has_video: bool,
     ):
-        return await self._app(
+        update = await self._app(
             RequestCallRequest(
                 user_id=await self.resolve_peer(user_id),
                 random_id=self.rnd_id(),
                 g_a_hash=g_a_hash,
                 protocol=self.parse_protocol(protocol),
                 video=has_video,
+            ),
+        )
+        self._cache.set_phone_call(
+            user_id,
+            InputPhoneCall(
+                id=update.phone_call.id,
+                access_hash=update.phone_call.access_hash,
             ),
         )
 
