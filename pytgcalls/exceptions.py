@@ -65,6 +65,13 @@ class CallDeclined(Exception):
         )
 
 
+class CallBusy(Exception):
+    def __init__(self, user_id: int):
+        super().__init__(
+            f'The user {user_id} is busy',
+        )
+
+
 class CallDiscarded(Exception):
     def __init__(self, user_id: int):
         super().__init__(

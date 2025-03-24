@@ -13,7 +13,14 @@ class ChatUpdate(Update):
         INVITED_VOICE_CHAT = auto()
         DISCARDED_CALL = auto()
         INCOMING_CALL = auto()
-        LEFT_CALL = KICKED | LEFT_GROUP | CLOSED_VOICE_CHAT | DISCARDED_CALL
+        BUSY_CALL = auto()
+        LEFT_CALL = (
+            KICKED |
+            LEFT_GROUP |
+            CLOSED_VOICE_CHAT |
+            DISCARDED_CALL |
+            BUSY_CALL
+        )
 
     def __init__(
         self,

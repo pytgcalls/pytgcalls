@@ -42,6 +42,7 @@ from hydrogram.raw.types import PeerChat
 from hydrogram.raw.types import PhoneCall
 from hydrogram.raw.types import PhoneCallAccepted
 from hydrogram.raw.types import PhoneCallDiscarded
+from hydrogram.raw.types import PhoneCallDiscardReasonBusy
 from hydrogram.raw.types import PhoneCallDiscardReasonHangup
 from hydrogram.raw.types import PhoneCallDiscardReasonMissed
 from hydrogram.raw.types import PhoneCallProtocol
@@ -129,10 +130,16 @@ class HydrogramClient(BridgedClient):
                         self._cache.drop_phone_call(
                             user_id,
                         )
+                        reason = ChatUpdate.Status.DISCARDED_CALL
+                        if isinstance(
+                            update.phone_call.reason,
+                            PhoneCallDiscardReasonBusy,
+                        ):
+                            reason |= ChatUpdate.Status.BUSY_CALL
                         await self._propagate(
                             ChatUpdate(
                                 user_id,
-                                ChatUpdate.Status.DISCARDED_CALL,
+                                reason,
                             ),
                         )
                 if isinstance(update.phone_call, PhoneCallRequested):

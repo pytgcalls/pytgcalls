@@ -44,6 +44,7 @@ from pyrogram.raw.types import PeerChat
 from pyrogram.raw.types import PhoneCall
 from pyrogram.raw.types import PhoneCallAccepted
 from pyrogram.raw.types import PhoneCallDiscarded
+from pyrogram.raw.types import PhoneCallDiscardReasonBusy
 from pyrogram.raw.types import PhoneCallDiscardReasonHangup
 from pyrogram.raw.types import PhoneCallDiscardReasonMissed
 from pyrogram.raw.types import PhoneCallProtocol
@@ -137,10 +138,16 @@ class PyrogramClient(BridgedClient):
                         self._cache.drop_phone_call(
                             user_id,
                         )
+                        reason = ChatUpdate.Status.DISCARDED_CALL
+                        if isinstance(
+                            update.phone_call.reason,
+                            PhoneCallDiscardReasonBusy,
+                        ):
+                            reason |= ChatUpdate.Status.BUSY_CALL
                         await self._propagate(
                             ChatUpdate(
                                 user_id,
-                                ChatUpdate.Status.DISCARDED_CALL,
+                                reason,
                             ),
                         )
                 if isinstance(update.phone_call, PhoneCallRequested):

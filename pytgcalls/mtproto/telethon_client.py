@@ -39,6 +39,7 @@ from telethon.tl.types import PeerChat
 from telethon.tl.types import PhoneCall
 from telethon.tl.types import PhoneCallAccepted
 from telethon.tl.types import PhoneCallDiscarded
+from telethon.tl.types import PhoneCallDiscardReasonBusy
 from telethon.tl.types import PhoneCallDiscardReasonHangup
 from telethon.tl.types import PhoneCallDiscardReasonMissed
 from telethon.tl.types import PhoneCallProtocol
@@ -128,10 +129,16 @@ class TelethonClient(BridgedClient):
                         self._cache.drop_phone_call(
                             user_id,
                         )
+                        reason = ChatUpdate.Status.DISCARDED_CALL
+                        if isinstance(
+                            update.phone_call.reason,
+                            PhoneCallDiscardReasonBusy,
+                        ):
+                            reason |= ChatUpdate.Status.BUSY_CALL
                         await self._propagate(
                             ChatUpdate(
                                 user_id,
-                                ChatUpdate.Status.DISCARDED_CALL,
+                                reason,
                             ),
                         )
                 if isinstance(update.phone_call, PhoneCallRequested):
