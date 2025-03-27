@@ -2,6 +2,7 @@ import asyncio
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
+from typing import Dict
 
 from ntgcalls import NTgCalls
 
@@ -11,6 +12,7 @@ from .mtproto import MtProtoClient
 from .scaffold import Scaffold
 from .statictypes import statictypes
 from .types import Cache
+from .wait_counter_lock import WaitCounterLock
 
 
 class PyTgCalls(Methods, Scaffold):
@@ -42,6 +44,7 @@ class PyTgCalls(Methods, Scaffold):
         self.loop = asyncio.get_event_loop()
         self.workers = workers
         self._lock = asyncio.Lock()
+        self._calls_lock: Dict[str, WaitCounterLock] = {}
         self.executor = ThreadPoolExecutor(
             self.workers,
             thread_name_prefix='Handler',

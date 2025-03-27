@@ -29,9 +29,9 @@ py_logger = logging.getLogger('pytgcalls')
 
 
 class Play(Scaffold):
-    @mutex
     @statictypes
     @mtproto_required
+    @mutex
     async def play(
         self,
         chat_id: Union[int, str],
