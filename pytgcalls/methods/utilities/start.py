@@ -202,6 +202,10 @@ class Start(Scaffold):
 
         async def clear_call(chat_id) -> bool:
             res = False
+            if chat_id in self._wait_connect:
+                self._wait_connect[chat_id].set_exception(
+                    TelegramServerError(),
+                )
             try:
                 await self._binding.stop(chat_id)
                 res = True
