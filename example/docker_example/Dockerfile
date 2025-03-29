@@ -1,7 +1,6 @@
-FROM amd64/python:3.12-buster
-RUN python3.9 -m pip install py-tgcalls
-RUN apt update && apt install -y ffmpeg
-WORKDIR /usr/src/installer
-COPY linux_mount.sh /usr/src/installer
-RUN chmod +x /usr/src/installer/linux_mount.sh
-VOLUME ['/usr/src/installer']
+FROM python:3.13-slim
+RUN apt update && apt install -y --no-install-recommends \
+    build-essential \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+RUN python3.13 -m pip install py-tgcalls pyrogrammod tgcrypto -v
