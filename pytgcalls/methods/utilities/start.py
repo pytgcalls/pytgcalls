@@ -13,6 +13,7 @@ from ntgcalls import StreamMode
 from ntgcalls import StreamType
 from ntgcalls import TelegramServerError
 
+from ...exceptions import CallBusy
 from ...exceptions import CallDeclined
 from ...exceptions import CallDiscarded
 from ...exceptions import PyTgCallsAlreadyRunning
@@ -53,6 +54,10 @@ class Start(Scaffold):
                         if update.status & ChatUpdate.Status.DISCARDED_CALL:
                             self._wait_connect.pop(chat_id, None)
                             p2p_config.wait_data.set_exception(
+                                CallBusy(
+                                    chat_id,
+                                ) if update.status &
+                                ChatUpdate.Status.BUSY_CALL else
                                 CallDeclined(
                                     chat_id,
                                 ),
@@ -197,6 +202,10 @@ class Start(Scaffold):
 
         async def clear_call(chat_id) -> bool:
             res = False
+            if chat_id in self._wait_connect:
+                self._wait_connect[chat_id].set_exception(
+                    TelegramServerError(),
+                )
             try:
                 await self._binding.stop(chat_id)
                 res = True
@@ -282,9 +291,7 @@ class Start(Scaffold):
                     self._wait_connect[chat_id].set_exception(
                         TelegramServerError(),
                     )
-                    await clear_cache(chat_id)
-
-            if state != ConnectionState.CONNECTED:
+            elif state != ConnectionState.CONNECTED:
                 if chat_id > 0:
                     await self._app.discard_call(chat_id)
                 await clear_cache(chat_id)

@@ -27,7 +27,6 @@ proc = {}
 
 @app.on_message(filters.regex('!test'))
 async def test_handler(client: Client, message: Message):
-    global proc
     file = 'input.webm'
     output_file = 'input_fifo.raw'
     os.mkfifo(output_file)
@@ -59,7 +58,6 @@ async def test_handler(client: Client, message: Message):
 
 
 def close_all_process():
-    global proc
     for i in proc:
         try:
             proc[i].send_signal(signal.SIGINT)

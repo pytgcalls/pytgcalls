@@ -29,9 +29,9 @@ py_logger = logging.getLogger('pytgcalls')
 
 
 class Play(Scaffold):
-    @mutex
     @statictypes
     @mtproto_required
+    @mutex
     async def play(
         self,
         chat_id: Union[int, str],
@@ -125,6 +125,8 @@ class Play(Scaffold):
                                 chat_id,
                                 data.g_a_or_b,
                                 self._binding.get_protocol(),
+                                media_description.camera is not None or
+                                media_description.screen is not None,
                             )
 
                         try:

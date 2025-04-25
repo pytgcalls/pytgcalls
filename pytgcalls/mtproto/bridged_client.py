@@ -25,7 +25,7 @@ class BridgedClient(HandlersHolder):
         chat_id: int,
         json_join: str,
         invite_hash: str,
-        have_video: bool,
+        video_stopped: bool,
         join_as: Any,
     ):
         pass
@@ -48,6 +48,7 @@ class BridgedClient(HandlersHolder):
         user_id: int,
         g_a_hash: bytes,
         protocol: Protocol,
+        has_video: bool,
     ):
         pass
 

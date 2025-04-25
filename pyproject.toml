@@ -3,9 +3,8 @@ dynamic = ["version"]
 name = "py-tgcalls"
 description = "Async client API for the Telegram Calls."
 readme = "README.md"
-license = {file = "LICENSE"}
+license-files = ["LICENSE"]
 classifiers = [
-    'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
     'Operating System :: OS Independent',
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3 :: Only',
@@ -27,7 +26,7 @@ keywords = [
 requires-python = ">=3.9"
 dependencies = [
     "aiohttp>=3.9.3",
-    "ntgcalls>=1.3.0,<1.4.0",
+    "ntgcalls>=1.3.2,<1.4.0",
     "deprecation",
 ]
 

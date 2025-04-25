@@ -44,6 +44,7 @@ from pyrogram.raw.types import PeerChat
 from pyrogram.raw.types import PhoneCall
 from pyrogram.raw.types import PhoneCallAccepted
 from pyrogram.raw.types import PhoneCallDiscarded
+from pyrogram.raw.types import PhoneCallDiscardReasonBusy
 from pyrogram.raw.types import PhoneCallDiscardReasonHangup
 from pyrogram.raw.types import PhoneCallDiscardReasonMissed
 from pyrogram.raw.types import PhoneCallProtocol
@@ -137,10 +138,16 @@ class PyrogramClient(BridgedClient):
                         self._cache.drop_phone_call(
                             user_id,
                         )
+                        reason = ChatUpdate.Status.DISCARDED_CALL
+                        if isinstance(
+                            update.phone_call.reason,
+                            PhoneCallDiscardReasonBusy,
+                        ):
+                            reason |= ChatUpdate.Status.BUSY_CALL
                         await self._propagate(
                             ChatUpdate(
                                 user_id,
-                                ChatUpdate.Status.DISCARDED_CALL,
+                                reason,
                             ),
                         )
                 if isinstance(update.phone_call, PhoneCallRequested):
@@ -396,7 +403,7 @@ class PyrogramClient(BridgedClient):
         chat_id: int,
         json_join: str,
         invite_hash: str,
-        have_video: bool,
+        video_stopped: bool,
         join_as: InputPeer,
     ) -> str:
         chat_call = await self._cache.get_full_chat(chat_id)
@@ -407,7 +414,7 @@ class PyrogramClient(BridgedClient):
                     params=DataJSON(data=json_join),
                     muted=False,
                     join_as=join_as,
-                    video_stopped=have_video,
+                    video_stopped=video_stopped,
                     invite_hash=invite_hash,
                 ),
             )
@@ -463,14 +470,22 @@ class PyrogramClient(BridgedClient):
         user_id: int,
         g_a_hash: bytes,
         protocol: Protocol,
+        has_video: bool,
     ):
-        await self._app.invoke(
+        update = await self._app.invoke(
             RequestCall(
                 user_id=await self.resolve_peer(user_id),
                 random_id=self.rnd_id(),
                 g_a_hash=g_a_hash,
                 protocol=self.parse_protocol(protocol),
-                video=False,
+                video=has_video,
+            ),
+        )
+        self._cache.set_phone_call(
+            user_id,
+            InputPhoneCall(
+                id=update.phone_call.id,
+                access_hash=update.phone_call.access_hash,
             ),
         )
 

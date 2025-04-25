@@ -55,7 +55,7 @@ class MtProtoClient:
         chat_id: int,
         json_join: str,
         invite_hash: str,
-        have_video: bool,
+        video_stopped: bool,
         join_as: Any,
     ) -> str:
         if self._bind_client is not None:
@@ -63,7 +63,7 @@ class MtProtoClient:
                 chat_id,
                 json_join,
                 invite_hash,
-                have_video,
+                video_stopped,
                 join_as,
             )
         else:
@@ -98,12 +98,14 @@ class MtProtoClient:
         user_id: int,
         g_a_hash: bytes,
         protocol: Protocol,
+        has_video: bool,
     ):
         if self._bind_client is not None:
             return await self._bind_client.request_call(
                 user_id,
                 g_a_hash,
                 protocol,
+                has_video,
             )
         else:
             raise InvalidMTProtoClient()

@@ -8,13 +8,15 @@ everything on your local machine.
 Just follow these steps
 
 1. Build the **Docker Image**
-``` bash
-docker build . -t docker_example
-```
+    ``` bash
+    docker build . -t docker_example
+    ```
 2. Run the **Docker Image**
-``` bash
-docker run -v "$PWD":/usr/src/mnt pytgcalls_machine ./linux_mount.sh
-```
-
-## What is it the supported OS?
-This Docker Image can run only on Linux images
+   - If you are on Windows, you need to run the following command:
+     ``` bash
+     docker run -it -v ${PWD}:/app -w /app docker_example python3.13 docker_example.py
+     ```
+   - If you are on Linux, you need to run the following command:
+     ``` bash
+     docker run -it -v $(pwd):/app -w /app docker_example python3.13 docker_example.py
+     ```

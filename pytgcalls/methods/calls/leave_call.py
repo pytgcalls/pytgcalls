@@ -11,9 +11,9 @@ from ...statictypes import statictypes
 
 
 class LeaveCall(Scaffold):
-    @mutex
     @statictypes
     @mtproto_required
+    @mutex
     async def leave_call(
         self,
         chat_id: Union[int, str],
