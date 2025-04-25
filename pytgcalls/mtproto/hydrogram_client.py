@@ -6,6 +6,7 @@ from typing import Union
 
 from hydrogram import Client
 from hydrogram import ContinuePropagation
+from hydrogram.errors import FloodWait
 from hydrogram.raw.base import InputPeer
 from hydrogram.raw.base import InputUser
 from hydrogram.raw.functions.channels import GetFullChannel
@@ -17,6 +18,7 @@ from hydrogram.raw.functions.phone import CreateGroupCall
 from hydrogram.raw.functions.phone import DiscardCall
 from hydrogram.raw.functions.phone import EditGroupCallParticipant
 from hydrogram.raw.functions.phone import GetGroupCall
+from hydrogram.raw.functions.phone import GetGroupCallStreamChannels
 from hydrogram.raw.functions.phone import GetGroupParticipants
 from hydrogram.raw.functions.phone import JoinGroupCall
 from hydrogram.raw.functions.phone import JoinGroupCallPresentation
@@ -24,6 +26,7 @@ from hydrogram.raw.functions.phone import LeaveGroupCall
 from hydrogram.raw.functions.phone import LeaveGroupCallPresentation
 from hydrogram.raw.functions.phone import RequestCall
 from hydrogram.raw.functions.phone import SendSignalingData
+from hydrogram.raw.functions.upload import GetFile
 from hydrogram.raw.types import Channel
 from hydrogram.raw.types import ChannelForbidden
 from hydrogram.raw.types import Chat
@@ -33,6 +36,7 @@ from hydrogram.raw.types import GroupCall
 from hydrogram.raw.types import GroupCallDiscarded
 from hydrogram.raw.types import InputChannel
 from hydrogram.raw.types import InputGroupCall
+from hydrogram.raw.types import InputGroupCallStream
 from hydrogram.raw.types import InputPeerChannel
 from hydrogram.raw.types import InputPhoneCall
 from hydrogram.raw.types import MessageActionChatDeleteUser
@@ -58,6 +62,7 @@ from hydrogram.raw.types import UpdatePhoneCall
 from hydrogram.raw.types import UpdatePhoneCallSignalingData
 from hydrogram.raw.types import Updates
 from hydrogram.raw.types.messages import DhConfig
+from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 
 from ..types import CallProtocol
@@ -611,6 +616,58 @@ class HydrogramClient(BridgedClient):
                     volume=volume * 100,
                 ),
             )
+
+    async def download_stream(
+        self,
+        chat_id: int,
+        timestamp: int,
+        limit: int,
+        video_channel: Optional[int],
+        video_quality: MediaSegmentQuality,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            try:
+                return (
+                    await self._app.invoke(
+                        GetFile(
+                            location=InputGroupCallStream(
+                                call=chat_call,
+                                time_ms=timestamp,
+                                scale=0,
+                                video_channel=video_channel,
+                                video_quality=BridgedClient.parse_quality(
+                                    video_quality,
+                                ),
+                            ),
+                            offset=0,
+                            limit=limit,
+                        ),
+                        sleep_threshold=0,
+                    )
+                ).bytes
+            except FloodWait:
+                pass
+        return None
+
+    async def get_stream_timestamp(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            # noinspection PyBroadException
+            channels = (
+                await self._app.invoke(
+                    GetGroupCallStreamChannels(
+                        call=chat_call,
+                    ),
+                )
+            ).channels
+            if len(channels) > 0:
+                return channels[0].last_timestamp_ms
+
+        return 0
 
     async def set_call_status(
         self,

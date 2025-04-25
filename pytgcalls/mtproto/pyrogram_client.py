@@ -637,7 +637,7 @@ class PyrogramClient(BridgedClient):
         if chat_call is not None:
             try:
                 return (
-                    await self._app.invoke(
+                    await self._app.send(
                         GetFile(
                             location=InputGroupCallStream(
                                 call=chat_call,
@@ -655,7 +655,8 @@ class PyrogramClient(BridgedClient):
                     )
                 ).bytes
             except FloodWait:
-                return None
+                pass
+        return None
 
     async def get_stream_timestamp(
         self,

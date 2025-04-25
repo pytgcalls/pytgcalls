@@ -19,8 +19,8 @@ class RequestBroadcastPart(Scaffold):
                 chat_id,
                 part_request.timestamp,
                 part_request.limit,
-                part_request.channel_id \
-                    if part_request.channel_id > 0 else None,
+                part_request.channel_id
+                if part_request.channel_id > 0 else None,
                 part_request.quality,
             )
             if part is not None:

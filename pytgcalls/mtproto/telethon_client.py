@@ -3,9 +3,11 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from telethon import TelegramClient
 from telethon.errors import ChannelPrivateError
+from telethon.errors import FloodWaitError
 from telethon.events import Raw
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetDhConfigRequest
@@ -16,6 +18,7 @@ from telethon.tl.functions.phone import CreateGroupCallRequest
 from telethon.tl.functions.phone import DiscardCallRequest
 from telethon.tl.functions.phone import EditGroupCallParticipantRequest
 from telethon.tl.functions.phone import GetGroupCallRequest
+from telethon.tl.functions.phone import GetGroupCallStreamChannelsRequest
 from telethon.tl.functions.phone import GetGroupParticipantsRequest
 from telethon.tl.functions.phone import JoinGroupCallPresentationRequest
 from telethon.tl.functions.phone import JoinGroupCallRequest
@@ -23,12 +26,14 @@ from telethon.tl.functions.phone import LeaveGroupCallPresentationRequest
 from telethon.tl.functions.phone import LeaveGroupCallRequest
 from telethon.tl.functions.phone import RequestCallRequest
 from telethon.tl.functions.phone import SendSignalingDataRequest
+from telethon.tl.functions.upload import GetFileRequest
 from telethon.tl.types import ChatForbidden
 from telethon.tl.types import DataJSON
 from telethon.tl.types import GroupCall
 from telethon.tl.types import GroupCallDiscarded
 from telethon.tl.types import InputChannel
 from telethon.tl.types import InputGroupCall
+from telethon.tl.types import InputGroupCallStream
 from telethon.tl.types import InputPeerChannel
 from telethon.tl.types import InputPhoneCall
 from telethon.tl.types import MessageActionChatDeleteUser
@@ -603,6 +608,58 @@ class TelethonClient(BridgedClient):
                     volume=volume * 100,
                 ),
             )
+
+    async def download_stream(
+        self,
+        chat_id: int,
+        timestamp: int,
+        limit: int,
+        video_channel: Optional[int],
+        video_quality: MediaSegmentQuality,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            try:
+                return (
+                    await self._app(
+                        GetFileRequest(
+                            location=InputGroupCallStream(
+                                call=chat_call,
+                                time_ms=timestamp,
+                                scale=0,
+                                video_channel=video_channel,
+                                video_quality=BridgedClient.parse_quality(
+                                    video_quality,
+                                ),
+                            ),
+                            offset=0,
+                            limit=limit,
+                        ),
+                        flood_sleep_threshold=0,
+                    )
+                ).bytes
+            except FloodWaitError:
+                pass
+        return None
+
+    async def get_stream_timestamp(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            # noinspection PyBroadException
+            channels = (
+                await self._app(
+                    GetGroupCallStreamChannelsRequest(
+                        call=chat_call,
+                    ),
+                )
+            ).channels
+            if len(channels) > 0:
+                return channels[0].last_timestamp_ms
+
+        return 0
 
     async def set_call_status(
         self,
