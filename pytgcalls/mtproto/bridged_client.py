@@ -1,9 +1,9 @@
 import random
 from typing import Any
-from typing import Callable
 from typing import List
 from typing import Optional
 
+from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from ntgcalls import RTCServer
 from ntgcalls import SsrcGroup
@@ -106,6 +106,22 @@ class BridgedClient(HandlersHolder):
         chat_id: int,
         volume: int,
         participant: Any,
+    ):
+        pass
+
+    async def download_stream(
+        self,
+        chat_id: int,
+        timestamp: int,
+        limit: int,
+        video_channel: Optional[int],
+        video_quality: MediaSegmentQuality,
+    ):
+        pass
+
+    async def get_stream_timestamp(
+        self,
+        chat_id: int,
     ):
         pass
 
@@ -234,17 +250,22 @@ class BridgedClient(HandlersHolder):
         ]
 
     @staticmethod
+    def parse_quality(quality: MediaSegmentQuality) -> Optional[int]:
+        if quality == MediaSegmentQuality.THUMBNAIL:
+            return 0
+        elif quality == MediaSegmentQuality.MEDIUM:
+            return 1
+        elif quality == MediaSegmentQuality.FULL:
+            return 2
+        else:
+            return None
+
+    @staticmethod
     def rnd_id() -> int:
         return random.randint(0, 0x7FFFFFFF - 1)
 
     async def get_dhc(self):
         pass
-
-    def on_update(self) -> Callable:
-        def decorator(func: Callable) -> Callable:
-            return self.add_handler(func)
-
-        return decorator
 
     async def get_id(self):
         pass

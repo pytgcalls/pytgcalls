@@ -157,13 +157,6 @@ class YtDlpError(Exception):
         )
 
 
-class UnMuteNeeded(Exception):
-    def __init__(self):
-        super().__init__(
-            'Needed to unmute the userbot',
-        )
-
-
 class MTProtoClientNotConnected(Exception):
     def __init__(self):
         super().__init__(

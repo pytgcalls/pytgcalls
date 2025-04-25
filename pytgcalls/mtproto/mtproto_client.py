@@ -3,6 +3,7 @@ from typing import Callable
 from typing import List
 from typing import Optional
 
+from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 
 from ..exceptions import InvalidMTProtoClient
@@ -211,6 +212,36 @@ class MtProtoClient:
         else:
             raise InvalidMTProtoClient()
 
+    async def download_stream(
+        self,
+        chat_id: int,
+        timestamp: int,
+        limit: int,
+        video_channel: Optional[int],
+        video_quality: MediaSegmentQuality,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.download_stream(
+                chat_id,
+                timestamp,
+                limit,
+                video_channel,
+                video_quality,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def get_stream_timestamp(
+        self,
+        chat_id: int,
+    ):
+        if self._bind_client is not None:
+            return await self._bind_client.get_stream_timestamp(
+                chat_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
     async def set_call_status(
         self,
         chat_id: int,
@@ -281,7 +312,7 @@ class MtProtoClient:
         else:
             raise InvalidMTProtoClient()
 
-    def on_update(self) -> Callable:
+    def add_handler(self, func: Callable):
         if self._bind_client is not None:
-            return self._bind_client.on_update()
+            return self._bind_client.add_handler(func)
         raise InvalidMTProtoClient()
