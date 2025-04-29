@@ -30,7 +30,6 @@ class ClientCache:
     ) -> Optional[Any]:
         full_chat = self._full_chat_cache.get(chat_id)
         if full_chat is not None:
-            py_logger.debug('FullChat cache hit for %d', chat_id)
             return full_chat
         else:
             # noinspection PyBroadException
