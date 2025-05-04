@@ -7,7 +7,9 @@ def mutex(func):
     @wraps(func)
     async def async_wrapper(*args, **kwargs):
         self = args[0]
-        chat_id = await self.resolve_chat_id(args[1])
+        chat_id = await self.resolve_chat_id(
+            args[1] if len(args) > 1 else kwargs['chat_id'],
+        )
         async with self._lock:
             self._calls_lock[chat_id] = self._calls_lock.get(
                 chat_id,
