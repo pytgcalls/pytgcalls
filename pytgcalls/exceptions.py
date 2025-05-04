@@ -169,3 +169,10 @@ class UnsupportedMethod(Exception):
         super().__init__(
             'Unsupported method for this kind of call',
         )
+
+
+class RTMPStreamingUnsupported(Exception):
+    def __init__(self):
+        super().__init__(
+            'Streaming into an RTMP connection is not supported',
+        )

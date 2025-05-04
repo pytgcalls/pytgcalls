@@ -1,4 +1,5 @@
 import asyncio
+import json
 from typing import Optional
 from typing import Union
 
@@ -7,6 +8,7 @@ from ntgcalls import ConnectionNotFound
 from ntgcalls import MediaDescription
 from ntgcalls import TelegramServerError
 
+from ...exceptions import RTMPStreamingUnsupported
 from ...exceptions import TimedOutAnswer
 from ...scaffold import Scaffold
 from ...types import CallConfig
@@ -41,6 +43,15 @@ class ConnectCall(Scaffold):
                         media_description.screen is None,
                         self._cache_user_peer.get(chat_id),
                     )
+                    is_rtmp = json.loads(result_params).get('rtmp')
+                    if (
+                        media_description.camera is not None or
+                        media_description.microphone is not None or
+                        media_description.screen is not None or
+                        media_description.speaker is not None
+                    ) and is_rtmp:
+                        raise RTMPStreamingUnsupported()
+
                     await self._binding.connect(
                         chat_id,
                         result_params,
