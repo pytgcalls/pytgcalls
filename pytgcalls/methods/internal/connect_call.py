@@ -5,6 +5,7 @@ from typing import Union
 from ntgcalls import ConnectionMode
 from ntgcalls import ConnectionNotFound
 from ntgcalls import MediaDescription
+from ntgcalls import StreamMode
 from ntgcalls import TelegramServerError
 
 from ...exceptions import TimedOutAnswer
@@ -31,8 +32,12 @@ class ConnectCall(Scaffold):
                     if not payload:
                         payload = await self._binding.create_call(
                             chat_id,
-                            media_description,
                         )
+                    await self._binding.set_stream_sources(
+                        chat_id,
+                        StreamMode.CAPTURE,
+                        media_description,
+                    )
                     result_params = await self._app.join_group_call(
                         chat_id,
                         payload,
@@ -63,6 +68,10 @@ class ConnectCall(Scaffold):
                     )
                     await self._binding.create_p2p_call(
                         chat_id,
+                    )
+                    await self._binding.set_stream_sources(
+                        chat_id,
+                        StreamMode.CAPTURE,
                         media_description,
                     )
                     data.g_a_or_b = await self._binding.init_exchange(
