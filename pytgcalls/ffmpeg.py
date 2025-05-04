@@ -207,12 +207,12 @@ def build_command(
     if headers is not None:
         for i in headers:
             ffmpeg_command.append('-headers')
-            ffmpeg_command.append(f'"{i}: {headers[i]}"')
+            ffmpeg_command.append(f'{i}: {headers[i]}')
 
     ffmpeg_command += [
         '-nostdin',
         '-i',
-        f'"{path}"' if name == 'ffmpeg' else path,
+        f'{path}' if name == 'ffmpeg' else path,
     ]
     ffmpeg_command += command['mid']
 

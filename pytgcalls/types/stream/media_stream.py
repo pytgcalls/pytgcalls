@@ -13,6 +13,7 @@ from ...exceptions import NoAudioSourceFound
 from ...exceptions import NoVideoSourceFound
 from ...ffmpeg import build_command
 from ...ffmpeg import check_stream
+from ...list_to_cmd import list_to_cmd
 from ...media_devices.input_device import InputDevice
 from ...media_devices.screen_device import ScreenDevice
 from ...statictypes import statictypes
@@ -145,7 +146,7 @@ class MediaStream(Stream):
             if self._is_audio_external else
             AudioStream(
                 MediaSource.SHELL,
-                ' '.join(
+                list_to_cmd(
                     build_command(
                         'ffmpeg',
                         self._ffmpeg_parameters,
@@ -178,7 +179,7 @@ class MediaStream(Stream):
             if self._is_video_external else
             VideoStream(
                 MediaSource.SHELL,
-                ' '.join(
+                list_to_cmd(
                     build_command(
                         'ffmpeg',
                         self._ffmpeg_parameters,
@@ -229,7 +230,7 @@ class MediaStream(Stream):
                         ]
                     except LiveStreamFound:
                         live_stream = True
-                    self.camera.path = ' '.join(
+                    self.camera.path = list_to_cmd(
                         build_command(
                             'ffmpeg',
                             self._ffmpeg_parameters,
@@ -278,7 +279,7 @@ class MediaStream(Stream):
                         )
                     except LiveStreamFound:
                         live_stream = True
-                    self.microphone.path = ' '.join(
+                    self.microphone.path = list_to_cmd(
                         build_command(
                             'ffmpeg',
                             self._ffmpeg_parameters,

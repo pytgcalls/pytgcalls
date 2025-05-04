@@ -3,6 +3,7 @@ from typing import Union
 
 from ntgcalls import MediaSource
 
+from ...list_to_cmd import list_to_cmd
 from ...media_devices.speaker_device import SpeakerDevice
 from ...statictypes import statictypes
 from ..raw.audio_parameters import AudioParameters
@@ -72,7 +73,7 @@ class RecordStream(Stream):
             ]
             return AudioStream(
                 media_source=MediaSource.SHELL,
-                path=' '.join(commands),
+                path=list_to_cmd(commands),
                 parameters=raw_audio_parameters,
             )
         if isinstance(audio, SpeakerDevice):
@@ -81,6 +82,7 @@ class RecordStream(Stream):
                 path=audio.metadata,
                 parameters=raw_audio_parameters,
             )
+        return None
 
     @staticmethod
     def _get_video_stream(enable):
