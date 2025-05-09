@@ -5,9 +5,11 @@ from typing import Optional
 from typing import Union
 
 import pyrogram
+from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from pyrogram import Client
 from pyrogram import ContinuePropagation
+from pyrogram.errors import FloodWait
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.base import InputUser
 from pyrogram.raw.functions.channels import GetFullChannel
@@ -19,6 +21,7 @@ from pyrogram.raw.functions.phone import CreateGroupCall
 from pyrogram.raw.functions.phone import DiscardCall
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
 from pyrogram.raw.functions.phone import GetGroupCall
+from pyrogram.raw.functions.phone import GetGroupCallStreamChannels
 from pyrogram.raw.functions.phone import GetGroupParticipants
 from pyrogram.raw.functions.phone import JoinGroupCall
 from pyrogram.raw.functions.phone import JoinGroupCallPresentation
@@ -26,6 +29,7 @@ from pyrogram.raw.functions.phone import LeaveGroupCall
 from pyrogram.raw.functions.phone import LeaveGroupCallPresentation
 from pyrogram.raw.functions.phone import RequestCall
 from pyrogram.raw.functions.phone import SendSignalingData
+from pyrogram.raw.functions.upload import GetFile
 from pyrogram.raw.types import Channel
 from pyrogram.raw.types import ChannelForbidden
 from pyrogram.raw.types import Chat
@@ -35,6 +39,7 @@ from pyrogram.raw.types import GroupCall
 from pyrogram.raw.types import GroupCallDiscarded
 from pyrogram.raw.types import InputChannel
 from pyrogram.raw.types import InputGroupCall
+from pyrogram.raw.types import InputGroupCallStream
 from pyrogram.raw.types import InputPeerChannel
 from pyrogram.raw.types import InputPhoneCall
 from pyrogram.raw.types import MessageActionChatDeleteUser
@@ -539,8 +544,8 @@ class PyrogramClient(BridgedClient):
         )
 
     async def create_group_call(
-            self,
-            chat_id: int,
+        self,
+        chat_id: int,
     ):
         result: Updates = await self._app.send(
             CreateGroupCall(
@@ -567,8 +572,8 @@ class PyrogramClient(BridgedClient):
                         )
 
     async def leave_group_call(
-            self,
-            chat_id: int,
+        self,
+        chat_id: int,
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
@@ -619,6 +624,58 @@ class PyrogramClient(BridgedClient):
                     volume=volume * 100,
                 ),
             )
+
+    async def download_stream(
+        self,
+        chat_id: int,
+        timestamp: int,
+        limit: int,
+        video_channel: Optional[int],
+        video_quality: MediaSegmentQuality,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            try:
+                return (
+                    await self._app.send(
+                        GetFile(
+                            location=InputGroupCallStream(
+                                call=chat_call,
+                                time_ms=timestamp,
+                                scale=0,
+                                video_channel=video_channel,
+                                video_quality=BridgedClient.parse_quality(
+                                    video_quality,
+                                ),
+                            ),
+                            offset=0,
+                            limit=limit,
+                        ),
+                        sleep_threshold=0,
+                    )
+                ).bytes
+            except FloodWait:
+                pass
+        return None
+
+    async def get_stream_timestamp(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            # noinspection PyBroadException
+            channels = (
+                await self._app.send(
+                    GetGroupCallStreamChannels(
+                        call=chat_call,
+                    ),
+                )
+            ).channels
+            if len(channels) > 0:
+                return channels[0].last_timestamp_ms
+
+        return 0
 
     async def set_call_status(
         self,

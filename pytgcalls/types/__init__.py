@@ -5,6 +5,7 @@ from .calls import CallConfig
 from .calls import CallData
 from .calls import CallProtocol
 from .calls import GroupCallConfig
+from .calls import PendingConnection
 from .calls import RawCallUpdate
 from .chats import ChatUpdate
 from .chats import GroupCallParticipant
@@ -35,6 +36,7 @@ __all__ = (
     'CallProtocol',
     'CallData',
     'RawCallUpdate',
+    'PendingConnection',
     'GroupCallConfig',
     'GroupCallParticipant',
     'RecordStream',
