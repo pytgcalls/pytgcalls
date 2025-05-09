@@ -38,7 +38,7 @@ class YtDlp:
             'yt-dlp',
             '-g',
             '-f',
-            'bestvideo[vcodec~=\'(vp09|avc1)\']+m4a/best',
+            'bestvideo[vcodec~="(vp09|avc1)"]+m4a/best',
             '-S',
             'res:'
             f'{min(video_parameters.width, video_parameters.height)}',
