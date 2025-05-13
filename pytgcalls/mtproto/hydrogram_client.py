@@ -94,7 +94,7 @@ class HydrogramClient(BridgedClient):
             self,
         )
 
-        @self._app.on_raw_update(group=-1)
+        @self._app.on_raw_update(group=-9999)
         async def on_update(_, update, __, chats):
             if isinstance(
                 update,
