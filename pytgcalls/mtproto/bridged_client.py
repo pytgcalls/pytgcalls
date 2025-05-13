@@ -1,4 +1,5 @@
 import random
+import re
 from typing import Any
 from typing import List
 from typing import Optional
@@ -259,6 +260,17 @@ class BridgedClient(HandlersHolder):
             return 2
         else:
             return None
+
+    @staticmethod
+    def extract_dc(error: str) -> Optional[int]:
+        dc_id = re.findall(
+            r'('
+            r'CALL_MIGRATE_|'
+            r'The file to be accessed is currently stored in DC *'
+            r')([0-9])',
+            error,
+        )
+        return int(dc_id[0][1]) if dc_id else None
 
     @staticmethod
     def rnd_id() -> int:
