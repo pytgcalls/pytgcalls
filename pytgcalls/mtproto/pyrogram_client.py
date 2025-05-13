@@ -736,7 +736,6 @@ class PyrogramClient(BridgedClient):
     ):
         if chat_id is not None:
             dc_id = self._cache.get_dc_call(chat_id)
-
         if dc_id is None:
             session = self._app
         else:
@@ -786,12 +785,12 @@ class PyrogramClient(BridgedClient):
             dc_new = BridgedClient.extract_dc(
                 str(e),
             )
-            if chat_id is not None and dc_new is not None:
-                self._cache.set_dc_call(
-                    chat_id,
-                    dc_new,
-                )
             if dc_new is not None:
+                if chat_id is not None:
+                    self._cache.set_dc_call(
+                        chat_id,
+                        dc_new,
+                    )
                 return await self._invoke(
                     request,
                     dc_new,

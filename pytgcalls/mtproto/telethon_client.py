@@ -714,7 +714,7 @@ class TelethonClient(BridgedClient):
     def no_updates(self):
         return False
 
-    # noinspection PyProtectedMember
+    # noinspection PyProtectedMember,PyUnresolvedReferences
     async def _invoke(
         self,
         request,
@@ -738,12 +738,12 @@ class TelethonClient(BridgedClient):
             dc_new = BridgedClient.extract_dc(
                 str(e),
             )
-            if chat_id is not None and dc_new is not None:
-                self._cache.set_dc_call(
-                    chat_id,
-                    dc_new,
-                )
             if dc_new is not None:
+                if chat_id is not None:
+                    self._cache.set_dc_call(
+                        chat_id,
+                        dc_new,
+                    )
                 return await self._invoke(
                     request,
                     dc_new,
