@@ -182,14 +182,17 @@ class TelethonClient(BridgedClient):
             ):
                 participants = update.participants
                 for participant in participants:
+                    action = self.parse_participant_action(participant)
                     result = self._cache.set_participants_cache_call(
                         update.call.id,
+                        action,
                         self.parse_participant(participant),
                     )
                     if result is not None:
                         await self._propagate(
                             UpdatedGroupCallParticipant(
                                 self._cache.get_chat_id(update.call.id),
+                                action,
                                 result,
                             ),
                         )
@@ -342,6 +345,7 @@ class TelethonClient(BridgedClient):
                 self._cache.set_participants_cache_chat(
                     chat_id,
                     call.id,
+                    self.parse_participant_action(participant),
                     self.parse_participant(participant),
                 )
             if call.schedule_date is not None:
@@ -418,6 +422,7 @@ class TelethonClient(BridgedClient):
                     for participant in participants:
                         self._cache.set_participants_cache_call(
                             update.call.id,
+                            self.parse_participant_action(participant),
                             self.parse_participant(participant),
                         )
                 if isinstance(update, UpdateGroupCallConnection):

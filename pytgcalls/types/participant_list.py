@@ -15,9 +15,10 @@ class ParticipantList:
 
     def update_participant(
         self,
+        action: GroupCallParticipant.Action,
         participant: GroupCallParticipant,
     ):
-        if participant.action == GroupCallParticipant.Action.LEFT:
+        if action == GroupCallParticipant.Action.LEFT:
             if participant.user_id in self._list_participants:
                 del self._list_participants[participant.user_id]
         else:

@@ -190,12 +190,19 @@ class BridgedClient(HandlersHolder):
             bool(participant.raise_hand_rating),
             participant.volume // 100
             if participant.volume is not None else 100,
-            bool(participant.just_joined),
-            bool(participant.left),
             participant.source,
             BridgedClient.parse_source(participant.video),
             BridgedClient.parse_source(participant.presentation),
         )
+
+    @staticmethod
+    def parse_participant_action(participant):
+        if participant.just_joined:
+            return GroupCallParticipant.Action.JOINED
+        elif participant.left:
+            return GroupCallParticipant.Action.LEFT
+        else:
+            return GroupCallParticipant.Action.UPDATED
 
     @staticmethod
     def chat_id(input_peer) -> int:

@@ -49,12 +49,14 @@ class ClientCache:
     def set_participants_cache_call(
         self,
         input_id: int,
+        action: GroupCallParticipant.Action,
         participant: GroupCallParticipant,
     ) -> Optional[GroupCallParticipant]:
         chat_id = self.get_chat_id(input_id)
         if chat_id is not None:
             return self._internal_set_participants_cache(
                 chat_id,
+                action,
                 participant,
             )
         return None
@@ -63,6 +65,7 @@ class ClientCache:
         self,
         chat_id: int,
         call_id: int,
+        action: GroupCallParticipant.Action,
         participant: GroupCallParticipant,
     ) -> Optional[GroupCallParticipant]:
         if self._call_participants_cache.get(chat_id) is None:
@@ -74,12 +77,14 @@ class ClientCache:
             )
         return self._internal_set_participants_cache(
             chat_id,
+            action,
             participant,
         )
 
     def _internal_set_participants_cache(
         self,
         chat_id: int,
+        action: GroupCallParticipant.Action,
         participant: GroupCallParticipant,
     ) -> Optional[GroupCallParticipant]:
         participants: Optional[
@@ -91,7 +96,10 @@ class ClientCache:
             participants.last_mtproto_update = (
                 int(time()) + self._cache_duration
             )
-            return participants.update_participant(participant)
+            return participants.update_participant(
+                action,
+                participant,
+            )
         return None
 
     async def get_participant_list(
@@ -121,6 +129,7 @@ class ClientCache:
                         for participant in list_participants:
                             self.set_participants_cache_call(
                                 input_call.id,
+                                GroupCallParticipant.Action.UPDATED,
                                 participant,
                             )
                     except Exception as e:
