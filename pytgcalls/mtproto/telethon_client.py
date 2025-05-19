@@ -18,6 +18,7 @@ from telethon.tl.functions.phone import AcceptCallRequest
 from telethon.tl.functions.phone import ConfirmCallRequest
 from telethon.tl.functions.phone import CreateGroupCallRequest
 from telethon.tl.functions.phone import DiscardCallRequest
+from telethon.tl.functions.phone import DiscardGroupCallRequest
 from telethon.tl.functions.phone import EditGroupCallParticipantRequest
 from telethon.tl.functions.phone import GetGroupCallRequest
 from telethon.tl.functions.phone import GetGroupCallStreamChannelsRequest
@@ -574,6 +575,19 @@ class TelethonClient(BridgedClient):
                     source=0,
                 ),
             )
+
+    async def close_voice_chat(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._invoke(
+                DiscardGroupCallRequest(
+                    call=chat_call,
+                ),
+            )
+            self._cache.drop_cache(chat_id)
 
     async def discard_call(
         self,

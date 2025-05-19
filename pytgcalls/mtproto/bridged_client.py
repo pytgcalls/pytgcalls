@@ -96,6 +96,12 @@ class BridgedClient(HandlersHolder):
     ):
         pass
 
+    async def close_voice_chat(
+        self,
+        chat_id: int,
+    ):
+        pass
+
     async def get_group_call_participants(
         self,
         chat_id: int,

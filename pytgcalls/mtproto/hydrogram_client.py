@@ -21,6 +21,7 @@ from hydrogram.raw.functions.phone import AcceptCall
 from hydrogram.raw.functions.phone import ConfirmCall
 from hydrogram.raw.functions.phone import CreateGroupCall
 from hydrogram.raw.functions.phone import DiscardCall
+from hydrogram.raw.functions.phone import DiscardGroupCall
 from hydrogram.raw.functions.phone import EditGroupCallParticipant
 from hydrogram.raw.functions.phone import GetGroupCall
 from hydrogram.raw.functions.phone import GetGroupCallStreamChannels
@@ -587,6 +588,19 @@ class HydrogramClient(BridgedClient):
                     source=0,
                 ),
             )
+
+    async def close_voice_chat(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._invoke(
+                DiscardGroupCall(
+                    call=chat_call,
+                ),
+            )
+            self._cache.drop_cache(chat_id)
 
     async def discard_call(
         self,

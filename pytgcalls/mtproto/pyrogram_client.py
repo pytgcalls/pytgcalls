@@ -23,6 +23,7 @@ from pyrogram.raw.functions.phone import AcceptCall
 from pyrogram.raw.functions.phone import ConfirmCall
 from pyrogram.raw.functions.phone import CreateGroupCall
 from pyrogram.raw.functions.phone import DiscardCall
+from pyrogram.raw.functions.phone import DiscardGroupCall
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
 from pyrogram.raw.functions.phone import GetGroupCall
 from pyrogram.raw.functions.phone import GetGroupCallStreamChannels
@@ -588,6 +589,19 @@ class PyrogramClient(BridgedClient):
                     source=0,
                 ),
             )
+
+    async def close_voice_chat(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._invoke(
+                DiscardGroupCall(
+                    call=chat_call,
+                ),
+            )
+            self._cache.drop_cache(chat_id)
 
     async def discard_call(
         self,

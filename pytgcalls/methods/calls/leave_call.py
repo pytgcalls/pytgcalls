@@ -17,6 +17,7 @@ class LeaveCall(Scaffold):
     async def leave_call(
         self,
         chat_id: Union[int, str],
+        close: bool = False,
     ):
         chat_id = await self.resolve_chat_id(chat_id)
         is_p2p_waiting = (
@@ -48,3 +49,6 @@ class LeaveCall(Scaffold):
             self._need_unmute.discard(chat_id)
             self._presentations.discard(chat_id)
             self._call_sources.pop(chat_id, None)
+
+        if chat_id < 0 and close:  # type: ignore
+            self._app.close_voice_chat(chat_id)
