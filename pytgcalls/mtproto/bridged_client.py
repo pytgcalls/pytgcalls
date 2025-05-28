@@ -11,6 +11,7 @@ from ntgcalls import SsrcGroup
 
 from ..handlers import HandlersHolder
 from ..types import GroupCallParticipant
+from ..types import UpdatedGroupCallParticipant
 
 
 class BridgedClient(HandlersHolder):
@@ -200,6 +201,42 @@ class BridgedClient(HandlersHolder):
             BridgedClient.parse_source(participant.video),
             BridgedClient.parse_source(participant.presentation),
         )
+
+    @staticmethod
+    async def diff_participants_update(
+        cache,
+        chat_id: Optional[int],
+        participant,
+    ) -> List[UpdatedGroupCallParticipant]:
+        if chat_id is None:
+            return []
+        user_id = BridgedClient.chat_id(participant.peer)
+        participants = await cache.get_participant_list(
+            chat_id,
+            True,
+        )
+        updates = []
+        for p in participants:
+            if p.user_id == user_id:
+                if p.source != participant.source:
+                    updates.append(
+                        UpdatedGroupCallParticipant(
+                            chat_id,
+                            GroupCallParticipant.Action.KICKED,
+                            p,
+                        ),
+                    )
+                    participant.just_joined = True
+                break
+
+        updates.append(
+            UpdatedGroupCallParticipant(
+                chat_id,
+                BridgedClient.parse_participant_action(participant),
+                BridgedClient.parse_participant(participant),
+            ),
+        )
+        return updates
 
     @staticmethod
     def parse_participant_action(participant):

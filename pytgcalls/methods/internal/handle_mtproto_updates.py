@@ -141,15 +141,8 @@ class HandleMTProtoUpdates(Scaffold):
                     chat_peer,
                 ) == participant.user_id if chat_peer else False
                 if is_self:
-                    if action == GroupCallParticipant.Action.LEFT:
-                        if await self._clear_call(chat_id):
-                            await self._propagate(
-                                ChatUpdate(
-                                    chat_id,
-                                    ChatUpdate.Status.KICKED,
-                                ),
-                                self,
-                            )
+                    if action == GroupCallParticipant.Action.KICKED:
+                        await self._clear_call(chat_id)
                     if (
                         chat_id in self._need_unmute and
                         action == GroupCallParticipant.Action.UPDATED

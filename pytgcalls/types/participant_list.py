@@ -10,14 +10,13 @@ class ParticipantList:
         input_id: int,
     ):
         self._list_participants: Dict[int, GroupCallParticipant] = {}
-        self.last_mtproto_update: int = 0
         self.input_id: int = input_id
 
     def update_participant(
         self,
         action: GroupCallParticipant.Action,
         participant: GroupCallParticipant,
-    ):
+    ) -> GroupCallParticipant:
         if action == GroupCallParticipant.Action.LEFT:
             if participant.user_id in self._list_participants:
                 del self._list_participants[participant.user_id]

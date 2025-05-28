@@ -77,7 +77,6 @@ from ..types import CallProtocol
 from ..types import ChatUpdate
 from ..types import GroupCallParticipant
 from ..types import RawCallUpdate
-from ..types import UpdatedGroupCallParticipant
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
@@ -187,22 +186,22 @@ class PyrogramClient(BridgedClient):
                 update,
                 UpdateGroupCallParticipants,
             ):
-                participants = update.participants
-                for participant in participants:
-                    action = self.parse_participant_action(participant)
-                    result = self._cache.set_participants_cache_call(
-                        update.call.id,
-                        action,
-                        self.parse_participant(participant),
+                for participant in update.participants:
+                    chat_id = self._cache.get_chat_id(update.call.id)
+                    p_updates = await self.diff_participants_update(
+                        self._cache,
+                        chat_id,
+                        participant,
                     )
-                    if result is not None:
-                        await self._propagate(
-                            UpdatedGroupCallParticipant(
-                                self._cache.get_chat_id(update.call.id),
-                                action,
-                                result,
-                            ),
+                    for p_update in p_updates:
+                        result = self._cache.set_participants_cache(
+                            chat_id,
+                            update.call.id,
+                            p_update.action,
+                            p_update.participant,
                         )
+                        if result is not None:
+                            await self._propagate(p_update)
 
             if isinstance(
                 update,
@@ -357,7 +356,7 @@ class PyrogramClient(BridgedClient):
             call: GroupCall = raw_call.call
             participants: List[GroupCallParticipant] = raw_call.participants
             for participant in participants:
-                self._cache.set_participants_cache_chat(
+                self._cache.set_participants_cache(
                     chat_id,
                     call.id,
                     self.parse_participant_action(participant),
@@ -435,7 +434,8 @@ class PyrogramClient(BridgedClient):
                 ):
                     participants = update.participants
                     for participant in participants:
-                        self._cache.set_participants_cache_call(
+                        self._cache.set_participants_cache(
+                            chat_id,
                             update.call.id,
                             self.parse_participant_action(participant),
                             self.parse_participant(participant),

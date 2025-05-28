@@ -1,17 +1,18 @@
 from enum import auto
-from enum import Flag
 from typing import List
 from typing import Optional
 
 from ntgcalls import SsrcGroup
 
 from ...types.py_object import PyObject
+from ..flag import Flag
 
 
 class GroupCallParticipant(PyObject):
     class Action(Flag):
         JOINED = auto()
         LEFT = auto()
+        KICKED = auto()
         UPDATED = auto()
 
     class SourceInfo(PyObject):

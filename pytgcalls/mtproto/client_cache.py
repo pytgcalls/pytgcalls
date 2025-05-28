@@ -1,5 +1,4 @@
 import logging
-from time import time
 from typing import Any
 from typing import List
 from typing import Optional
@@ -19,11 +18,12 @@ class ClientCache:
         app: BridgedClient,
     ):
         self._app: BridgedClient = app
-        self._cache_duration = 1 if app.no_updates() else cache_duration
-        self._full_chat_cache = Cache()
-        self._call_participants_cache = Cache()
-        self._dc_call_cache = Cache()
-        self._phone_calls = Cache()
+        cache_duration = 0 if app.no_updates() else cache_duration
+        full_chat_duration = 1 if app.no_updates() else cache_duration
+        self._full_chat_cache = Cache(full_chat_duration)
+        self._call_participants_cache = Cache(cache_duration)
+        self._dc_call_cache = Cache(full_chat_duration)
+        self._phone_calls = Cache(full_chat_duration)
 
     async def get_full_chat(
         self,
@@ -46,97 +46,64 @@ class ClientCache:
                 pass
         return None
 
-    def set_participants_cache_call(
+    def set_participants_cache(
         self,
-        input_id: int,
-        action: GroupCallParticipant.Action,
-        participant: GroupCallParticipant,
-    ) -> Optional[GroupCallParticipant]:
-        chat_id = self.get_chat_id(input_id)
-        if chat_id is not None:
-            return self._internal_set_participants_cache(
-                chat_id,
-                action,
-                participant,
-            )
-        return None
-
-    def set_participants_cache_chat(
-        self,
-        chat_id: int,
+        chat_id: Optional[int],
         call_id: int,
         action: GroupCallParticipant.Action,
         participant: GroupCallParticipant,
     ) -> Optional[GroupCallParticipant]:
-        if self._call_participants_cache.get(chat_id) is None:
-            self._call_participants_cache.put(
-                chat_id,
-                ParticipantList(
-                    call_id,
-                ),
-            )
-        return self._internal_set_participants_cache(
-            chat_id,
-            action,
-            participant,
-        )
-
-    def _internal_set_participants_cache(
-        self,
-        chat_id: int,
-        action: GroupCallParticipant.Action,
-        participant: GroupCallParticipant,
-    ) -> Optional[GroupCallParticipant]:
-        participants: Optional[
-            ParticipantList
-        ] = self._call_participants_cache.get(
-            chat_id,
-        )
-        if participants is not None:
-            participants.last_mtproto_update = (
-                int(time()) + self._cache_duration
-            )
-            return participants.update_participant(
-                action,
-                participant,
-            )
-        return None
-
-    async def get_participant_list(
-        self,
-        chat_id: int,
-    ) -> Optional[List[GroupCallParticipant]]:
-        input_call = await self.get_full_chat(
-            chat_id,
-        )
-        if input_call is not None:
+        if chat_id is not None:
+            if self._call_participants_cache.get(chat_id) is None:
+                self._call_participants_cache.put(
+                    chat_id,
+                    ParticipantList(
+                        call_id,
+                    ),
+                )
             participants: Optional[
                 ParticipantList
             ] = self._call_participants_cache.get(
                 chat_id,
             )
             if participants is not None:
-                last_update = participants.last_mtproto_update
-                curr_time = int(time())
-                if not (last_update - curr_time > 0):
-                    py_logger.debug(
-                        'GetParticipant cache miss for %d', chat_id,
+                self._call_participants_cache.update_cache(chat_id)
+                return participants.update_participant(
+                    action,
+                    participant,
+                )
+        return None
+
+    async def get_participant_list(
+        self,
+        chat_id: int,
+        only_cached: bool = False,
+    ) -> List[GroupCallParticipant]:
+        input_call = await self.get_full_chat(
+            chat_id,
+        )
+        if input_call is not None:
+            if self._call_participants_cache.get(chat_id) is None:
+                if only_cached:
+                    return []
+                py_logger.debug(
+                    'GetParticipant cache miss for %d', chat_id,
+                )
+                list_participants = await self._app.get_participants(
+                    input_call,
+                )
+                for participant in list_participants:
+                    self.set_participants_cache(
+                        chat_id,
+                        input_call.id,
+                        GroupCallParticipant.Action.UPDATED,
+                        participant,
                     )
-                    try:
-                        list_participants = await self._app.get_participants(
-                            input_call,
-                        )
-                        for participant in list_participants:
-                            self.set_participants_cache_call(
-                                input_call.id,
-                                GroupCallParticipant.Action.UPDATED,
-                                participant,
-                            )
-                    except Exception as e:
-                        py_logger.error('Error for %s in %d', e, chat_id)
-                else:
-                    py_logger.debug('GetParticipant cache hit for %d', chat_id)
-                return participants.get_participants()
+            else:
+                py_logger.debug('GetParticipant cache hit for %d', chat_id)
+            return self._call_participants_cache.get(
+                chat_id,
+            ).get_participants()
         return []
 
     def get_chat_id(
@@ -158,7 +125,6 @@ class ClientCache:
         self._full_chat_cache.put(
             chat_id,
             input_call,
-            self._cache_duration,
         )
         if self._call_participants_cache.get(chat_id) is None:
             self._call_participants_cache.put(
