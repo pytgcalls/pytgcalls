@@ -1,4 +1,5 @@
 import random
+import re
 from typing import Any
 from typing import List
 from typing import Optional
@@ -10,6 +11,7 @@ from ntgcalls import SsrcGroup
 
 from ..handlers import HandlersHolder
 from ..types import GroupCallParticipant
+from ..types import UpdatedGroupCallParticipant
 
 
 class BridgedClient(HandlersHolder):
@@ -90,6 +92,12 @@ class BridgedClient(HandlersHolder):
         pass
 
     async def leave_group_call(
+        self,
+        chat_id: int,
+    ):
+        pass
+
+    async def close_voice_chat(
         self,
         chat_id: int,
     ):
@@ -189,12 +197,55 @@ class BridgedClient(HandlersHolder):
             bool(participant.raise_hand_rating),
             participant.volume // 100
             if participant.volume is not None else 100,
-            bool(participant.just_joined),
-            bool(participant.left),
             participant.source,
             BridgedClient.parse_source(participant.video),
             BridgedClient.parse_source(participant.presentation),
         )
+
+    @staticmethod
+    async def diff_participants_update(
+        cache,
+        chat_id: Optional[int],
+        participant,
+    ) -> List[UpdatedGroupCallParticipant]:
+        if chat_id is None:
+            return []
+        user_id = BridgedClient.chat_id(participant.peer)
+        participants = await cache.get_participant_list(
+            chat_id,
+            True,
+        )
+        updates = []
+        for p in participants:
+            if p.user_id == user_id:
+                if p.source != participant.source:
+                    updates.append(
+                        UpdatedGroupCallParticipant(
+                            chat_id,
+                            GroupCallParticipant.Action.KICKED,
+                            p,
+                        ),
+                    )
+                    participant.just_joined = True
+                break
+
+        updates.append(
+            UpdatedGroupCallParticipant(
+                chat_id,
+                BridgedClient.parse_participant_action(participant),
+                BridgedClient.parse_participant(participant),
+            ),
+        )
+        return updates
+
+    @staticmethod
+    def parse_participant_action(participant):
+        if participant.just_joined:
+            return GroupCallParticipant.Action.JOINED
+        elif participant.left:
+            return GroupCallParticipant.Action.LEFT
+        else:
+            return GroupCallParticipant.Action.UPDATED
 
     @staticmethod
     def chat_id(input_peer) -> int:
@@ -259,6 +310,17 @@ class BridgedClient(HandlersHolder):
             return 2
         else:
             return None
+
+    @staticmethod
+    def extract_dc(error: str) -> Optional[int]:
+        dc_id = re.findall(
+            r'('
+            r'CALL_MIGRATE_|'
+            r'The file to be accessed is currently stored in DC *'
+            r')([0-9])',
+            error,
+        )
+        return int(dc_id[0][1]) if dc_id else None
 
     @staticmethod
     def rnd_id() -> int:

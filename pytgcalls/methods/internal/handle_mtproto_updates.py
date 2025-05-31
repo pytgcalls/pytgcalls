@@ -72,7 +72,7 @@ class HandleMTProtoUpdates(Scaffold):
                 await self._clear_call(chat_id)
         if isinstance(update, UpdatedGroupCallParticipant):
             participant = update.participant
-            action = participant.action
+            action = update.action
             chat_peer = self._cache_user_peer.get(chat_id)
             user_id = participant.user_id
             if chat_id in self._call_sources:
@@ -141,19 +141,12 @@ class HandleMTProtoUpdates(Scaffold):
                     chat_peer,
                 ) == participant.user_id if chat_peer else False
                 if is_self:
-                    if action == GroupCallParticipant.Action.LEFT:
-                        if await self._clear_call(chat_id):
-                            await self._propagate(
-                                ChatUpdate(
-                                    chat_id,
-                                    ChatUpdate.Status.KICKED,
-                                ),
-                                self,
-                            )
+                    if action == GroupCallParticipant.Action.KICKED:
+                        await self._clear_call(chat_id)
                     if (
-                            chat_id in self._need_unmute and
-                            action == GroupCallParticipant.Action.UPDATED and
-                            not participant.muted_by_admin
+                        chat_id in self._need_unmute and
+                        action == GroupCallParticipant.Action.UPDATED
+                        and not participant.muted_by_admin
                     ):
                         await self._update_status(
                             chat_id,
@@ -162,8 +155,8 @@ class HandleMTProtoUpdates(Scaffold):
                         await self._switch_connection(chat_id)
 
                     if (
-                            participant.muted_by_admin and
-                            action != GroupCallParticipant.Action.LEFT
+                        participant.muted_by_admin and
+                        action != GroupCallParticipant.Action.LEFT
                     ):
                         self._need_unmute.add(chat_id)
                     else:
