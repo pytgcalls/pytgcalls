@@ -1,5 +1,7 @@
 import asyncio
-from typing import Optional, Type
+from typing import Optional
+from typing import Type
+
 
 class WaitCounterLock:
     def __init__(self) -> None:
@@ -11,7 +13,7 @@ class WaitCounterLock:
         # Return the current number of waiters waiting to acquire the lock
         return self._waiters
 
-    async def __aenter__(self) -> "WaitCounterLock":
+    async def __aenter__(self) -> 'WaitCounterLock':
         # Increment waiter count before attempting to acquire the lock
         self._waiters += 1
         await self._lock.acquire()
@@ -24,7 +26,7 @@ class WaitCounterLock:
         self,
         exc_type: Optional[Type[BaseException]],
         exc: Optional[BaseException],
-        tb: Optional[object]
+        tb: Optional[object],
     ) -> None:
         # Release the lock when exiting the async context, if it is currently held
         if self._lock.locked():
