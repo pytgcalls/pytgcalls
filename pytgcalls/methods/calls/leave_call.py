@@ -51,4 +51,4 @@ class LeaveCall(Scaffold):
             self._call_sources.pop(chat_id, None)
 
         if chat_id < 0 and close:  # type: ignore
-            self._app.close_voice_chat(chat_id)
+            await self._app.close_voice_chat(chat_id)
