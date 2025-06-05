@@ -1,3 +1,5 @@
+import logging
+
 from ntgcalls import ConnectionError
 from ntgcalls import ConnectionNotFound
 
@@ -13,9 +15,12 @@ from ...types import RawCallUpdate
 from ...types import Update
 from ...types import UpdatedGroupCallParticipant
 
+py_logger = logging.getLogger('pytgcalls')
+
 
 class HandleMTProtoUpdates(Scaffold):
     async def _handle_mtproto_updates(self, update: Update):
+        py_logger.debug('Received: %s', update)
         chat_id = update.chat_id
         if update.chat_id in self._p2p_configs:
             p2p_config = self._p2p_configs[chat_id]
