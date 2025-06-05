@@ -1,7 +1,7 @@
 from enum import auto
-from enum import Flag
 from typing import Optional
 
+from ..flag import Flag
 from pytgcalls.types.update import Update
 
 

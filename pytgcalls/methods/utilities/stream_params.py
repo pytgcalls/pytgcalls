@@ -31,7 +31,7 @@ class StreamParams:
                     'MediaStream or a raw Stream',
                 )
 
-        return StreamParams._parse_stream_description(stream)
+        return StreamParams._parse_stream_description(stream)  # type: ignore
 
     @staticmethod
     def _parse_media_description(

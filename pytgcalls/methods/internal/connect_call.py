@@ -140,3 +140,4 @@ class ConnectCall(Scaffold):
                 raise
             finally:
                 self._wait_connect.pop(chat_id, None)
+                self._pending_connections.pop(chat_id, None)

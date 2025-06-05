@@ -28,7 +28,6 @@ class HandleMTProtoUpdates(Scaffold):
                 if isinstance(update, ChatUpdate) and \
                         p2p_config.outgoing:
                     if update.status & ChatUpdate.Status.DISCARDED_CALL:
-                        self._wait_connect.pop(chat_id, None)
                         p2p_config.wait_data.set_exception(
                             CallBusy(
                                 chat_id,
