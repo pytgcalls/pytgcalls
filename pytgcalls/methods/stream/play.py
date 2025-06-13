@@ -41,6 +41,7 @@ class Play(Scaffold):
         media_description = await StreamParams.get_stream_params(
             stream,
         )
+        is_presentation = media_description.screen is not None
 
         if chat_id in await self._binding.calls():
             try:
@@ -49,6 +50,11 @@ class Play(Scaffold):
                     StreamMode.CAPTURE,
                     media_description,
                 )
+                if isinstance(config, GroupCallConfig):
+                    await self._join_presentation(
+                        chat_id,
+                        is_presentation,
+                    )
                 return
             except FileError as e:
                 raise FileNotFoundError(e)
@@ -81,7 +87,7 @@ class Play(Scaffold):
             if isinstance(config, GroupCallConfig):
                 await self._join_presentation(
                     chat_id,
-                    media_description.screen is not None,
+                    is_presentation,
                 )
                 await self._update_sources(chat_id)
         except FileError as e:
