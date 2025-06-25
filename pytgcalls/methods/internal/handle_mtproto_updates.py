@@ -79,66 +79,68 @@ class HandleMTProtoUpdates(Scaffold):
             action = update.action
             chat_peer = self._cache_user_peer.get(chat_id)
             user_id = participant.user_id
-            if chat_id in self._call_sources:
-                call_sources = self._call_sources[chat_id]
-                was_camera = user_id in call_sources.camera
-                was_screen = user_id in call_sources.presentation
 
-                if was_camera != participant.video_camera:
-                    if participant.video_info:
-                        self._call_sources[chat_id].camera[
-                            user_id
-                        ] = participant.video_info.endpoint
-                        try:
-                            await self._binding.add_incoming_video(
-                                chat_id,
-                                participant.video_info.endpoint,
-                                participant.video_info.sources,
-                            )
-                        except (ConnectionNotFound, ConnectionError):
-                            pass
-                    elif user_id in self._call_sources[chat_id].camera:
-                        try:
-                            await self._binding.remove_incoming_video(
-                                chat_id,
-                                self._call_sources[
-                                    chat_id
-                                ].camera[user_id],
-                            )
-                        except (ConnectionNotFound, ConnectionError):
-                            pass
-                        self._call_sources[chat_id].camera.pop(
-                            user_id, None,
-                        )
+            async with await self._chat_lock.acquire(chat_id):
+                if chat_id in self._call_sources:
+                    call_sources = self._call_sources[chat_id]
+                    was_camera = user_id in call_sources.camera
+                    was_screen = user_id in call_sources.presentation
 
-                if was_screen != participant.screen_sharing:
-                    if participant.presentation_info:
-                        self._call_sources[chat_id].presentation[
-                            user_id
-                        ] = participant.presentation_info.endpoint
-                        try:
-                            await self._binding.add_incoming_video(
-                                chat_id,
-                                participant.presentation_info.endpoint,
-                                participant.presentation_info.sources,
+                    if was_camera != participant.video_camera:
+                        if participant.video_info:
+                            self._call_sources[chat_id].camera[
+                                user_id
+                            ] = participant.video_info.endpoint
+                            try:
+                                await self._binding.add_incoming_video(
+                                    chat_id,
+                                    participant.video_info.endpoint,
+                                    participant.video_info.sources,
+                                )
+                            except (ConnectionNotFound, ConnectionError):
+                                pass
+                        elif user_id in self._call_sources[chat_id].camera:
+                            try:
+                                await self._binding.remove_incoming_video(
+                                    chat_id,
+                                    self._call_sources[
+                                        chat_id
+                                    ].camera[user_id],
+                                )
+                            except (ConnectionNotFound, ConnectionError):
+                                pass
+                            self._call_sources[chat_id].camera.pop(
+                                user_id, None,
                             )
-                        except (ConnectionNotFound, ConnectionError):
-                            pass
-                    elif user_id in self._call_sources[
-                        chat_id
-                    ].presentation:
-                        try:
-                            await self._binding.remove_incoming_video(
-                                chat_id,
-                                self._call_sources[
-                                    chat_id
-                                ].presentation[user_id],
+
+                    if was_screen != participant.screen_sharing:
+                        if participant.presentation_info:
+                            self._call_sources[chat_id].presentation[
+                                user_id
+                            ] = participant.presentation_info.endpoint
+                            try:
+                                await self._binding.add_incoming_video(
+                                    chat_id,
+                                    participant.presentation_info.endpoint,
+                                    participant.presentation_info.sources,
+                                )
+                            except (ConnectionNotFound, ConnectionError):
+                                pass
+                        elif user_id in self._call_sources[
+                            chat_id
+                        ].presentation:
+                            try:
+                                await self._binding.remove_incoming_video(
+                                    chat_id,
+                                    self._call_sources[
+                                        chat_id
+                                    ].presentation[user_id],
+                                )
+                            except (ConnectionNotFound, ConnectionError):
+                                pass
+                            self._call_sources[chat_id].presentation.pop(
+                                user_id, None,
                             )
-                        except (ConnectionNotFound, ConnectionError):
-                            pass
-                        self._call_sources[chat_id].presentation.pop(
-                            user_id, None,
-                        )
 
             if chat_peer:
                 is_self = BridgedClient.chat_id(
