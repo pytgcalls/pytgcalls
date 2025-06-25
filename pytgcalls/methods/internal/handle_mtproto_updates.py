@@ -43,7 +43,8 @@ class HandleMTProtoUpdates(Scaffold):
                             ),
                         )
         if chat_id in self._wait_connect and \
-                not self._wait_connect[chat_id].done():
+                not self._wait_connect[chat_id].done() and \
+                chat_id not in self._p2p_configs:
             if isinstance(update, ChatUpdate):
                 if update.status & ChatUpdate.Status.DISCARDED_CALL:
                     self._wait_connect[chat_id].set_exception(
