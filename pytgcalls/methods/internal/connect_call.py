@@ -131,6 +131,7 @@ class ConnectCall(Scaffold):
                 if retries == 3 or chat_id > 0:
                     raise
                 self._log_retries(retries)
+                payload = None
             except Exception:
                 try:
                     await self._binding.stop(chat_id)
