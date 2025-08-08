@@ -25,6 +25,31 @@ class LeaveCall(Scaffold):
             not self._p2p_configs[chat_id].wait_data.done()
         )
         if not is_p2p_waiting:
+            if chat_id in self._call_sources:
+                sources = self._call_sources[chat_id]
+                for endpoint in list(sources.camera.values()):
+                    try:
+                        await self._binding.remove_incoming_video(
+                            chat_id,
+                            endpoint,
+                        )
+                    except ConnectionNotFound:
+                        pass
+                # Remove presentation streams
+                for endpoint in list(sources.presentation.values()):
+                    try:
+                        await self._binding.remove_incoming_video(
+                            chat_id,
+                            endpoint,
+                        )
+                    except ConnectionNotFound:
+                        pass
+                self._call_sources.pop(chat_id, None)
+            if chat_id in self._presentations:
+                try:
+                    await self._binding.stop_presentation(chat_id)
+                except ConnectionNotFound:
+                    pass
             try:
                 await self._binding.stop(chat_id)
             except ConnectionNotFound:
