@@ -428,7 +428,7 @@ class TelethonClient(BridgedClient):
                 self._cache.drop_cache(chat_id)
                 chat_call = await self._cache.get_full_chat(chat_id)
                 if chat_call is not None:
-                    result: Updates = await self._invoke(
+                    retry_result: Updates = await self._invoke(
                         JoinGroupCallRequest(
                             call=chat_call,
                             params=DataJSON(data=json_join),
@@ -438,7 +438,7 @@ class TelethonClient(BridgedClient):
                             invite_hash=invite_hash,
                         ),
                     )
-                    for update in result.updates:
+                    for update in retry_result.updates:
                         if isinstance(
                             update,
                             UpdateGroupCallParticipants,
