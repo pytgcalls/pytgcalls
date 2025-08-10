@@ -55,15 +55,15 @@ class PyTgCalls(Methods, Scaffold):
         )
         # Add weak reference for cleanup
         self._finalizer = weakref.finalize(self, self._cleanup_resources)
-        
+
         # Initialize memory manager
         self._memory_manager = None
         if enable_memory_manager:
             try:
                 from .memory_manager import MemoryManager
                 self._memory_manager = MemoryManager(
-                    self, 
-                    cleanup_interval=memory_cleanup_interval
+                    self,
+                    cleanup_interval=memory_cleanup_interval,
                 )
             except ImportError:
                 # psutil might not be installed
@@ -73,31 +73,31 @@ class PyTgCalls(Methods, Scaffold):
         """Properly shutdown PyTgCalls and cleanup all resources"""
         if self._is_running:
             self._is_running = False
-            
+
             # Stop memory manager
             if self._memory_manager:
                 self._memory_manager.stop()
-            
+
             # Shutdown executor
             if hasattr(self, 'executor') and self.executor:
                 self.executor.shutdown(wait=True)
                 self.executor = None
-            
+
             # Clear all caches
             if hasattr(self, '_cache_user_peer'):
                 self._cache_user_peer.clear()
-            
+
             # Clear all internal caches
             self._clear_all_caches()
-            
+
             # Clear handlers
             if hasattr(self, '_callbacks'):
                 self._callbacks.clear()
-            
+
             # Clear chat locks
             if hasattr(self, '_chat_lock'):
                 await self._chat_lock.clear_all()
-            
+
             # Stop binding
             if hasattr(self, '_binding') and self._binding:
                 try:
@@ -108,7 +108,9 @@ class PyTgCalls(Methods, Scaffold):
                             await self._binding.stop(chat_id)
                         except (ConnectionError, RuntimeError, Exception) as e:
                             # Log specific errors but don't fail shutdown
-                            py_logger.debug(f"Error stopping call {chat_id}: {e}")
+                            py_logger.debug(
+                                f"Error stopping call {chat_id}: {e}",
+                            )
                             pass
                 except (AttributeError, RuntimeError, Exception) as e:
                     # Log binding cleanup errors but don't fail shutdown
@@ -139,7 +141,7 @@ class PyTgCalls(Methods, Scaffold):
     async def start(self):
         """Start PyTgCalls with memory management"""
         await super().start()
-        
+
         # Start memory manager if available
         if self._memory_manager:
             await self._memory_manager.start()

@@ -43,7 +43,11 @@ class ClientCache:
                     )
                 return full_chat
             except Exception as e:
-                py_logger.debug('Failed to get full chat for %d: %s', chat_id, str(e))
+                py_logger.debug(
+                    'Failed to get full chat for %d: %s',
+                    chat_id,
+                    str(e),
+                )
                 # Don't cache failed attempts to allow retry
                 pass
         return None
@@ -208,7 +212,9 @@ class ClientCache:
         """Get statistics about cache usage"""
         return {
             'full_chat_cache_size': self._full_chat_cache.size(),
-            'call_participants_cache_size': self._call_participants_cache.size(),
+            'call_participants_cache_size': (
+                self._call_participants_cache.size()
+            ),
             'dc_call_cache_size': self._dc_call_cache.size(),
             'phone_calls_cache_size': self._phone_calls.size(),
         }

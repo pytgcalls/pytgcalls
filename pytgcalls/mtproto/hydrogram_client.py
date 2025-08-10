@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -79,6 +80,8 @@ from ..types import GroupCallParticipant
 from ..types import RawCallUpdate
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
+
+py_logger = logging.getLogger('pytgcalls')
 
 
 class HydrogramClient(BridgedClient):
@@ -351,7 +354,9 @@ class HydrogramClient(BridgedClient):
                         ),
                     )
                     call: GroupCall = raw_call.call
-                    participants: List[GroupCallParticipant] = raw_call.participants
+                    participants: List[
+                        GroupCallParticipant
+                    ] = raw_call.participants
                     for participant in participants:
                         self._cache.set_participants_cache(
                             chat_id,
@@ -362,13 +367,21 @@ class HydrogramClient(BridgedClient):
                     if call.schedule_date is not None:
                         return None
                 except Exception as e:
-                    py_logger.debug(f"Failed to get group call details for {chat_id}: {e}")
+                    py_logger.debug(
+                        'Failed to get group call details for %d: %s',
+                        chat_id,
+                        str(e),
+                    )
                     # Return input_call even if we can't get participants
                     return input_call
 
             return input_call
         except Exception as e:
-            py_logger.debug(f"Failed to get call for chat {chat_id}: {e}")
+            py_logger.debug(
+                'Failed to get call for chat %d: %s',
+                chat_id,
+                str(e),
+            )
             return None
 
     async def get_dhc(self) -> DhConfig:
