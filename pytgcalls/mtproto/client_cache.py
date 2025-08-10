@@ -62,7 +62,7 @@ class ClientCache:
             )
         self._call_participants_cache.get(
             chat_id,
-        ).add_participant(
+        ).update_participant(
             action,
             participant,
         )
