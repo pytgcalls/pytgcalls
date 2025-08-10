@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from pathlib import Path
 from typing import Optional
 from typing import Union
@@ -74,6 +75,15 @@ class Play(Scaffold):
                     await self._app.create_group_call(
                         chat_id,
                     )
+                    # Retry to fetch the just-created voice chat into cache
+                    for _ in range(10):
+                        chat_call = await self._app.get_full_chat(chat_id)
+                        if chat_call is not None:
+                            break
+                        await asyncio.sleep(0.5)
+                    if chat_call is None:
+                        # Still not available, abort with clear error
+                        raise NoActiveGroupCall()
                 else:
                     raise NoActiveGroupCall()
 
