@@ -1,6 +1,6 @@
 [project]
 name = "anthraleia-pytgcalls"  
-version = "1.0.2"              
+version = "1.0.11"              
 description = "Yet Another Async client API for the Telegram Calls."
 readme = "README.md"
 license = "LGPL-3.0-or-later"
@@ -15,7 +15,7 @@ classifiers = [
     'Programming Language :: Python :: 3.13',
 ]
 authors = [
-    {name = "depinrise", email = "depinrise@proton.me"},  
+    {name = "Anthraleia", email = "depinrise@proton.me"},  
 ]
 keywords = [
     "audio", "python", "library", "video", "telegram", "stream",
