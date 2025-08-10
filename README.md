@@ -91,10 +91,10 @@ Here's how to install the PyTgCalls lib, the commands are given below:
 pip install git+https://github.com/pytgcalls/pytgcalls -U
 
 # With PyPi (Recommended)
-pip install py-tgcalls -U
+pip install anthraleia-pytgcalls -U
 
 # With memory monitoring features
-pip install "py-tgcalls[memory-monitoring]" -U
+pip install "anthraleia-pytgcalls[memory-monitoring]" -U
 ```
 
 ## Key Contributors
