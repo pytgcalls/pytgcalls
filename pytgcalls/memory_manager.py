@@ -132,8 +132,11 @@ class MemoryManager:
                 # Perform cleanup
                 cleanup_stats = await self.cleanup_caches()
                 
-                if any(cleanup_stats.get('user_peer_cache', {}).get('cleaned', 0) > 0 or
-                       cleanup_stats.get('client_cache', {}).get('cleaned', 0) > 0):
+                # Check if any cleanup was performed
+                user_peer_cleaned = cleanup_stats.get('user_peer_cache', {}).get('cleaned', 0)
+                client_cache_cleaned = cleanup_stats.get('client_cache', {}).get('cleaned', 0)
+                
+                if user_peer_cleaned > 0 or client_cache_cleaned > 0:
                     py_logger.info(f"Cleanup performed: {cleanup_stats}")
                     
             except asyncio.CancelledError:
