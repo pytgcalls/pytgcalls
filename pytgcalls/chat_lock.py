@@ -23,3 +23,17 @@ class ChatLock:
                 chat_id,
             )
             return self._chat_lock[chat_id]
+
+    async def clear_all(self):
+        """Clear all chat locks to prevent memory leaks"""
+        async with self._main_lock:
+            # Wait for all locks to be released
+            for chat_id in list(self._chat_lock.keys()):
+                lock = self._chat_lock[chat_id]
+                while lock.waiters() > 0:
+                    await asyncio.sleep(0.1)
+            self._chat_lock.clear()
+
+    def get_lock_count(self) -> int:
+        """Get number of active chat locks"""
+        return len(self._chat_lock)

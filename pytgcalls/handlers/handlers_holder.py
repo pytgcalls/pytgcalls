@@ -1,13 +1,11 @@
 import asyncio
-from typing import Any
 from typing import Callable
-from typing import NamedTuple
-from typing import Optional
 
 
-class Callback(NamedTuple):
-    func: Callable
-    filters: Optional[Any]
+class Callback:
+    def __init__(self, func: Callable, filters=None):
+        self.func = func
+        self.filters = filters
 
 
 class HandlersHolder:
@@ -47,3 +45,11 @@ class HandlersHolder:
         func: Callable,
     ):
         self._callbacks = [x for x in self._callbacks if x.func != func]
+
+    def clear(self):
+        """Clear all handlers to prevent memory leaks"""
+        self._callbacks.clear()
+
+    def get_handler_count(self) -> int:
+        """Get number of registered handlers"""
+        return len(self._callbacks)

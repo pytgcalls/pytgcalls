@@ -48,31 +48,24 @@ class ClientCache:
 
     def set_participants_cache(
         self,
-        chat_id: Optional[int],
-        call_id: int,
+        chat_id: int,
+        input_id: int,
         action: GroupCallParticipant.Action,
         participant: GroupCallParticipant,
-    ) -> Optional[GroupCallParticipant]:
-        if chat_id is not None:
-            if self._call_participants_cache.get(chat_id) is None:
-                self._call_participants_cache.put(
-                    chat_id,
-                    ParticipantList(
-                        call_id,
-                    ),
-                )
-            participants: Optional[
-                ParticipantList
-            ] = self._call_participants_cache.get(
+    ):
+        if self._call_participants_cache.get(chat_id) is None:
+            self._call_participants_cache.put(
                 chat_id,
+                ParticipantList(
+                    input_id,
+                ),
             )
-            if participants is not None:
-                self._call_participants_cache.update_cache(chat_id)
-                return participants.update_participant(
-                    action,
-                    participant,
-                )
-        return None
+        self._call_participants_cache.get(
+            chat_id,
+        ).add_participant(
+            action,
+            participant,
+        )
 
     async def get_participant_list(
         self,
@@ -192,3 +185,28 @@ class ClientCache:
         chat_id: int,
     ) -> None:
         self._phone_calls.pop(chat_id)
+
+    def clear(self):
+        """Clear all caches to prevent memory leaks"""
+        self._full_chat_cache.clear()
+        self._call_participants_cache.clear()
+        self._dc_call_cache.clear()
+        self._phone_calls.clear()
+
+    def cleanup_expired(self) -> int:
+        """Cleanup expired entries from all caches"""
+        total_cleaned = 0
+        total_cleaned += self._full_chat_cache.cleanup_expired()
+        total_cleaned += self._call_participants_cache.cleanup_expired()
+        total_cleaned += self._dc_call_cache.cleanup_expired()
+        total_cleaned += self._phone_calls.cleanup_expired()
+        return total_cleaned
+
+    def get_cache_stats(self) -> dict:
+        """Get statistics about cache usage"""
+        return {
+            'full_chat_cache_size': self._full_chat_cache.size(),
+            'call_participants_cache_size': self._call_participants_cache.size(),
+            'dc_call_cache_size': self._dc_call_cache.size(),
+            'phone_calls_cache_size': self._phone_calls.size(),
+        }

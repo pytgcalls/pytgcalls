@@ -1,0 +1,22 @@
+# Core dependencies
+aiohttp>=3.9.3
+ntgcalls>=2.0.5,<3.0.0
+deprecation
+
+# Memory monitoring
+psutil>=5.8.0
+
+# Testing dependencies
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
+
+# Optional MTProto clients for testing
+pyrogram>=1.2.20
+telethon>=1.24.0
+hydrogram>=0.1.4
+
+# Development tools
+black>=22.0.0
+flake8>=5.0.0
+mypy>=1.0.0

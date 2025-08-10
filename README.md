@@ -47,11 +47,41 @@ idle()
 - Work with voice chats in channels and chats.
 - Join as channels or chats.
 - Mute/unmute, pause/resume, stop/play, volume control and more...
+- **🆕 Advanced Memory Management**: Automatic memory leak prevention and monitoring
+- **🆕 Cache Optimization**: Intelligent cache cleanup and management
+- **🆕 Resource Cleanup**: Proper shutdown and resource management
+
+## Memory Management Features
+
+PyTgCalls now includes advanced memory management to prevent memory leaks:
+
+```python
+# Initialize with memory management
+call_py = PyTgCalls(
+    app,
+    enable_memory_manager=True,  # Enable automatic memory management
+    memory_cleanup_interval=300,  # Cleanup every 5 minutes
+    cache_duration=3600,  # Cache duration 1 hour
+)
+
+# Monitor memory usage
+stats = call_py.get_memory_stats()
+print(f"Memory Usage: {stats['usage']['rss_mb']:.1f} MB")
+
+# Force cleanup
+await call_py.force_cleanup()
+
+# Proper shutdown
+await call_py.shutdown()
+```
+
+For detailed memory management documentation, see [MEMORY_MANAGEMENT.md](MEMORY_MANAGEMENT.md).
 
 ## Requirements
 - Python 3.9 or higher.
 - An MTProto Client
 - A [Telegram API key](https://docs.pyrogram.org/intro/setup#api-keys).
+- **Optional**: `psutil` for memory monitoring features
 
 ## How to install?
 Here's how to install the PyTgCalls lib, the commands are given below:
@@ -62,6 +92,9 @@ pip install git+https://github.com/pytgcalls/pytgcalls -U
 
 # With PyPi (Recommended)
 pip install py-tgcalls -U
+
+# With memory monitoring features
+pip install "py-tgcalls[memory-monitoring]" -U
 ```
 
 ## Key Contributors

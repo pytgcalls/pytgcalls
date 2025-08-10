@@ -1,6 +1,6 @@
 [project]
 name = "anthraleia-pytgcalls"  
-version = "1.0.0"              
+version = "1.0.2"              
 description = "Yet Another Async client API for the Telegram Calls."
 readme = "README.md"
 license = "LGPL-3.0-or-later"
@@ -15,7 +15,6 @@ classifiers = [
     'Programming Language :: Python :: 3.13',
 ]
 authors = [
-    {name = "Laky-64", email = "iraci.matteo@gmail.com"},
     {name = "depinrise", email = "depinrise@proton.me"},  
 ]
 keywords = [
@@ -36,6 +35,7 @@ dependencies = [
 pyrogram = ["pyrogram>=1.2.20"]
 telethon = ["telethon>=1.24.0"]
 hydrogram = ["hydrogram>=0.1.4"]
+memory-monitoring = ["psutil>=5.8.0"]
 
 [project.urls]
 Homepage = "https://github.com/anthraleia/pytgcalls"               
