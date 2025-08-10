@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import weakref
 from concurrent.futures import ThreadPoolExecutor
@@ -13,6 +14,8 @@ from .mtproto import MtProtoClient
 from .scaffold import Scaffold
 from .statictypes import statictypes
 from .types import Cache
+
+py_logger = logging.getLogger('pytgcalls')
 
 
 class PyTgCalls(Methods, Scaffold):
@@ -103,9 +106,13 @@ class PyTgCalls(Methods, Scaffold):
                     for chat_id in calls:
                         try:
                             await self._binding.stop(chat_id)
-                        except:
+                        except (ConnectionError, RuntimeError, Exception) as e:
+                            # Log specific errors but don't fail shutdown
+                            py_logger.debug(f"Error stopping call {chat_id}: {e}")
                             pass
-                except:
+                except (AttributeError, RuntimeError, Exception) as e:
+                    # Log binding cleanup errors but don't fail shutdown
+                    py_logger.debug(f"Error during binding cleanup: {e}")
                     pass
                 self._binding = None
 
@@ -135,7 +142,7 @@ class PyTgCalls(Methods, Scaffold):
         
         # Start memory manager if available
         if self._memory_manager:
-            self._memory_manager.start()
+            await self._memory_manager.start()
 
     async def force_cleanup(self) -> dict:
         """Force immediate memory cleanup and return statistics"""
