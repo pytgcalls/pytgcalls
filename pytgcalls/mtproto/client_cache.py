@@ -33,16 +33,18 @@ class ClientCache:
         if full_chat is not None:
             return full_chat
         else:
-            # noinspection PyBroadException
             try:
                 py_logger.debug('FullChat cache miss for %d', chat_id)
                 full_chat = await self._app.get_call(chat_id)
-                self.set_cache(
-                    chat_id,
-                    full_chat,
-                )
+                if full_chat is not None:
+                    self.set_cache(
+                        chat_id,
+                        full_chat,
+                    )
                 return full_chat
-            except Exception:
+            except Exception as e:
+                py_logger.debug('Failed to get full chat for %d: %s', chat_id, str(e))
+                # Don't cache failed attempts to allow retry
                 pass
         return None
 

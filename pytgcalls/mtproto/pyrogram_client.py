@@ -325,10 +325,10 @@ class PyrogramClient(BridgedClient):
         self,
         chat_id: int,
     ) -> Optional[InputGroupCall]:
-        chat = await self._app.resolve_peer(chat_id)
-        if isinstance(chat, InputPeerChannel):
-            input_call = (
-                await self._invoke(
+        try:
+            chat = await self._app.resolve_peer(chat_id)
+            if isinstance(chat, InputPeerChannel):
+                full_chat = await self._invoke(
                     GetFullChannel(
                         channel=InputChannel(
                             channel_id=chat.channel_id,
@@ -336,36 +336,41 @@ class PyrogramClient(BridgedClient):
                         ),
                     ),
                 )
-            ).full_chat.call
-        else:
-            input_call = (
-                await self._invoke(
+                input_call = full_chat.full_chat.call
+            else:
+                full_chat = await self._invoke(
                     GetFullChat(chat_id=chat.chat_id),
                 )
-            ).full_chat.call
+                input_call = full_chat.full_chat.call
 
-        if input_call is not None:
-            raw_call = (
-                await self._invoke(
-                    GetGroupCall(
-                        call=input_call,
-                        limit=-1,
-                    ),
-                )
-            )
-            call: GroupCall = raw_call.call
-            participants: List[GroupCallParticipant] = raw_call.participants
-            for participant in participants:
-                self._cache.set_participants_cache(
-                    chat_id,
-                    call.id,
-                    self.parse_participant_action(participant),
-                    self.parse_participant(participant),
-                )
-            if call.schedule_date is not None:
-                return None
+            if input_call is not None:
+                try:
+                    raw_call = await self._invoke(
+                        GetGroupCall(
+                            call=input_call,
+                            limit=-1,
+                        ),
+                    )
+                    call: GroupCall = raw_call.call
+                    participants: List[GroupCallParticipant] = raw_call.participants
+                    for participant in participants:
+                        self._cache.set_participants_cache(
+                            chat_id,
+                            call.id,
+                            self.parse_participant_action(participant),
+                            self.parse_participant(participant),
+                        )
+                    if call.schedule_date is not None:
+                        return None
+                except Exception as e:
+                    py_logger.debug(f"Failed to get group call details for {chat_id}: {e}")
+                    # Return input_call even if we can't get participants
+                    return input_call
 
-        return input_call
+            return input_call
+        except Exception as e:
+            py_logger.debug(f"Failed to get call for chat {chat_id}: {e}")
+            return None
 
     async def get_dhc(self) -> DhConfig:
         return await self._invoke(
