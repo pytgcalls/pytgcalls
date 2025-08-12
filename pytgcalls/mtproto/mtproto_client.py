@@ -316,3 +316,21 @@ class MtProtoClient:
         if self._bind_client is not None:
             return self._bind_client.add_handler(func)
         raise InvalidMTProtoClient()
+
+    def drop_cache(
+        self,
+        chat_id: int,
+    ) -> None:
+        if self._bind_client is not None:
+            self._bind_client.drop_cache(chat_id)
+        else:
+            raise InvalidMTProtoClient()
+
+    def drop_phone_call(
+        self,
+        chat_id: int,
+    ) -> None:
+        if self._bind_client is not None:
+            self._bind_client.drop_phone_call(chat_id)
+        else:
+            raise InvalidMTProtoClient()

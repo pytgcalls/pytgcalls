@@ -615,6 +615,18 @@ class PyrogramClient(BridgedClient):
                 ),
             )
 
+    def drop_cache(
+        self,
+        chat_id: int,
+    ) -> None:
+        self._cache.drop_cache(chat_id)
+
+    def drop_phone_call(
+        self,
+        chat_id: int,
+    ) -> None:
+        self._cache.drop_phone_call(chat_id)
+
     async def discard_call(
         self,
         chat_id: int,

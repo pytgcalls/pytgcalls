@@ -95,6 +95,18 @@ class BridgedClient(HandlersHolder):
     ):
         pass
 
+    def drop_cache(
+        self,
+        chat_id: int,
+    ) -> None:
+        pass
+
+    def drop_phone_call(
+        self,
+        chat_id: int,
+    ) -> None:
+        pass
+
     async def get_group_call_participants(
         self,
         chat_id: int,
