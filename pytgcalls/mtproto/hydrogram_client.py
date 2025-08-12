@@ -406,7 +406,7 @@ class HydrogramClient(BridgedClient):
         try:
             chat_call = await self._cache.get_full_chat(chat_id)
             if chat_call is not None:
-                result: Updates = await self._invoke(
+                result: Updates = await self._app.invoke(
                     JoinGroupCall(
                         call=chat_call,
                         params=DataJSON(data=json_join),
@@ -423,10 +423,8 @@ class HydrogramClient(BridgedClient):
                     ):
                         participants = update.participants
                         for participant in participants:
-                            self._cache.set_participants_cache(
-                                chat_id,
+                            self._cache.set_participants_cache_call(
                                 update.call.id,
-                                self.parse_participant_action(participant),
                                 self.parse_participant(participant),
                             )
                     if isinstance(update, UpdateGroupCallConnection):
@@ -436,7 +434,7 @@ class HydrogramClient(BridgedClient):
                 self._cache.drop_cache(chat_id)
                 chat_call = await self._cache.get_full_chat(chat_id)
                 if chat_call is not None:
-                    retry_result: Updates = await self._invoke(
+                    retry_result: Updates = await self._app.invoke(
                         JoinGroupCall(
                             call=chat_call,
                             params=DataJSON(data=json_join),
@@ -453,10 +451,8 @@ class HydrogramClient(BridgedClient):
                         ):
                             participants = update.participants
                             for participant in participants:
-                                self._cache.set_participants_cache(
-                                    chat_id,
+                                self._cache.set_participants_cache_call(
                                     update.call.id,
-                                    self.parse_participant_action(participant),
                                     self.parse_participant(participant),
                                 )
                         if isinstance(update, UpdateGroupCallConnection):

@@ -18,18 +18,18 @@ class LeaveCall(Scaffold):
         self,
         chat_id: Union[int, str],
     ):
-        chat_id = await self.resolve_chat_id(chat_id)
+        resolved_chat_id: int = await self.resolve_chat_id(chat_id)
         is_p2p_waiting = (
-            chat_id in self._p2p_configs and
-            not self._p2p_configs[chat_id].wait_data.done()
+            resolved_chat_id in self._p2p_configs and
+            not self._p2p_configs[resolved_chat_id].wait_data.done()
         )
         if not is_p2p_waiting:
-            if chat_id in self._call_sources:
-                sources = self._call_sources[chat_id]
+            if resolved_chat_id in self._call_sources:
+                sources = self._call_sources[resolved_chat_id]
                 for endpoint in list(sources.camera.values()):
                     try:
                         await self._binding.remove_incoming_video(
-                            chat_id,
+                            resolved_chat_id,
                             endpoint,
                         )
                     except ConnectionNotFound:
@@ -38,38 +38,40 @@ class LeaveCall(Scaffold):
                 for endpoint in list(sources.presentation.values()):
                     try:
                         await self._binding.remove_incoming_video(
-                            chat_id,
+                            resolved_chat_id,
                             endpoint,
                         )
                     except ConnectionNotFound:
                         pass
-                self._call_sources.pop(chat_id, None)
-            if chat_id in self._presentations:
+                self._call_sources.pop(resolved_chat_id, None)
+            if resolved_chat_id in self._presentations:
                 try:
-                    await self._binding.stop_presentation(chat_id)
+                    await self._binding.stop_presentation(resolved_chat_id)
                 except ConnectionNotFound:
                     pass
             try:
-                await self._binding.stop(chat_id)
+                await self._binding.stop(resolved_chat_id)
             except ConnectionNotFound:
                 raise NotInCallError()
-        if chat_id < 0:  # type: ignore
+        if resolved_chat_id < 0:  # type: ignore
             chat_call = await self._app.get_full_chat(
-                chat_id,
+                resolved_chat_id,
             )
 
             if chat_call is None:
                 raise NoActiveGroupCall()
 
             await self._app.leave_group_call(
-                chat_id,
+                resolved_chat_id,
             )
         else:
-            await self._app.discard_call(chat_id, False)
+            await self._app.discard_call(resolved_chat_id, False)
         if is_p2p_waiting:
-            self._p2p_configs.pop(chat_id)
+            self._p2p_configs.pop(resolved_chat_id)
             return
-        if chat_id < 0:  # type: ignore
-            self._need_unmute.discard(chat_id)
-            self._presentations.discard(chat_id)
-            self._call_sources.pop(chat_id, None)
+        if resolved_chat_id < 0:  # type: ignore
+            self._need_unmute.discard(resolved_chat_id)
+            self._presentations.discard(resolved_chat_id)
+            self._call_sources.pop(resolved_chat_id, None)
+
+            self._clear_cache(resolved_chat_id)
