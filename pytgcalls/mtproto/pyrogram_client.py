@@ -8,7 +8,7 @@ from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from pyrogram import Client
 from pyrogram import ContinuePropagation
-from pyrogram.errors import AuthBytesInvalid
+from pyrogram.errors import AuthBytesInvalid, GroupcallForbidden
 from pyrogram.errors import BadRequest
 from pyrogram.errors import FileMigrate
 from pyrogram.errors import FloodWait
@@ -72,6 +72,7 @@ from pyrogram.raw.types import Updates
 from pyrogram.raw.types.messages import DhConfig
 from pyrogram.session import Auth
 from pyrogram.session import Session
+from telethon.errors import ForbiddenError
 
 from ..types import CallProtocol
 from ..types import ChatUpdate
@@ -415,33 +416,43 @@ class PyrogramClient(BridgedClient):
         video_stopped: bool,
         join_as: InputPeer,
     ) -> str:
-        chat_call = await self._cache.get_full_chat(chat_id)
-        if chat_call is not None:
-            result: Updates = await self._invoke(
-                JoinGroupCall(
-                    call=chat_call,
-                    params=DataJSON(data=json_join),
-                    muted=False,
-                    join_as=join_as,
-                    video_stopped=video_stopped,
-                    invite_hash=invite_hash,
-                ),
+        try:
+            chat_call = await self._cache.get_full_chat(chat_id)
+            if chat_call is not None:
+                result: Updates = await self._invoke(
+                    JoinGroupCall(
+                        call=chat_call,
+                        params=DataJSON(data=json_join),
+                        muted=False,
+                        join_as=join_as,
+                        video_stopped=video_stopped,
+                        invite_hash=invite_hash,
+                    ),
+                )
+                for update in result.updates:
+                    if isinstance(
+                        update,
+                        UpdateGroupCallParticipants,
+                    ):
+                        participants = update.participants
+                        for participant in participants:
+                            self._cache.set_participants_cache(
+                                chat_id,
+                                update.call.id,
+                                self.parse_participant_action(participant),
+                                self.parse_participant(participant),
+                            )
+                    if isinstance(update, UpdateGroupCallConnection):
+                        return update.params.data
+        except GroupcallForbidden:
+            self._cache.drop_cache(chat_id)
+            return await self.join_group_call(
+                chat_id,
+                json_join,
+                invite_hash,
+                video_stopped,
+                join_as,
             )
-            for update in result.updates:
-                if isinstance(
-                    update,
-                    UpdateGroupCallParticipants,
-                ):
-                    participants = update.participants
-                    for participant in participants:
-                        self._cache.set_participants_cache(
-                            chat_id,
-                            update.call.id,
-                            self.parse_participant_action(participant),
-                            self.parse_participant(participant),
-                        )
-                if isinstance(update, UpdateGroupCallConnection):
-                    return update.params.data
 
         return json.dumps({'transport': None})
 

@@ -6,7 +6,7 @@ from typing import Union
 from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from telethon import TelegramClient
-from telethon.errors import BadRequestError
+from telethon.errors import BadRequestError, GroupcallForbiddenError
 from telethon.errors import ChannelPrivateError
 from telethon.errors import FileMigrateError
 from telethon.errors import FloodWaitError
@@ -401,33 +401,43 @@ class TelethonClient(BridgedClient):
         video_stopped: bool,
         join_as: TypeInputPeer,
     ) -> str:
-        chat_call = await self._cache.get_full_chat(chat_id)
-        if chat_call is not None:
-            result: Updates = await self._invoke(
-                JoinGroupCallRequest(
-                    call=chat_call,
-                    params=DataJSON(data=json_join),
-                    muted=False,
-                    join_as=join_as,
-                    video_stopped=video_stopped,
-                    invite_hash=invite_hash,
-                ),
+        try:
+            chat_call = await self._cache.get_full_chat(chat_id)
+            if chat_call is not None:
+                result: Updates = await self._invoke(
+                    JoinGroupCallRequest(
+                        call=chat_call,
+                        params=DataJSON(data=json_join),
+                        muted=False,
+                        join_as=join_as,
+                        video_stopped=video_stopped,
+                        invite_hash=invite_hash,
+                    ),
+                )
+                for update in result.updates:
+                    if isinstance(
+                        update,
+                        UpdateGroupCallParticipants,
+                    ):
+                        participants = update.participants
+                        for participant in participants:
+                            self._cache.set_participants_cache(
+                                chat_id,
+                                update.call.id,
+                                self.parse_participant_action(participant),
+                                self.parse_participant(participant),
+                            )
+                    if isinstance(update, UpdateGroupCallConnection):
+                        return update.params.data
+        except GroupcallForbiddenError:
+            self._cache.drop_cache(chat_id)
+            return await self.join_group_call(
+                chat_id,
+                json_join,
+                invite_hash,
+                video_stopped,
+                join_as,
             )
-            for update in result.updates:
-                if isinstance(
-                    update,
-                    UpdateGroupCallParticipants,
-                ):
-                    participants = update.participants
-                    for participant in participants:
-                        self._cache.set_participants_cache(
-                            chat_id,
-                            update.call.id,
-                            self.parse_participant_action(participant),
-                            self.parse_participant(participant),
-                        )
-                if isinstance(update, UpdateGroupCallConnection):
-                    return update.params.data
 
         return json.dumps({'transport': None})
 
