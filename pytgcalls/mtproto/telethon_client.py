@@ -6,10 +6,11 @@ from typing import Union
 from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from telethon import TelegramClient
-from telethon.errors import BadRequestError, GroupcallForbiddenError
+from telethon.errors import BadRequestError
 from telethon.errors import ChannelPrivateError
 from telethon.errors import FileMigrateError
 from telethon.errors import FloodWaitError
+from telethon.errors import GroupcallForbiddenError
 from telethon.events import Raw
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetDhConfigRequest

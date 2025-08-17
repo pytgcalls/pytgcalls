@@ -8,10 +8,11 @@ from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from pyrogram import Client
 from pyrogram import ContinuePropagation
-from pyrogram.errors import AuthBytesInvalid, GroupcallForbidden
+from pyrogram.errors import AuthBytesInvalid
 from pyrogram.errors import BadRequest
 from pyrogram.errors import FileMigrate
 from pyrogram.errors import FloodWait
+from pyrogram.errors import GroupcallForbidden
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.base import InputUser
 from pyrogram.raw.functions.auth import ExportAuthorization
@@ -72,7 +73,6 @@ from pyrogram.raw.types import Updates
 from pyrogram.raw.types.messages import DhConfig
 from pyrogram.session import Auth
 from pyrogram.session import Session
-from telethon.errors import ForbiddenError
 
 from ..types import CallProtocol
 from ..types import ChatUpdate
