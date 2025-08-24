@@ -51,6 +51,7 @@ from pyrogram.raw.types import InputPhoneCall
 from pyrogram.raw.types import MessageActionChatDeleteUser
 from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import MessageService
+from pyrogram.raw.types import PeerChannel
 from pyrogram.raw.types import PeerChat
 from pyrogram.raw.types import PhoneCall
 from pyrogram.raw.types import PhoneCallAccepted
@@ -262,28 +263,31 @@ class PyrogramClient(BridgedClient):
                         update.message.action,
                         MessageActionInviteToGroupCall,
                     ):
-                        if isinstance(
-                            update.message.peer_id,
-                            PeerChat,
-                        ):
-                            await self._propagate(
-                                ChatUpdate(
-                                    chat_id,
-                                    ChatUpdate.Status.INVITED_VOICE_CHAT,
-                                    update.message.action,
-                                ),
-                            )
+                        await self._propagate(
+                            ChatUpdate(
+                                chat_id,
+                                ChatUpdate.Status.INVITED_VOICE_CHAT,
+                                update.message.action,
+                            ),
+                        )
+
                     if isinstance(
                         update.message.action,
                         MessageActionChatDeleteUser,
                     ):
                         if isinstance(
                             update.message.peer_id,
-                            PeerChat,
+                            (
+                                PeerChat,
+                                PeerChannel,
+                            ),
                         ):
                             if isinstance(
                                 chats[update.message.peer_id.chat_id],
-                                ChatForbidden,
+                                (
+                                    ChatForbidden,
+                                    ChannelForbidden,
+                                ),
                             ):
                                 self._cache.drop_cache(chat_id)
                                 await self._propagate(

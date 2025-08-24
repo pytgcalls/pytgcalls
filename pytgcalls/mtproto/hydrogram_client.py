@@ -70,6 +70,7 @@ from hydrogram.raw.types import Updates
 from hydrogram.raw.types.messages import DhConfig
 from hydrogram.session import Auth
 from hydrogram.session import Session
+from hydrogram.types import PeerChannel
 from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from pyrogram.errors import GroupcallForbidden
@@ -261,28 +262,31 @@ class HydrogramClient(BridgedClient):
                         update.message.action,
                         MessageActionInviteToGroupCall,
                     ):
-                        if isinstance(
-                            update.message.peer_id,
-                            PeerChat,
-                        ):
-                            await self._propagate(
-                                ChatUpdate(
-                                    chat_id,
-                                    ChatUpdate.Status.INVITED_VOICE_CHAT,
-                                    update.message.action,
-                                ),
-                            )
+                        await self._propagate(
+                            ChatUpdate(
+                                chat_id,
+                                ChatUpdate.Status.INVITED_VOICE_CHAT,
+                                update.message.action,
+                            ),
+                        )
+
                     if isinstance(
                         update.message.action,
                         MessageActionChatDeleteUser,
                     ):
                         if isinstance(
                             update.message.peer_id,
-                            PeerChat,
+                            (
+                                PeerChat,
+                                PeerChannel,
+                            ),
                         ):
                             if isinstance(
                                 chats[update.message.peer_id.chat_id],
-                                ChatForbidden,
+                                (
+                                    ChatForbidden,
+                                    ChannelForbidden,
+                                ),
                             ):
                                 self._cache.drop_cache(chat_id)
                                 await self._propagate(

@@ -31,6 +31,7 @@ from telethon.tl.functions.phone import LeaveGroupCallRequest
 from telethon.tl.functions.phone import RequestCallRequest
 from telethon.tl.functions.phone import SendSignalingDataRequest
 from telethon.tl.functions.upload import GetFileRequest
+from telethon.tl.types import ChannelForbidden
 from telethon.tl.types import ChatForbidden
 from telethon.tl.types import DataJSON
 from telethon.tl.types import GroupCall
@@ -284,11 +285,17 @@ class TelethonClient(BridgedClient):
                     ):
                         if isinstance(
                             update.message.peer_id,
-                            PeerChat,
+                            (
+                                PeerChat,
+                                PeerChannel,
+                            ),
                         ):
                             if isinstance(
                                 await self._app.get_entity(chat_id),
-                                ChatForbidden,
+                                (
+                                    ChatForbidden,
+                                    ChannelForbidden,
+                                ),
                             ):
                                 self._cache.drop_cache(chat_id)
                                 await self._propagate(
