@@ -10,6 +10,7 @@ from hydrogram.errors import AuthBytesInvalid
 from hydrogram.errors import BadRequest
 from hydrogram.errors import FileMigrate
 from hydrogram.errors import FloodWait
+from hydrogram.errors.exceptions import GroupcallForbidden
 from hydrogram.raw.base import InputPeer
 from hydrogram.raw.base import InputUser
 from hydrogram.raw.functions.auth import ExportAuthorization
@@ -73,7 +74,6 @@ from hydrogram.session import Session
 from hydrogram.types import PeerChannel
 from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
-from pyrogram.errors import GroupcallForbidden
 
 from ..types import CallProtocol
 from ..types import ChatUpdate
