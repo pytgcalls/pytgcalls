@@ -63,7 +63,7 @@ async def check_stream(
         raise
 
     have_video = False
-    is_image = False
+    is_image = True
     have_audio = False
     have_valid_video = False
 
@@ -107,7 +107,7 @@ async def check_stream(
         stream_parameters.height = new_h
         stream_parameters.width = new_w
         if is_image:
-            stream_parameters.frame_rate = 1
+            stream_parameters.frame_rate = 10
             raise ImageSourceFound(path)
 
     if isinstance(stream_parameters, AudioParameters) and not have_audio:
