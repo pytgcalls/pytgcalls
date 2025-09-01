@@ -281,8 +281,10 @@ class HydrogramClient(BridgedClient):
                                 PeerChannel,
                             ),
                         ):
+                            peer = update.message.peer_id
+                            chat_or_channel_id = peer.chat_id if hasattr(peer, 'chat_id') else peer.channel_id
                             if isinstance(
-                                chats[update.message.peer_id.chat_id],
+                                chats[chat_or_channel_id],
                                 (
                                     ChatForbidden,
                                     ChannelForbidden,
