@@ -248,18 +248,20 @@ class BridgedClient(HandlersHolder):
             return GroupCallParticipant.Action.UPDATED
 
     @staticmethod
-    def chat_id(input_peer) -> int:
+    def chat_id(input_peer, readable: bool = True) -> int:
         class_name = input_peer.__class__.__name__
         if class_name in ['PeerUser', 'InputPeerUser']:
             return input_peer.user_id
         elif class_name in ['Channel', 'ChannelForbidden']:
-            return -1000000000000 - input_peer.id
+            return -1000000000000 - input_peer.id \
+                if readable else input_peer.id
         elif hasattr(input_peer, 'channel_id'):
-            return -1000000000000 - input_peer.channel_id
+            return -1000000000000 - input_peer.channel_id \
+                if readable else input_peer.channel_id
         elif class_name == 'Chat':
-            return -input_peer.id
+            return -input_peer.id if readable else input_peer.id
         else:
-            return -input_peer.chat_id
+            return -input_peer.chat_id if readable else input_peer.chat_id
 
     @staticmethod
     def user_from_call(call) -> Optional[int]:
