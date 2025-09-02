@@ -8,6 +8,7 @@ from ntgcalls import Protocol
 from telethon import TelegramClient
 from telethon.errors import BadRequestError
 from telethon.errors import ChannelPrivateError
+from telethon.errors import ChatForbiddenError
 from telethon.errors import FileMigrateError
 from telethon.errors import FloodWaitError
 from telethon.errors import GroupcallForbiddenError
@@ -59,6 +60,7 @@ from telethon.tl.types import TypeInputChannel
 from telethon.tl.types import TypeInputPeer
 from telethon.tl.types import TypeInputUser
 from telethon.tl.types import UpdateChannel
+from telethon.tl.types import UpdateChat
 from telethon.tl.types import UpdateGroupCall
 from telethon.tl.types import UpdateGroupCallConnection
 from telethon.tl.types import UpdateGroupCallParticipants
@@ -234,14 +236,19 @@ class TelethonClient(BridgedClient):
                     )
             if isinstance(
                 update,
-                UpdateChannel,
+                (
+                    UpdateChannel,
+                    UpdateChat,
+                ),
             ):
                 chat_id = self.chat_id(update)
                 try:
                     await self._app.get_entity(
-                        PeerChannel(chat_id),
+                        PeerChannel(chat_id)
+                        if isinstance(update, UpdateChannel)
+                        else PeerChat(chat_id),
                     )
-                except ChannelPrivateError:
+                except (ChannelPrivateError, ChatForbiddenError):
                     self._cache.drop_cache(chat_id)
                     await self._propagate(
                         ChatUpdate(
@@ -270,19 +277,19 @@ class TelethonClient(BridgedClient):
                                 update.message.action,
                             ),
                         )
-                    if isinstance(update.message.out, bool):
-                        if update.message.out:
-                            self._cache.drop_cache(chat_id)
-                            await self._propagate(
-                                ChatUpdate(
-                                    chat_id,
-                                    ChatUpdate.Status.LEFT_GROUP,
-                                ),
-                            )
                     if isinstance(
                         update.message.action,
                         MessageActionChatDeleteUser,
                     ):
+                        if isinstance(update.message.out, bool):
+                            if update.message.out:
+                                self._cache.drop_cache(chat_id)
+                                await self._propagate(
+                                    ChatUpdate(
+                                        chat_id,
+                                        ChatUpdate.Status.LEFT_GROUP,
+                                    ),
+                                )
                         if isinstance(
                             update.message.peer_id,
                             (

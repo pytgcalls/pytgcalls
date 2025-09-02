@@ -63,6 +63,7 @@ from pyrogram.raw.types import PhoneCallProtocol
 from pyrogram.raw.types import PhoneCallRequested
 from pyrogram.raw.types import PhoneCallWaiting
 from pyrogram.raw.types import UpdateChannel
+from pyrogram.raw.types import UpdateChat
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateGroupCallConnection
 from pyrogram.raw.types import UpdateGroupCallParticipants
@@ -235,13 +236,21 @@ class PyrogramClient(BridgedClient):
                     )
             if isinstance(
                 update,
-                UpdateChannel,
+                (
+                    UpdateChannel,
+                    UpdateChat,
+                ),
             ):
                 chat_id = self.chat_id(update)
                 if len(chats) > 0:
                     if isinstance(
-                        chats[update.channel_id],
-                        ChannelForbidden,
+                        chats[
+                            self.chat_id(
+                                update,
+                                False,
+                            )
+                        ],
+                        (ChannelForbidden, ChatForbidden),
                     ):
                         self._cache.drop_cache(chat_id)
                         await self._propagate(
@@ -283,7 +292,12 @@ class PyrogramClient(BridgedClient):
                             ),
                         ):
                             if isinstance(
-                                chats[update.message.peer_id.chat_id],
+                                chats[
+                                    self.chat_id(
+                                        update.message.peer_id,
+                                        False,
+                                    )
+                                ],
                                 (
                                     ChatForbidden,
                                     ChannelForbidden,
