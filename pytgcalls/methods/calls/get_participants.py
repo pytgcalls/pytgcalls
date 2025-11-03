@@ -1,4 +1,3 @@
-from typing import List
 from typing import Optional
 from typing import Union
 
@@ -7,6 +6,7 @@ from ...mtproto_required import mtproto_required
 from ...scaffold import Scaffold
 from ...statictypes import statictypes
 from ...types.chats import GroupCallParticipant
+from ...types.list import List
 
 
 class GetParticipants(Scaffold):

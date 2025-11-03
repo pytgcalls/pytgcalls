@@ -16,14 +16,14 @@ class MediaDevices:
         )
 
     @staticmethod
-    def microphone_devices() -> List:
+    def microphone_devices() -> List[InputDevice]:
         return MediaDevices._parse_devices(
             NTgCalls.get_media_devices().microphone,
             False,
         )
 
     @staticmethod
-    def speaker_devices() -> List:
+    def speaker_devices() -> List[SpeakerDevice]:
         return List(
             SpeakerDevice(
                 device.name,
@@ -33,14 +33,14 @@ class MediaDevices:
         )
 
     @staticmethod
-    def camera_devices() -> List:
+    def camera_devices() -> List[InputDevice]:
         return MediaDevices._parse_devices(
             NTgCalls.get_media_devices().camera,
             True,
         )
 
     @staticmethod
-    def screen_devices() -> List:
+    def screen_devices() -> List[ScreenDevice]:
         return List(
             ScreenDevice(
                 device.name,

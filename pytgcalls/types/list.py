@@ -1,5 +1,10 @@
+from typing import TypeVar
+
 from ..types.py_object import PyObject
 
 
-class List(PyObject, list):
+T = TypeVar('T')
+
+
+class List(PyObject, list[T]):
     pass
