@@ -126,6 +126,7 @@ async def cleanup_commands(
         proc_res = await asyncio.create_subprocess_exec(
             commands[0] if not process_name else process_name,
             '-h',
+            'full',
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -138,7 +139,8 @@ async def cleanup_commands(
         except (subprocess.TimeoutExpired, JSONDecodeError):
             proc_res.terminate()
             raise
-        supported = re.findall(r'(?m)^ *(-.*?)\s+', result)
+        supported = re.findall(r'(?m)^ *(-\w+).*?\s+', result)
+        supported += ['-i']
         new_commands = []
         ignore_next = False
 
@@ -147,8 +149,11 @@ async def cleanup_commands(
                 if v[0] == '-':
                     ignore_next = v not in supported or \
                         blacklist is not None and v in blacklist
+
                 if not ignore_next:
                     new_commands += [v]
+                elif v[0] != '-':
+                    ignore_next = False
         return new_commands
     except FileNotFoundError:
         raise FFmpegError(f'{commands[0]} not installed')
@@ -210,7 +215,6 @@ def build_command(
             ffmpeg_command.append(f'{i}: {headers[i]}')
 
     ffmpeg_command += [
-        '-nostdin',
         '-i',
         f'{path}' if name == 'ffmpeg' else path,
     ]
