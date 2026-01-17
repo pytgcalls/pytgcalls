@@ -209,30 +209,38 @@ class HydrogramClient(BridgedClient):
                 update,
                 UpdateGroupCall,
             ):
-                chat_id = self.chat_id(chats[update.chat_id])
-                if isinstance(
-                    update.call,
-                    GroupCall,
-                ):
-                    if update.call.schedule_date is None:
-                        self._cache.set_cache(
-                            chat_id,
-                            InputGroupCall(
-                                access_hash=update.call.access_hash,
-                                id=update.call.id,
+                chat_id: Optional[int] = None
+                if update.chat_id:
+                    chat_id = self.chat_id(
+                        chats[update.chat_id],
+                    )
+                elif self._cache.get_chat_id(update.call.id) is not None:
+                    chat_id = self._cache.get_chat_id(update.call.id)
+
+                if chat_id is not None:
+                    if isinstance(
+                        update.call,
+                        GroupCall,
+                    ):
+                        if update.call.schedule_date is None:
+                            self._cache.set_cache(
+                                chat_id,
+                                InputGroupCall(
+                                    access_hash=update.call.access_hash,
+                                    id=update.call.id,
+                                ),
+                            )
+                    if isinstance(
+                            update.call,
+                            GroupCallDiscarded,
+                    ):
+                        self._cache.drop_cache(chat_id)
+                        await self._propagate(
+                            ChatUpdate(
+                                chat_id,
+                                ChatUpdate.Status.CLOSED_VOICE_CHAT,
                             ),
                         )
-                if isinstance(
-                    update.call,
-                    GroupCallDiscarded,
-                ):
-                    self._cache.drop_cache(chat_id)
-                    await self._propagate(
-                        ChatUpdate(
-                            chat_id,
-                            ChatUpdate.Status.CLOSED_VOICE_CHAT,
-                        ),
-                    )
             if isinstance(
                 update,
                 (

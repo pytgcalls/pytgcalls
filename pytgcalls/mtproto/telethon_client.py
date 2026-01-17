@@ -204,11 +204,15 @@ class TelethonClient(BridgedClient):
                 update,
                 UpdateGroupCall,
             ):
-                chat_id = self.chat_id(
-                    await self._get_entity_group(
-                        update.chat_id,
-                    ),
-                )
+                if hasattr(update, 'chat_id'):
+                    chat_id = self.chat_id(
+                        await self._get_entity_group(
+                            update.chat_id,
+                        ),
+                    )
+                else:
+                    chat_id = self.chat_id(update.peer)
+
                 if isinstance(
                     update.call,
                     GroupCall,
