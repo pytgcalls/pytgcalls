@@ -23,7 +23,7 @@ keywords = [
     "video-calls", "calls", "video-chat", "pytgcalls", "ntgcalls",
     "tgcalls", "py-tgcalls", "pyrogram", "telethon", "hydrogram"
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "aiohttp>=3.9.3",
     "ntgcalls>=2.0.7,<3.0.0",
