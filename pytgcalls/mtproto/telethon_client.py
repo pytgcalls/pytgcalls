@@ -204,40 +204,45 @@ class TelethonClient(BridgedClient):
                 update,
                 UpdateGroupCall,
             ):
-                if hasattr(update, 'chat_id'):
+                if getattr(update, 'chat_id', None) is not None:
+                    # noinspection PyUnresolvedReferences
                     chat_id = self.chat_id(
                         await self._get_entity_group(
                             update.chat_id,
                         ),
                     )
-                else:
+                elif getattr(update, 'peer', None) is not None:
+                    # noinspection PyUnresolvedReferences
                     chat_id = self.chat_id(update.peer)
+                else:
+                    chat_id = self._cache.get_chat_id(update.call.id)
 
-                if isinstance(
-                    update.call,
-                    GroupCall,
-                ):
-                    if update.call.schedule_date is None:
-                        self._cache.set_cache(
+                if chat_id is not None:
+                    if isinstance(
+                        update.call,
+                        GroupCall,
+                    ):
+                        if update.call.schedule_date is None:
+                            self._cache.set_cache(
+                                chat_id,
+                                InputGroupCall(
+                                    access_hash=update.call.access_hash,
+                                    id=update.call.id,
+                                ),
+                            )
+                    if isinstance(
+                        update.call,
+                        GroupCallDiscarded,
+                    ):
+                        self._cache.drop_cache(
                             chat_id,
-                            InputGroupCall(
-                                access_hash=update.call.access_hash,
-                                id=update.call.id,
+                        )
+                        await self._propagate(
+                            ChatUpdate(
+                                chat_id,
+                                ChatUpdate.Status.CLOSED_VOICE_CHAT,
                             ),
                         )
-                if isinstance(
-                    update.call,
-                    GroupCallDiscarded,
-                ):
-                    self._cache.drop_cache(
-                        chat_id,
-                    )
-                    await self._propagate(
-                        ChatUpdate(
-                            chat_id,
-                            ChatUpdate.Status.CLOSED_VOICE_CHAT,
-                        ),
-                    )
             if isinstance(
                 update,
                 (
