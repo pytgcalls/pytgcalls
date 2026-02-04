@@ -59,7 +59,7 @@ async def check_stream(
         if 'No such file' in stderr.decode('utf-8'):
             raise FileNotFoundError()
     except (subprocess.TimeoutExpired, JSONDecodeError):
-        ffprobe.terminate()
+        ffprobe.kill()
         raise
 
     have_video = False
@@ -137,7 +137,7 @@ async def cleanup_commands(
             )
             result = stdout.decode('utf-8')
         except (subprocess.TimeoutExpired, JSONDecodeError):
-            proc_res.terminate()
+            proc_res.kill()
             raise
         supported = re.findall(r'(?m)^ *(-\w+).*?\s+', result)
         supported += ['-i']
