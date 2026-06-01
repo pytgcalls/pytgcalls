@@ -4,7 +4,6 @@ import re
 import shlex
 from typing import Optional
 from typing import Tuple
-
 from .exceptions import YtDlpError
 from .ffmpeg import cleanup_commands
 from .list_to_cmd import list_to_cmd
@@ -38,7 +37,13 @@ class YtDlp:
             'yt-dlp',
             '-g',
             '-f',
-            'bestvideo[vcodec~="(vp09|avc1)"]+m4a/best',
+            (
+                'bestaudio[acodec!=iamf][acodec!=iamf.001.001.Opus]'
+                '/bestaudio[ext=webm][acodec=opus]'
+                '/bestaudio[ext=m4a]'
+                '/bestaudio'
+                '/best'
+            ),
             '-S',
             'res:'
             f'{min(video_parameters.width, video_parameters.height)}',
@@ -62,12 +67,14 @@ class YtDlp:
             logging.DEBUG,
             f'Running with "{list_to_cmd(commands)}" command',
         )
+
         try:
             proc = await asyncio.create_subprocess_exec(
                 *commands,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
+
             try:
                 stdout, stderr = await asyncio.wait_for(
                     proc.communicate(),
@@ -76,11 +83,28 @@ class YtDlp:
             except asyncio.TimeoutError:
                 proc.terminate()
                 raise YtDlpError('yt-dlp process timeout')
+
             if stderr:
-                raise YtDlpError(stderr.decode())
+                stderr_text = stderr.decode()
+                error_lines = [
+                    line for line in stderr_text.splitlines()
+                    if line.strip().startswith('ERROR:')
+                ]
+                warning_lines = [
+                    line for line in stderr_text.splitlines()
+                    if line.strip().startswith('WARNING:')
+                ]
+                if warning_lines:
+                    py_logger.warning(
+                        f'[yt-dlp] {"; ".join(warning_lines)}',
+                    )
+                if error_lines:
+                    raise YtDlpError('\n'.join(error_lines))
+
             data = stdout.decode().strip().split('\n')
             if data:
                 return data[0], data[1] if len(data) >= 2 else data[0]
+
             raise YtDlpError('No video URLs found')
         except FileNotFoundError:
             raise YtDlpError('yt-dlp is not installed on your system')
