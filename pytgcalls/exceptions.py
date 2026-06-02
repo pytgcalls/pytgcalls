@@ -169,3 +169,41 @@ class UnsupportedMethod(Exception):
         super().__init__(
             'Unsupported method for this kind of call',
         )
+
+
+class NtgCallsStreamSwitchTimeout(Exception):
+    """
+    Raised by ``play()`` when the underlying ntgcalls engine does not
+    return from ``set_stream_sources()`` within the allowed deadline
+    while switching an already-active video stream.
+
+    This almost always indicates that an internal C++ thread is deadlocked
+    (futex / mutex / pipe-read) for the given chat.  The per-chat ntgcalls
+    state cannot be recovered via ``leave_call()`` at this point because
+    ``stop()`` will also block on the same lock.
+
+    **Recommended recovery:**
+
+    .. code-block:: python
+
+        from pytgcalls.exceptions import NtgCallsStreamSwitchTimeout
+
+        try:
+            await client.play(chat_id, new_stream)
+        except NtgCallsStreamSwitchTimeout:
+            # ntgcalls C++ thread is wedged; the only reliable recovery
+            # is to recreate the entire PyTgCalls instance.
+            await client.stop()
+            client = PyTgCalls(mtproto_client)
+            await client.start()
+            await client.play(chat_id, new_stream,
+                              config=GroupCallConfig(auto_start=True))
+    """
+
+    def __init__(self, chat_id: int):
+        self.chat_id = chat_id
+        super().__init__(
+            f'ntgcalls set_stream_sources() timed out for chat {chat_id}. '
+            'The C++ engine thread appears deadlocked. '
+            'Recreate the PyTgCalls instance to recover.',
+        )
