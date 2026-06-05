@@ -115,6 +115,7 @@ class ConnectCall(Scaffold):
                             result.protocol.rtc_servers,
                             result.protocol.library_versions,
                             result.protocol.p2p_allowed,
+                            result.protocol.custom_parameters,
                         )
                     except asyncio.TimeoutError:
                         try:

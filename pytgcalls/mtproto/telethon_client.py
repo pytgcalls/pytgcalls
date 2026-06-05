@@ -175,6 +175,10 @@ class TelethonClient(BridgedClient):
                                 self.parse_servers(
                                     update.phone_call.connections,
                                 ),
+                                update.phone_call.conference_supported,
+                                update.phone_call.custom_parameters.data
+                                if update.phone_call.custom_parameters
+                                else None,
                             ),
                             update.phone_call.key_fingerprint,
                         ),
@@ -555,6 +559,10 @@ class TelethonClient(BridgedClient):
             res.protocol.library_versions,
             res.p2p_allowed,
             self.parse_servers(res.connections),
+            res.conference_supported,
+            res.custom_parameters.data
+            if res.custom_parameters
+            else None,
         )
 
     async def send_signaling(
