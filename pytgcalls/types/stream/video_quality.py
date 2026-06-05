@@ -1,7 +1,9 @@
 from enum import Enum
 
+from ..py_object import PyObject
 
-class VideoQuality(Enum):
+
+class VideoQuality(PyObject, Enum):
     UHD_4K = (3840, 2160, 60)
     QHD_2K = (2560, 1440, 60)
     FHD_1080p = (1920, 1080, 60)

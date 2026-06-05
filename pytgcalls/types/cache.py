@@ -8,13 +8,13 @@ from typing import Optional
 @dataclass
 class CacheEntry:
     time: int
-    expiry_time: int
     data: Any
 
 
 class Cache:
-    def __init__(self):
+    def __init__(self, expiry_time: int = 0):
         self._store: Dict[int, CacheEntry] = {}  # type: ignore
+        self._expiry_time = expiry_time
 
     def get(self, chat_id: int):
         if chat_id in self._store:
@@ -25,12 +25,17 @@ class Cache:
                 self._store.pop(chat_id, None)
         return None
 
-    def put(self, chat_id: int, data: Any, expiry_time: int = 0) -> None:
+    def put(self, chat_id: int, data: Any) -> None:
         self._store[chat_id] = CacheEntry(
-            time=0 if expiry_time == 0 else (int(time()) + expiry_time),
-            expiry_time=expiry_time,
+            time=0
+            if self._expiry_time == 0 else
+            (int(time()) + self._expiry_time),
             data=data,
         )
+
+    def update_cache(self, chat_id: int) -> None:
+        if chat_id in self._store:
+            self._store[chat_id].time = int(time()) + self._expiry_time
 
     @property
     def keys(self):

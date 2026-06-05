@@ -4,14 +4,19 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-import pyrogram
 from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from pyrogram import Client
 from pyrogram import ContinuePropagation
+from pyrogram.errors import AuthBytesInvalid
+from pyrogram.errors import BadRequest
+from pyrogram.errors import FileMigrate
 from pyrogram.errors import FloodWait
+from pyrogram.errors import GroupcallForbidden
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.base import InputUser
+from pyrogram.raw.functions.auth import ExportAuthorization
+from pyrogram.raw.functions.auth import ImportAuthorization
 from pyrogram.raw.functions.channels import GetFullChannel
 from pyrogram.raw.functions.messages import GetDhConfig
 from pyrogram.raw.functions.messages import GetFullChat
@@ -19,6 +24,7 @@ from pyrogram.raw.functions.phone import AcceptCall
 from pyrogram.raw.functions.phone import ConfirmCall
 from pyrogram.raw.functions.phone import CreateGroupCall
 from pyrogram.raw.functions.phone import DiscardCall
+from pyrogram.raw.functions.phone import DiscardGroupCall
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
 from pyrogram.raw.functions.phone import GetGroupCall
 from pyrogram.raw.functions.phone import GetGroupCallStreamChannels
@@ -45,6 +51,7 @@ from pyrogram.raw.types import InputPhoneCall
 from pyrogram.raw.types import MessageActionChatDeleteUser
 from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import MessageService
+from pyrogram.raw.types import PeerChannel
 from pyrogram.raw.types import PeerChat
 from pyrogram.raw.types import PhoneCall
 from pyrogram.raw.types import PhoneCallAccepted
@@ -56,6 +63,7 @@ from pyrogram.raw.types import PhoneCallProtocol
 from pyrogram.raw.types import PhoneCallRequested
 from pyrogram.raw.types import PhoneCallWaiting
 from pyrogram.raw.types import UpdateChannel
+from pyrogram.raw.types import UpdateChat
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateGroupCallConnection
 from pyrogram.raw.types import UpdateGroupCallParticipants
@@ -65,13 +73,13 @@ from pyrogram.raw.types import UpdatePhoneCall
 from pyrogram.raw.types import UpdatePhoneCallSignalingData
 from pyrogram.raw.types import Updates
 from pyrogram.raw.types.messages import DhConfig
+from pyrogram.session import Auth
+from pyrogram.session import Session
 
 from ..types import CallProtocol
 from ..types import ChatUpdate
 from ..types import GroupCallParticipant
 from ..types import RawCallUpdate
-from ..types import UpdatedGroupCallParticipant
-from ..version_manager import VersionManager
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
@@ -84,18 +92,12 @@ class PyrogramClient(BridgedClient):
     ):
         super().__init__()
         self._app: Client = client
-        if VersionManager.version_tuple(
-                pyrogram.__version__,
-        ) > VersionManager.version_tuple(
-            '2.0.0',
-        ):
-            self._app.send = self._app.invoke
         self._cache: ClientCache = ClientCache(
             cache_duration,
             self,
         )
 
-        @self._app.on_raw_update(group=-1)
+        @self._app.on_raw_update(group=-9999)
         async def on_update(_, update, __, chats):
             if isinstance(
                 update,
@@ -187,56 +189,79 @@ class PyrogramClient(BridgedClient):
                 update,
                 UpdateGroupCallParticipants,
             ):
-                participants = update.participants
-                for participant in participants:
-                    result = self._cache.set_participants_cache_call(
-                        update.call.id,
-                        self.parse_participant(participant),
+                for participant in update.participants:
+                    chat_id = self._cache.get_chat_id(update.call.id)
+                    p_updates = await self.diff_participants_update(
+                        self._cache,
+                        chat_id,
+                        participant,
                     )
-                    if result is not None:
-                        await self._propagate(
-                            UpdatedGroupCallParticipant(
-                                self._cache.get_chat_id(update.call.id),
-                                result,
-                            ),
+                    for p_update in p_updates:
+                        result = self._cache.set_participants_cache(
+                            chat_id,
+                            update.call.id,
+                            p_update.action,
+                            p_update.participant,
                         )
+                        if result is not None:
+                            await self._propagate(p_update)
+
             if isinstance(
                 update,
                 UpdateGroupCall,
             ):
-                chat_id = self.chat_id(chats[update.chat_id])
-                if isinstance(
-                    update.call,
-                    GroupCall,
-                ):
-                    if update.call.schedule_date is None:
-                        self._cache.set_cache(
-                            chat_id,
-                            InputGroupCall(
-                                access_hash=update.call.access_hash,
-                                id=update.call.id,
+                if getattr(update, 'chat_id', None) is not None:
+                    # noinspection PyUnresolvedReferences
+                    chat_id = self.chat_id(
+                        chats[update.chat_id],
+                    )
+                elif getattr(update, 'peer', None) is not None:
+                    # noinspection PyUnresolvedReferences
+                    chat_id = self.chat_id(update.peer)
+                else:
+                    chat_id = self._cache.get_chat_id(update.call.id)
+
+                if chat_id is not None:
+                    if isinstance(
+                        update.call,
+                        GroupCall,
+                    ):
+                        if update.call.schedule_date is None:
+                            self._cache.set_cache(
+                                chat_id,
+                                InputGroupCall(
+                                    access_hash=update.call.access_hash,
+                                    id=update.call.id,
+                                ),
+                            )
+                    if isinstance(
+                        update.call,
+                        GroupCallDiscarded,
+                    ):
+                        self._cache.drop_cache(chat_id)
+                        await self._propagate(
+                            ChatUpdate(
+                                chat_id,
+                                ChatUpdate.Status.CLOSED_VOICE_CHAT,
                             ),
                         )
-                if isinstance(
-                    update.call,
-                    GroupCallDiscarded,
-                ):
-                    self._cache.drop_cache(chat_id)
-                    await self._propagate(
-                        ChatUpdate(
-                            chat_id,
-                            ChatUpdate.Status.CLOSED_VOICE_CHAT,
-                        ),
-                    )
             if isinstance(
                 update,
-                UpdateChannel,
+                (
+                    UpdateChannel,
+                    UpdateChat,
+                ),
             ):
                 chat_id = self.chat_id(update)
                 if len(chats) > 0:
                     if isinstance(
-                        chats[update.channel_id],
-                        ChannelForbidden,
+                        chats[
+                            self.chat_id(
+                                update,
+                                False,
+                            )
+                        ],
+                        (ChannelForbidden, ChatForbidden),
                     ):
                         self._cache.drop_cache(chat_id)
                         await self._propagate(
@@ -258,28 +283,36 @@ class PyrogramClient(BridgedClient):
                         update.message.action,
                         MessageActionInviteToGroupCall,
                     ):
-                        if isinstance(
-                            update.message.peer_id,
-                            PeerChat,
-                        ):
-                            await self._propagate(
-                                ChatUpdate(
-                                    chat_id,
-                                    ChatUpdate.Status.INVITED_VOICE_CHAT,
-                                    update.message.action,
-                                ),
-                            )
+                        await self._propagate(
+                            ChatUpdate(
+                                chat_id,
+                                ChatUpdate.Status.INVITED_VOICE_CHAT,
+                                update.message.action,
+                            ),
+                        )
+
                     if isinstance(
                         update.message.action,
                         MessageActionChatDeleteUser,
                     ):
                         if isinstance(
                             update.message.peer_id,
-                            PeerChat,
+                            (
+                                PeerChat,
+                                PeerChannel,
+                            ),
                         ):
                             if isinstance(
-                                chats[update.message.peer_id.chat_id],
-                                ChatForbidden,
+                                chats[
+                                    self.chat_id(
+                                        update.message.peer_id,
+                                        False,
+                                    )
+                                ],
+                                (
+                                    ChatForbidden,
+                                    ChannelForbidden,
+                                ),
                             ):
                                 self._cache.drop_cache(chat_id)
                                 await self._propagate(
@@ -325,7 +358,7 @@ class PyrogramClient(BridgedClient):
         chat = await self._app.resolve_peer(chat_id)
         if isinstance(chat, InputPeerChannel):
             input_call = (
-                await self._app.send(
+                await self._invoke(
                     GetFullChannel(
                         channel=InputChannel(
                             channel_id=chat.channel_id,
@@ -336,14 +369,14 @@ class PyrogramClient(BridgedClient):
             ).full_chat.call
         else:
             input_call = (
-                await self._app.send(
+                await self._invoke(
                     GetFullChat(chat_id=chat.chat_id),
                 )
             ).full_chat.call
 
         if input_call is not None:
             raw_call = (
-                await self._app.send(
+                await self._invoke(
                     GetGroupCall(
                         call=input_call,
                         limit=-1,
@@ -353,9 +386,10 @@ class PyrogramClient(BridgedClient):
             call: GroupCall = raw_call.call
             participants: List[GroupCallParticipant] = raw_call.participants
             for participant in participants:
-                self._cache.set_participants_cache_chat(
+                self._cache.set_participants_cache(
                     chat_id,
                     call.id,
+                    self.parse_participant_action(participant),
                     self.parse_participant(participant),
                 )
             if call.schedule_date is not None:
@@ -364,7 +398,7 @@ class PyrogramClient(BridgedClient):
         return input_call
 
     async def get_dhc(self) -> DhConfig:
-        return await self._app.send(
+        return await self._invoke(
             GetDhConfig(
                 version=0,
                 random_length=256,
@@ -386,7 +420,7 @@ class PyrogramClient(BridgedClient):
         participants = []
         next_offset = ''
         while True:
-            result = await self._app.send(
+            result = await self._invoke(
                 GetGroupParticipants(
                     call=input_call,
                     ids=[],
@@ -411,31 +445,43 @@ class PyrogramClient(BridgedClient):
         video_stopped: bool,
         join_as: InputPeer,
     ) -> str:
-        chat_call = await self._cache.get_full_chat(chat_id)
-        if chat_call is not None:
-            result: Updates = await self._app.send(
-                JoinGroupCall(
-                    call=chat_call,
-                    params=DataJSON(data=json_join),
-                    muted=False,
-                    join_as=join_as,
-                    video_stopped=video_stopped,
-                    invite_hash=invite_hash,
-                ),
+        try:
+            chat_call = await self._cache.get_full_chat(chat_id)
+            if chat_call is not None:
+                result: Updates = await self._invoke(
+                    JoinGroupCall(
+                        call=chat_call,
+                        params=DataJSON(data=json_join),
+                        muted=False,
+                        join_as=join_as,
+                        video_stopped=video_stopped,
+                        invite_hash=invite_hash,
+                    ),
+                )
+                for update in result.updates:
+                    if isinstance(
+                        update,
+                        UpdateGroupCallParticipants,
+                    ):
+                        participants = update.participants
+                        for participant in participants:
+                            self._cache.set_participants_cache(
+                                chat_id,
+                                update.call.id,
+                                self.parse_participant_action(participant),
+                                self.parse_participant(participant),
+                            )
+                    if isinstance(update, UpdateGroupCallConnection):
+                        return update.params.data
+        except GroupcallForbidden:
+            self._cache.drop_cache(chat_id)
+            return await self.join_group_call(
+                chat_id,
+                json_join,
+                invite_hash,
+                video_stopped,
+                join_as,
             )
-            for update in result.updates:
-                if isinstance(
-                    update,
-                    UpdateGroupCallParticipants,
-                ):
-                    participants = update.participants
-                    for participant in participants:
-                        self._cache.set_participants_cache_call(
-                            update.call.id,
-                            self.parse_participant(participant),
-                        )
-                if isinstance(update, UpdateGroupCallConnection):
-                    return update.params.data
 
         return json.dumps({'transport': None})
 
@@ -446,7 +492,7 @@ class PyrogramClient(BridgedClient):
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            result: Updates = await self._app.send(
+            result: Updates = await self._invoke(
                 JoinGroupCallPresentation(
                     call=chat_call,
                     params=DataJSON(data=json_join),
@@ -464,7 +510,7 @@ class PyrogramClient(BridgedClient):
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            await self._app.send(
+            await self._invoke(
                 LeaveGroupCallPresentation(
                     call=chat_call,
                 ),
@@ -477,7 +523,7 @@ class PyrogramClient(BridgedClient):
         protocol: Protocol,
         has_video: bool,
     ):
-        update = await self._app.invoke(
+        update = await self._invoke(
             RequestCall(
                 user_id=await self.resolve_peer(user_id),
                 random_id=self.rnd_id(),
@@ -500,7 +546,7 @@ class PyrogramClient(BridgedClient):
         g_b: bytes,
         protocol: Protocol,
     ):
-        await self._app.invoke(
+        await self._invoke(
             AcceptCall(
                 peer=self._cache.get_phone_call(user_id),
                 g_b=g_b,
@@ -516,7 +562,7 @@ class PyrogramClient(BridgedClient):
         protocol: Protocol,
     ) -> CallProtocol:
         res = (
-            await self._app.invoke(
+            await self._invoke(
                 ConfirmCall(
                     peer=self._cache.get_phone_call(user_id),
                     g_a=g_a,
@@ -536,7 +582,7 @@ class PyrogramClient(BridgedClient):
         user_id: int,
         data: bytes,
     ):
-        await self._app.invoke(
+        await self._invoke(
             SendSignalingData(
                 peer=self._cache.get_phone_call(user_id),
                 data=data,
@@ -547,7 +593,7 @@ class PyrogramClient(BridgedClient):
         self,
         chat_id: int,
     ):
-        result: Updates = await self._app.send(
+        result: Updates = await self._invoke(
             CreateGroupCall(
                 peer=await self.resolve_peer(chat_id),
                 random_id=self.rnd_id(),
@@ -577,12 +623,25 @@ class PyrogramClient(BridgedClient):
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            await self._app.send(
+            await self._invoke(
                 LeaveGroupCall(
                     call=chat_call,
                     source=0,
                 ),
             )
+
+    async def close_voice_chat(
+        self,
+        chat_id: int,
+    ):
+        chat_call = await self._cache.get_full_chat(chat_id)
+        if chat_call is not None:
+            await self._invoke(
+                DiscardGroupCall(
+                    call=chat_call,
+                ),
+            )
+            self._cache.drop_cache(chat_id)
 
     async def discard_call(
         self,
@@ -597,7 +656,7 @@ class PyrogramClient(BridgedClient):
             if is_missed
             else PhoneCallDiscardReasonHangup()
         )
-        await self._app.invoke(
+        await self._invoke(
             DiscardCall(
                 peer=peer,
                 duration=0,
@@ -616,7 +675,7 @@ class PyrogramClient(BridgedClient):
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            await self._app.send(
+            await self._invoke(
                 EditGroupCallParticipant(
                     call=chat_call,
                     participant=participant,
@@ -637,7 +696,7 @@ class PyrogramClient(BridgedClient):
         if chat_call is not None:
             try:
                 return (
-                    await self._app.send(
+                    await self._invoke(
                         GetFile(
                             location=InputGroupCallStream(
                                 call=chat_call,
@@ -651,6 +710,7 @@ class PyrogramClient(BridgedClient):
                             offset=0,
                             limit=limit,
                         ),
+                        chat_id=chat_id,
                         sleep_threshold=0,
                     )
                 ).bytes
@@ -664,12 +724,12 @@ class PyrogramClient(BridgedClient):
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            # noinspection PyBroadException
             channels = (
-                await self._app.send(
+                await self._invoke(
                     GetGroupCallStreamChannels(
                         call=chat_call,
                     ),
+                    chat_id=chat_id,
                 )
             ).channels
             if len(channels) > 0:
@@ -688,7 +748,7 @@ class PyrogramClient(BridgedClient):
     ):
         chat_call = await self._cache.get_full_chat(chat_id)
         if chat_call is not None:
-            await self._app.send(
+            await self._invoke(
                 EditGroupCallParticipant(
                     call=chat_call,
                     participant=participant,
@@ -726,6 +786,78 @@ class PyrogramClient(BridgedClient):
 
     def no_updates(self):
         return self._app.no_updates
+
+    async def _invoke(
+        self,
+        request,
+        dc_id: Optional[int] = None,
+        chat_id: Optional[int] = None,
+        sleep_threshold: Optional[int] = None,
+    ):
+        if chat_id is not None:
+            dc_id = self._cache.get_dc_call(chat_id)
+        if dc_id is None:
+            session = self._app
+        else:
+            session = self._app.media_sessions.get(dc_id)
+            if not session:
+                session = self._app.media_sessions[dc_id] = Session(
+                    self._app,
+                    dc_id,
+                    await Auth(
+                        self._app,
+                        dc_id,
+                        await self._app.storage.test_mode(),
+                    ).create()
+                    if dc_id != await self._app.storage.dc_id()
+                    else await self._app.storage.auth_key(),
+                    await self._app.storage.test_mode(),
+                    is_media=True,
+                )
+                await session.start()
+                if dc_id != await self._app.storage.dc_id():
+                    for _ in range(3):
+                        exported_auth = await self._invoke(
+                            ExportAuthorization(
+                                dc_id=dc_id,
+                            ),
+                        )
+
+                        try:
+                            await session.invoke(
+                                ImportAuthorization(
+                                    id=exported_auth.id,
+                                    bytes=exported_auth.bytes,
+                                ),
+                            )
+                        except AuthBytesInvalid:
+                            continue
+                        else:
+                            break
+                    else:
+                        raise AuthBytesInvalid
+        try:
+            return await session.invoke(
+                request,
+                sleep_threshold=sleep_threshold,
+            )
+        except (BadRequest, FileMigrate) as e:
+            dc_new = BridgedClient.extract_dc(
+                str(e),
+            )
+            if dc_new is not None:
+                if chat_id is not None:
+                    self._cache.set_dc_call(
+                        chat_id,
+                        dc_new,
+                    )
+                return await self._invoke(
+                    request,
+                    dc_new,
+                    chat_id,
+                    sleep_threshold,
+                )
+            raise
 
     async def start(self):
         await self._app.start()

@@ -1,7 +1,7 @@
 from typing import Union
 
-from ntgcalls import ConnectionError
 from ntgcalls import ConnectionMode
+from ntgcalls import ConnectionNotFound
 from ntgcalls import TelegramServerError
 
 from ...scaffold import Scaffold
@@ -53,6 +53,6 @@ class JoinPresentation(Scaffold):
                 try:
                     await self._binding.stop_presentation(chat_id)
                     await self._app.leave_presentation(chat_id)
-                except ConnectionError:
+                except ConnectionNotFound:
                     pass
                 self._presentations.discard(chat_id)

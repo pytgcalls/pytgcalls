@@ -40,6 +40,7 @@ class Scaffold(HandlersHolder):
         self._wait_connect = dict()
         self._presentations = set()
         self._pending_connections = dict()
+        self._chat_lock = None
 
     def _handle_mtproto(self):
         pass

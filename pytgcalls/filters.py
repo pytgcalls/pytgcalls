@@ -158,6 +158,7 @@ class stream_end(Filter):
                     self.device & update.device
                 )
             )
+        return False
 
 
 # noinspection PyPep8Naming
@@ -190,14 +191,17 @@ class chat_update(Filter):
 
 # noinspection PyPep8Naming
 class call_participant(Filter):
-    def __init__(self, flags: Optional[GroupCallParticipant.Action] = None):
+    def __init__(
+        self,
+        flags: Optional[GroupCallParticipant.Action] = None,
+    ):
         self.flags = flags
 
     async def __call__(self, client: PyTgCalls, update: Update):
         if isinstance(update, UpdatedGroupCallParticipant):
             if self.flags is None:
                 return True
-            return self.flags & update.participant.action
+            return self.flags & update.action
         return False
 
 

@@ -59,11 +59,11 @@ async def check_stream(
         if 'No such file' in stderr.decode('utf-8'):
             raise FileNotFoundError()
     except (subprocess.TimeoutExpired, JSONDecodeError):
-        ffprobe.terminate()
+        ffprobe.kill()
         raise
 
     have_video = False
-    is_image = False
+    is_image = True
     have_audio = False
     have_valid_video = False
 
@@ -107,7 +107,7 @@ async def check_stream(
         stream_parameters.height = new_h
         stream_parameters.width = new_w
         if is_image:
-            stream_parameters.frame_rate = 1
+            stream_parameters.frame_rate = 10
             raise ImageSourceFound(path)
 
     if isinstance(stream_parameters, AudioParameters) and not have_audio:
@@ -126,6 +126,7 @@ async def cleanup_commands(
         proc_res = await asyncio.create_subprocess_exec(
             commands[0] if not process_name else process_name,
             '-h',
+            'full',
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -136,9 +137,10 @@ async def cleanup_commands(
             )
             result = stdout.decode('utf-8')
         except (subprocess.TimeoutExpired, JSONDecodeError):
-            proc_res.terminate()
+            proc_res.kill()
             raise
-        supported = re.findall(r'(?m)^ *(-.*?)\s+', result)
+        supported = re.findall(r'(?m)^ *(-\w+).*?\s+', result)
+        supported += ['-i']
         new_commands = []
         ignore_next = False
 
@@ -147,8 +149,11 @@ async def cleanup_commands(
                 if v[0] == '-':
                     ignore_next = v not in supported or \
                         blacklist is not None and v in blacklist
+
                 if not ignore_next:
                     new_commands += [v]
+                elif v[0] != '-':
+                    ignore_next = False
         return new_commands
     except FileNotFoundError:
         raise FFmpegError(f'{commands[0]} not installed')
@@ -210,7 +215,6 @@ def build_command(
             ffmpeg_command.append(f'{i}: {headers[i]}')
 
     ffmpeg_command += [
-        '-nostdin',
         '-i',
         f'{path}' if name == 'ffmpeg' else path,
     ]

@@ -42,8 +42,7 @@ class ConnectCall(Scaffold):
                         chat_id,
                         payload,
                         config.invite_hash,
-                        media_description.camera is None and
-                        media_description.screen is None,
+                        media_description.camera is None,
                         self._cache_user_peer.get(chat_id),
                     )
                     await self._binding.connect(
@@ -132,6 +131,7 @@ class ConnectCall(Scaffold):
                 if retries == 3 or chat_id > 0:
                     raise
                 self._log_retries(retries)
+                payload = None
             except Exception:
                 try:
                     await self._binding.stop(chat_id)
@@ -140,3 +140,4 @@ class ConnectCall(Scaffold):
                 raise
             finally:
                 self._wait_connect.pop(chat_id, None)
+                self._pending_connections.pop(chat_id, None)

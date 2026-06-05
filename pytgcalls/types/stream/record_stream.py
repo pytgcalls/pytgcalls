@@ -67,6 +67,8 @@ class RecordStream(Stream):
                 'pipe:0',
                 '-codec:a',
                 'flac' if is_lossless else 'libmp3lame',
+                '-f',
+                'flac' if is_lossless else 'mp3',
                 '-flush_packets',
                 '1',
                 audio,

@@ -12,6 +12,7 @@ class GroupCallParticipant(PyObject):
     class Action(Flag):
         JOINED = auto()
         LEFT = auto()
+        KICKED = auto()
         UPDATED = auto()
 
     class SourceInfo(PyObject):
@@ -33,8 +34,6 @@ class GroupCallParticipant(PyObject):
         video_camera: bool,
         raised_hand: bool,
         volume: int,
-        joined: bool,
-        left: bool,
         source: int,
         video_info: Optional[SourceInfo],
         presentation_info: Optional[SourceInfo],
@@ -48,12 +47,6 @@ class GroupCallParticipant(PyObject):
         self.video_camera: bool = video_camera
         self.raised_hand: bool = raised_hand
         self.volume: int = volume
-        if joined:
-            self.action = self.Action.JOINED
-        elif left:
-            self.action = self.Action.LEFT
-        else:
-            self.action = self.Action.UPDATED
         self.video_info: Optional[
             GroupCallParticipant.SourceInfo
         ] = video_info

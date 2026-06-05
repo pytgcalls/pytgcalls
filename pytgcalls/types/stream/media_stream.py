@@ -13,6 +13,7 @@ from ...exceptions import NoAudioSourceFound
 from ...exceptions import NoVideoSourceFound
 from ...ffmpeg import build_command
 from ...ffmpeg import check_stream
+from ...ffmpeg import cleanup_commands
 from ...list_to_cmd import list_to_cmd
 from ...media_devices.input_device import InputDevice
 from ...media_devices.screen_device import ScreenDevice
@@ -231,14 +232,16 @@ class MediaStream(Stream):
                     except LiveStreamFound:
                         live_stream = True
                     self.camera.path = list_to_cmd(
-                        build_command(
-                            'ffmpeg',
-                            self._ffmpeg_parameters,
-                            self._media_path,
-                            self._video_parameters,
-                            image_commands,
-                            self._headers,
-                            live_stream,
+                        await cleanup_commands(
+                            build_command(
+                                'ffmpeg',
+                                self._ffmpeg_parameters,
+                                self._media_path,
+                                self._video_parameters,
+                                image_commands,
+                                self._headers,
+                                live_stream,
+                            ),
                         ),
                     )
                 except NoVideoSourceFound as e:
@@ -280,14 +283,16 @@ class MediaStream(Stream):
                     except LiveStreamFound:
                         live_stream = True
                     self.microphone.path = list_to_cmd(
-                        build_command(
-                            'ffmpeg',
-                            self._ffmpeg_parameters,
-                            self._audio_path,
-                            self._audio_parameters,
-                            [],
-                            self._headers,
-                            live_stream,
+                        await cleanup_commands(
+                            build_command(
+                                'ffmpeg',
+                                self._ffmpeg_parameters,
+                                self._audio_path,
+                                self._audio_parameters,
+                                [],
+                                self._headers,
+                                live_stream,
+                            ),
                         ),
                     )
                 except NoAudioSourceFound as e:

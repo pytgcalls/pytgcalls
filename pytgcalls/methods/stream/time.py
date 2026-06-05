@@ -16,7 +16,7 @@ class Time(Scaffold):
         self,
         chat_id: Union[int, str],
         direction: Direction = Direction.OUTGOING,
-    ):
+    ) -> int:
         chat_id = await self.resolve_chat_id(chat_id)
         try:
             return await self._binding.time(chat_id, direction.to_raw())

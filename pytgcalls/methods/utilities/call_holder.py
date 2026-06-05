@@ -15,7 +15,7 @@ class CallHolder(Scaffold):
         }
 
     @property
-    async def calls(self):
+    async def calls(self) -> Dict[int, Call]:
         calls_list = await self._binding.calls()
         return Dict({
             x: Call(
@@ -26,14 +26,14 @@ class CallHolder(Scaffold):
         })
 
     @property
-    async def group_calls(self):
+    async def group_calls(self) -> Dict[int, Call]:
         return Dict({
             chat_id: x
             for chat_id, x in (await self.calls).items() if chat_id < 0
         })
 
     @property
-    async def private_calls(self):
+    async def private_calls(self) -> Dict[int, Call]:
         return Dict({
             chat_id: x
             for chat_id, x in (await self.calls).items() if chat_id > 0

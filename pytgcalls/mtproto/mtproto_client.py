@@ -197,6 +197,17 @@ class MtProtoClient:
         else:
             raise InvalidMTProtoClient()
 
+    async def close_voice_chat(
+        self,
+        chat_id: int,
+    ):
+        if self._bind_client is not None:
+            await self._bind_client.close_voice_chat(
+                chat_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
     async def change_volume(
         self,
         chat_id: int,
