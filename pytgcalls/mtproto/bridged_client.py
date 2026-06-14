@@ -26,9 +26,10 @@ class BridgedClient(HandlersHolder):
         self,
         chat_id: int,
         json_join: str,
-        invite_hash: str,
         video_stopped: bool,
         join_as: Any,
+        invite_hash: Optional[str] = None,
+        public_key: Optional[int] = None,
     ):
         pass
 
@@ -264,13 +265,13 @@ class BridgedClient(HandlersHolder):
             return -input_peer.chat_id if readable else input_peer.chat_id
 
     @staticmethod
-    def user_from_call(call) -> Optional[int]:
+    def user_from_call(call) -> int:
         class_name = call.__class__.__name__
         if class_name in ['PhoneCallAccepted', 'PhoneCallWaiting']:
             return call.participant_id
         elif class_name in ['PhoneCallRequested', 'PhoneCall']:
             return call.admin_id
-        return None
+        return -1
 
     @staticmethod
     def parse_servers(servers) -> List[RTCServer]:
@@ -334,5 +335,5 @@ class BridgedClient(HandlersHolder):
     async def get_id(self):
         pass
 
-    async def get_full_chat(self, chat_id: int):
+    async def get_input_call(self, chat_id: int):
         pass

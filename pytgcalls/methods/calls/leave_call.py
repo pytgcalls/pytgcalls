@@ -30,11 +30,11 @@ class LeaveCall(Scaffold):
             except ConnectionNotFound:
                 raise NotInCallError()
         if chat_id < 0:  # type: ignore
-            chat_call = await self._app.get_full_chat(
+            input_call = await self._app.get_input_call(
                 chat_id,
             )
 
-            if chat_call is None:
+            if input_call is None:
                 raise NoActiveGroupCall()
 
             await self._app.leave_group_call(

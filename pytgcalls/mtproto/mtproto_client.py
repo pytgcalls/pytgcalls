@@ -55,17 +55,19 @@ class MtProtoClient:
         self,
         chat_id: int,
         json_join: str,
-        invite_hash: str,
         video_stopped: bool,
         join_as: Any,
+        invite_hash: Optional[str] = None,
+        public_key: Optional[int] = None,
     ) -> str:
         if self._bind_client is not None:
             return await self._bind_client.join_group_call(
                 chat_id,
                 json_join,
-                invite_hash,
                 video_stopped,
                 join_as,
+                invite_hash,
+                public_key,
             )
         else:
             raise InvalidMTProtoClient()
@@ -274,12 +276,12 @@ class MtProtoClient:
         else:
             raise InvalidMTProtoClient()
 
-    async def get_full_chat(
+    async def get_input_call(
         self,
         chat_id: int,
     ):
         if self._bind_client is not None:
-            return await self._bind_client.get_full_chat(
+            return await self._bind_client.get_input_call(
                 chat_id,
             )
         raise InvalidMTProtoClient()
