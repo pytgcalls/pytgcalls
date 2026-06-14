@@ -31,12 +31,6 @@ class MtProtoClient:
                 cache_duration,
                 client,
             )
-        elif self.package_name == 'hydrogram':
-            from .hydrogram_client import HydrogramClient
-            self._bind_client = HydrogramClient(
-                cache_duration,
-                client,
-            )
         else:
             raise InvalidMTProtoClient()
 
