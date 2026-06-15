@@ -7,10 +7,8 @@ from ..types.list import List
 class ParticipantList:
     def __init__(
         self,
-        input_id: int,
-    ):
+    ) -> None:
         self._list_participants: Dict[int, GroupCallParticipant] = {}
-        self.input_id: int = input_id
 
     def update_participant(
         self,

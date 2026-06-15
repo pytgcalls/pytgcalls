@@ -66,10 +66,10 @@ class Play(Scaffold):
                 if config.join_as is None else config.join_as,
             )
 
-            chat_call = await self._app.get_full_chat(
+            input_call = await self._app.get_input_call(
                 chat_id,
             )
-            if chat_call is None:
+            if input_call is None:
                 if config.auto_start:
                     await self._app.create_group_call(
                         chat_id,

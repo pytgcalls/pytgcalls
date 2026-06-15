@@ -25,10 +25,10 @@ class Cache:
                 self._store.pop(chat_id, None)
         return None
 
-    def put(self, chat_id: int, data: Any) -> None:
+    def put(self, chat_id: int, data: Any, persistent: bool = False) -> None:
         self._store[chat_id] = CacheEntry(
             time=0
-            if self._expiry_time == 0 else
+            if self._expiry_time == 0 or persistent else
             (int(time()) + self._expiry_time),
             data=data,
         )

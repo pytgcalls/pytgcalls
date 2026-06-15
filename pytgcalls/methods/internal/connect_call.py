@@ -41,9 +41,9 @@ class ConnectCall(Scaffold):
                     result_params = await self._app.join_group_call(
                         chat_id,
                         payload,
-                        config.invite_hash,
                         media_description.camera is None,
                         self._cache_user_peer.get(chat_id),
+                        config.invite_hash,
                     )
                     await self._binding.connect(
                         chat_id,

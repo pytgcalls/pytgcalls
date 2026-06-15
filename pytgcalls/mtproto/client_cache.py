@@ -2,6 +2,7 @@ import logging
 from typing import Any
 from typing import List
 from typing import Optional
+from typing import Union
 
 from ..types import Cache
 from ..types.chats import GroupCallParticipant
@@ -20,28 +21,27 @@ class ClientCache:
         self._app: BridgedClient = app
         cache_duration = 1 if app.no_updates() else cache_duration
         full_chat_duration = 1 if app.no_updates() else cache_duration
-        self._full_chat_cache = Cache(full_chat_duration)
+        self._input_calls = Cache(full_chat_duration)
         self._call_participants_cache = Cache(cache_duration)
         self._dc_call_cache = Cache(full_chat_duration)
-        self._phone_calls = Cache(full_chat_duration)
 
-    async def get_full_chat(
+    async def get_input_call(
         self,
         chat_id: int,
     ) -> Optional[Any]:
-        full_chat = self._full_chat_cache.get(chat_id)
-        if full_chat is not None:
-            return full_chat
+        input_call = self._input_calls.get(chat_id)
+        if input_call is not None or chat_id > 0:
+            return input_call
         else:
             # noinspection PyBroadException
             try:
                 py_logger.debug('FullChat cache miss for %d', chat_id)
-                full_chat = await self._app.get_call(chat_id)
+                input_call = await self._app.get_call(chat_id)
                 self.set_cache(
                     chat_id,
-                    full_chat,
+                    input_call,
                 )
-                return full_chat
+                return input_call
             except Exception:
                 pass
         return None
@@ -49,7 +49,6 @@ class ClientCache:
     def set_participants_cache(
         self,
         chat_id: Optional[int],
-        call_id: int,
         action: GroupCallParticipant.Action,
         participant: GroupCallParticipant,
     ) -> Optional[GroupCallParticipant]:
@@ -57,9 +56,7 @@ class ClientCache:
             if self._call_participants_cache.get(chat_id) is None:
                 self._call_participants_cache.put(
                     chat_id,
-                    ParticipantList(
-                        call_id,
-                    ),
+                    ParticipantList(),
                 )
             participants: Optional[
                 ParticipantList
@@ -79,7 +76,7 @@ class ClientCache:
         chat_id: int,
         only_cached: bool = False,
     ) -> List[GroupCallParticipant]:
-        input_call = await self.get_full_chat(
+        input_call = await self.get_input_call(
             chat_id,
         )
         if input_call is not None:
@@ -95,7 +92,6 @@ class ClientCache:
                 for participant in list_participants:
                     self.set_participants_cache(
                         chat_id,
-                        input_call.id,
                         GroupCallParticipant.Action.UPDATED,
                         participant,
                     )
@@ -108,13 +104,13 @@ class ClientCache:
 
     def get_chat_id(
         self,
-        input_group_call_id: int,
+        call_id: Union[int, str],
     ) -> Optional[int]:
-        for key in self._call_participants_cache.keys:
-            participants = self._call_participants_cache.get(key)
-            if participants is not None:
-                if participants.input_id == input_group_call_id:
-                    return key
+        for key in self._input_calls.keys:
+            call = self._input_calls.get(key)
+            if call_id == call.slug if hasattr(call, 'slug') else call.id:
+                self._input_calls.update_cache(key)
+                return key
         return None
 
     def set_cache(
@@ -122,23 +118,22 @@ class ClientCache:
         chat_id: int,
         input_call: Any,
     ) -> None:
-        self._full_chat_cache.put(
+        self._input_calls.put(
             chat_id,
             input_call,
+            chat_id > 0,
         )
         if self._call_participants_cache.get(chat_id) is None:
             self._call_participants_cache.put(
                 chat_id,
-                ParticipantList(
-                    input_call.id,
-                ),
+                ParticipantList(),
             )
 
     def drop_cache(
         self,
         chat_id,
     ) -> None:
-        self._full_chat_cache.pop(chat_id)
+        self._input_calls.pop(chat_id)
         self._call_participants_cache.pop(chat_id)
         self._dc_call_cache.pop(chat_id)
 
@@ -158,22 +153,6 @@ class ClientCache:
     ) -> Optional[int]:
         return self._dc_call_cache.get(chat_id)
 
-    def set_phone_call(
-        self,
-        chat_id: int,
-        phone_call: Any,
-    ) -> None:
-        self._phone_calls.put(
-            chat_id,
-            phone_call,
-        )
-
-    def get_phone_call(
-        self,
-        chat_id: int,
-    ) -> Optional[Any]:
-        return self._phone_calls.get(chat_id)
-
     def get_user_id(
         self,
         phone_call_id: int,
@@ -181,14 +160,8 @@ class ClientCache:
         return next(
             (
                 user_id
-                for user_id in self._phone_calls.keys
-                if self._phone_calls.get(user_id).id == phone_call_id
+                for user_id in self._input_calls.keys
+                if self._input_calls.get(user_id).id == phone_call_id
             ),
             None,
         )
-
-    def drop_phone_call(
-        self,
-        chat_id: int,
-    ) -> None:
-        self._phone_calls.pop(chat_id)
