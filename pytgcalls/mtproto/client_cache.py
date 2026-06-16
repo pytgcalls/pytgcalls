@@ -109,6 +109,8 @@ class ClientCache:
     ) -> Optional[int]:
         for key in self._input_calls.keys:
             call = self._input_calls.get(key)
+            if call is None:
+                continue
             if call_id == (call.slug if hasattr(call, 'slug') else call.id):
                 self._input_calls.update_cache(key)
                 return key
