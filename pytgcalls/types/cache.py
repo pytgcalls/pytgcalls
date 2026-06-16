@@ -39,7 +39,12 @@ class Cache:
 
     @property
     def keys(self):
-        return list(self._store)
+        now = int(time())
+        return [
+            chat_id
+            for chat_id, entry in list(self._store.items())
+            if entry.time == 0 or entry.time - now > 0
+        ]
 
     def pop(self, chat_id: int) -> Optional[Any]:
         return self._store.pop(chat_id, None)
