@@ -25,6 +25,12 @@ class MtProtoClient:
                 cache_duration,
                 client,
             )
+        elif self.package_name == 'pyrogram_styled':
+            from .pyrograms_client import PyrogramsClient
+            self._bind_client = PyrogramsClient(
+                cache_duration,
+                client,
+            )
         elif self.package_name == 'telethon':
             from .telethon_client import TelethonClient
             self._bind_client = TelethonClient(
