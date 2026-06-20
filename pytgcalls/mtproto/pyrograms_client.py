@@ -89,7 +89,7 @@ from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
 
-class PyrogramClient(BridgedClient):
+class PyrogramsClient(BridgedClient):
     def __init__(
         self,
         cache_duration: int,
