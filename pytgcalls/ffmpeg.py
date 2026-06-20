@@ -144,15 +144,18 @@ async def cleanup_commands(
         new_commands = []
         ignore_next = False
 
+        def is_flag(arg: str) -> bool:
+            return arg[0] == '-' and not arg[1:].replace('.', '', 1).isdigit()
+
         for v in commands:
             if len(v) > 0:
-                if v[0] == '-':
+                if is_flag(v):
                     ignore_next = v not in supported or \
                         blacklist is not None and v in blacklist
 
                 if not ignore_next:
                     new_commands += [v]
-                elif v[0] != '-':
+                elif not is_flag(v):
                     ignore_next = False
         return new_commands
     except FileNotFoundError:

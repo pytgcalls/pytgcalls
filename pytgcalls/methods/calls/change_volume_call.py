@@ -18,10 +18,10 @@ class ChangeVolumeCall(Scaffold):
         chat_id = await self.resolve_chat_id(chat_id)
         if chat_id >= 0:  # type: ignore
             raise UnsupportedMethod()
-        chat_call = await self._app.get_full_chat(
+        input_call = await self._app.get_input_call(
             chat_id,
         )
-        if chat_call is None:
+        if input_call is None:
             raise NoActiveGroupCall()
 
         await self._app.change_volume(

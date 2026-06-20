@@ -5,7 +5,7 @@ from .wait_counter_lock import WaitCounterLock
 
 
 class ChatLock:
-    def __init__(self):
+    def __init__(self) -> None:
         self._main_lock = asyncio.Lock()
         self._chat_lock: Dict[int, WaitCounterLock] = {}
 
