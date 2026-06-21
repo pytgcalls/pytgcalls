@@ -86,6 +86,33 @@ class Start(Scaffold):
                     self.loop,
                 ),
             )
+            self._binding.on_outbound_block(
+                lambda chat_id, block:
+                asyncio.run_coroutine_threadsafe(
+                    self._app.send_conference_call_broadcast(
+                        chat_id,
+                        block,
+                    ),
+                    self.loop,
+                ),
+            )
+            self._binding.on_request_participants(
+                lambda chat_id:
+                asyncio.run_coroutine_threadsafe(
+                    self._handle_request_participants(chat_id),
+                    self.loop,
+                ),
+            )
+            self._binding.on_subchain_request(
+                lambda chat_id, subchain_request:
+                asyncio.run_coroutine_threadsafe(
+                    self._handle_subchain_request(
+                        chat_id,
+                        subchain_request,
+                    ),
+                    self.loop,
+                ),
+            )
             await PyTgCallsSession().start()
         else:
             raise PyTgCallsAlreadyRunning()

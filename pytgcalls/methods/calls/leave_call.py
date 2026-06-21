@@ -1,5 +1,6 @@
 from typing import Union
 
+from ntgcalls import CallType
 from ntgcalls import ConnectionNotFound
 
 from ...exceptions import NoActiveGroupCall
@@ -24,12 +25,17 @@ class LeaveCall(Scaffold):
             chat_id in self._p2p_configs and
             not self._p2p_configs[chat_id].wait_data.done()
         )
+        is_group = False
         if not is_p2p_waiting:
             try:
+                is_group = await self._binding.get_call_type(chat_id) in (
+                    CallType.GROUP,
+                    CallType.CONFERENCE,
+                )
                 await self._binding.stop(chat_id)
             except ConnectionNotFound:
                 raise NotInCallError()
-        if chat_id < 0:  # type: ignore
+        if is_group:
             input_call = await self._app.get_input_call(
                 chat_id,
             )
@@ -45,7 +51,7 @@ class LeaveCall(Scaffold):
         if is_p2p_waiting:
             self._p2p_configs.pop(chat_id)
             return
-        if chat_id < 0:  # type: ignore
+        if is_group:
             self._clear_cache(chat_id)  # type: ignore
 
         if chat_id < 0 and close:  # type: ignore

@@ -8,12 +8,14 @@ from ...exceptions import CallDeclined
 from ...exceptions import CallDiscarded
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
+from ...types import CallConfig
 from ...types import CallData
 from ...types import ChatUpdate
 from ...types import GroupCallParticipant
 from ...types import RawCallUpdate
 from ...types import Update
 from ...types import UpdatedGroupCallParticipant
+from ...types.calls import ChainBlocksUpdate
 
 py_logger = logging.getLogger('pytgcalls')
 
@@ -75,6 +77,18 @@ class HandleMTProtoUpdates(Scaffold):
         if isinstance(update, ChatUpdate):
             if update.status & ChatUpdate.Status.LEFT_CALL:
                 await self._clear_call(chat_id)
+            elif update.status & ChatUpdate.Status.MIGRATE_TO_CONFERENCE_CALL:
+                await self._connect_call(
+                    chat_id,
+                    None,
+                    CallConfig(
+                        conference=True,
+                    ),
+                    None,
+                    await self._app.get_conference_last_block(
+                        chat_id,
+                    ),
+                )
         if isinstance(update, UpdatedGroupCallParticipant):
             participant = update.participant
             action = update.action
@@ -95,6 +109,7 @@ class HandleMTProtoUpdates(Scaffold):
                             try:
                                 await self._binding.add_incoming_video(
                                     chat_id,
+                                    participant.user_id,
                                     participant.video_info.endpoint,
                                     participant.video_info.sources,
                                 )
@@ -122,6 +137,7 @@ class HandleMTProtoUpdates(Scaffold):
                             try:
                                 await self._binding.add_incoming_video(
                                     chat_id,
+                                    participant.user_id,
                                     participant.presentation_info.endpoint,
                                     participant.presentation_info.sources,
                                 )
@@ -169,6 +185,18 @@ class HandleMTProtoUpdates(Scaffold):
                         self._need_unmute.add(chat_id)
                     else:
                         self._need_unmute.discard(chat_id)
+        if isinstance(update, ChainBlocksUpdate):
+            chain_blocks = update.chain_blocks
+            try:
+                await self._binding.apply_blocks(
+                    chat_id,
+                    chain_blocks.sub_chain_id,
+                    chain_blocks.next_offset,
+                    chain_blocks.blocks,
+                    False,
+                )
+            except (ConnectionNotFound, ConnectionError):
+                pass
         if not isinstance(update, RawCallUpdate):
             await self._propagate(
                 update,

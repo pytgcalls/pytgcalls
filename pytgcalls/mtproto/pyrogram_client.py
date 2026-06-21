@@ -7,6 +7,7 @@ from typing import Union
 
 from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
+from ntgcalls import SubchainRequest
 from pyrogram import Client
 from pyrogram import ContinuePropagation
 from pyrogram.errors import AuthBytesInvalid
@@ -24,18 +25,22 @@ from pyrogram.raw.functions.messages import GetDhConfig
 from pyrogram.raw.functions.messages import GetFullChat
 from pyrogram.raw.functions.phone import AcceptCall
 from pyrogram.raw.functions.phone import ConfirmCall
+from pyrogram.raw.functions.phone import CreateConferenceCall
 from pyrogram.raw.functions.phone import CreateGroupCall
 from pyrogram.raw.functions.phone import DiscardCall
 from pyrogram.raw.functions.phone import DiscardGroupCall
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
 from pyrogram.raw.functions.phone import GetGroupCall
+from pyrogram.raw.functions.phone import GetGroupCallChainBlocks
 from pyrogram.raw.functions.phone import GetGroupCallStreamChannels
 from pyrogram.raw.functions.phone import GetGroupParticipants
+from pyrogram.raw.functions.phone import InviteConferenceCallParticipant
 from pyrogram.raw.functions.phone import JoinGroupCall
 from pyrogram.raw.functions.phone import JoinGroupCallPresentation
 from pyrogram.raw.functions.phone import LeaveGroupCall
 from pyrogram.raw.functions.phone import LeaveGroupCallPresentation
 from pyrogram.raw.functions.phone import RequestCall
+from pyrogram.raw.functions.phone import SendConferenceCallBroadcast
 from pyrogram.raw.functions.phone import SendSignalingData
 from pyrogram.raw.functions.upload import GetFile
 from pyrogram.raw.types import Channel
@@ -70,6 +75,7 @@ from pyrogram.raw.types import PhoneCallWaiting
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateChat
 from pyrogram.raw.types import UpdateGroupCall
+from pyrogram.raw.types import UpdateGroupCallChainBlocks
 from pyrogram.raw.types import UpdateGroupCallConnection
 from pyrogram.raw.types import UpdateGroupCallParticipants
 from pyrogram.raw.types import UpdateNewChannelMessage
@@ -85,6 +91,8 @@ from ..types import CallProtocol
 from ..types import ChatUpdate
 from ..types import GroupCallParticipant
 from ..types import RawCallUpdate
+from ..types.calls import ChainBlocks
+from ..types.calls import ChainBlocksUpdate
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
@@ -295,6 +303,24 @@ class PyrogramClient(BridgedClient):
                                 ChatUpdate.Status.KICKED,
                             ),
                         )
+            if isinstance(update, UpdateGroupCallChainBlocks):
+                chat_id = self._cache.get_chat_id(
+                    update.call.slug
+                    if isinstance(update.call, InputGroupCallSlug) else
+                    cast(InputGroupCall, update.call).id,
+                )
+                if chat_id:
+                    await self._propagate(
+                        ChainBlocksUpdate(
+                            chat_id,
+                            ChainBlocks(
+                                update.sub_chain_id,
+                                update.blocks,
+                                update.next_offset,
+                            ),
+                        ),
+                    )
+
             if isinstance(
                 update,
                 (UpdateNewChannelMessage, UpdateNewMessage),
@@ -431,6 +457,60 @@ class PyrogramClient(BridgedClient):
             ),
         )
 
+    async def get_subchain_blocks(
+        self,
+        chat_id: int,
+        subchain_request: SubchainRequest,
+    ) -> Optional[ChainBlocks]:
+        try:
+            input_call = await self.get_input_call(chat_id)
+            if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+                result: Updates = await self._invoke(
+                    GetGroupCallChainBlocks(
+                        call=input_call,
+                        sub_chain_id=subchain_request.subchain,
+                        offset=subchain_request.height,
+                        limit=subchain_request.limit,
+                    ),
+                )
+                for update in result.updates:
+                    if isinstance(update, UpdateGroupCallChainBlocks):
+                        return ChainBlocks(
+                            update.sub_chain_id,
+                            update.blocks,
+                            update.next_offset,
+                        )
+        except FloodWait:
+            pass
+        except (GroupcallForbidden, GroupcallInvalid):
+            self._cache.drop_cache(chat_id)
+        return None
+
+    async def get_conference_last_block(
+        self,
+        chat_id: int,
+    ) -> Optional[bytes]:
+        try:
+            input_call = await self.get_input_call(chat_id)
+            if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+                result: Updates = await self._invoke(
+                    GetGroupCallChainBlocks(
+                        call=input_call,
+                        sub_chain_id=0,
+                        offset=-1,
+                        limit=1,
+                    ),
+                )
+                for update in result.updates:
+                    if isinstance(update, UpdateGroupCallChainBlocks):
+                        if update.blocks:
+                            return update.blocks[-1]
+        except FloodWait:
+            pass
+        except (GroupcallForbidden, GroupcallInvalid):
+            self._cache.drop_cache(chat_id)
+        return None
+
     async def get_group_call_participants(
         self,
         chat_id: int,
@@ -463,6 +543,25 @@ class PyrogramClient(BridgedClient):
             for participant in participants
         ]
 
+    async def send_conference_call_broadcast(
+        self,
+        chat_id: int,
+        block: bytes,
+    ):
+        try:
+            input_call = await self.get_input_call(chat_id)
+            if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+                await self._invoke(
+                    SendConferenceCallBroadcast(
+                        call=input_call,
+                        block=block,
+                    ),
+                )
+        except FloodWait:
+            pass
+        except (GroupcallForbidden, GroupcallInvalid):
+            self._cache.drop_cache(chat_id)
+
     async def join_group_call(
         self,
         chat_id: int,
@@ -470,6 +569,7 @@ class PyrogramClient(BridgedClient):
         video_stopped: bool,
         join_as: InputPeer,
         invite_hash: Optional[str] = None,
+        block: Optional[bytes] = None,
         public_key: Optional[int] = None,
     ) -> str:
         try:
@@ -483,9 +583,12 @@ class PyrogramClient(BridgedClient):
                         join_as=join_as,
                         video_stopped=video_stopped,
                         invite_hash=invite_hash,
+                        block=block,
                         public_key=public_key,
                     ),
                 )
+
+                data: Optional[str] = None
                 for update in result.updates:
                     if isinstance(
                         update,
@@ -498,8 +601,19 @@ class PyrogramClient(BridgedClient):
                                 self.parse_participant_action(participant),
                                 self.parse_participant(participant),
                             )
+                    if isinstance(update, UpdateGroupCall) and \
+                            isinstance(update.call, GroupCall):
+                        self._cache.set_cache(
+                            chat_id,
+                            InputGroupCall(
+                                id=update.call.id,
+                                access_hash=update.call.access_hash,
+                            ),
+                        )
                     if isinstance(update, UpdateGroupCallConnection):
-                        return update.params.data
+                        data = update.params.data
+                if data:
+                    return data
         except (GroupcallForbidden, GroupcallInvalid):
             self._cache.drop_cache(chat_id)
             if not isinstance(
@@ -513,9 +627,53 @@ class PyrogramClient(BridgedClient):
                 video_stopped,
                 join_as,
                 invite_hash,
+                block,
                 public_key,
             )
 
+        return json.dumps({'transport': None})
+
+    async def create_conference_call(
+        self,
+        chat_id: int,
+        json_join: str,
+        video_stopped: bool,
+        block: bytes,
+        public_key: int,
+    ) -> str:
+        result: Updates = await self._invoke(
+            CreateConferenceCall(
+                random_id=self.rnd_id(),
+                muted=False,
+                video_stopped=video_stopped,
+                join=True,
+                public_key=public_key,
+                block=block,
+                params=DataJSON(data=json_join),
+            ),
+        )
+        data: Optional[str] = None
+        for update in result.updates:
+            if isinstance(update, UpdateGroupCall) and \
+                    isinstance(update.call, GroupCall):
+                self._cache.set_cache(
+                    chat_id,
+                    InputGroupCall(
+                        id=update.call.id,
+                        access_hash=update.call.access_hash,
+                    ),
+                )
+            if isinstance(update, UpdateGroupCallConnection):
+                data = update.params.data
+        await self._invoke(
+            InviteConferenceCallParticipant(
+                call=cast(InputGroupCall, await self.get_input_call(chat_id)),
+                user_id=cast(InputUser, await self.resolve_peer(chat_id)),
+                video=not video_stopped,
+            ),
+        )
+        if data:
+            return data
         return json.dumps({'transport': None})
 
     async def join_presentation(

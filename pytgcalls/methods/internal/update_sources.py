@@ -23,6 +23,7 @@ class UpdateSources(Scaffold):
                 ] = x.video_info.endpoint
                 await self._binding.add_incoming_video(
                     chat_id,
+                    x.user_id,
                     x.video_info.endpoint,
                     x.video_info.sources,
                 )
@@ -33,6 +34,7 @@ class UpdateSources(Scaffold):
                 ] = x.presentation_info.endpoint
                 await self._binding.add_incoming_video(
                     chat_id,
+                    x.user_id,
                     x.presentation_info.endpoint,
                     x.presentation_info.sources,
                 )

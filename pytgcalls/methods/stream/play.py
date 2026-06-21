@@ -84,12 +84,6 @@ class Play(Scaffold):
                 config,
                 None,
             )
-            if isinstance(config, GroupCallConfig):
-                await self._join_presentation(
-                    chat_id,
-                    is_presentation,
-                )
-                await self._update_sources(chat_id)
         except FileError as e:
             raise FileNotFoundError(e)
         except Exception:

@@ -6,6 +6,7 @@ from typing import Union
 
 from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
+from ntgcalls import SubchainRequest
 from telethon import TelegramClient
 from telethon.errors import BadRequestError
 from telethon.errors import ChannelPrivateError
@@ -20,18 +21,22 @@ from telethon.tl.functions.messages import GetDhConfigRequest
 from telethon.tl.functions.messages import GetFullChatRequest
 from telethon.tl.functions.phone import AcceptCallRequest
 from telethon.tl.functions.phone import ConfirmCallRequest
+from telethon.tl.functions.phone import CreateConferenceCallRequest
 from telethon.tl.functions.phone import CreateGroupCallRequest
 from telethon.tl.functions.phone import DiscardCallRequest
 from telethon.tl.functions.phone import DiscardGroupCallRequest
 from telethon.tl.functions.phone import EditGroupCallParticipantRequest
+from telethon.tl.functions.phone import GetGroupCallChainBlocksRequest
 from telethon.tl.functions.phone import GetGroupCallRequest
 from telethon.tl.functions.phone import GetGroupCallStreamChannelsRequest
 from telethon.tl.functions.phone import GetGroupParticipantsRequest
+from telethon.tl.functions.phone import InviteConferenceCallParticipantRequest
 from telethon.tl.functions.phone import JoinGroupCallPresentationRequest
 from telethon.tl.functions.phone import JoinGroupCallRequest
 from telethon.tl.functions.phone import LeaveGroupCallPresentationRequest
 from telethon.tl.functions.phone import LeaveGroupCallRequest
 from telethon.tl.functions.phone import RequestCallRequest
+from telethon.tl.functions.phone import SendConferenceCallBroadcastRequest
 from telethon.tl.functions.phone import SendSignalingDataRequest
 from telethon.tl.functions.upload import GetFileRequest
 from telethon.tl.types import ChannelForbidden
@@ -67,6 +72,7 @@ from telethon.tl.types import TypeInputUser
 from telethon.tl.types import UpdateChannel
 from telethon.tl.types import UpdateChat
 from telethon.tl.types import UpdateGroupCall
+from telethon.tl.types import UpdateGroupCallChainBlocks
 from telethon.tl.types import UpdateGroupCallConnection
 from telethon.tl.types import UpdateGroupCallParticipants
 from telethon.tl.types import UpdateNewChannelMessage
@@ -80,6 +86,8 @@ from ..types import CallProtocol
 from ..types import ChatUpdate
 from ..types import GroupCallParticipant
 from ..types import RawCallUpdate
+from ..types.calls import ChainBlocks
+from ..types.calls import ChainBlocksUpdate
 from .bridged_client import BridgedClient
 from .client_cache import ClientCache
 
@@ -277,6 +285,23 @@ class TelethonClient(BridgedClient):
                             ChatUpdate.Status.KICKED,
                         ),
                     )
+            if isinstance(update, UpdateGroupCallChainBlocks):
+                chat_id = self._cache.get_chat_id(
+                    update.call.slug
+                    if isinstance(update.call, InputGroupCallSlug) else
+                    cast(InputGroupCall, update.call).id,
+                )
+                if chat_id:
+                    await self._propagate(
+                        ChainBlocksUpdate(
+                            chat_id,
+                            ChainBlocks(
+                                update.sub_chain_id,
+                                update.blocks,
+                                update.next_offset,
+                            ),
+                        ),
+                    )
 
             if isinstance(
                 update,
@@ -398,6 +423,79 @@ class TelethonClient(BridgedClient):
             ),
         )
 
+    async def get_subchain_blocks(
+        self,
+        chat_id: int,
+        subchain_request: SubchainRequest,
+    ) -> Optional[ChainBlocks]:
+        try:
+            input_call = await self.get_input_call(chat_id)
+            if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+                result: Updates = await self._invoke(
+                    GetGroupCallChainBlocksRequest(
+                        call=input_call,
+                        sub_chain_id=subchain_request.subchain,
+                        offset=subchain_request.height,
+                        limit=subchain_request.limit,
+                    ),
+                )
+                for update in cast(List, result.updates):
+                    if isinstance(update, UpdateGroupCallChainBlocks):
+                        return ChainBlocks(
+                            update.sub_chain_id,
+                            update.blocks,
+                            update.next_offset,
+                        )
+        except FloodWaitError:
+            pass
+        except (GroupcallForbiddenError, GroupcallInvalidError):
+            self._cache.drop_cache(chat_id)
+        return None
+
+    async def get_conference_last_block(
+        self,
+        chat_id: int,
+    ) -> Optional[bytes]:
+        try:
+            input_call = await self.get_input_call(chat_id)
+            if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+                result: Updates = await self._invoke(
+                    GetGroupCallChainBlocksRequest(
+                        call=input_call,
+                        sub_chain_id=0,
+                        offset=-1,
+                        limit=1,
+                    ),
+                )
+                for update in cast(List, result.updates):
+                    if isinstance(update, UpdateGroupCallChainBlocks):
+                        if update.blocks:
+                            return update.blocks[-1]
+        except FloodWaitError:
+            pass
+        except (GroupcallForbiddenError, GroupcallInvalidError):
+            self._cache.drop_cache(chat_id)
+        return None
+
+    async def send_conference_call_broadcast(
+        self,
+        chat_id: int,
+        block: bytes,
+    ):
+        try:
+            input_call = await self.get_input_call(chat_id)
+            if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+                await self._invoke(
+                    SendConferenceCallBroadcastRequest(
+                        call=input_call,
+                        block=block,
+                    ),
+                )
+        except FloodWaitError:
+            pass
+        except (GroupcallForbiddenError, GroupcallInvalidError):
+            self._cache.drop_cache(chat_id)
+
     async def get_group_call_participants(
         self,
         chat_id: int,
@@ -437,6 +535,7 @@ class TelethonClient(BridgedClient):
         video_stopped: bool,
         join_as: TypeInputPeer,
         invite_hash: Optional[str] = None,
+        block: Optional[bytes] = None,
         public_key: Optional[int] = None,
     ) -> str:
         try:
@@ -450,9 +549,12 @@ class TelethonClient(BridgedClient):
                         join_as=join_as,
                         video_stopped=video_stopped,
                         invite_hash=invite_hash,
+                        block=block,
                         public_key=public_key,
                     ),
                 )
+
+                data: Optional[str] = None
                 for update in cast(List, result.updates):
                     if isinstance(
                         update,
@@ -465,8 +567,19 @@ class TelethonClient(BridgedClient):
                                 self.parse_participant_action(participant),
                                 self.parse_participant(participant),
                             )
+                    if isinstance(update, UpdateGroupCall) and \
+                            isinstance(update.call, GroupCall):
+                        self._cache.set_cache(
+                            chat_id,
+                            InputGroupCall(
+                                id=update.call.id,
+                                access_hash=update.call.access_hash,
+                            ),
+                        )
                     if isinstance(update, UpdateGroupCallConnection):
-                        return update.params.data
+                        data = update.params.data
+                if data:
+                    return data
         except (GroupcallForbiddenError, GroupcallInvalidError):
             self._cache.drop_cache(chat_id)
             if not isinstance(
@@ -480,9 +593,53 @@ class TelethonClient(BridgedClient):
                 video_stopped,
                 join_as,
                 invite_hash,
+                block,
                 public_key,
             )
 
+        return json.dumps({'transport': None})
+
+    async def create_conference_call(
+        self,
+        chat_id: int,
+        json_join: str,
+        video_stopped: bool,
+        block: bytes,
+        public_key: int,
+    ) -> str:
+        result: Updates = await self._invoke(
+            CreateConferenceCallRequest(
+                random_id=self.rnd_id(),
+                muted=False,
+                video_stopped=video_stopped,
+                join=True,
+                public_key=public_key,
+                block=block,
+                params=DataJSON(data=json_join),
+            ),
+        )
+        data: Optional[str] = None
+        for update in cast(List, result.updates):
+            if isinstance(update, UpdateGroupCall) and \
+                    isinstance(update.call, GroupCall):
+                self._cache.set_cache(
+                    chat_id,
+                    InputGroupCall(
+                        id=update.call.id,
+                        access_hash=update.call.access_hash,
+                    ),
+                )
+            if isinstance(update, UpdateGroupCallConnection):
+                data = update.params.data
+        await self._invoke(
+            InviteConferenceCallParticipantRequest(
+                call=cast(InputGroupCall, await self.get_input_call(chat_id)),
+                user_id=cast(InputUser, await self.resolve_peer(chat_id)),
+                video=not video_stopped,
+            ),
+        )
+        if data:
+            return data
         return json.dumps({'transport': None})
 
     async def join_presentation(

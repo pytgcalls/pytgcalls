@@ -8,6 +8,7 @@ from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
 from ntgcalls import RTCServer
 from ntgcalls import SsrcGroup
+from ntgcalls import SubchainRequest
 
 from ..handlers import HandlersHolder
 from ..types import GroupCallParticipant
@@ -22,6 +23,26 @@ class BridgedClient(HandlersHolder):
     ):
         pass
 
+    async def send_conference_call_broadcast(
+        self,
+        chat_id: int,
+        block: bytes,
+    ):
+        pass
+
+    async def get_subchain_blocks(
+        self,
+        chat_id: int,
+        subchain_request: SubchainRequest,
+    ):
+        pass
+
+    async def get_conference_last_block(
+        self,
+        chat_id: int,
+    ):
+        pass
+
     async def join_group_call(
         self,
         chat_id: int,
@@ -29,7 +50,18 @@ class BridgedClient(HandlersHolder):
         video_stopped: bool,
         join_as: Any,
         invite_hash: Optional[str] = None,
+        block: Optional[bytes] = None,
         public_key: Optional[int] = None,
+    ):
+        pass
+
+    async def create_conference_call(
+        self,
+        chat_id: int,
+        json_join: str,
+        video_stopped: bool,
+        block: bytes,
+        public_key: int,
     ):
         pass
 

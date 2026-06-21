@@ -2,7 +2,7 @@ from enum import auto
 from typing import Optional
 
 from ..flag import Flag
-from pytgcalls.types.update import Update
+from ..update import Update
 
 
 class RawCallUpdate(Update):

@@ -10,6 +10,7 @@ from ntgcalls import SegmentPartRequest
 from ntgcalls import StreamDevice
 from ntgcalls import StreamMode
 from ntgcalls import StreamType
+from ntgcalls import SubchainRequest
 
 from .handlers import HandlersHolder
 from .types import CallConfig
@@ -114,12 +115,26 @@ class Scaffold(HandlersHolder):
     async def _handle_mtproto_updates(self, update: Update):
         pass
 
+    async def _handle_request_participants(self, chat_id: int):
+        pass
+
+    async def _join_conference(self, chat_id: int):
+        pass
+
+    async def _handle_subchain_request(
+        self,
+        chat_id: int,
+        subchain_request: SubchainRequest,
+    ):
+        pass
+
     async def _connect_call(
         self,
         chat_id: int,
-        media_description: MediaDescription,
+        media_description: Optional[MediaDescription],
         config: Union[CallConfig, GroupCallConfig],
         payload: Optional[str],
+        last_block: Optional[bytes] = None,
     ):
         pass
 
