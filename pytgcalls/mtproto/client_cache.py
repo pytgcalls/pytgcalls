@@ -37,10 +37,11 @@ class ClientCache:
             try:
                 py_logger.debug('FullChat cache miss for %d', chat_id)
                 input_call = await self._app.get_call(chat_id)
-                self.set_cache(
-                    chat_id,
-                    input_call,
-                )
+                if input_call is not None:
+                    self.set_cache(
+                        chat_id,
+                        input_call,
+                    )
                 return input_call
             except Exception:
                 pass
@@ -162,7 +163,9 @@ class ClientCache:
             (
                 user_id
                 for user_id in self._input_calls.keys
-                if self._input_calls.get(user_id).id == phone_call_id
+                if getattr(
+                    self._input_calls.get(user_id), 'id', None,
+                ) == phone_call_id
             ),
             None,
         )
