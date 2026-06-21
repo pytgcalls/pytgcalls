@@ -53,7 +53,7 @@ class Start(Scaffold):
             )
             self._binding.on_signaling(
                 lambda chat_id, data: asyncio.run_coroutine_threadsafe(
-                    self._emit_sig_data(chat_id, data),
+                    self._app.send_signaling(chat_id, data),
                     self.loop,
                 ),
             )
