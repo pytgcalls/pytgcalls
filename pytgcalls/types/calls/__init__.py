@@ -8,6 +8,7 @@ from .chain_blocks_update import ChainBlocksUpdate
 from .group_call_config import GroupCallConfig
 from .pending_connection import PendingConnection
 from .raw_call_update import RawCallUpdate
+from .updated_emojis import UpdatedEmojis
 
 __all__ = (
     'Call',
@@ -20,4 +21,5 @@ __all__ = (
     'GroupCallConfig',
     'PendingConnection',
     'RawCallUpdate',
+    'UpdatedEmojis',
 )

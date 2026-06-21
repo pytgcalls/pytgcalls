@@ -51,6 +51,12 @@ class Start(Scaffold):
                     self.loop,
                 ),
             )
+            self._binding.on_update_emojis(
+                lambda chat_id, emojis: asyncio.run_coroutine_threadsafe(
+                    self._handle_emojis_update(chat_id, emojis),
+                    self.loop,
+                ),
+            )
             self._binding.on_signaling(
                 lambda chat_id, data: asyncio.run_coroutine_threadsafe(
                     self._app.send_signaling(chat_id, data),

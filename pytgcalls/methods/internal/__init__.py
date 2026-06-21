@@ -2,6 +2,7 @@ from .clear_cache import ClearCache
 from .clear_call import ClearCall
 from .connect_call import ConnectCall
 from .handle_connection_changed import HandleConnectionChanged
+from .handle_emojis_update import HandleEmojisUpdate
 from .handle_mtproto_updates import HandleMTProtoUpdates
 from .handle_request_participants import HandleRequestParticipants
 from .handle_stream_ended import HandleStreamEnded
@@ -22,6 +23,7 @@ class Internal(
     ClearCall,
     ConnectCall,
     HandleConnectionChanged,
+    HandleEmojisUpdate,
     HandleMTProtoUpdates,
     HandleRequestParticipants,
     HandleStreamEnded,

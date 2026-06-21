@@ -7,6 +7,7 @@ from .calls import CallProtocol
 from .calls import GroupCallConfig
 from .calls import PendingConnection
 from .calls import RawCallUpdate
+from .calls import UpdatedEmojis
 from .chats import ChatUpdate
 from .chats import GroupCallParticipant
 from .chats import UpdatedGroupCallParticipant
@@ -44,6 +45,7 @@ __all__ = (
     'StreamEnded',
     'StreamFrames',
     'Update',
+    'UpdatedEmojis',
     'UpdatedGroupCallParticipant',
     'VideoQuality',
 )

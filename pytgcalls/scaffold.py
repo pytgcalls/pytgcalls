@@ -80,6 +80,9 @@ class Scaffold(HandlersHolder):
     ):
         pass
 
+    async def _handle_emojis_update(self, chat_id: int, emojis: str):
+        pass
+
     async def _emit_sig_data(self, chat_id: int, data: bytes):
         pass
 
