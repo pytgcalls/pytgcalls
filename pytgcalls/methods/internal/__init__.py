@@ -8,7 +8,6 @@ from .handle_request_participants import HandleRequestParticipants
 from .handle_stream_ended import HandleStreamEnded
 from .handle_stream_frame import HandleStreamFrame
 from .handle_subchain_request import HandleSubchainRequest
-from .join_conference import JoinConference
 from .join_presentation import JoinPresentation
 from .log_retries import LogRetries
 from .request_broadcast_part import RequestBroadcastPart
@@ -29,7 +28,6 @@ class Internal(
     HandleStreamEnded,
     HandleStreamFrame,
     HandleSubchainRequest,
-    JoinConference,
     JoinPresentation,
     LogRetries,
     RequestBroadcastPart,

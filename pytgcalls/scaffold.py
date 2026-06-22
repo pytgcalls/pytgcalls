@@ -121,9 +121,6 @@ class Scaffold(HandlersHolder):
     async def _handle_request_participants(self, chat_id: int):
         pass
 
-    async def _join_conference(self, chat_id: int):
-        pass
-
     async def _handle_subchain_request(
         self,
         chat_id: int,
