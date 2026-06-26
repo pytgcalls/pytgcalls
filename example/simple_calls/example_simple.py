@@ -3,7 +3,6 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from pytgcalls import filters as fl
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls.types import ChatUpdate
 from pytgcalls.types import GroupCallParticipant
@@ -110,5 +109,4 @@ async def participant_handler(
 async def all_updates(_: PyTgCalls, update: Update):
     print(update)
 
-call_py.start()
-idle()
+call_py.run()

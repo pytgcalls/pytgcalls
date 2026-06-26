@@ -3,7 +3,6 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from pytgcalls import filters as fl
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls.types import Device
 from pytgcalls.types import RecordStream
@@ -49,5 +48,4 @@ async def stream_audio_frame_handler(_, update: StreamFrames):
     # Receive only all kind of audio stream frame
     print(update)
 
-call_py.start()
-idle()
+call_py.run()
