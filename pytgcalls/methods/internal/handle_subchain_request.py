@@ -7,11 +7,11 @@ class HandleSubchainRequest(Scaffold):
     async def _handle_subchain_request(
         self,
         chat_id: int,
-        subchain_request: SubchainRequest
+        subchain_request: SubchainRequest,
     ):
         result = await self._app.get_subchain_blocks(
             chat_id,
-            subchain_request
+            subchain_request,
         )
         if result:
             await self._binding.apply_blocks(

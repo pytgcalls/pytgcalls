@@ -40,6 +40,7 @@ class BridgedClient(HandlersHolder):
     async def get_conference_last_block(
         self,
         chat_id: int,
+        invite_msg_id: Optional[int] = None,
     ):
         pass
 
@@ -52,6 +53,7 @@ class BridgedClient(HandlersHolder):
         invite_hash: Optional[str] = None,
         block: Optional[bytes] = None,
         public_key: Optional[int] = None,
+        invite_msg_id: Optional[int] = None,
     ):
         pass
 
@@ -367,5 +369,9 @@ class BridgedClient(HandlersHolder):
     async def get_id(self):
         pass
 
-    async def get_input_call(self, chat_id: int):
+    async def get_input_call(
+        self,
+        chat_id: int,
+        invite_msg_id: Optional[int] = None,
+    ):
         pass

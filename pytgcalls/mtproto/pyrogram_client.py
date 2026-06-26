@@ -52,12 +52,14 @@ from pyrogram.raw.types import GroupCall
 from pyrogram.raw.types import GroupCallDiscarded
 from pyrogram.raw.types import InputChannel
 from pyrogram.raw.types import InputGroupCall
+from pyrogram.raw.types import InputGroupCallInviteMessage
 from pyrogram.raw.types import InputGroupCallSlug
 from pyrogram.raw.types import InputGroupCallStream
 from pyrogram.raw.types import InputPeerChannel
 from pyrogram.raw.types import InputPeerChat
 from pyrogram.raw.types import InputPhoneCall
 from pyrogram.raw.types import MessageActionChatDeleteUser
+from pyrogram.raw.types import MessageActionConferenceCall
 from pyrogram.raw.types import MessageActionInviteToGroupCall
 from pyrogram.raw.types import MessageService
 from pyrogram.raw.types import PeerChannel
@@ -344,6 +346,18 @@ class PyrogramClient(BridgedClient):
 
                     if isinstance(
                         update.message.action,
+                        MessageActionConferenceCall,
+                    ) and not update.message.action.missed:
+                        await self._propagate(
+                            ChatUpdate(
+                                chat_id,
+                                ChatUpdate.Status.INCOMING_CONFERENCE_CALL,
+                                update.message.id,
+                            ),
+                        )
+
+                    if isinstance(
+                        update.message.action,
                         MessageActionChatDeleteUser,
                     ):
                         if isinstance(
@@ -489,10 +503,18 @@ class PyrogramClient(BridgedClient):
     async def get_conference_last_block(
         self,
         chat_id: int,
+        invite_msg_id: Optional[int] = None,
     ) -> Optional[bytes]:
         try:
-            input_call = await self.get_input_call(chat_id)
-            if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+            input_call = await self.get_input_call(chat_id, invite_msg_id)
+            if isinstance(
+                input_call,
+                (
+                    InputGroupCall,
+                    InputGroupCallSlug,
+                    InputGroupCallInviteMessage,
+                ),
+            ):
                 result: Updates = await self._invoke(
                     GetGroupCallChainBlocks(
                         call=input_call,
@@ -571,10 +593,18 @@ class PyrogramClient(BridgedClient):
         invite_hash: Optional[str] = None,
         block: Optional[bytes] = None,
         public_key: Optional[int] = None,
+        invite_msg_id: Optional[int] = None,
     ) -> str:
         try:
-            input_call = await self.get_input_call(chat_id)
-            if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+            input_call = await self.get_input_call(chat_id, invite_msg_id)
+            if isinstance(
+                input_call,
+                (
+                    InputGroupCall,
+                    InputGroupCallSlug,
+                    InputGroupCallInviteMessage,
+                ),
+            ):
                 result: Updates = await self._invoke(
                     JoinGroupCall(
                         call=input_call,
@@ -612,13 +642,28 @@ class PyrogramClient(BridgedClient):
                         )
                     if isinstance(update, UpdateGroupCallConnection):
                         data = update.params.data
+                    if isinstance(update, UpdateGroupCallChainBlocks):
+                        await self._propagate(
+                            ChainBlocksUpdate(
+                                chat_id,
+                                ChainBlocks(
+                                    update.sub_chain_id,
+                                    update.blocks,
+                                    update.next_offset,
+                                ),
+                            ),
+                        )
                 if data:
                     return data
         except (GroupcallForbidden, GroupcallInvalid):
             self._cache.drop_cache(chat_id)
             if not isinstance(
-                await self.get_input_call(chat_id),
-                (InputGroupCall, InputGroupCallSlug),
+                await self.get_input_call(chat_id, invite_msg_id),
+                (
+                    InputGroupCall,
+                    InputGroupCallSlug,
+                    InputGroupCallInviteMessage,
+                ),
             ):
                 return json.dumps({'transport': None})
             return await self.join_group_call(
@@ -629,6 +674,7 @@ class PyrogramClient(BridgedClient):
                 invite_hash,
                 block,
                 public_key,
+                invite_msg_id,
             )
 
         return json.dumps({'transport': None})
@@ -960,9 +1006,20 @@ class PyrogramClient(BridgedClient):
                 ),
             )
 
-    async def get_input_call(self, chat_id: int) -> Optional[
-        Union[InputPhoneCall, InputGroupCall, InputGroupCallSlug]
+    async def get_input_call(
+        self,
+        chat_id: int,
+        invite_msg_id: Optional[int] = None,
+    ) -> Optional[
+        Union[
+            InputPhoneCall, InputGroupCall,
+            InputGroupCallSlug, InputGroupCallInviteMessage,
+        ]
     ]:
+        if invite_msg_id:
+            return InputGroupCallInviteMessage(
+                msg_id=invite_msg_id,
+            )
         return await self._cache.get_input_call(chat_id)
 
     async def resolve_peer(

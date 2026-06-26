@@ -1,8 +1,12 @@
+from typing import Optional
+from typing import Union
+
+
 class CallConfig:
     def __init__(
         self,
         timeout: int = 60,
-        conference: bool = False,
+        conference: Optional[Union[bool, int]] = False,
     ):
         self.timeout: int = timeout
-        self.conference: bool = conference
+        self.conference: Optional[Union[bool, int]] = conference

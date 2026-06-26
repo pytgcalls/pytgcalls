@@ -76,10 +76,12 @@ class MtProtoClient:
     async def get_conference_last_block(
         self,
         chat_id: int,
+        invite_msg_id: Optional[int] = None,
     ) -> Optional[bytes]:
         if self._bind_client is not None:
             return await self._bind_client.get_conference_last_block(
                 chat_id,
+                invite_msg_id,
             )
         else:
             raise InvalidMTProtoClient()
@@ -93,6 +95,7 @@ class MtProtoClient:
         invite_hash: Optional[str] = None,
         block: Optional[bytes] = None,
         public_key: Optional[int] = None,
+        invite_msg_id: Optional[int] = None,
     ) -> str:
         if self._bind_client is not None:
             return await self._bind_client.join_group_call(
@@ -103,6 +106,7 @@ class MtProtoClient:
                 invite_hash,
                 block,
                 public_key,
+                invite_msg_id,
             )
         else:
             raise InvalidMTProtoClient()

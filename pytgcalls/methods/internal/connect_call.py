@@ -63,7 +63,10 @@ class ConnectCall(Scaffold):
                             False,
                         )
                 elif isinstance(config, CallConfig) and config.conference:
-                    if not last_block:
+                    if not last_block or (
+                        isinstance(config.conference, int) and
+                        not isinstance(config.conference, bool)
+                    ):
                         await self._binding.create_p2p_call(
                             chat_id,
                         )
@@ -72,7 +75,7 @@ class ConnectCall(Scaffold):
                         self._my_id,
                         last_block,
                     )
-                    if not last_block:
+                    if media_description:
                         await self._binding.set_stream_sources(
                             chat_id,
                             StreamMode.CAPTURE,
@@ -105,6 +108,12 @@ class ConnectCall(Scaffold):
                             None,
                             conference_params.block,
                             public_key,
+                            config.conference
+                            if (
+                                isinstance(config.conference, int) and
+                                not isinstance(config.conference, bool)
+                            )
+                            else None,
                         )
                     await self._binding.connect(
                         chat_id,

@@ -15,6 +15,7 @@ class ChatUpdate(Update):
         INCOMING_CALL = auto()
         BUSY_CALL = auto()
         MIGRATE_TO_CONFERENCE_CALL = auto()
+        INCOMING_CONFERENCE_CALL = auto()
         LEFT_CALL = (
             KICKED |
             LEFT_GROUP |

@@ -78,11 +78,21 @@ class Play(Scaffold):
                     raise NoActiveGroupCall()
 
         try:
+            block: Optional[bytes] = None
+            if (
+                isinstance(config, CallConfig) and
+                isinstance(config.conference, int)
+            ):
+                block = await self._app.get_conference_last_block(
+                    chat_id,
+                    config.conference,
+                )
             await self._connect_call(
                 chat_id,  # type: ignore
                 media_description,
                 config,
                 None,
+                block,
             )
         except FileError as e:
             raise FileNotFoundError(e)
