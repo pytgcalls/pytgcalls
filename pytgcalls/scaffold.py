@@ -2,10 +2,10 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+from ntgcalls import ConnectionInfo
 from ntgcalls import Frame as RawFrame
 from ntgcalls import MediaDescription
 from ntgcalls import MediaState
-from ntgcalls import NetworkInfo
 from ntgcalls import SegmentPartRequest
 from ntgcalls import StreamDevice
 from ntgcalls import StreamMode
@@ -111,7 +111,7 @@ class Scaffold(HandlersHolder):
     async def _handle_connection_changed(
         self,
         chat_id: int,
-        net_state: NetworkInfo,
+        net_state: ConnectionInfo,
     ):
         pass
 

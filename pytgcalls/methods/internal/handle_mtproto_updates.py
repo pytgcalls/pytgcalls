@@ -68,7 +68,7 @@ class HandleMTProtoUpdates(Scaffold):
         if isinstance(update, RawCallUpdate):
             if update.status & RawCallUpdate.Type.SIGNALING_DATA:
                 try:
-                    await self._binding.send_signaling(
+                    await self._binding.send_signaling_data(
                         update.chat_id,
                         update.signaling_data,
                     )
