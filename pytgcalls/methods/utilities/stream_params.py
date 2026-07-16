@@ -44,6 +44,7 @@ class StreamParams:
                     input=media.path,
                     sample_rate=media.parameters.bitrate,
                     channel_count=media.parameters.channels,
+                    keep_open=False,
                 )
             elif isinstance(media, VideoStream):
                 return VideoDescription(
@@ -52,6 +53,7 @@ class StreamParams:
                     width=media.parameters.width,
                     height=media.parameters.height,
                     fps=media.parameters.frame_rate,
+                    keep_open=False,
                 )
         return None
 
