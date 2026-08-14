@@ -179,6 +179,7 @@ async def cleanup_commands(
 
     return new_commands
 
+
 def build_command(
     name: str,
     ffmpeg_parameters: Optional[str],
