@@ -22,6 +22,9 @@ from .types.raw import AudioParameters
 from .types.raw import VideoParameters
 
 
+_SUPPORTED_FLAGS_CACHE: Dict[str, List[str]] = {}
+
+
 async def check_stream(
     ffmpeg_parameters: Optional[str],
     path: str,
@@ -122,45 +125,59 @@ async def cleanup_commands(
     process_name: Optional[str] = None,
     blacklist: Optional[List[str]] = None,
 ) -> List[str]:
-    try:
-        proc_res = await asyncio.create_subprocess_exec(
-            commands[0] if not process_name else process_name,
-            '-h',
-            'full',
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
+    if not commands:
+        return []
+
+    target_bin = process_name if process_name else commands[0]
+    if target_bin not in _SUPPORTED_FLAGS_CACHE:
         try:
-            stdout, _ = await asyncio.wait_for(
-                proc_res.communicate(),
-                timeout=20,
+            proc_res = await asyncio.create_subprocess_exec(
+                target_bin,
+                '-h',
+                'full',
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
-            result = stdout.decode('utf-8')
-        except (subprocess.TimeoutExpired, JSONDecodeError):
-            proc_res.kill()
-            raise
-        supported = re.findall(r'(?m)^ *(-\w+).*?\s+', result)
-        supported += ['-i']
-        new_commands = []
-        ignore_next = False
+            try:
+                stdout, _ = await asyncio.wait_for(
+                    proc_res.communicate(),
+                    timeout=30,
+                )
+                result = stdout.decode('utf-8', errors='ignore')
+                supported = re.findall(r'(?m)^ *(-\w+).*?\s+', result)
+                supported.append('-i')
+                _SUPPORTED_FLAGS_CACHE[target_bin] = supported
+            except (asyncio.TimeoutError, TimeoutError, subprocess.TimeoutExpired, JSONDecodeError):
+                try:
+                    proc_res.kill()
+                    await proc_res.wait()
+                except Exception:
+                    pass
+                return commands
+        except FileNotFoundError:
+            raise FFmpegError(f'{target_bin} not installed')
+    else:
+        supported = _SUPPORTED_FLAGS_CACHE[target_bin]
 
-        def is_flag(arg: str) -> bool:
-            return arg[0] == '-' and not arg[1:].replace('.', '', 1).isdigit()
+    new_commands = []
+    ignore_next = False
 
-        for v in commands:
-            if len(v) > 0:
-                if is_flag(v):
-                    ignore_next = v not in supported or \
-                        blacklist is not None and v in blacklist
+    def is_flag(arg: str) -> bool:
+        return arg.startswith('-') and not arg[1:].replace('.', '', 1).isdigit()
 
-                if not ignore_next:
-                    new_commands += [v]
-                elif not is_flag(v):
-                    ignore_next = False
-        return new_commands
-    except FileNotFoundError:
-        raise FFmpegError(f'{commands[0]} not installed')
+    for v in commands:
+        if len(v) > 0:
+            if is_flag(v):
+                ignore_next = v not in supported or (
+                    blacklist is not None and v in blacklist
+                )
 
+            if not ignore_next:
+                new_commands.append(v)
+            elif not is_flag(v):
+                ignore_next = False
+
+    return new_commands
 
 def build_command(
     name: str,
