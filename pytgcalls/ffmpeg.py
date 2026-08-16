@@ -40,13 +40,15 @@ async def _get_flags_probe_lock(target_bin: str) -> asyncio.Lock:
         return lock
 
 
-async def _kill_and_reap(proc: "asyncio.subprocess.Process", context: str) -> None:
+async def _kill_and_reap(proc: 'asyncio.subprocess.Process', context: str) -> None:
     try:
         proc.kill()
     except ProcessLookupError:
         return
     except Exception:
-        logger.exception(f"Gagal mengirim kill signal ke subprocess ({context})")
+        logger.exception(
+            f"Gagal mengirim kill signal ke subprocess ({context})",
+        )
         return
 
     try:
@@ -54,7 +56,7 @@ async def _kill_and_reap(proc: "asyncio.subprocess.Process", context: str) -> No
     except asyncio.TimeoutError:
         logger.warning(
             f"⚠️ Subprocess ({context}) tidak reaped dalam {_REAP_TIMEOUT:.0f}s "
-            "setelah SIGKILL. Kemungkinan proses zombie di level OS."
+            'setelah SIGKILL. Kemungkinan proses zombie di level OS.',
         )
     except Exception:
         logger.exception(f"Error saat menunggu subprocess reaped ({context})")
