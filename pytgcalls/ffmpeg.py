@@ -3,7 +3,6 @@ import logging
 import os.path
 import re
 import shlex
-import subprocess
 from json import JSONDecodeError
 from json import loads
 from typing import Dict
@@ -21,8 +20,44 @@ from .exceptions import NoVideoSourceFound
 from .types.raw import AudioParameters
 from .types.raw import VideoParameters
 
+logger = logging.getLogger(__name__)
 
+
+_PROBE_COMMUNICATE_TIMEOUT = 20.0
+_FLAGS_PROBE_TIMEOUT = 30.0
+_REAP_TIMEOUT = 5.0
 _SUPPORTED_FLAGS_CACHE: Dict[str, List[str]] = {}
+_FLAGS_PROBE_LOCKS: Dict[str, asyncio.Lock] = {}
+_FLAGS_PROBE_LOCKS_GUARD = asyncio.Lock()
+
+
+async def _get_flags_probe_lock(target_bin: str) -> asyncio.Lock:
+    async with _FLAGS_PROBE_LOCKS_GUARD:
+        lock = _FLAGS_PROBE_LOCKS.get(target_bin)
+        if lock is None:
+            lock = asyncio.Lock()
+            _FLAGS_PROBE_LOCKS[target_bin] = lock
+        return lock
+
+
+async def _kill_and_reap(proc: "asyncio.subprocess.Process", context: str) -> None:
+    try:
+        proc.kill()
+    except ProcessLookupError:
+        return
+    except Exception:
+        logger.exception(f"Gagal mengirim kill signal ke subprocess ({context})")
+        return
+
+    try:
+        await asyncio.wait_for(proc.wait(), timeout=_REAP_TIMEOUT)
+    except asyncio.TimeoutError:
+        logger.warning(
+            f"⚠️ Subprocess ({context}) tidak reaped dalam {_REAP_TIMEOUT:.0f}s "
+            "setelah SIGKILL. Kemungkinan proses zombie di level OS."
+        )
+    except Exception:
+        logger.exception(f"Error saat menunggu subprocess reaped ({context})")
 
 
 async def check_stream(
@@ -54,15 +89,15 @@ async def check_stream(
     try:
         stdout, stderr = await asyncio.wait_for(
             ffprobe.communicate(),
-            timeout=20,
+            timeout=_PROBE_COMMUNICATE_TIMEOUT,
         )
         result = loads(stdout.decode('utf-8')) or {}
         stream_list = result.get('streams', [])
         format_content = result.get('format', [])
         if 'No such file' in stderr.decode('utf-8'):
             raise FileNotFoundError()
-    except (subprocess.TimeoutExpired, JSONDecodeError):
-        ffprobe.kill()
+    except (asyncio.TimeoutError, JSONDecodeError):
+        await _kill_and_reap(ffprobe, context=f"ffprobe check_stream({path})")
         raise
 
     have_video = False
@@ -129,35 +164,36 @@ async def cleanup_commands(
         return []
 
     target_bin = process_name if process_name else commands[0]
-    if target_bin not in _SUPPORTED_FLAGS_CACHE:
-        try:
-            proc_res = await asyncio.create_subprocess_exec(
-                target_bin,
-                '-h',
-                'full',
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            try:
-                stdout, _ = await asyncio.wait_for(
-                    proc_res.communicate(),
-                    timeout=30,
-                )
-                result = stdout.decode('utf-8', errors='ignore')
-                supported = re.findall(r'(?m)^ *(-\w+).*?\s+', result)
-                supported.append('-i')
-                _SUPPORTED_FLAGS_CACHE[target_bin] = supported
-            except (asyncio.TimeoutError, TimeoutError, subprocess.TimeoutExpired, JSONDecodeError):
+
+    supported = _SUPPORTED_FLAGS_CACHE.get(target_bin)
+    if supported is None:
+        lock = await _get_flags_probe_lock(target_bin)
+        async with lock:
+            supported = _SUPPORTED_FLAGS_CACHE.get(target_bin)
+            if supported is None:
                 try:
-                    proc_res.kill()
-                    await proc_res.wait()
-                except Exception:
-                    pass
-                return commands
-        except FileNotFoundError:
-            raise FFmpegError(f'{target_bin} not installed')
-    else:
-        supported = _SUPPORTED_FLAGS_CACHE[target_bin]
+                    proc_res = await asyncio.create_subprocess_exec(
+                        target_bin,
+                        '-h',
+                        'full',
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
+                    )
+                except FileNotFoundError:
+                    raise FFmpegError(f'{target_bin} not installed')
+
+                try:
+                    stdout, _ = await asyncio.wait_for(
+                        proc_res.communicate(),
+                        timeout=_FLAGS_PROBE_TIMEOUT,
+                    )
+                    result = stdout.decode('utf-8', errors='ignore')
+                    supported = re.findall(r'(?m)^ *(-\w+).*?\s+', result)
+                    supported.append('-i')
+                    _SUPPORTED_FLAGS_CACHE[target_bin] = supported
+                except (asyncio.TimeoutError, JSONDecodeError):
+                    await _kill_and_reap(proc_res, context=f"cleanup_commands probe({target_bin})")
+                    return commands
 
     new_commands = []
     ignore_next = False
