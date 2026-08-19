@@ -59,7 +59,7 @@ class Start(Scaffold):
             )
             self._binding.on_signaling_data(
                 lambda chat_id, data: asyncio.run_coroutine_threadsafe(
-                    self._app.send_signaling(chat_id, data),
+                    self._emit_signaling_data(chat_id, data),
                     self.loop,
                 ),
             )
@@ -95,10 +95,7 @@ class Start(Scaffold):
             self._binding.on_outbound_block(
                 lambda chat_id, block:
                 asyncio.run_coroutine_threadsafe(
-                    self._app.send_conference_call_broadcast(
-                        chat_id,
-                        block,
-                    ),
+                    self._emit_outbound_block(chat_id, block),
                     self.loop,
                 ),
             )

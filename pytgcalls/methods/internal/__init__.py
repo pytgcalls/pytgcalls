@@ -1,6 +1,8 @@
 from .clear_cache import ClearCache
 from .clear_call import ClearCall
 from .connect_call import ConnectCall
+from .emit_outbound_block import EmitOutboundBlock
+from .emit_signaling_data import EmitSignalingData
 from .handle_connection_changed import HandleConnectionChanged
 from .handle_emojis_update import HandleEmojisUpdate
 from .handle_mtproto_updates import HandleMTProtoUpdates
@@ -21,6 +23,8 @@ class Internal(
     ClearCache,
     ClearCall,
     ConnectCall,
+    EmitOutboundBlock,
+    EmitSignalingData,
     HandleConnectionChanged,
     HandleEmojisUpdate,
     HandleMTProtoUpdates,
