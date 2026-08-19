@@ -159,6 +159,16 @@ class HandleMTProtoUpdates(Scaffold):
                                 user_id, None,
                             )
 
+                    # Audio is mapped once, when the media layer asks who is
+                    # in the call. Nothing has remapped it since, so a
+                    # participant who was not in that first answer is never
+                    # decoded. The cache this reads was just updated from this
+                    # very update, so no request leaves the process.
+                    try:
+                        await self._handle_request_participants(chat_id)
+                    except (ConnectionNotFound, ConnectionError):
+                        pass
+
             if chat_peer:
                 is_self = BridgedClient.chat_id(
                     chat_peer,
