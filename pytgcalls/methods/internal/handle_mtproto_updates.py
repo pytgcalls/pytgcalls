@@ -159,6 +159,11 @@ class HandleMTProtoUpdates(Scaffold):
                                 user_id, None,
                             )
 
+                    try:
+                        await self._handle_request_participants(chat_id)
+                    except (ConnectionNotFound, ConnectionError):
+                        pass
+
             if chat_peer:
                 is_self = BridgedClient.chat_id(
                     chat_peer,
