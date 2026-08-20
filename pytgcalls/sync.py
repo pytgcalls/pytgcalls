@@ -8,7 +8,6 @@ from .media_devices import MediaDevices
 from .methods import Methods
 from .methods.utilities import compose as compose_module
 from .methods.utilities import idle as idle_module
-from .mtproto import MtProtoClient
 
 
 def async_to_sync(obj, name):
@@ -91,6 +90,8 @@ def async_to_sync(obj, name):
                         main_loop,
                         False,
                     )
+        return None
+
     setattr(obj, name, async_to_sync_wrap)
 
 
@@ -107,7 +108,6 @@ def wrap(source):
 # Wrap all Client's relevant methods
 wrap(Methods)
 wrap(CustomApi)
-wrap(MtProtoClient)
 wrap(MediaDevices)
 async_to_sync(idle_module, 'idle')
 idle = getattr(idle_module, 'idle')
