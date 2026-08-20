@@ -3,7 +3,6 @@ import logging
 import os.path
 import re
 import shlex
-import subprocess
 from json import JSONDecodeError
 from json import loads
 from typing import Dict
@@ -58,7 +57,7 @@ async def check_stream(
         format_content = result.get('format', [])
         if 'No such file' in stderr.decode('utf-8'):
             raise FileNotFoundError()
-    except (subprocess.TimeoutExpired, JSONDecodeError):
+    except (asyncio.TimeoutError, JSONDecodeError):
         ffprobe.kill()
         raise
 
@@ -136,7 +135,7 @@ async def cleanup_commands(
                 timeout=20,
             )
             result = stdout.decode('utf-8')
-        except (subprocess.TimeoutExpired, JSONDecodeError):
+        except (asyncio.TimeoutError, JSONDecodeError):
             proc_res.kill()
             raise
         supported = re.findall(r'(?m)^ *(-\w+).*?\s+', result)
