@@ -8,6 +8,7 @@ from ntgcalls import MediaDescription
 from ntgcalls import StreamMode
 from ntgcalls import TelegramServerError
 
+from ...exceptions import ConferenceChainNotReady
 from ...exceptions import TimedOutAnswer
 from ...scaffold import Scaffold
 from ...types import CallConfig
@@ -63,10 +64,13 @@ class ConnectCall(Scaffold):
                             False,
                         )
                 elif isinstance(config, CallConfig) and config.conference:
-                    if not last_block or (
+                    is_invite = (
                         isinstance(config.conference, int) and
                         not isinstance(config.conference, bool)
-                    ):
+                    )
+                    if is_invite and not last_block:
+                        raise ConferenceChainNotReady(config.conference)
+                    if not last_block or is_invite:
                         await self._binding.create_p2p_call(
                             chat_id,
                         )
@@ -108,12 +112,7 @@ class ConnectCall(Scaffold):
                             None,
                             conference_params.block,
                             public_key,
-                            config.conference
-                            if (
-                                isinstance(config.conference, int) and
-                                not isinstance(config.conference, bool)
-                            )
-                            else None,
+                            config.conference if is_invite else None,
                         )
                     await self._binding.connect(
                         chat_id,

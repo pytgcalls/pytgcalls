@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from pathlib import Path
 from typing import Optional
@@ -6,6 +7,7 @@ from typing import Union
 from ntgcalls import FileError
 from ntgcalls import StreamMode
 
+from ...exceptions import ConferenceChainNotReady
 from ...exceptions import NoActiveGroupCall
 from ...media_devices.input_device import InputDevice
 from ...mtproto_required import mtproto_required
@@ -81,12 +83,19 @@ class Play(Scaffold):
             block: Optional[bytes] = None
             if (
                 isinstance(config, CallConfig) and
-                isinstance(config.conference, int)
+                isinstance(config.conference, int) and
+                not isinstance(config.conference, bool)
             ):
-                block = await self._app.get_conference_last_block(
-                    chat_id,
-                    config.conference,
-                )
+                for _ in range(config.timeout * 2):
+                    block = await self._app.get_conference_last_block(
+                        chat_id,
+                        config.conference,
+                    )
+                    if block is not None:
+                        break
+                    await asyncio.sleep(0.5)
+                else:
+                    raise ConferenceChainNotReady(config.conference)
             await self._connect_call(
                 chat_id,  # type: ignore
                 media_description,

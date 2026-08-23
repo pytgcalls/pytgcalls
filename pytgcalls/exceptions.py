@@ -156,3 +156,11 @@ class UnsupportedMethod(Exception):
         super().__init__(
             'Unsupported method for this kind of call',
         )
+
+
+class ConferenceChainNotReady(Exception):
+    def __init__(self, invite_msg_id: int):
+        super().__init__(
+            'The conference chain of the invite '
+            f'{invite_msg_id} has no block yet',
+        )
