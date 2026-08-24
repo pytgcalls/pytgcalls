@@ -1,5 +1,4 @@
 from enum import auto
-from typing import Optional
 
 from ..flag import Flag
 from ..update import Update
@@ -17,10 +16,10 @@ class RawCallUpdate(Update):
         self,
         chat_id: int,
         status: Type,
-        g_a_or_b: Optional[bytes] = None,
+        g_a_or_b: bytes | None = None,
         protocol=None,
         fingerprint: int = 0,
-        signaling_data: Optional[bytes] = None,
+        signaling_data: bytes | None = None,
     ):
         super().__init__(chat_id)
         self.chat_id = chat_id

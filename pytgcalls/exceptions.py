@@ -1,8 +1,8 @@
 class TooOldPyrogramVersion(Exception):
     def __init__(
-            self,
-            version_needed: str,
-            pyrogram_version: str,
+        self,
+        version_needed: str,
+        pyrogram_version: str,
     ):
         super().__init__(
             f'Needed pyrogram {version_needed}+, '
@@ -13,9 +13,9 @@ class TooOldPyrogramVersion(Exception):
 
 class TooOldTelethonVersion(Exception):
     def __init__(
-            self,
-            version_needed: str,
-            telethon_version: str,
+        self,
+        version_needed: str,
+        telethon_version: str,
     ):
         super().__init__(
             f'Needed telethon {version_needed}+, '

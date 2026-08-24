@@ -2,8 +2,6 @@ import asyncio
 import logging
 import re
 import shlex
-from typing import Optional
-from typing import Tuple
 
 from .exceptions import YtDlpError
 from .ffmpeg import cleanup_commands
@@ -27,10 +25,10 @@ class YtDlp:
 
     @staticmethod
     async def extract(
-        link: Optional[str],
+        link: str | None,
         video_parameters: VideoParameters,
-        add_commands: Optional[str],
-    ) -> Tuple[Optional[str], Optional[str]]:
+        add_commands: str | None,
+    ) -> tuple[str | None, str | None]:
         if link is None:
             return None, None
 
@@ -40,8 +38,7 @@ class YtDlp:
             '-f',
             'bestvideo[vcodec~="(vp09|avc1)"]+m4a/best',
             '-S',
-            'res:'
-            f'{min(video_parameters.width, video_parameters.height)}',
+            f'res:{min(video_parameters.width, video_parameters.height)}',
             '--no-warnings',
         ]
 

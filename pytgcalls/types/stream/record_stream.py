@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 
 from ntgcalls import MediaSource
 
@@ -18,11 +17,8 @@ class RecordStream(Stream):
     @statictypes
     def __init__(
         self,
-        audio: Union[bool, str, Path, SpeakerDevice] = False,
-        audio_parameters: Union[
-            AudioParameters,
-            AudioQuality,
-        ] = AudioQuality.HIGH,
+        audio: bool | str | Path | SpeakerDevice = False,
+        audio_parameters: AudioParameters | AudioQuality = AudioQuality.HIGH,
         camera: bool = False,
         screen: bool = False,
     ):

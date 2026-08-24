@@ -1,12 +1,11 @@
 import asyncio
-from typing import List
 
 from ... import PyTgCalls
 from .idle import idle
 
 
 async def compose(
-    clients: List[PyTgCalls],
+    clients: list[PyTgCalls],
     sequential: bool = False,
 ):
     if sequential:

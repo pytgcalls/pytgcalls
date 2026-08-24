@@ -2,8 +2,8 @@ import time
 
 from pyrogram import Client
 
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls import idle
 from pytgcalls.types import Device
 from pytgcalls.types import ExternalMedia
 from pytgcalls.types import MediaStream
@@ -34,8 +34,9 @@ call_py.play(
 
 with open(audio_file, 'rb') as f:
     # Should be sent in PCM16L format
-    chunk_size = audio_parameters.bitrate * \
-        16 // 8 // 100 * audio_parameters.channels
+    chunk_size = (
+        audio_parameters.bitrate * 16 // 8 // 100 * audio_parameters.channels
+    )
     while chunk := f.read(chunk_size):
         call_py.send_frame(
             chat_id,

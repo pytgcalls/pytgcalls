@@ -30,6 +30,7 @@ This project allows making Telegram call using MtProto and WebRTC, this is possi
 ```python
 from pytgcalls import PyTgCalls
 from pytgcalls import idle
+
 ...
 chat_id = -1001185324811
 app = PyTgCalls(client)

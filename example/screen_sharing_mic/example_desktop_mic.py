@@ -1,8 +1,8 @@
 from pyrogram import Client
 
-from pytgcalls import idle
 from pytgcalls import MediaDevices
 from pytgcalls import PyTgCalls
+from pytgcalls import idle
 from pytgcalls.types import MediaStream
 
 app = Client(

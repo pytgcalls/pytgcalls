@@ -1,5 +1,3 @@
-from typing import List
-
 from ntgcalls import Frame as RawFrame
 from ntgcalls import StreamDevice
 from ntgcalls import StreamMode
@@ -17,7 +15,7 @@ class HandleStreamFrame(Scaffold):
         chat_id: int,
         mode: StreamMode,
         device: StreamDevice,
-        frames: List[RawFrame],
+        frames: list[RawFrame],
     ):
         await self._propagate(
             StreamFrames(
@@ -34,7 +32,8 @@ class HandleStreamFrame(Scaffold):
                             x.frame_data.height,
                             x.frame_data.rotation,
                         ),
-                    ) for x in frames
+                    )
+                    for x in frames
                 ],
             ),
             self,

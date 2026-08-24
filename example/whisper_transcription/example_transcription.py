@@ -2,8 +2,8 @@ from ai_model import AIModel
 from pyrogram import Client
 from pyrogram import idle
 
-from pytgcalls import filters
 from pytgcalls import PyTgCalls
+from pytgcalls import filters
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import Device
 from pytgcalls.types import Direction
@@ -43,5 +43,6 @@ async def audio_data(_: PyTgCalls, update: StreamFrames):
     stt = model.transcribe(update.frames[0].frame)
     if stt:
         print(stt, flush=True)
+
 
 idle()

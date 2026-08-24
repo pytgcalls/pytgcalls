@@ -1,8 +1,6 @@
 import random
 import re
 from typing import Any
-from typing import List
-from typing import Optional
 
 from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
@@ -16,7 +14,6 @@ from ..types import UpdatedGroupCallParticipant
 
 
 class BridgedClient(HandlersHolder):
-
     async def get_call(
         self,
         chat_id: int,
@@ -40,7 +37,7 @@ class BridgedClient(HandlersHolder):
     async def get_conference_last_block(
         self,
         chat_id: int,
-        invite_msg_id: Optional[int] = None,
+        invite_msg_id: int | None = None,
     ):
         pass
 
@@ -50,10 +47,10 @@ class BridgedClient(HandlersHolder):
         json_join: str,
         video_stopped: bool,
         join_as: Any,
-        invite_hash: Optional[str] = None,
-        block: Optional[bytes] = None,
-        public_key: Optional[int] = None,
-        invite_msg_id: Optional[int] = None,
+        invite_hash: str | None = None,
+        block: bytes | None = None,
+        public_key: int | None = None,
+        invite_msg_id: int | None = None,
     ):
         pass
 
@@ -157,7 +154,7 @@ class BridgedClient(HandlersHolder):
         chat_id: int,
         timestamp: int,
         limit: int,
-        video_channel: Optional[int],
+        video_channel: int | None,
         video_quality: MediaSegmentQuality,
     ):
         pass
@@ -171,10 +168,10 @@ class BridgedClient(HandlersHolder):
     async def set_call_status(
         self,
         chat_id: int,
-        muted_status: Optional[bool],
-        video_paused: Optional[bool],
-        video_stopped: Optional[bool],
-        presentation_paused: Optional[bool],
+        muted_status: bool | None,
+        video_paused: bool | None,
+        video_stopped: bool | None,
+        presentation_paused: bool | None,
         participant: Any,
     ):
         pass
@@ -205,7 +202,7 @@ class BridgedClient(HandlersHolder):
         return str(obj.__class__.__module__).split('.')[0]
 
     @staticmethod
-    def parse_source(source) -> Optional[GroupCallParticipant.SourceInfo]:
+    def parse_source(source) -> GroupCallParticipant.SourceInfo | None:
         if not source:
             return None
         return GroupCallParticipant.SourceInfo(
@@ -225,13 +222,13 @@ class BridgedClient(HandlersHolder):
             BridgedClient.chat_id(participant.peer),
             bool(participant.muted),
             bool(participant.muted) != bool(participant.can_self_unmute),
-            bool(participant.video) or
-            bool(participant.presentation),
+            bool(participant.video) or bool(participant.presentation),
             bool(participant.presentation),
             bool(participant.video),
             bool(participant.raise_hand_rating),
             participant.volume // 100
-            if participant.volume is not None else 100,
+            if participant.volume is not None
+            else 100,
             participant.source,
             BridgedClient.parse_source(participant.video),
             BridgedClient.parse_source(participant.presentation),
@@ -240,9 +237,9 @@ class BridgedClient(HandlersHolder):
     @staticmethod
     async def diff_participants_update(
         cache,
-        chat_id: Optional[int],
+        chat_id: int | None,
         participant,
-    ) -> List[UpdatedGroupCallParticipant]:
+    ) -> list[UpdatedGroupCallParticipant]:
         if chat_id is None:
             return []
         user_id = BridgedClient.chat_id(participant.peer)
@@ -288,11 +285,15 @@ class BridgedClient(HandlersHolder):
         if class_name in ['PeerUser', 'InputPeerUser']:
             return input_peer.user_id
         elif class_name in ['Channel', 'ChannelForbidden']:
-            return -1000000000000 - input_peer.id \
-                if readable else input_peer.id
+            return (
+                -1000000000000 - input_peer.id if readable else input_peer.id
+            )
         elif hasattr(input_peer, 'channel_id'):
-            return -1000000000000 - input_peer.channel_id \
-                if readable else input_peer.channel_id
+            return (
+                -1000000000000 - input_peer.channel_id
+                if readable
+                else input_peer.channel_id
+            )
         elif class_name == 'Chat':
             return -input_peer.id if readable else input_peer.id
         else:
@@ -308,7 +309,7 @@ class BridgedClient(HandlersHolder):
         return -1
 
     @staticmethod
-    def parse_servers(servers) -> List[RTCServer]:
+    def parse_servers(servers) -> list[RTCServer]:
         return [
             RTCServer(
                 server.id,
@@ -321,8 +322,9 @@ class BridgedClient(HandlersHolder):
                 server.stun,
                 False,
                 None,
-            ) if server.__class__.__name__ == 'PhoneConnectionWebrtc' else
-            RTCServer(
+            )
+            if server.__class__.__name__ == 'PhoneConnectionWebrtc'
+            else RTCServer(
                 server.id,
                 server.ip,
                 server.ipv6,
@@ -338,7 +340,7 @@ class BridgedClient(HandlersHolder):
         ]
 
     @staticmethod
-    def parse_quality(quality: MediaSegmentQuality) -> Optional[int]:
+    def parse_quality(quality: MediaSegmentQuality) -> int | None:
         if quality == MediaSegmentQuality.THUMBNAIL:
             return 0
         elif quality == MediaSegmentQuality.MEDIUM:
@@ -349,7 +351,7 @@ class BridgedClient(HandlersHolder):
             return None
 
     @staticmethod
-    def extract_dc(error: str) -> Optional[int]:
+    def extract_dc(error: str) -> int | None:
         dc_id = re.findall(
             r'('
             r'CALL_MIGRATE_|'
@@ -372,6 +374,6 @@ class BridgedClient(HandlersHolder):
     async def get_input_call(
         self,
         chat_id: int,
-        invite_msg_id: Optional[int] = None,
+        invite_msg_id: int | None = None,
     ):
         pass

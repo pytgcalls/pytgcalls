@@ -17,24 +17,33 @@ class CallHolder(Scaffold):
     @property
     async def calls(self) -> Dict[int, Call]:
         calls_list = await self._binding.calls()
-        return Dict({
-            x: Call(
-                x, self._conversions[calls_list[x].playback],
-                self._conversions[calls_list[x].capture],
-            )
-            for x in calls_list
-        })
+        return Dict(
+            {
+                x: Call(
+                    x,
+                    self._conversions[calls_list[x].playback],
+                    self._conversions[calls_list[x].capture],
+                )
+                for x in calls_list
+            }
+        )
 
     @property
     async def group_calls(self) -> Dict[int, Call]:
-        return Dict({
-            chat_id: x
-            for chat_id, x in (await self.calls).items() if chat_id < 0
-        })
+        return Dict(
+            {
+                chat_id: x
+                for chat_id, x in (await self.calls).items()
+                if chat_id < 0
+            }
+        )
 
     @property
     async def private_calls(self) -> Dict[int, Call]:
-        return Dict({
-            chat_id: x
-            for chat_id, x in (await self.calls).items() if chat_id > 0
-        })
+        return Dict(
+            {
+                chat_id: x
+                for chat_id, x in (await self.calls).items()
+                if chat_id > 0
+            }
+        )

@@ -1,6 +1,3 @@
-from typing import Dict
-from typing import List
-
 from ntgcalls import SsrcMapping
 
 from pytgcalls.scaffold import Scaffold
@@ -15,7 +12,7 @@ class HandleRequestParticipants(Scaffold):
             chat_id,
         )
 
-        audio_sources: Dict[int, int] = {
+        audio_sources: dict[int, int] = {
             participant.user_id: participant.source
             for participant in participants
         }
@@ -25,7 +22,7 @@ class HandleRequestParticipants(Scaffold):
                 return
             call_sources.audio = audio_sources
 
-        audio_ssrc_mapping: List[SsrcMapping] = []
+        audio_ssrc_mapping: list[SsrcMapping] = []
         for user_id, source in audio_sources.items():
             audio_ssrc_mapping.append(
                 SsrcMapping(

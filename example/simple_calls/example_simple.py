@@ -2,8 +2,8 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import filters as fl
 from pytgcalls import PyTgCalls
+from pytgcalls import filters as fl
 from pytgcalls.types import ChatUpdate
 from pytgcalls.types import GroupCallParticipant
 from pytgcalls.types import StreamEnded
@@ -108,5 +108,6 @@ async def participant_handler(
 @call_py.on_update()
 async def all_updates(_: PyTgCalls, update: Update):
     print(update)
+
 
 call_py.run()

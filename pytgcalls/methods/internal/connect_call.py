@@ -1,6 +1,4 @@
 import asyncio
-from typing import Optional
-from typing import Union
 
 from ntgcalls import ConnectionMode
 from ntgcalls import ConnectionNotFound
@@ -23,10 +21,10 @@ class ConnectCall(Scaffold):
     async def _connect_call(
         self,
         chat_id: int,
-        media_description: Optional[MediaDescription],
-        config: Union[CallConfig, GroupCallConfig],
-        payload: Optional[str],
-        last_block: Optional[bytes] = None,
+        media_description: MediaDescription | None,
+        config: CallConfig | GroupCallConfig,
+        payload: str | None,
+        last_block: bytes | None = None,
     ):
         for retries in range(4):
             try:
@@ -64,10 +62,9 @@ class ConnectCall(Scaffold):
                             False,
                         )
                 elif isinstance(config, CallConfig) and config.conference:
-                    is_invite = (
-                        isinstance(config.conference, int) and
-                        not isinstance(config.conference, bool)
-                    )
+                    is_invite = isinstance(
+                        config.conference, int
+                    ) and not isinstance(config.conference, bool)
                     if is_invite and not last_block:
                         raise ConferenceChainNotReady(config.conference)
                     if not last_block or is_invite:
@@ -148,8 +145,8 @@ class ConnectCall(Scaffold):
                             chat_id,
                             data.g_a_or_b,
                             self._binding.get_protocol(),
-                            media_description.camera is not None or
-                            media_description.screen is not None,
+                            media_description.camera is not None
+                            or media_description.screen is not None,
                         )
 
                     try:
@@ -190,11 +187,13 @@ class ConnectCall(Scaffold):
                     isinstance(
                         config,
                         GroupCallConfig,
-                    ) and media_description
+                    )
+                    and media_description
                     or isinstance(
                         config,
                         CallConfig,
-                    ) and config.conference
+                    )
+                    and config.conference
                 ):
                     await self._join_presentation(
                         chat_id,

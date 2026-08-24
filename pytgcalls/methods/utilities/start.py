@@ -32,15 +32,17 @@ class Start(Scaffold):
                 self._handle_mtproto()
 
             self._binding.on_stream_end(
-                lambda chat_id, stream_type, device:
-                asyncio.run_coroutine_threadsafe(
-                    self._handle_stream_ended(chat_id, stream_type, device),
-                    self.loop,
+                lambda chat_id, stream_type, device: (
+                    asyncio.run_coroutine_threadsafe(
+                        self._handle_stream_ended(
+                            chat_id, stream_type, device
+                        ),
+                        self.loop,
+                    )
                 ),
             )
             self._binding.on_upgrade(
-                lambda chat_id, state:
-                asyncio.run_coroutine_threadsafe(
+                lambda chat_id, state: asyncio.run_coroutine_threadsafe(
                     self._update_status(chat_id, state),
                     self.loop,
                 ),
@@ -64,20 +66,20 @@ class Start(Scaffold):
                 ),
             )
             self._binding.on_frames(
-                lambda chat_id, mode, device, frames:
-                asyncio.run_coroutine_threadsafe(
-                    self._handle_stream_frame(
-                        chat_id,
-                        mode,
-                        device,
-                        frames,
-                    ),
-                    self.loop,
+                lambda chat_id, mode, device, frames: (
+                    asyncio.run_coroutine_threadsafe(
+                        self._handle_stream_frame(
+                            chat_id,
+                            mode,
+                            device,
+                            frames,
+                        ),
+                        self.loop,
+                    )
                 ),
             )
             self._binding.on_request_broadcast_part(
-                lambda chat_id, part_request:
-                asyncio.run_coroutine_threadsafe(
+                lambda chat_id, part_request: asyncio.run_coroutine_threadsafe(
                     self._request_broadcast_part(
                         chat_id,
                         part_request,
@@ -86,15 +88,13 @@ class Start(Scaffold):
                 ),
             )
             self._binding.on_request_broadcast_timestamp(
-                lambda chat_id:
-                asyncio.run_coroutine_threadsafe(
+                lambda chat_id: asyncio.run_coroutine_threadsafe(
                     self._request_broadcast_timestamp(chat_id),
                     self.loop,
                 ),
             )
             self._binding.on_outbound_block(
-                lambda chat_id, block:
-                asyncio.run_coroutine_threadsafe(
+                lambda chat_id, block: asyncio.run_coroutine_threadsafe(
                     self._app.send_conference_call_broadcast(
                         chat_id,
                         block,
@@ -103,20 +103,20 @@ class Start(Scaffold):
                 ),
             )
             self._binding.on_request_participants(
-                lambda chat_id:
-                asyncio.run_coroutine_threadsafe(
+                lambda chat_id: asyncio.run_coroutine_threadsafe(
                     self._handle_request_participants(chat_id),
                     self.loop,
                 ),
             )
             self._binding.on_subchain_request(
-                lambda chat_id, subchain_request:
-                asyncio.run_coroutine_threadsafe(
-                    self._handle_subchain_request(
-                        chat_id,
-                        subchain_request,
-                    ),
-                    self.loop,
+                lambda chat_id, subchain_request: (
+                    asyncio.run_coroutine_threadsafe(
+                        self._handle_subchain_request(
+                            chat_id,
+                            subchain_request,
+                        ),
+                        self.loop,
+                    )
                 ),
             )
             await PyTgCallsSession().start()

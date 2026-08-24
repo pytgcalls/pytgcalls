@@ -1,5 +1,4 @@
 import asyncio
-from typing import Dict
 
 from .wait_counter_lock import WaitCounterLock
 
@@ -7,7 +6,7 @@ from .wait_counter_lock import WaitCounterLock
 class ChatLock:
     def __init__(self) -> None:
         self._main_lock = asyncio.Lock()
-        self._chat_lock: Dict[int, WaitCounterLock] = {}
+        self._chat_lock: dict[int, WaitCounterLock] = {}
 
     async def _remove_callback(self, chat_id: int):
         async with self._main_lock:

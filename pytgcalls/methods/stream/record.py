@@ -1,7 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Optional
-from typing import Union
 
 from ntgcalls import FileError
 from ntgcalls import StreamMode
@@ -23,9 +21,9 @@ class Record(Scaffold):
     @mtproto_required
     async def record(
         self,
-        chat_id: Union[int, str],
-        stream: Optional[Union[str, Path, Stream, SpeakerDevice]] = None,
-        config: Optional[Union[CallConfig, GroupCallConfig]] = None,
+        chat_id: int | str,
+        stream: str | Path | Stream | SpeakerDevice | None = None,
+        config: CallConfig | GroupCallConfig | None = None,
     ):
         chat_id = await self.resolve_chat_id(chat_id)
         media_description = await StreamParams.get_record_params(

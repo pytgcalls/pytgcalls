@@ -2,8 +2,8 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import compose
 from pytgcalls import PyTgCalls
+from pytgcalls import compose
 
 app = Client(
     'py-tgcalls',
@@ -16,8 +16,9 @@ app2 = Client(
     api_hash='abcdef12345',
 )
 
-test_stream = 'http://docs.evostream.com/sample_content/assets/' \
-              'sintel1m720p.mp4'
+test_stream = (
+    'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+)
 
 # You can enter an unlimited number of PyTgCalls clients
 call_py = PyTgCalls(app)
@@ -52,5 +53,6 @@ async def stop_handler2(_: Client, message: Message):
     await call_py2.leave_call(
         message.chat.id,
     )
+
 
 compose([call_py, call_py2])

@@ -1,7 +1,7 @@
 from pyrogram import Client
 
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls import idle
 from pytgcalls.types import MediaStream
 from pytgcalls.types import VideoQuality
 

@@ -10,4 +10,5 @@ def mutex(func):
         )
         async with await self._chat_lock.acquire(chat_id):
             return await func(*args, **kwargs)
+
     return async_wrapper

@@ -1,7 +1,3 @@
-from typing import List
-from typing import Optional
-from typing import Union
-
 from ntgcalls import ConnectionInfo
 from ntgcalls import Frame as RawFrame
 from ntgcalls import MediaDescription
@@ -48,19 +44,19 @@ class Scaffold(HandlersHolder):
     async def _init_mtproto(self):
         pass
 
-    async def resolve_chat_id(self, chat_id: Union[int, str]):
+    async def resolve_chat_id(self, chat_id: int | str):
         pass
 
     async def start(self):
         pass
 
-    async def play(self, chat_id: Union[int, str], stream=None, config=None):
+    async def play(self, chat_id: int | str, stream=None, config=None):
         pass
 
-    async def _update_sources(self, chat_id: Union[int, str]):
+    async def _update_sources(self, chat_id: int | str):
         pass
 
-    async def _join_presentation(self, chat_id: Union[int, str], join: bool):
+    async def _join_presentation(self, chat_id: int | str, join: bool):
         pass
 
     async def _clear_call(self, chat_id: int):
@@ -104,7 +100,7 @@ class Scaffold(HandlersHolder):
         chat_id: int,
         mode: StreamMode,
         device: StreamDevice,
-        frames: List[RawFrame],
+        frames: list[RawFrame],
     ):
         pass
 
@@ -131,10 +127,10 @@ class Scaffold(HandlersHolder):
     async def _connect_call(
         self,
         chat_id: int,
-        media_description: Optional[MediaDescription],
-        config: Union[CallConfig, GroupCallConfig],
-        payload: Optional[str],
-        last_block: Optional[bytes] = None,
+        media_description: MediaDescription | None,
+        config: CallConfig | GroupCallConfig,
+        payload: str | None,
+        last_block: bytes | None = None,
     ):
         pass
 

@@ -13,8 +13,10 @@ class SwitchConnection(Scaffold):
             connection_mode = await self._binding.get_connection_mode(
                 chat_id,
             )
-            if connection_mode == ConnectionMode.STREAM and \
-                    chat_id in self._pending_connections:
+            if (
+                connection_mode == ConnectionMode.STREAM
+                and chat_id in self._pending_connections
+            ):
                 connection = self._pending_connections[chat_id]
                 await self._connect_call(
                     chat_id,

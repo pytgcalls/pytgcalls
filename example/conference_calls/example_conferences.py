@@ -4,8 +4,8 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import filters as fl
 from pytgcalls import PyTgCalls
+from pytgcalls import filters as fl
 from pytgcalls.types import CallConfig
 from pytgcalls.types import ChatUpdate
 
@@ -16,8 +16,9 @@ app = Client(
 )
 call_py = PyTgCalls(app)
 
-test_stream = 'http://docs.evostream.com/sample_content/assets/' \
-              'sintel1m720p.mp4'
+test_stream = (
+    'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
+)
 
 
 @app.on_message(filters.regex('!play'))
@@ -44,5 +45,6 @@ async def incoming_handler(_: PyTgCalls, update: ChatUpdate):
             conference=cast(int, update.action),
         ),
     )
+
 
 call_py.run()

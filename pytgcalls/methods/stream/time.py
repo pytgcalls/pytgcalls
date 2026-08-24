@@ -1,5 +1,3 @@
-from typing import Union
-
 from ntgcalls import ConnectionNotFound
 
 from ...exceptions import NotInCallError
@@ -14,7 +12,7 @@ class Time(Scaffold):
     @mtproto_required
     async def time(
         self,
-        chat_id: Union[int, str],
+        chat_id: int | str,
         direction: Direction = Direction.OUTGOING,
     ) -> int:
         chat_id = await self.resolve_chat_id(chat_id)

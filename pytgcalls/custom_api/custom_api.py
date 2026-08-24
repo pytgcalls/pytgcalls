@@ -1,6 +1,5 @@
+from collections.abc import Callable
 from json import JSONDecodeError
-from typing import Callable
-from typing import Optional
 
 from aiohttp import web
 from aiohttp.web_request import BaseRequest
@@ -13,14 +12,15 @@ class CustomApi:
         self,
         port: int = 24859,
     ):
-        self._handler: Optional[Callable] = None
+        self._handler: Callable | None = None
         self._app: web.Application = web.Application()
-        self._runner: Optional[web.AppRunner] = None
+        self._runner: web.AppRunner | None = None
         self._port = port
 
     def on_update_custom_api(self) -> Callable:
 
         if self._handler is None:
+
             def decorator(func: Callable) -> Callable:
                 if self is not None:
                     self._handler = func
@@ -35,22 +35,27 @@ class CustomApi:
             try:
                 params = await request.json()
             except JSONDecodeError:
-                return web.json_response({
-                    'result': 'INVALID_JSON_FORMAT_REQUEST',
-                })
+                return web.json_response(
+                    {
+                        'result': 'INVALID_JSON_FORMAT_REQUEST',
+                    }
+                )
             if self._handler is not None:
                 result = await self._handler(params)
-                if isinstance(result, dict) or \
-                        isinstance(result, list):
+                if isinstance(result, dict) or isinstance(result, list):
                     return web.json_response(result)
                 else:
-                    return web.json_response({
-                        'result': 'INVALID_RESPONSE',
-                    })
+                    return web.json_response(
+                        {
+                            'result': 'INVALID_RESPONSE',
+                        }
+                    )
             else:
-                return web.json_response({
-                    'result': 'NO_CUSTOM_API_DECORATOR',
-                })
+                return web.json_response(
+                    {
+                        'result': 'NO_CUSTOM_API_DECORATOR',
+                    }
+                )
 
         self._app.router.add_post(
             '/',

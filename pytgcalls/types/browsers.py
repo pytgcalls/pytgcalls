@@ -121,260 +121,304 @@ class Browsers:
     @property
     def chrome_android(self):
         return str(
-            UserAgent([
-                self._mozilla_android_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_mobile_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_android_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_mobile_agent,
+                ]
+            ),
         )
 
     @property
     def chrome_ios(self):
         return str(
-            UserAgent([
-                self._mozilla_ios_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_ios_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                ]
+            ),
         )
 
     @property
     def chrome_linux(self):
         return str(
-            UserAgent([
-                self._mozilla_linux_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_linux_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                ]
+            ),
         )
 
     @property
     def chrome_macos(self):
         return str(
-            UserAgent([
-                self._mozilla_macos_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_macos_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                ]
+            ),
         )
 
     @property
     def chrome_windows(self):
         return str(
-            UserAgent([
-                self._mozilla_windows_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_windows_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                ]
+            ),
         )
 
     # EDGE
     @property
     def edge_android(self):
         return str(
-            UserAgent([
-                self._mozilla_android_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_mobile_agent,
-                self._edge_android_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_android_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_mobile_agent,
+                    self._edge_android_agent,
+                ]
+            ),
         )
 
     @property
     def edge_ios(self):
         return str(
-            UserAgent([
-                self._mozilla_ios_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._edge_ios_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_ios_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._edge_ios_agent,
+                ]
+            ),
         )
 
     @property
     def edge_macos(self):
         return str(
-            UserAgent([
-                self._mozilla_macos_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._edge_pc_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_macos_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._edge_pc_agent,
+                ]
+            ),
         )
 
     @property
     def edge_windows(self):
         return str(
-            UserAgent([
-                self._mozilla_windows_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._edge_pc_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_windows_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._edge_pc_agent,
+                ]
+            ),
         )
 
     @property
     def edge_windows_mobile(self):
         return str(
-            UserAgent([
-                self._mozilla_windows_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._edge_windows_mob_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_windows_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._edge_windows_mob_agent,
+                ]
+            ),
         )
 
     @property
     def edge_xbox_one(self):
         return str(
-            UserAgent([
-                self._mozilla_windows_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._edge_xbox_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_windows_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._edge_xbox_agent,
+                ]
+            ),
         )
 
     # FIREFOX
     @property
     def firefox_android(self):
         return str(
-            UserAgent([
-                self._mozilla_android_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_mobile_agent,
-                self._firefox_default_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_android_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_mobile_agent,
+                    self._firefox_default_agent,
+                ]
+            ),
         )
 
     @property
     def firefox_ios(self):
         return str(
-            UserAgent([
-                self._mozilla_ios_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._firefox_ios_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_ios_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._firefox_ios_agent,
+                ]
+            ),
         )
 
     @property
     def firefox_linux(self):
         return str(
-            UserAgent([
-                self._mozilla_linux_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._firefox_default_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_linux_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._firefox_default_agent,
+                ]
+            ),
         )
 
     @property
     def firefox_macos(self):
         return str(
-            UserAgent([
-                self._mozilla_macos_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._firefox_default_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_macos_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._firefox_default_agent,
+                ]
+            ),
         )
 
     @property
     def firefox_windows(self):
         return str(
-            UserAgent([
-                self._mozilla_windows_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._firefox_default_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_windows_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._firefox_default_agent,
+                ]
+            ),
         )
 
     # OPERA
     @property
     def opera_android(self):
         return str(
-            UserAgent([
-                self._mozilla_android_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_mobile_agent,
-                self._opera_mobile_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_android_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_mobile_agent,
+                    self._opera_mobile_agent,
+                ]
+            ),
         )
 
     @property
     def opera_linux(self):
         return str(
-            UserAgent([
-                self._mozilla_linux_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._opera_default_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_linux_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._opera_default_agent,
+                ]
+            ),
         )
 
     @property
     def opera_macos(self):
         return str(
-            UserAgent([
-                self._mozilla_macos_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._opera_default_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_macos_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._opera_default_agent,
+                ]
+            ),
         )
 
     @property
     def opera_windows(self):
         return str(
-            UserAgent([
-                self._mozilla_windows_agent,
-                self._apple_webkit_agent,
-                self._chrome_agent,
-                self._safari_agent,
-                self._opera_default_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_windows_agent,
+                    self._apple_webkit_agent,
+                    self._chrome_agent,
+                    self._safari_agent,
+                    self._opera_default_agent,
+                ]
+            ),
         )
 
     # SAFARI
     @property
     def safari_ios(self):
         return str(
-            UserAgent([
-                self._mozilla_ios_agent,
-                self._apple_webkit_apple_agent,
-                self._chrome_agent,
-                self._safari_ios_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_ios_agent,
+                    self._apple_webkit_apple_agent,
+                    self._chrome_agent,
+                    self._safari_ios_agent,
+                ]
+            ),
         )
 
     @property
     def safari_macos(self):
         return str(
-            UserAgent([
-                self._mozilla_macos_agent,
-                self._apple_webkit_apple_agent,
-                self._chrome_agent,
-                self._safari_macos_agent,
-            ]),
+            UserAgent(
+                [
+                    self._mozilla_macos_agent,
+                    self._apple_webkit_apple_agent,
+                    self._chrome_agent,
+                    self._safari_macos_agent,
+                ]
+            ),
         )

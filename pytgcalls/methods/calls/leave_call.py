@@ -1,5 +1,3 @@
-from typing import Union
-
 from ntgcalls import CallType
 from ntgcalls import ConnectionNotFound
 
@@ -17,13 +15,13 @@ class LeaveCall(Scaffold):
     @mutex
     async def leave_call(
         self,
-        chat_id: Union[int, str],
+        chat_id: int | str,
         close: bool = False,
     ):
         chat_id = await self.resolve_chat_id(chat_id)
         is_p2p_waiting = (
-            chat_id in self._p2p_configs and
-            not self._p2p_configs[chat_id].wait_data.done()
+            chat_id in self._p2p_configs
+            and not self._p2p_configs[chat_id].wait_data.done()
         )
         is_group = False
         if not is_p2p_waiting:

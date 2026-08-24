@@ -1,16 +1,18 @@
 import inspect
 from functools import wraps
 from inspect import signature
+from types import UnionType
 from typing import Any
 from typing import Union
+from typing import get_origin
 
 
 def statictypes(func):
     sig = signature(func)
 
     def is_instance(obj, typ):
-        origin = getattr(typ, '__origin__', None)
-        if origin is Union:
+        origin = get_origin(typ)
+        if origin in (Union, UnionType):
             return any(is_instance(obj, t) for t in typ.__args__)
         elif origin in (list, set, tuple):
             if obj:
@@ -22,10 +24,12 @@ def statictypes(func):
                     is_instance(
                         x,
                         typ.__args__[0],
-                    ) and is_instance(
+                    )
+                    and is_instance(
                         obj[x],
                         typ.__args__[1],
-                    ) for x in obj
+                    )
+                    for x in obj
                 )
             return isinstance(obj, dict)
         return isinstance(obj, typ)
@@ -38,8 +42,10 @@ def statictypes(func):
         origin = getattr(t, '__origin__', None)
         if origin in {list, dict, set, tuple}:
             return (
-                t.__origin__.__name__.capitalize() + '['
-                + ', '.join(type_to_string(tt) for tt in t.__args__) + ']'
+                t.__origin__.__name__.capitalize()
+                + '['
+                + ', '.join(type_to_string(tt) for tt in t.__args__)
+                + ']'
             )
 
         if not d and t in {list, dict, set, tuple}:
@@ -48,9 +54,14 @@ def statictypes(func):
             inner_type = {type_to_string(k) for k in d}
             if not inner_type:
                 return f'{t.__name__.capitalize()}'
-            inner_type = 'Any' if len(
-                inner_type,
-            ) > 1 else list(inner_type)[0]
+            inner_type = (
+                'Any'
+                if len(
+                    inner_type,
+                )
+                > 1
+                else list(inner_type)[0]
+            )
             return f'{t.__name__.capitalize()}[{inner_type}]'
         elif t is dict:
             key_type = {type_to_string(k) for k in d.keys()}
@@ -58,9 +69,14 @@ def statictypes(func):
             if not key_type or not value_type:
                 return f'{t.__name__.capitalize()}'
             key_type = 'Any' if len(key_type) > 1 else list(key_type)[0]
-            value_type = 'Any' if len(
-                value_type,
-            ) > 1 else list(value_type)[0]
+            value_type = (
+                'Any'
+                if len(
+                    value_type,
+                )
+                > 1
+                else list(value_type)[0]
+            )
             return f'{t.__name__.capitalize()}[{key_type}, {value_type}]'
         return t.__name__
 
@@ -73,12 +89,14 @@ def statictypes(func):
             if expected_type is Any:
                 continue
             types_expected = None
-            if getattr(expected_type, '__origin__', None) is Union:
+            if get_origin(expected_type) in (Union, UnionType):
                 tmp_types = expected_type.__args__
                 if not any(is_instance(value, t) for t in tmp_types):
-                    types_expected = ', '.join(
-                        type_to_string(t) for t in tmp_types[:-1]
-                    ) + ' or ' + type_to_string(tmp_types[-1])
+                    types_expected = (
+                        ', '.join(type_to_string(t) for t in tmp_types[:-1])
+                        + ' or '
+                        + type_to_string(tmp_types[-1])
+                    )
 
             elif not isinstance(value, expected_type):
                 types_expected = type_to_string(expected_type)
@@ -100,8 +118,7 @@ def statictypes(func):
         check_parameters(*args, **kwargs)
         return func(*args, **kwargs)
 
-    if inspect.iscoroutinefunction(func) or \
-            inspect.isasyncgenfunction(func):
+    if inspect.iscoroutinefunction(func) or inspect.isasyncgenfunction(func):
         return async_wrapper
     else:
         return wrapper

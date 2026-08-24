@@ -17,6 +17,7 @@ class Environment:
     def check_environment(self):
         if self._client_name == 'pyrogram':
             import pyrogram
+
             if VersionManager.version_tuple(
                 pyrogram.__version__,
             ) < VersionManager.version_tuple(
@@ -28,6 +29,7 @@ class Environment:
                 )
         elif self._client_name == 'telethon':
             import telethon
+
             if VersionManager.version_tuple(
                 telethon.__version__,
             ) < VersionManager.version_tuple(
