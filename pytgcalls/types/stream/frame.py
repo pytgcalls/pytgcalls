@@ -1,3 +1,5 @@
+from ntgcalls import VideoRotation
+
 from ...types.update import PyObject
 
 
@@ -8,7 +10,7 @@ class Frame(PyObject):
             capture_time: int = 0,
             width: int = 0,
             height: int = 0,
-            rotation: int = 0,
+            rotation: VideoRotation = VideoRotation.VIDEO_ROTATION_0,
         ):
             self.capture_time = capture_time
             self.width = width

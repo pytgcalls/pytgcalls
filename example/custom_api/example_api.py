@@ -31,9 +31,12 @@ async def custom_api_request(request: dict):
 def test_handler(client: Client, message: Message):
     print(
         requests.post(
-            'http://localhost:24859/', json.dumps({
-                'answer': 'HI',
-            }),
+            'http://localhost:24859/',
+            json.dumps(
+                {
+                    'answer': 'HI',
+                }
+            ),
         ).json(),
     )
 

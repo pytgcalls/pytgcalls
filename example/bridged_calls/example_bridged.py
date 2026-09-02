@@ -1,9 +1,9 @@
 import numpy as np
 from pyrogram import Client
 
+from pytgcalls import PyTgCalls
 from pytgcalls import filters
 from pytgcalls import idle
-from pytgcalls import PyTgCalls
 from pytgcalls.types import Device
 from pytgcalls.types import Direction
 from pytgcalls.types import ExternalMedia
@@ -61,7 +61,7 @@ async def audio_data(_: PyTgCalls, update: StreamFrames):
     )
     for frame_data in update.frames:
         source_samples = np.frombuffer(frame_data.frame, dtype=np.int16)
-        mixed_output[:len(source_samples)] += source_samples
+        mixed_output[: len(source_samples)] += source_samples
 
     mixed_output //= max(len(update.frames), 1)
     mixed_output = np.clip(mixed_output, -32768, 32767)
@@ -71,5 +71,6 @@ async def audio_data(_: PyTgCalls, update: StreamFrames):
             Device.MICROPHONE,
             mixed_output.tobytes(),
         )
+
 
 idle()

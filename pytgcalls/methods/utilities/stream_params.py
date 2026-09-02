@@ -1,6 +1,4 @@
 from pathlib import Path
-from typing import Optional
-from typing import Union
 
 from ntgcalls import AudioDescription
 from ntgcalls import MediaDescription
@@ -18,7 +16,7 @@ from ...types.stream.media_stream import MediaStream
 class StreamParams:
     @staticmethod
     async def get_stream_params(
-        stream: Optional[Union[str, Path, InputDevice, Stream]],
+        stream: str | Path | InputDevice | Stream | None,
     ) -> MediaDescription:
         if stream is not None:
             if isinstance(stream, (str, Path, InputDevice)):
@@ -35,8 +33,8 @@ class StreamParams:
 
     @staticmethod
     def _parse_media_description(
-        media: Optional[Union[AudioStream, VideoStream]],
-    ) -> Optional[Union[AudioDescription, VideoDescription]]:
+        media: AudioStream | VideoStream | None,
+    ) -> AudioDescription | VideoDescription | None:
         if media is not None:
             if isinstance(media, AudioStream):
                 return AudioDescription(
@@ -44,6 +42,7 @@ class StreamParams:
                     input=media.path,
                     sample_rate=media.parameters.bitrate,
                     channel_count=media.parameters.channels,
+                    keep_open=False,
                 )
             elif isinstance(media, VideoStream):
                 return VideoDescription(
@@ -52,12 +51,13 @@ class StreamParams:
                     width=media.parameters.width,
                     height=media.parameters.height,
                     fps=media.parameters.frame_rate,
+                    keep_open=False,
                 )
         return None
 
     @staticmethod
     def _parse_stream_description(
-        stream: Optional[Stream],
+        stream: Stream | None,
     ) -> MediaDescription:
         return MediaDescription(
             microphone=StreamParams._parse_media_description(
@@ -76,7 +76,7 @@ class StreamParams:
 
     @staticmethod
     async def get_record_params(
-        stream: Optional[Union[str, Path, Stream, SpeakerDevice]],
+        stream: str | Path | Stream | SpeakerDevice | None,
     ) -> MediaDescription:
         if stream is not None:
             if isinstance(stream, (str, Path, SpeakerDevice)):

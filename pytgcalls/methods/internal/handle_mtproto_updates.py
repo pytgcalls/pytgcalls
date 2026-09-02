@@ -8,12 +8,14 @@ from ...exceptions import CallDeclined
 from ...exceptions import CallDiscarded
 from ...mtproto import BridgedClient
 from ...scaffold import Scaffold
+from ...types import CallConfig
 from ...types import CallData
 from ...types import ChatUpdate
 from ...types import GroupCallParticipant
 from ...types import RawCallUpdate
 from ...types import Update
 from ...types import UpdatedGroupCallParticipant
+from ...types.calls import ChainBlocksUpdate
 
 py_logger = logging.getLogger('pytgcalls')
 
@@ -30,21 +32,22 @@ class HandleMTProtoUpdates(Scaffold):
                         p2p_config.wait_data.set_result(
                             update,
                         )
-                if isinstance(update, ChatUpdate) and \
-                        p2p_config.outgoing:
+                if isinstance(update, ChatUpdate) and p2p_config.outgoing:
                     if update.status & ChatUpdate.Status.DISCARDED_CALL:
                         p2p_config.wait_data.set_exception(
                             CallBusy(
                                 chat_id,
-                            ) if update.status &
-                            ChatUpdate.Status.BUSY_CALL else
-                            CallDeclined(
+                            )
+                            if update.status & ChatUpdate.Status.BUSY_CALL
+                            else CallDeclined(
                                 chat_id,
                             ),
                         )
-        if chat_id in self._wait_connect and \
-                not self._wait_connect[chat_id].done() and \
-                chat_id not in self._p2p_configs:
+        if (
+            chat_id in self._wait_connect
+            and not self._wait_connect[chat_id].done()
+            and chat_id not in self._p2p_configs
+        ):
             if isinstance(update, ChatUpdate):
                 if update.status & ChatUpdate.Status.DISCARDED_CALL:
                     self._wait_connect[chat_id].set_exception(
@@ -66,7 +69,7 @@ class HandleMTProtoUpdates(Scaffold):
         if isinstance(update, RawCallUpdate):
             if update.status & RawCallUpdate.Type.SIGNALING_DATA:
                 try:
-                    await self._binding.send_signaling(
+                    await self._binding.send_signaling_data(
                         update.chat_id,
                         update.signaling_data,
                     )
@@ -75,6 +78,18 @@ class HandleMTProtoUpdates(Scaffold):
         if isinstance(update, ChatUpdate):
             if update.status & ChatUpdate.Status.LEFT_CALL:
                 await self._clear_call(chat_id)
+            elif update.status & ChatUpdate.Status.MIGRATE_TO_CONFERENCE_CALL:
+                await self._connect_call(
+                    chat_id,
+                    None,
+                    CallConfig(
+                        conference=True,
+                    ),
+                    None,
+                    await self._app.get_conference_last_block(
+                        chat_id,
+                    ),
+                )
         if isinstance(update, UpdatedGroupCallParticipant):
             participant = update.participant
             action = update.action
@@ -89,12 +104,13 @@ class HandleMTProtoUpdates(Scaffold):
 
                     if was_camera != participant.video_camera:
                         if participant.video_info:
-                            self._call_sources[chat_id].camera[
-                                user_id
-                            ] = participant.video_info.endpoint
+                            self._call_sources[chat_id].camera[user_id] = (
+                                participant.video_info.endpoint
+                            )
                             try:
                                 await self._binding.add_incoming_video(
                                     chat_id,
+                                    participant.user_id,
                                     participant.video_info.endpoint,
                                     participant.video_info.sources,
                                 )
@@ -104,14 +120,15 @@ class HandleMTProtoUpdates(Scaffold):
                             try:
                                 await self._binding.remove_incoming_video(
                                     chat_id,
-                                    self._call_sources[
-                                        chat_id
-                                    ].camera[user_id],
+                                    self._call_sources[chat_id].camera[
+                                        user_id
+                                    ],
                                 )
                             except (ConnectionNotFound, ConnectionError):
                                 pass
                             self._call_sources[chat_id].camera.pop(
-                                user_id, None,
+                                user_id,
+                                None,
                             )
 
                     if was_screen != participant.screen_sharing:
@@ -122,38 +139,52 @@ class HandleMTProtoUpdates(Scaffold):
                             try:
                                 await self._binding.add_incoming_video(
                                     chat_id,
+                                    participant.user_id,
                                     participant.presentation_info.endpoint,
                                     participant.presentation_info.sources,
                                 )
                             except (ConnectionNotFound, ConnectionError):
                                 pass
-                        elif user_id in self._call_sources[
-                            chat_id
-                        ].presentation:
+                        elif (
+                            user_id in self._call_sources[chat_id].presentation
+                        ):
                             try:
                                 await self._binding.remove_incoming_video(
                                     chat_id,
-                                    self._call_sources[
-                                        chat_id
-                                    ].presentation[user_id],
+                                    self._call_sources[chat_id].presentation[
+                                        user_id
+                                    ],
                                 )
                             except (ConnectionNotFound, ConnectionError):
                                 pass
                             self._call_sources[chat_id].presentation.pop(
-                                user_id, None,
+                                user_id,
+                                None,
                             )
 
+                    try:
+                        await self._handle_request_participants(chat_id)
+                    except (ConnectionNotFound, ConnectionError):
+                        pass
+
             if chat_peer:
-                is_self = BridgedClient.chat_id(
-                    chat_peer,
-                ) == participant.user_id if chat_peer else False
+                is_self = (
+                    BridgedClient.chat_id(
+                        chat_peer,
+                    )
+                    == participant.user_id
+                    if chat_peer
+                    else False
+                )
                 if is_self:
-                    if action == GroupCallParticipant.Action.KICKED or \
-                            action == GroupCallParticipant.Action.LEFT:
+                    if (
+                        action == GroupCallParticipant.Action.KICKED
+                        or action == GroupCallParticipant.Action.LEFT
+                    ):
                         await self._clear_call(chat_id)
                     if (
-                        chat_id in self._need_unmute and
-                        action == GroupCallParticipant.Action.UPDATED
+                        chat_id in self._need_unmute
+                        and action == GroupCallParticipant.Action.UPDATED
                         and not participant.muted_by_admin
                     ):
                         await self._update_status(
@@ -163,12 +194,24 @@ class HandleMTProtoUpdates(Scaffold):
                         await self._switch_connection(chat_id)
 
                     if (
-                        participant.muted_by_admin and
-                        action != GroupCallParticipant.Action.LEFT
+                        participant.muted_by_admin
+                        and action != GroupCallParticipant.Action.LEFT
                     ):
                         self._need_unmute.add(chat_id)
                     else:
                         self._need_unmute.discard(chat_id)
+        if isinstance(update, ChainBlocksUpdate):
+            chain_blocks = update.chain_blocks
+            try:
+                await self._binding.apply_blocks(
+                    chat_id,
+                    chain_blocks.sub_chain_id,
+                    chain_blocks.next_offset,
+                    chain_blocks.blocks,
+                    False,
+                )
+            except (ConnectionNotFound, ConnectionError):
+                pass
         if not isinstance(update, RawCallUpdate):
             await self._propagate(
                 update,

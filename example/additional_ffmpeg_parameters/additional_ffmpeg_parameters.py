@@ -1,7 +1,7 @@
 from pyrogram import Client
 
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls import idle
 from pytgcalls.types import AudioQuality
 from pytgcalls.types import MediaStream
 from pytgcalls.types import VideoQuality
@@ -21,14 +21,13 @@ call_py.play(
         remote,
         AudioQuality.HIGH,
         VideoQuality.HD_720p,
-
         # You can add --video or --audio to the ffmpeg
         # command line to specify to what you want to add these parameters
         ffmpeg_parameters='EVERYTHING BEFORE THE INPUT (-i) '
-                          '-atmid '
-                          'EVERYTHING AFTER THE INPUT (-i) '
-                          '-atend '
-                          'EVERYTHING AFTER ALL ARGUMENTS',
+        '-atmid '
+        'EVERYTHING AFTER THE INPUT (-i) '
+        '-atend '
+        'EVERYTHING AFTER ALL ARGUMENTS',
     ),
 )
 idle()

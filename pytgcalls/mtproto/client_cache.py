@@ -1,8 +1,5 @@
 import logging
 from typing import Any
-from typing import List
-from typing import Optional
-from typing import Union
 
 from ..types import Cache
 from ..types.chats import GroupCallParticipant
@@ -28,7 +25,7 @@ class ClientCache:
     async def get_input_call(
         self,
         chat_id: int,
-    ) -> Optional[Any]:
+    ) -> Any | None:
         input_call = self._input_calls.get(chat_id)
         if input_call is not None or chat_id > 0:
             return input_call
@@ -49,20 +46,20 @@ class ClientCache:
 
     def set_participants_cache(
         self,
-        chat_id: Optional[int],
+        chat_id: int | None,
         action: GroupCallParticipant.Action,
         participant: GroupCallParticipant,
-    ) -> Optional[GroupCallParticipant]:
+    ) -> GroupCallParticipant | None:
         if chat_id is not None:
             if self._call_participants_cache.get(chat_id) is None:
                 self._call_participants_cache.put(
                     chat_id,
                     ParticipantList(),
                 )
-            participants: Optional[
-                ParticipantList
-            ] = self._call_participants_cache.get(
-                chat_id,
+            participants: ParticipantList | None = (
+                self._call_participants_cache.get(
+                    chat_id,
+                )
             )
             if participants is not None:
                 self._call_participants_cache.update_cache(chat_id)
@@ -76,7 +73,7 @@ class ClientCache:
         self,
         chat_id: int,
         only_cached: bool = False,
-    ) -> List[GroupCallParticipant]:
+    ) -> list[GroupCallParticipant]:
         input_call = await self.get_input_call(
             chat_id,
         )
@@ -85,7 +82,8 @@ class ClientCache:
                 if only_cached:
                     return []
                 py_logger.debug(
-                    'GetParticipant cache miss for %d', chat_id,
+                    'GetParticipant cache miss for %d',
+                    chat_id,
                 )
                 list_participants = await self._app.get_participants(
                     input_call,
@@ -105,11 +103,14 @@ class ClientCache:
 
     def get_chat_id(
         self,
-        call_id: Union[int, str],
-    ) -> Optional[int]:
+        call_id: int | str,
+    ) -> int | None:
         for key in self._input_calls.keys:
             call = self._input_calls.get(key)
-            if call_id == (call.slug if hasattr(call, 'slug') else call.id):
+            if call is None:
+                continue
+            current = call.slug if hasattr(call, 'slug') else call.id
+            if current == call_id:
                 self._input_calls.update_cache(key)
                 return key
         return None
@@ -151,20 +152,23 @@ class ClientCache:
     def get_dc_call(
         self,
         chat_id: int,
-    ) -> Optional[int]:
+    ) -> int | None:
         return self._dc_call_cache.get(chat_id)
 
     def get_user_id(
         self,
         phone_call_id: int,
-    ) -> Optional[int]:
+    ) -> int | None:
         return next(
             (
                 user_id
                 for user_id in self._input_calls.keys
                 if getattr(
-                    self._input_calls.get(user_id), 'id', None,
-                ) == phone_call_id
+                    self._input_calls.get(user_id),
+                    'id',
+                    None,
+                )
+                == phone_call_id
             ),
             None,
         )

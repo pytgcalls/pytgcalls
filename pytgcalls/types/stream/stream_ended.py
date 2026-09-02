@@ -8,7 +8,6 @@ from .device import Device
 
 
 class StreamEnded(Update):
-
     class Type(Flag):
         AUDIO = auto()
         VIDEO = auto()

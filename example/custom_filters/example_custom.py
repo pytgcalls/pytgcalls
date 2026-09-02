@@ -2,9 +2,8 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import filters as fl
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls import filters as fl
 from pytgcalls.types import Update
 
 app = Client(
@@ -31,5 +30,5 @@ async def play_handler(_: Client, message: Message):
         'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4',
     )
 
-call_py.start()
-idle()
+
+call_py.run()

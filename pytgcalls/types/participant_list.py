@@ -1,5 +1,3 @@
-from typing import Dict
-
 from ..types.chats import GroupCallParticipant
 from ..types.list import List
 
@@ -8,7 +6,7 @@ class ParticipantList:
     def __init__(
         self,
     ) -> None:
-        self._list_participants: Dict[int, GroupCallParticipant] = {}
+        self._list_participants: dict[int, GroupCallParticipant] = {}
 
     def update_participant(
         self,
@@ -25,7 +23,9 @@ class ParticipantList:
     def get_participants(
         self,
     ):
-        return List([
-            self._list_participants[user_id]
-            for user_id in self._list_participants
-        ])
+        return List(
+            [
+                self._list_participants[user_id]
+                for user_id in self._list_participants
+            ]
+        )

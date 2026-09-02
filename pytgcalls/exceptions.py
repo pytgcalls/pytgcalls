@@ -1,8 +1,8 @@
 class TooOldPyrogramVersion(Exception):
     def __init__(
-            self,
-            version_needed: str,
-            pyrogram_version: str,
+        self,
+        version_needed: str,
+        pyrogram_version: str,
     ):
         super().__init__(
             f'Needed pyrogram {version_needed}+, '
@@ -13,9 +13,9 @@ class TooOldPyrogramVersion(Exception):
 
 class TooOldTelethonVersion(Exception):
     def __init__(
-            self,
-            version_needed: str,
-            telethon_version: str,
+        self,
+        version_needed: str,
+        telethon_version: str,
     ):
         super().__init__(
             f'Needed telethon {version_needed}+, '
@@ -155,4 +155,12 @@ class UnsupportedMethod(Exception):
     def __init__(self):
         super().__init__(
             'Unsupported method for this kind of call',
+        )
+
+
+class ConferenceChainNotReady(Exception):
+    def __init__(self, invite_msg_id: int):
+        super().__init__(
+            'The conference chain of the invite '
+            f'{invite_msg_id} has no block yet',
         )

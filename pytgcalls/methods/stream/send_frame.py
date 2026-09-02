@@ -1,5 +1,3 @@
-from typing import Union
-
 from ntgcalls import ConnectionNotFound
 from ntgcalls import FrameData
 
@@ -16,7 +14,7 @@ class SendFrame(Scaffold):
     @mtproto_required
     async def send_frame(
         self,
-        chat_id: Union[int, str],
+        chat_id: int | str,
         device: Device,
         data: bytes,
         frame_data: Frame.Info = Frame.Info(),

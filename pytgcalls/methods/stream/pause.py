@@ -1,5 +1,3 @@
-from typing import Union
-
 from ntgcalls import ConnectionNotFound
 
 from ...exceptions import NotInCallError
@@ -13,7 +11,7 @@ class Pause(Scaffold):
     @mtproto_required
     async def pause(
         self,
-        chat_id: Union[int, str],
+        chat_id: int | str,
     ) -> bool:
         chat_id = await self.resolve_chat_id(chat_id)
         try:

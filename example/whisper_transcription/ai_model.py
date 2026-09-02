@@ -1,6 +1,5 @@
 import struct
 from io import BytesIO
-from typing import Optional
 
 import numpy as np
 from faster_whisper import WhisperModel
@@ -18,7 +17,7 @@ class AIModel:
         use_context: bool = True,
         condition_on_prev_text: bool = False,
         multilingual: bool = True,
-        language: Optional[str] = None,
+        language: str | None = None,
     ):
         try:
             torch = __import__('torch')
@@ -85,7 +84,7 @@ class AIModel:
         )
         return wav_header + data
 
-    def transcribe(self, data: bytes) -> Optional[str]:
+    def transcribe(self, data: bytes) -> str | None:
         if self._is_silent(data):
             self._silent_frames += len(data)
         else:
@@ -93,11 +92,9 @@ class AIModel:
             self._not_transcribed = True
         self._temp_file.write(data)
         silence_threshold = (
-            self._sample_rate * self._channels *
-            2 * self._silence_duration
+            self._sample_rate * self._channels * 2 * self._silence_duration
         )
-        if self._silent_frames >= silence_threshold and \
-                self._not_transcribed:
+        if self._silent_frames >= silence_threshold and self._not_transcribed:
             self._not_transcribed = False
             self._silent_frames = 0
             self._temp_file.seek(0)
@@ -107,7 +104,7 @@ class AIModel:
             return self._internal_transcribe(pcm_data)
         return None
 
-    def _internal_transcribe(self, data: bytes) -> Optional[str]:
+    def _internal_transcribe(self, data: bytes) -> str | None:
         wav_file = BytesIO()
         wav_file.write(self._to_wav(data))
         wav_file.seek(0)
@@ -116,7 +113,8 @@ class AIModel:
             vad_filter=True,
             language=self._language,
             initial_prompt=self._current_context
-            if self._use_context else None,
+            if self._use_context
+            else None,
             condition_on_previous_text=self._condition_on_prev_text,
             multilingual=self._multilingual,
         )

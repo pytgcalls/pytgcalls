@@ -4,8 +4,8 @@ import time
 from ntgcalls import MediaSource
 from pyrogram import Client
 
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls import idle
 from pytgcalls.types.raw import AudioParameters
 from pytgcalls.types.raw import AudioStream
 from pytgcalls.types.raw import Stream
@@ -22,8 +22,7 @@ call_py = PyTgCalls(app)
 call_py.start()
 audio_file = 'audio.raw'
 video_file = 'video.raw'
-while not os.path.exists(audio_file) or \
-        not os.path.exists(video_file):
+while not os.path.exists(audio_file) or not os.path.exists(video_file):
     time.sleep(0.125)
 call_py.play(
     -1001234567890,

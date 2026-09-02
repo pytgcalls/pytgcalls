@@ -1,7 +1,7 @@
 from telethon import TelegramClient
 
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
+from pytgcalls import idle
 
 app = TelegramClient(
     'py-tgcalls',

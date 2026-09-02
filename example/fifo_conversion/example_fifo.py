@@ -10,7 +10,6 @@ from pyrogram import Client
 from pyrogram import filters
 from pyrogram.types import Message
 
-from pytgcalls import idle
 from pytgcalls import PyTgCalls
 from pytgcalls.types.raw import AudioStream
 from pytgcalls.types.raw import Stream
@@ -68,5 +67,4 @@ def close_all_process():
 
 # AVOID ZOMBIE FFMPEG PROCESS
 atexit.register(close_all_process)
-call_py.start()
-idle()
+call_py.run()

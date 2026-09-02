@@ -1,11 +1,13 @@
 from .clear_cache import ClearCache
 from .clear_call import ClearCall
 from .connect_call import ConnectCall
-from .emit_sig_data import EmitSigData
 from .handle_connection_changed import HandleConnectionChanged
+from .handle_emojis_update import HandleEmojisUpdate
 from .handle_mtproto_updates import HandleMTProtoUpdates
+from .handle_request_participants import HandleRequestParticipants
 from .handle_stream_ended import HandleStreamEnded
 from .handle_stream_frame import HandleStreamFrame
+from .handle_subchain_request import HandleSubchainRequest
 from .join_presentation import JoinPresentation
 from .log_retries import LogRetries
 from .request_broadcast_part import RequestBroadcastPart
@@ -19,11 +21,13 @@ class Internal(
     ClearCache,
     ClearCall,
     ConnectCall,
-    EmitSigData,
     HandleConnectionChanged,
+    HandleEmojisUpdate,
     HandleMTProtoUpdates,
+    HandleRequestParticipants,
     HandleStreamEnded,
     HandleStreamFrame,
+    HandleSubchainRequest,
     JoinPresentation,
     LogRetries,
     RequestBroadcastPart,

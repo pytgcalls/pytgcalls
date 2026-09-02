@@ -1,5 +1,3 @@
-from typing import Union
-
 from ...exceptions import NoActiveGroupCall
 from ...exceptions import UnsupportedMethod
 from ...mtproto_required import mtproto_required
@@ -12,7 +10,7 @@ class ChangeVolumeCall(Scaffold):
     @mtproto_required
     async def change_volume_call(
         self,
-        chat_id: Union[int, str],
+        chat_id: int | str,
         volume: int,
     ):
         chat_id = await self.resolve_chat_id(chat_id)

@@ -1,6 +1,4 @@
 from enum import auto
-from typing import List
-from typing import Optional
 
 from ntgcalls import SsrcGroup
 
@@ -19,10 +17,10 @@ class GroupCallParticipant(PyObject):
         def __init__(
             self,
             endpoint: str,
-            sources: List[SsrcGroup],
+            sources: list[SsrcGroup],
         ):
             self.endpoint: str = endpoint
-            self.sources: List[SsrcGroup] = sources
+            self.sources: list[SsrcGroup] = sources
 
     def __init__(
         self,
@@ -35,8 +33,8 @@ class GroupCallParticipant(PyObject):
         raised_hand: bool,
         volume: int,
         source: int,
-        video_info: Optional[SourceInfo],
-        presentation_info: Optional[SourceInfo],
+        video_info: SourceInfo | None,
+        presentation_info: SourceInfo | None,
     ):
         self.user_id: int = user_id
         self.muted: bool = muted
@@ -47,9 +45,7 @@ class GroupCallParticipant(PyObject):
         self.video_camera: bool = video_camera
         self.raised_hand: bool = raised_hand
         self.volume: int = volume
-        self.video_info: Optional[
-            GroupCallParticipant.SourceInfo
-        ] = video_info
-        self.presentation_info: Optional[
-            GroupCallParticipant.SourceInfo
-        ] = presentation_info
+        self.video_info: GroupCallParticipant.SourceInfo | None = video_info
+        self.presentation_info: GroupCallParticipant.SourceInfo | None = (
+            presentation_info
+        )

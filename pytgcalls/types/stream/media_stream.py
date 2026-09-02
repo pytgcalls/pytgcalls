@@ -1,9 +1,6 @@
 import logging
 from enum import auto
 from pathlib import Path
-from typing import Dict
-from typing import Optional
-from typing import Union
 
 from ntgcalls import MediaSource
 
@@ -41,26 +38,16 @@ class MediaStream(Stream):
     @statictypes
     def __init__(
         self,
-        media_path: Union[str, Path, InputDevice, ExternalMedia],
-        audio_parameters: Union[
-            AudioParameters,
-            AudioQuality,
-        ] = AudioQuality.HIGH,
-        video_parameters: Union[
-            VideoParameters,
-            VideoQuality,
-        ] = VideoQuality.HD_720p,
-        audio_path: Optional[
-            Union[
-                str, Path,
-                InputDevice, ExternalMedia,
-            ]
-        ] = None,
-        audio_flags: Optional[Flags] = Flags.AUTO_DETECT,
-        video_flags: Optional[Flags] = Flags.AUTO_DETECT,
-        headers: Optional[Dict[str, str]] = None,
-        ffmpeg_parameters: Optional[str] = None,
-        ytdlp_parameters: Optional[str] = None,
+        media_path: str | Path | InputDevice | ExternalMedia,
+        audio_parameters: AudioParameters | AudioQuality = AudioQuality.HIGH,
+        video_parameters: VideoParameters
+        | VideoQuality = VideoQuality.HD_720p,
+        audio_path: str | Path | InputDevice | ExternalMedia | None = None,
+        audio_flags: Flags | None = Flags.AUTO_DETECT,
+        video_flags: Flags | None = Flags.AUTO_DETECT,
+        headers: dict[str, str] | None = None,
+        ffmpeg_parameters: str | None = None,
+        ytdlp_parameters: str | None = None,
     ):
         self._audio_parameters: AudioParameters
         self._video_parameters: VideoParameters
@@ -77,8 +64,8 @@ class MediaStream(Stream):
                 adjust_by_height=False,
             )
 
-        self._media_path: Optional[str] = None
-        self._audio_path: Optional[str] = None
+        self._media_path: str | None = None
+        self._audio_path: str | None = None
         self._is_media_device: bool = False
         self._is_audio_device: bool = False
         self._is_audio_external: bool = False
@@ -129,23 +116,24 @@ class MediaStream(Stream):
         super().__init__(
             microphone=None
             if (
-                self._audio_flags & MediaStream.Flags.IGNORE or
-                self._media_path is None and
-                self._audio_path is None
-            ) and not self._is_audio_external else
-            AudioStream(
+                self._audio_flags & MediaStream.Flags.IGNORE
+                or self._media_path is None
+                and self._audio_path is None
+            )
+            and not self._is_audio_external
+            else AudioStream(
                 MediaSource.DEVICE,
                 self._audio_path,
                 self._audio_parameters,
             )
-            if self._is_audio_device else
-            AudioStream(
+            if self._is_audio_device
+            else AudioStream(
                 MediaSource.EXTERNAL,
                 '',
                 self._audio_parameters,
             )
-            if self._is_audio_external else
-            AudioStream(
+            if self._is_audio_external
+            else AudioStream(
                 MediaSource.SHELL,
                 list_to_cmd(
                     build_command(
@@ -162,23 +150,25 @@ class MediaStream(Stream):
             ),
             camera=None
             if (
-                self._video_flags & MediaStream.Flags.IGNORE or
-                self._media_path is None
-            ) and not self._is_video_external else
-            VideoStream(
-                MediaSource.DESKTOP if isinstance(media_path, ScreenDevice)
+                self._video_flags & MediaStream.Flags.IGNORE
+                or self._media_path is None
+            )
+            and not self._is_video_external
+            else VideoStream(
+                MediaSource.DESKTOP
+                if isinstance(media_path, ScreenDevice)
                 else MediaSource.DEVICE,
                 self._media_path,
                 self._video_parameters,
             )
-            if self._is_media_device else
-            VideoStream(
+            if self._is_media_device
+            else VideoStream(
                 MediaSource.EXTERNAL,
                 '',
                 self._video_parameters,
             )
-            if self._is_video_external else
-            VideoStream(
+            if self._is_video_external
+            else VideoStream(
                 MediaSource.SHELL,
                 list_to_cmd(
                     build_command(
@@ -196,8 +186,10 @@ class MediaStream(Stream):
         )
 
     async def check_stream(self):
-        if not self._video_flags & MediaStream.Flags.IGNORE and \
-                not self._is_video_external:
+        if (
+            not self._video_flags & MediaStream.Flags.IGNORE
+            and not self._is_video_external
+        ):
             if self._is_media_device:
                 if not self._media_path:
                     self.camera = None
@@ -252,11 +244,14 @@ class MediaStream(Stream):
                 self.camera = None
 
         if not self._is_media_device:
-            self._audio_path = self._audio_path \
-                if self._audio_path else self._media_path
+            self._audio_path = (
+                self._audio_path if self._audio_path else self._media_path
+            )
 
-        if not self._audio_flags & MediaStream.Flags.IGNORE and \
-                not self._is_audio_external:
+        if (
+            not self._audio_flags & MediaStream.Flags.IGNORE
+            and not self._is_audio_external
+        ):
             if self._is_audio_device:
                 if not self._audio_path:
                     self.microphone = None
@@ -303,10 +298,11 @@ class MediaStream(Stream):
                 self.microphone = None
 
     @staticmethod
-    def _filter_flags(flags: Optional[Flags]) -> Flags:
+    def _filter_flags(flags: Flags | None) -> Flags:
         combined_flags = [
             MediaStream.Flags.AUTO_DETECT,
-            MediaStream.Flags.IGNORE, MediaStream.Flags.REQUIRED,
+            MediaStream.Flags.IGNORE,
+            MediaStream.Flags.REQUIRED,
         ]
         combined_flags_value = MediaStream.Flags(
             sum([flag.value for flag in combined_flags]),

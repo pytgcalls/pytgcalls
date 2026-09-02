@@ -1,8 +1,5 @@
 import inspect
-from typing import Callable
-from typing import List
-from typing import Optional
-from typing import Union
+from collections.abc import Callable
 
 from .mtproto import BridgedClient
 from .pytgcalls import PyTgCalls
@@ -41,7 +38,8 @@ class InvertFilter(Filter):
             x = await client.loop.run_in_executor(
                 client.executor,
                 self.base,
-                client, update,
+                client,
+                update,
             )
 
         return not x
@@ -116,7 +114,7 @@ class OrFilter(Filter):
 CUSTOM_FILTER_NAME = 'CustomFilter'
 
 
-def create(func: Callable, name: Optional[str] = None, **kwargs) -> Filter:
+def create(func: Callable, name: str | None = None, **kwargs) -> Filter:
     return type(
         name or func.__name__ or CUSTOM_FILTER_NAME,
         (Filter,),
@@ -128,9 +126,14 @@ async def _me_filter(_, client: PyTgCalls, u: Update):
     if isinstance(u, UpdatedGroupCallParticipant):
         chat_peer = client.cache_user_peer.get(u.chat_id)
         if chat_peer:
-            return BridgedClient.chat_id(
-                chat_peer,
-            ) == u.participant.user_id if chat_peer else False
+            return (
+                BridgedClient.chat_id(
+                    chat_peer,
+                )
+                == u.participant.user_id
+                if chat_peer
+                else False
+            )
     return False
 
 
@@ -141,8 +144,8 @@ me = create(_me_filter)
 class stream_end(Filter):
     def __init__(
         self,
-        stream_type: Optional[StreamEnded.Type] = None,
-        device: Optional[Device] = None,
+        stream_type: StreamEnded.Type | None = None,
+        device: Device | None = None,
     ):
         self.stream_type = stream_type
         self.device = device
@@ -150,14 +153,9 @@ class stream_end(Filter):
     async def __call__(self, client: PyTgCalls, update: Update):
         if isinstance(update, StreamEnded):
             return (
-                (
-                    self.stream_type is None or
-                    self.stream_type & update.stream_type
-                ) and (
-                    self.device is None or
-                    self.device & update.device
-                )
-            )
+                self.stream_type is None
+                or self.stream_type & update.stream_type
+            ) and (self.device is None or self.device & update.device)
         return False
 
 
@@ -165,17 +163,21 @@ class stream_end(Filter):
 class chat(Filter, set):
     def __init__(
         self,
-        chats: Optional[Union[int, str, List[Union[int, str]]]] = None,
+        chats: int | str | list[int | str] | None = None,
     ):
-        chats = [] if chats is None else chats \
-            if isinstance(chats, list) else [chats]
+        chats = (
+            []
+            if chats is None
+            else chats
+            if isinstance(chats, list)
+            else [chats]
+        )
         super().__init__(chats)
 
     async def __call__(self, client: PyTgCalls, update: Update):
-        return any([
-            await client.resolve_chat_id(c) == update.chat_id
-            for c in self
-        ])
+        return any(
+            [await client.resolve_chat_id(c) == update.chat_id for c in self]
+        )
 
 
 # noinspection PyPep8Naming
@@ -193,7 +195,7 @@ class chat_update(Filter):
 class call_participant(Filter):
     def __init__(
         self,
-        flags: Optional[GroupCallParticipant.Action] = None,
+        flags: GroupCallParticipant.Action | None = None,
     ):
         self.flags = flags
 
@@ -209,8 +211,8 @@ class call_participant(Filter):
 class stream_frame(Filter):
     def __init__(
         self,
-        directions: Optional[Direction] = None,
-        devices: Optional[Device] = None,
+        directions: Direction | None = None,
+        devices: Device | None = None,
     ):
         self.directions = directions
         self.devices = devices
@@ -218,12 +220,6 @@ class stream_frame(Filter):
     async def __call__(self, client: PyTgCalls, update: Update):
         if isinstance(update, StreamFrames):
             return (
-                (
-                    self.directions is None or
-                    self.directions & update.direction
-                ) and (
-                    self.devices is None or
-                    self.devices & update.device
-                )
-            )
+                self.directions is None or self.directions & update.direction
+            ) and (self.devices is None or self.devices & update.device)
         return False

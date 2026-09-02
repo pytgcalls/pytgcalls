@@ -1,6 +1,6 @@
 from ntgcalls import ConnectionError
 from ntgcalls import ConnectionNotFound
-from ntgcalls import MediaSegmentStatus
+from ntgcalls import MediaSegmentPartStatus
 from ntgcalls import SegmentPartRequest
 
 from ...scaffold import Scaffold
@@ -12,7 +12,7 @@ class RequestBroadcastPart(Scaffold):
         chat_id: int,
         part_request: SegmentPartRequest,
     ):
-        part_status = MediaSegmentStatus.NOT_READY
+        part_status = MediaSegmentPartStatus.NOT_READY
         # noinspection PyBroadException
         try:
             part = await self._app.download_stream(
@@ -20,14 +20,15 @@ class RequestBroadcastPart(Scaffold):
                 part_request.timestamp,
                 part_request.limit,
                 part_request.channel_id
-                if part_request.channel_id > 0 else None,
+                if part_request.channel_id > 0
+                else None,
                 part_request.quality,
             )
             if part is not None:
-                part_status = MediaSegmentStatus.SUCCESS
+                part_status = MediaSegmentPartStatus.SUCCESS
         except Exception:
             part = None
-            part_status = MediaSegmentStatus.RESYNC_NEEDED
+            part_status = MediaSegmentPartStatus.RESYNC_NEEDED
 
         try:
             await self._binding.send_broadcast_part(

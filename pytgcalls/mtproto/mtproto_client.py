@@ -1,12 +1,12 @@
+from collections.abc import Callable
 from typing import Any
-from typing import Callable
-from typing import List
-from typing import Optional
 
 from ntgcalls import MediaSegmentQuality
 from ntgcalls import Protocol
+from ntgcalls import SubchainRequest
 
 from ..exceptions import InvalidMTProtoClient
+from ..types.calls import ChainBlocks
 from ..types.chats import GroupCallParticipant
 from .bridged_client import BridgedClient
 
@@ -17,16 +17,18 @@ class MtProtoClient:
         cache_duration: int,
         client: Any,
     ):
-        self._bind_client: Optional[BridgedClient] = None
+        self._bind_client: BridgedClient | None = None
         self.package_name = BridgedClient.package_name(client)
         if self.package_name == 'pyrogram':
             from .pyrogram_client import PyrogramClient
+
             self._bind_client = PyrogramClient(
                 cache_duration,
                 client,
             )
         elif self.package_name == 'telethon':
             from .telethon_client import TelethonClient
+
             self._bind_client = TelethonClient(
                 cache_duration,
                 client,
@@ -37,10 +39,49 @@ class MtProtoClient:
     async def get_group_call_participants(
         self,
         chat_id: int,
-    ) -> Optional[List[GroupCallParticipant]]:
+    ) -> list[GroupCallParticipant] | None:
         if self._bind_client is not None:
             return await self._bind_client.get_group_call_participants(
                 chat_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def send_conference_call_broadcast(
+        self,
+        chat_id: int,
+        block: bytes,
+    ):
+        if self._bind_client is not None:
+            await self._bind_client.send_conference_call_broadcast(
+                chat_id,
+                block,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def get_subchain_blocks(
+        self,
+        chat_id: int,
+        subchain_request: SubchainRequest,
+    ) -> ChainBlocks | None:
+        if self._bind_client is not None:
+            return await self._bind_client.get_subchain_blocks(
+                chat_id,
+                subchain_request,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def get_conference_last_block(
+        self,
+        chat_id: int,
+        invite_msg_id: int | None = None,
+    ) -> bytes | None:
+        if self._bind_client is not None:
+            return await self._bind_client.get_conference_last_block(
+                chat_id,
+                invite_msg_id,
             )
         else:
             raise InvalidMTProtoClient()
@@ -51,8 +92,10 @@ class MtProtoClient:
         json_join: str,
         video_stopped: bool,
         join_as: Any,
-        invite_hash: Optional[str] = None,
-        public_key: Optional[int] = None,
+        invite_hash: str | None = None,
+        block: bytes | None = None,
+        public_key: int | None = None,
+        invite_msg_id: int | None = None,
     ) -> str:
         if self._bind_client is not None:
             return await self._bind_client.join_group_call(
@@ -61,6 +104,27 @@ class MtProtoClient:
                 video_stopped,
                 join_as,
                 invite_hash,
+                block,
+                public_key,
+                invite_msg_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def create_conference_call(
+        self,
+        chat_id: int,
+        json_join: str,
+        video_stopped: bool,
+        block: bytes,
+        public_key: int,
+    ) -> str:
+        if self._bind_client is not None:
+            return await self._bind_client.create_conference_call(
+                chat_id,
+                json_join,
+                video_stopped,
+                block,
                 public_key,
             )
         else:
@@ -224,7 +288,7 @@ class MtProtoClient:
         chat_id: int,
         timestamp: int,
         limit: int,
-        video_channel: Optional[int],
+        video_channel: int | None,
         video_quality: MediaSegmentQuality,
     ):
         if self._bind_client is not None:
@@ -252,10 +316,10 @@ class MtProtoClient:
     async def set_call_status(
         self,
         chat_id: int,
-        muted_status: Optional[bool],
-        video_paused: Optional[bool],
-        video_stopped: Optional[bool],
-        presentation_paused: Optional[bool],
+        muted_status: bool | None,
+        video_paused: bool | None,
+        video_stopped: bool | None,
+        presentation_paused: bool | None,
         participant: Any,
     ):
         if self._bind_client is not None:

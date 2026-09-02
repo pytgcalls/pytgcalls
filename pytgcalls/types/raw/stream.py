@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ...statictypes import statictypes
 from ..py_object import PyObject
 from .audio_stream import AudioStream
@@ -10,12 +8,12 @@ class Stream(PyObject):
     @statictypes
     def __init__(
         self,
-        microphone: Optional[AudioStream] = None,
-        speaker: Optional[AudioStream] = None,
-        camera: Optional[VideoStream] = None,
-        screen: Optional[VideoStream] = None,
+        microphone: AudioStream | None = None,
+        speaker: AudioStream | None = None,
+        camera: VideoStream | None = None,
+        screen: VideoStream | None = None,
     ):
-        self.microphone: Optional[AudioStream] = microphone
-        self.speaker: Optional[AudioStream] = speaker
-        self.camera: Optional[VideoStream] = camera
-        self.screen: Optional[VideoStream] = screen
+        self.microphone: AudioStream | None = microphone
+        self.speaker: AudioStream | None = speaker
+        self.camera: VideoStream | None = camera
+        self.screen: VideoStream | None = screen

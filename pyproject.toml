@@ -15,7 +15,7 @@ classifiers = [
     'Programming Language :: Python :: 3.14',
 ]
 authors = [
-    {name = "Laky-64", email = "business@laky64.me"},
+    {name = "Lauren Iraci", email = "iraci.lauren@gmail.com"},
 ]
 keywords = [
     "audio", "python", "library", "video", "telegram", "stream",
@@ -26,14 +26,13 @@ keywords = [
 requires-python = ">=3.10"
 dependencies = [
     "aiohttp>=3.9.3",
-    "ntgcalls>=2.2.4,<3.0.0",
+    "ntgcalls>=3.0.0rc1,<4.0.0",
     "deprecation",
 ]
 
 [project.optional-dependencies]
 pyrogram = ["pyrogram>=1.2.20"]
 telethon = ["telethon>=1.24.0"]
-hydrogram = ["hydrogram>=0.1.4"]
 
 [project.urls]
 Homepage = "https://pytgcalls.github.io/"
@@ -44,8 +43,26 @@ Changelog = "https://pytgcalls.github.io/PyTgCalls/Changelogs"
 [tool.setuptools]
 include-package-data = true
 
+[tool.ruff]
+line-length = 79
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.format]
+quote-style = "single"
+
 [build-system]
 requires = ["setuptools >= 69.2.0", "wheel >= 0.43.0"]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.2",
+]
 
 [tool.setuptools.packages.find]
 include = ["pytgcalls*"]

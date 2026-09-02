@@ -1,5 +1,5 @@
+from ntgcalls import ConnectionInfo
 from ntgcalls import ConnectionState
-from ntgcalls import NetworkInfo
 from ntgcalls import TelegramServerError
 
 from ...scaffold import Scaffold
@@ -9,7 +9,7 @@ class HandleConnectionChanged(Scaffold):
     async def _handle_connection_changed(
         self,
         chat_id: int,
-        net_state: NetworkInfo,
+        net_state: ConnectionInfo,
     ):
         state = net_state.state
         if state == ConnectionState.CONNECTING:

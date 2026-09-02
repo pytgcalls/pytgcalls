@@ -3,15 +3,15 @@ import logging
 import signal
 from signal import SIGABRT
 from signal import SIGINT
-from signal import signal as signal_fn
 from signal import SIGTERM
-
+from signal import signal as signal_fn
 
 py_logger = logging.getLogger('pytgcalls')
 
 # Signal number to name
 signals = {
-    k: v for v, k in signal.__dict__.items()
+    k: v
+    for v, k in signal.__dict__.items()
     if v.startswith('SIG') and not v.startswith('SIG_')
 }
 
