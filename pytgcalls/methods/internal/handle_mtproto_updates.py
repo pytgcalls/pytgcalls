@@ -187,11 +187,15 @@ class HandleMTProtoUpdates(Scaffold):
                         and action == GroupCallParticipant.Action.UPDATED
                         and not participant.muted_by_admin
                     ):
-                        await self._update_status(
-                            chat_id,
-                            await self._binding.get_state(chat_id),
-                        )
-                        await self._switch_connection(chat_id)
+                        try:
+                            await self._update_status(
+                                chat_id,
+                                await self._binding.get_state(chat_id),
+                            )
+                        except (ConnectionNotFound, ConnectionError):
+                            self._need_unmute.discard(chat_id)
+                        else:
+                            await self._switch_connection(chat_id)
 
                     if (
                         participant.muted_by_admin
