@@ -6,7 +6,11 @@ from ...scaffold import Scaffold
 
 class ClearCall(Scaffold):
     async def _clear_call(self, chat_id: int):
-        if chat_id in self._wait_connect and chat_id not in self._p2p_configs:
+        if (
+            chat_id in self._wait_connect
+            and not self._wait_connect[chat_id].done()
+            and chat_id not in self._p2p_configs
+        ):
             self._wait_connect[chat_id].set_exception(
                 TelegramServerError(),
             )

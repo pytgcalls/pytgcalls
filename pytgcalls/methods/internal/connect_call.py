@@ -216,5 +216,11 @@ class ConnectCall(Scaffold):
                     pass
                 raise
             finally:
-                self._wait_connect.pop(chat_id, None)
+                future = self._wait_connect.pop(chat_id, None)
+                if future is not None:
+                    if future.done():
+                        if not future.cancelled():
+                            future.exception()
+                    else:
+                        future.cancel()
                 self._pending_connections.pop(chat_id, None)

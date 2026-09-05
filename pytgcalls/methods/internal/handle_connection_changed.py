@@ -15,6 +15,8 @@ class HandleConnectionChanged(Scaffold):
         if state == ConnectionState.CONNECTING:
             return
         if chat_id in self._wait_connect:
+            if self._wait_connect[chat_id].done():
+                return
             if state == ConnectionState.CONNECTED:
                 self._wait_connect[chat_id].set_result(None)
             else:
