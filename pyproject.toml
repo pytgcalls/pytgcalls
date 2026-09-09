@@ -21,7 +21,7 @@ keywords = [
     "audio", "python", "library", "video", "telegram", "stream",
     "ffmpeg", "cpp", "webrtc", "voice-chat", "voip", "group-chat",
     "video-calls", "calls", "video-chat", "pytgcalls", "ntgcalls",
-    "tgcalls", "py-tgcalls", "pyrogram", "telethon", "hydrogram"
+    "tgcalls", "py-tgcalls", "pyrogram", "telethon"
 ]
 requires-python = ">=3.10"
 dependencies = [
@@ -31,7 +31,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-pyrogram = ["pyrogram>=1.2.20"]
+pyrogram = ["pyrogrammod>=2.1.2"]
 telethon = ["telethon>=1.24.0"]
 
 [project.urls]
