@@ -77,29 +77,29 @@ class ClientCache:
         input_call = await self.get_input_call(
             chat_id,
         )
-        if input_call is not None:
-            if self._call_participants_cache.get(chat_id) is None:
-                if only_cached:
-                    return []
-                py_logger.debug(
-                    'GetParticipant cache miss for %d',
-                    chat_id,
-                )
-                list_participants = await self._app.get_participants(
-                    input_call,
-                )
-                for participant in list_participants:
-                    self.set_participants_cache(
-                        chat_id,
-                        GroupCallParticipant.Action.UPDATED,
-                        participant,
-                    )
-            else:
-                py_logger.debug('GetParticipant cache hit for %d', chat_id)
-            return self._call_participants_cache.get(
+        participants = self._call_participants_cache.get(chat_id)
+        if participants is None:
+            if only_cached:
+                return []
+            if input_call is None:
+                return []
+            py_logger.debug(
+                'GetParticipant cache miss for %d',
                 chat_id,
-            ).get_participants()
-        return []
+            )
+            list_participants = await self._app.get_participants(
+                input_call,
+            )
+            for participant in list_participants:
+                self.set_participants_cache(
+                    chat_id,
+                    GroupCallParticipant.Action.UPDATED,
+                    participant,
+                )
+            participants = self._call_participants_cache.get(chat_id)
+        if participants is None:
+            return []
+        return participants.get_participants()
 
     def get_chat_id(
         self,
@@ -109,7 +109,11 @@ class ClientCache:
             call = self._input_calls.get(key)
             if call is None:
                 continue
-            current = call.slug if hasattr(call, 'slug') else call.id
+            # Prefer the call slug when available, otherwise fallback to its ID.
+            current = getattr(call, 'slug', None)
+            if current is None:
+                current = getattr(call, 'id', None)
+
             if current == call_id:
                 self._input_calls.update_cache(key)
                 return key

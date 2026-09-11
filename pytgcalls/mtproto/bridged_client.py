@@ -356,7 +356,8 @@ class BridgedClient(HandlersHolder):
             r'('
             r'CALL_MIGRATE_|'
             r'The file to be accessed is currently stored in DC *'
-            r')([0-9])',
+            # Multi-digit Dc ID find instead of matching only first single digit
+            r')([0-9]+)',
             error,
         )
         return int(dc_id[0][1]) if dc_id else None
