@@ -109,7 +109,8 @@ class ClientCache:
             call = self._input_calls.get(key)
             if call is None:
                 continue
-            # Prefer the call slug when available, otherwise fallback to its ID.
+
+            # Prefer the call slug; otherwise, fall back to its ID.
             current = getattr(call, 'slug', None)
             if current is None:
                 current = getattr(call, 'id', None)
