@@ -352,6 +352,7 @@ class BridgedClient(HandlersHolder):
 
     @staticmethod
     def extract_dc(error: str) -> int | None:
+        # Match the complete DC ID instead of only the first digit.
         dc_id = re.findall(
             r'('
             r'CALL_MIGRATE_|'
