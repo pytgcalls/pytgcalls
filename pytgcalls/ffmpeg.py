@@ -134,7 +134,12 @@ async def cleanup_commands(
         except (asyncio.TimeoutError, JSONDecodeError):
             proc_res.kill()
             raise
-        supported = re.findall(r'(?m)^ *(-\w+).*?\s+', result)
+        supported = []
+        for names in re.findall(
+            r'(?m)^ *(--?\w[\w-]*(?:, *--?\w[\w-]*)*)',
+            result,
+        ):
+            supported += [name.strip() for name in names.split(',')]
         supported += ['-i']
         new_commands = []
         ignore_next = False
