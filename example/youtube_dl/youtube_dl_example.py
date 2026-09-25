@@ -12,6 +12,8 @@ app = Client(
     api_hash='abcdef12345',
 )
 
+PROXY = 'http://username:password@host:port'
+
 call_py = PyTgCalls(app)
 call_py.start()
 call_py.play(
@@ -20,7 +22,8 @@ call_py.play(
         'https://www.youtube.com/watch?v=msiLgFkXvD8',
         AudioQuality.HIGH,
         VideoQuality.HD_720p,
-        ytdlp_parameters='--proxy URL',
+        ytdlp_parameters=f'--proxy {PROXY}',
+        ffmpeg_parameters=f'-http_proxy {PROXY}',
     ),
 )
 idle()
