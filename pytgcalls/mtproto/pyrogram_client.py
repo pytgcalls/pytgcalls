@@ -630,13 +630,23 @@ class PyrogramClient(BridgedClient):
                     if isinstance(update, UpdateGroupCall) and isinstance(
                         update.call, GroupCall
                     ):
+                        joined_call = InputGroupCall(
+                            id=update.call.id,
+                            access_hash=update.call.access_hash,
+                        )
                         self._cache.set_cache(
                             chat_id,
-                            InputGroupCall(
-                                id=update.call.id,
-                                access_hash=update.call.access_hash,
-                            ),
+                            joined_call,
                         )
+                        if chat_id > 0:
+                            for participant in await self.get_participants(
+                                joined_call,
+                            ):
+                                self._cache.set_participants_cache(
+                                    chat_id,
+                                    GroupCallParticipant.Action.UPDATED,
+                                    participant,
+                                )
                     if isinstance(update, UpdateGroupCallConnection):
                         data = update.params.data
                     if isinstance(update, UpdateGroupCallChainBlocks):
