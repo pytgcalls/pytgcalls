@@ -114,7 +114,11 @@ class Scaffold(HandlersHolder):
     async def _handle_mtproto_updates(self, update: Update):
         pass
 
-    async def _handle_request_participants(self, chat_id: int):
+    async def _handle_request_participants(
+        self,
+        chat_id: int,
+        sources: list[int] | None = None,
+    ):
         pass
 
     async def _handle_subchain_request(

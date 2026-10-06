@@ -7,9 +7,11 @@ class HandleRequestParticipants(Scaffold):
     async def _handle_request_participants(
         self,
         chat_id: int,
+        sources: list[int] | None = None,
     ):
         participants = await self._app.get_group_call_participants(
             chat_id,
+            sources,
         )
 
         audio_sources: dict[int, int] = {

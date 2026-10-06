@@ -73,20 +73,24 @@ class ClientCache:
         self,
         chat_id: int,
         only_cached: bool = False,
+        sources: list[int] | None = None,
     ) -> list[GroupCallParticipant]:
         input_call = await self.get_input_call(
             chat_id,
         )
         if input_call is not None:
-            if self._call_participants_cache.get(chat_id) is None:
+            cache_miss = self._call_participants_cache.get(chat_id) is None
+            if cache_miss or sources:
                 if only_cached:
                     return []
                 py_logger.debug(
-                    'GetParticipant cache miss for %d',
+                    'GetParticipant cache %s for %d',
+                    'miss' if cache_miss else 'sources lookup',
                     chat_id,
                 )
                 list_participants = await self._app.get_participants(
                     input_call,
+                    None if cache_miss else sources,
                 )
                 for participant in list_participants:
                     self.set_participants_cache(

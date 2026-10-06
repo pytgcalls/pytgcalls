@@ -39,10 +39,12 @@ class MtProtoClient:
     async def get_group_call_participants(
         self,
         chat_id: int,
+        sources: list[int] | None = None,
     ) -> list[GroupCallParticipant] | None:
         if self._bind_client is not None:
             return await self._bind_client.get_group_call_participants(
                 chat_id,
+                sources,
             )
         else:
             raise InvalidMTProtoClient()

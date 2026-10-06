@@ -503,14 +503,17 @@ class TelethonClient(BridgedClient):
     async def get_group_call_participants(
         self,
         chat_id: int,
+        sources: list[int] | None = None,
     ):
         return await self._cache.get_participant_list(
             chat_id,
+            sources=sources,
         )
 
     async def get_participants(
         self,
         input_call: InputGroupCall,
+        sources: list[int] | None = None,
     ) -> list[GroupCallParticipant]:
         participants = []
         next_offset = ''
@@ -519,7 +522,7 @@ class TelethonClient(BridgedClient):
                 GetGroupParticipantsRequest(
                     call=input_call,
                     ids=[],
-                    sources=[],
+                    sources=sources or [],
                     offset=next_offset,
                     limit=0,
                 ),

@@ -138,6 +138,7 @@ class BridgedClient(HandlersHolder):
     async def get_group_call_participants(
         self,
         chat_id: int,
+        sources: list[int] | None = None,
     ):
         pass
 
@@ -179,6 +180,7 @@ class BridgedClient(HandlersHolder):
     async def get_participants(
         self,
         input_call: Any,
+        sources: list[int] | None = None,
     ):
         pass
 

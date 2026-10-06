@@ -103,8 +103,11 @@ class Start(Scaffold):
                 ),
             )
             self._binding.on_request_participants(
-                lambda chat_id: asyncio.run_coroutine_threadsafe(
-                    self._handle_request_participants(chat_id),
+                lambda chat_id, request: asyncio.run_coroutine_threadsafe(
+                    self._handle_request_participants(
+                        chat_id,
+                        list(request.ssrcs),
+                    ),
                     self.loop,
                 ),
             )
