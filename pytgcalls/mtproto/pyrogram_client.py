@@ -641,6 +641,8 @@ class PyrogramClient(BridgedClient):
                             ),
                         )
                 call = self._cache.get_call(chat_id)
+                if call is not None:
+                    call.join_ssrc = json.loads(json_join).get('ssrc')
                 for update in result.updates:
                     if call is not None and (
                         isinstance(update, UpdateGroupCallParticipants)

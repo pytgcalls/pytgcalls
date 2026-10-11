@@ -40,6 +40,7 @@ class GroupCall:
         self.schedule_date: int | None = None
         self.discarded = False
         self.in_call = False
+        self.join_ssrc: int | None = None
         self._version = 0
         self._participants: dict[int, GroupCallParticipant] = {}
         self._participant_peer_by_audio_ssrc: dict[int, int] = {}
@@ -445,6 +446,11 @@ class GroupCall:
                 self._apply_volume_from_min.discard(user_id)
             if was is not None and was.source != value.source:
                 self._participant_peer_by_audio_ssrc.pop(was.source, None)
+            if (
+                was is not None
+                and was.source != value.source
+                and value.source != self.join_ssrc
+            ):
                 updates.append(
                     UpdatedGroupCallParticipant(
                         self.chat_id,
