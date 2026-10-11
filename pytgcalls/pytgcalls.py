@@ -16,19 +16,16 @@ from .types import Cache
 
 class PyTgCalls(Methods, Scaffold):
     WORKERS = min(32, (os.cpu_count() or 0) + 4)
-    CACHE_DURATION = 60 * 60
 
     @statictypes
     def __init__(
         self,
         app: Any,
         workers: int = WORKERS,
-        cache_duration: int = CACHE_DURATION,
     ):
         super().__init__()
         self._mtproto = app
         self._app = MtProtoClient(
-            cache_duration,
             self._mtproto,
         )
         self._is_running = False

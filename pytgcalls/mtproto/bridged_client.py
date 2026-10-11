@@ -10,7 +10,6 @@ from ntgcalls import SubchainRequest
 
 from ..handlers import HandlersHolder
 from ..types import GroupCallParticipant
-from ..types import UpdatedGroupCallParticipant
 
 
 class BridgedClient(HandlersHolder):
@@ -177,10 +176,32 @@ class BridgedClient(HandlersHolder):
     ):
         pass
 
-    async def get_participants(
+    async def get_group_call(
         self,
         input_call: Any,
-        sources: list[int] | None = None,
+        limit: int,
+    ):
+        pass
+
+    async def get_group_participants(
+        self,
+        input_call: Any,
+        sources: list[int],
+        offset: str,
+        limit: int,
+    ):
+        pass
+
+    async def get_channel_pts(
+        self,
+        chat_id: int,
+    ):
+        pass
+
+    async def get_channel_difference(
+        self,
+        chat_id: int,
+        pts: int,
     ):
         pass
 
@@ -194,6 +215,9 @@ class BridgedClient(HandlersHolder):
         pass
 
     def no_updates(self):
+        pass
+
+    def set_in_call(self, chat_id: int, in_call: bool):
         pass
 
     async def start(self):
@@ -235,51 +259,6 @@ class BridgedClient(HandlersHolder):
             BridgedClient.parse_source(participant.video),
             BridgedClient.parse_source(participant.presentation),
         )
-
-    @staticmethod
-    async def diff_participants_update(
-        cache,
-        chat_id: int | None,
-        participant,
-    ) -> list[UpdatedGroupCallParticipant]:
-        if chat_id is None:
-            return []
-        user_id = BridgedClient.chat_id(participant.peer)
-        participants = await cache.get_participant_list(
-            chat_id,
-            True,
-        )
-        updates = []
-        for p in participants:
-            if p.user_id == user_id:
-                if p.source != participant.source:
-                    updates.append(
-                        UpdatedGroupCallParticipant(
-                            chat_id,
-                            GroupCallParticipant.Action.KICKED,
-                            p,
-                        ),
-                    )
-                    participant.just_joined = True
-                break
-
-        updates.append(
-            UpdatedGroupCallParticipant(
-                chat_id,
-                BridgedClient.parse_participant_action(participant),
-                BridgedClient.parse_participant(participant),
-            ),
-        )
-        return updates
-
-    @staticmethod
-    def parse_participant_action(participant):
-        if participant.just_joined:
-            return GroupCallParticipant.Action.JOINED
-        elif participant.left:
-            return GroupCallParticipant.Action.LEFT
-        else:
-            return GroupCallParticipant.Action.UPDATED
 
     @staticmethod
     def chat_id(input_peer, readable: bool = True) -> int:
