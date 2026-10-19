@@ -369,7 +369,10 @@ class GroupCall:
             was, self._reloaded_from = self._reloaded_from, None
             now = dict(self._participants)
             for user_id, participant in was.items():
-                if user_id not in now:
+                if (
+                    user_id not in now
+                    and participant.source != self.join_ssrc
+                ):
                     self.fire_participant_update(
                         UpdatedGroupCallParticipant(
                             self.chat_id,
@@ -417,6 +420,13 @@ class GroupCall:
         for data in participants:
             user_id = BridgedClient.chat_id(data.peer)
             was = self._participants.get(user_id)
+            if (
+                data.left
+                and was is not None
+                and was.source == self.join_ssrc
+                and data.source != self.join_ssrc
+            ):
+                continue
             if data.left:
                 if was is not None:
                     self._participant_peer_by_audio_ssrc.pop(was.source, None)
