@@ -21,7 +21,7 @@ call_py = PyTgCalls(app)
 call_py.start()
 
 AUDIO_PARAMETERS = AudioParameters(
-    bitrate=48000,
+    sample_rate=48000,
     channels=2,
 )
 chat_ids = [

@@ -31,7 +31,7 @@ call_py.play(
             MediaSource.FILE,
             audio_file,
             AudioParameters(
-                bitrate=48000,
+                sample_rate=48000,
             ),
         ),
         camera=VideoStream(

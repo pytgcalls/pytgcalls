@@ -40,9 +40,10 @@ class StreamParams:
                 return AudioDescription(
                     media_source=media.media_source,
                     input=media.path,
-                    sample_rate=media.parameters.bitrate,
+                    sample_rate=media.parameters.sample_rate,
                     channel_count=media.parameters.channels,
                     keep_open=False,
+                    bitrate=media.parameters.bitrate,
                 )
             elif isinstance(media, VideoStream):
                 return VideoDescription(

@@ -20,7 +20,7 @@ call_py.start()
 chat_id = -1001234567890
 audio_file = 'audio.raw'
 audio_parameters = AudioParameters(
-    bitrate=48000,
+    sample_rate=48000,
     channels=2,
 )
 
@@ -35,7 +35,11 @@ call_py.play(
 with open(audio_file, 'rb') as f:
     # Should be sent in PCM16L format
     chunk_size = (
-        audio_parameters.bitrate * 16 // 8 // 100 * audio_parameters.channels
+        audio_parameters.sample_rate
+        * 16
+        // 8
+        // 100
+        * audio_parameters.channels
     )
     while chunk := f.read(chunk_size):
         call_py.send_frame(
