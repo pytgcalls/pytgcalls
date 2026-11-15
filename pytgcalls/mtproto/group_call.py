@@ -369,10 +369,7 @@ class GroupCall:
             was, self._reloaded_from = self._reloaded_from, None
             now = dict(self._participants)
             for user_id, participant in was.items():
-                if (
-                    user_id not in now
-                    and participant.source != self.join_ssrc
-                ):
+                if user_id not in now and participant.source != self.join_ssrc:
                     self.fire_participant_update(
                         UpdatedGroupCallParticipant(
                             self.chat_id,
