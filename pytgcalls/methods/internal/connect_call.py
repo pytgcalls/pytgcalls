@@ -195,6 +195,7 @@ class ConnectCall(Scaffold):
                     )
                     and config.conference
                 ):
+                    self._app.set_in_call(chat_id, True)
                     await self._join_presentation(
                         chat_id,
                         not (
@@ -210,6 +211,7 @@ class ConnectCall(Scaffold):
                 self._log_retries(retries)
                 payload = None
             except Exception:
+                self._app.set_in_call(chat_id, False)
                 try:
                     await self._binding.stop(chat_id)
                 except ConnectionNotFound:
