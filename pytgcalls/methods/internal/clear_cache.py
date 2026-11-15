@@ -9,3 +9,4 @@ class ClearCache(Scaffold):
         self._presentations.discard(chat_id)
         self._call_sources.pop(chat_id, None)
         self._pending_connections.pop(chat_id, None)
+        self._app.set_in_call(chat_id, False)

@@ -14,7 +14,6 @@ from .bridged_client import BridgedClient
 class MtProtoClient:
     def __init__(
         self,
-        cache_duration: int,
         client: Any,
     ):
         self._bind_client: BridgedClient | None = None
@@ -23,14 +22,12 @@ class MtProtoClient:
             from .pyrogram_client import PyrogramClient
 
             self._bind_client = PyrogramClient(
-                cache_duration,
                 client,
             )
         elif self.package_name == 'telethon':
             from .telethon_client import TelethonClient
 
             self._bind_client = TelethonClient(
-                cache_duration,
                 client,
             )
         else:
@@ -372,6 +369,12 @@ class MtProtoClient:
         if self._bind_client is not None:
             return self._bind_client.no_updates()
         raise InvalidMTProtoClient()
+
+    def set_in_call(self, chat_id: int, in_call: bool):
+        if self._bind_client is not None:
+            self._bind_client.set_in_call(chat_id, in_call)
+        else:
+            raise InvalidMTProtoClient()
 
     @property
     def mtproto_client(self):
