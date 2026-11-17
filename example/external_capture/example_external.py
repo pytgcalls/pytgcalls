@@ -24,7 +24,7 @@ async def play_handler(_: Client, message: Message):
         RecordStream(
             audio=True,
             audio_parameters=AudioParameters(
-                bitrate=48000,
+                sample_rate=48000,
                 channels=2,
             ),
             camera=True,

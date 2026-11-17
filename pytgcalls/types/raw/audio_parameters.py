@@ -7,9 +7,16 @@ class AudioParameters(PyObject):
     @statictypes
     def __init__(
         self,
-        bitrate: int = 48000,
+        sample_rate: int = 48000,
         channels: int = 1,
+        bitrate: int | None = None,
     ):
-        max_bit, max_chan = max(AudioQuality, key=lambda x: x.value[0]).value
-        self.bitrate: int = min(bitrate, max_bit)
+        max_rate, max_chan, max_bitrate = max(
+            AudioQuality,
+            key=lambda x: x.value[0],
+        ).value
+        self.sample_rate: int = min(sample_rate, max_rate)
         self.channels: int = min(channels, max_chan)
+        self.bitrate: int | None = None
+        if bitrate is not None:
+            self.bitrate = max(6000, min(bitrate, max_bitrate))

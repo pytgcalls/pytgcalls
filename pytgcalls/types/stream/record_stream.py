@@ -47,7 +47,7 @@ class RecordStream(Stream):
         if isinstance(audio, Path):
             audio = str(audio)
         if isinstance(audio, str):
-            is_lossless = raw_audio_parameters.bitrate > 48000
+            is_lossless = raw_audio_parameters.sample_rate > 48000
             commands = [
                 'ffmpeg',
                 '-y',
@@ -56,7 +56,7 @@ class RecordStream(Stream):
                 '-f',
                 's16le',
                 '-ar',
-                str(raw_audio_parameters.bitrate),
+                str(raw_audio_parameters.sample_rate),
                 '-ac',
                 str(raw_audio_parameters.channels),
                 '-i',

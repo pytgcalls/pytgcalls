@@ -290,7 +290,7 @@ def _build_ffmpeg_options(
                 '-ac',
                 str(stream_parameters.channels),
                 '-ar',
-                str(stream_parameters.bitrate),
+                str(stream_parameters.sample_rate),
             ]
         )
     elif isinstance(stream_parameters, VideoParameters):
