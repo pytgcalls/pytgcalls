@@ -6,10 +6,12 @@ from .pytgcalls import PyTgCalls
 from .types import ChatUpdate
 from .types import Device
 from .types import Direction
+from .types import GroupCallMessage
 from .types import GroupCallParticipant
 from .types import StreamEnded
 from .types import StreamFrames
 from .types import Update
+from .types import UpdatedGroupCallMessage
 from .types import UpdatedGroupCallParticipant
 
 
@@ -201,6 +203,22 @@ class call_participant(Filter):
 
     async def __call__(self, client: PyTgCalls, update: Update):
         if isinstance(update, UpdatedGroupCallParticipant):
+            if self.flags is None:
+                return True
+            return self.flags & update.action
+        return False
+
+
+# noinspection PyPep8Naming
+class call_message(Filter):
+    def __init__(
+        self,
+        flags: GroupCallMessage.Action | None = None,
+    ):
+        self.flags = flags
+
+    async def __call__(self, client: PyTgCalls, update: Update):
+        if isinstance(update, UpdatedGroupCallMessage):
             if self.flags is None:
                 return True
             return self.flags & update.action

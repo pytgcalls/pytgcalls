@@ -1,4 +1,5 @@
 import json
+from time import time
 from typing import cast
 
 from ntgcalls import MediaSegmentQuality
@@ -13,6 +14,7 @@ from telethon.errors import FloodWaitError
 from telethon.errors import GroupcallForbiddenError
 from telethon.errors import GroupcallInvalidError
 from telethon.events import Raw
+from telethon.tl import types
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetDhConfigRequest
 from telethon.tl.functions.messages import GetFullChatRequest
@@ -20,6 +22,10 @@ from telethon.tl.functions.phone import AcceptCallRequest
 from telethon.tl.functions.phone import ConfirmCallRequest
 from telethon.tl.functions.phone import CreateConferenceCallRequest
 from telethon.tl.functions.phone import CreateGroupCallRequest
+from telethon.tl.functions.phone import DeleteGroupCallMessagesRequest
+from telethon.tl.functions.phone import (
+    DeleteGroupCallParticipantMessagesRequest,
+)
 from telethon.tl.functions.phone import DiscardCallRequest
 from telethon.tl.functions.phone import DiscardGroupCallRequest
 from telethon.tl.functions.phone import EditGroupCallParticipantRequest
@@ -34,6 +40,8 @@ from telethon.tl.functions.phone import LeaveGroupCallPresentationRequest
 from telethon.tl.functions.phone import LeaveGroupCallRequest
 from telethon.tl.functions.phone import RequestCallRequest
 from telethon.tl.functions.phone import SendConferenceCallBroadcastRequest
+from telethon.tl.functions.phone import SendGroupCallEncryptedMessageRequest
+from telethon.tl.functions.phone import SendGroupCallMessageRequest
 from telethon.tl.functions.phone import SendSignalingDataRequest
 from telethon.tl.functions.updates import GetChannelDifferenceRequest
 from telethon.tl.functions.upload import GetFileRequest
@@ -66,15 +74,20 @@ from telethon.tl.types import PhoneCallDiscardReasonMissed
 from telethon.tl.types import PhoneCallProtocol
 from telethon.tl.types import PhoneCallRequested
 from telethon.tl.types import PhoneCallWaiting
+from telethon.tl.types import TextWithEntities
 from telethon.tl.types import TypeInputChannel
 from telethon.tl.types import TypeInputPeer
 from telethon.tl.types import TypeInputUser
 from telethon.tl.types import UpdateChannel
 from telethon.tl.types import UpdateChat
+from telethon.tl.types import UpdateDeleteGroupCallMessages
 from telethon.tl.types import UpdateGroupCall
 from telethon.tl.types import UpdateGroupCallChainBlocks
 from telethon.tl.types import UpdateGroupCallConnection
+from telethon.tl.types import UpdateGroupCallEncryptedMessage
+from telethon.tl.types import UpdateGroupCallMessage
 from telethon.tl.types import UpdateGroupCallParticipants
+from telethon.tl.types import UpdateMessageID
 from telethon.tl.types import UpdateNewChannelMessage
 from telethon.tl.types import UpdateNewMessage
 from telethon.tl.types import UpdatePhoneCall
@@ -84,6 +97,7 @@ from telethon.tl.types.messages import DhConfig
 
 from ..types import CallProtocol
 from ..types import ChatUpdate
+from ..types import GroupCallMessage
 from ..types import RawCallUpdate
 from ..types.calls import ChainBlocks
 from ..types.calls import ChainBlocksUpdate
@@ -207,6 +221,30 @@ class TelethonClient(BridgedClient):
                 )
                 if call is not None:
                     await call.enqueue_update(update)
+            if isinstance(update, UpdateMessageID):
+                self._cache.message_sent(update.random_id, update.id)
+            if isinstance(
+                update,
+                (UpdateGroupCallMessage, UpdateDeleteGroupCallMessages),
+            ):
+                call = self._cache.get_call(
+                    self._cache.get_chat_id(update.call.id),
+                )
+                if call is not None:
+                    if isinstance(update, UpdateGroupCallMessage):
+                        await call.message_received(update.message)
+                    else:
+                        await call.messages_deleted(update.messages)
+
+            if isinstance(update, UpdateGroupCallEncryptedMessage):
+                call = self._cache.get_call(
+                    self._cache.get_chat_id(update.call.id),
+                )
+                if call is not None:
+                    await call.encrypted_message_received(
+                        update.from_id,
+                        update.encrypted_message,
+                    )
             if isinstance(
                 update,
                 UpdateGroupCall,
@@ -603,6 +641,19 @@ class TelethonClient(BridgedClient):
                         await call.enqueue_update(update)
                     if isinstance(update, UpdateGroupCallConnection):
                         data = update.params.data
+                    if call is not None and isinstance(
+                        update,
+                        UpdateGroupCallMessage,
+                    ):
+                        await call.message_received(update.message)
+                    if call is not None and isinstance(
+                        update,
+                        UpdateGroupCallEncryptedMessage,
+                    ):
+                        await call.encrypted_message_received(
+                            update.from_id,
+                            update.encrypted_message,
+                        )
                     if isinstance(update, UpdateGroupCallChainBlocks):
                         await self._propagate(
                             ChainBlocksUpdate(
@@ -889,6 +940,127 @@ class TelethonClient(BridgedClient):
                     participant=participant,
                     muted=False,
                     volume=volume * 100,
+                ),
+            )
+
+    def message_entity(
+        self,
+        name: str,
+        offset: int,
+        length: int,
+        document_id: int | None,
+    ):
+        if document_id is not None:
+            return getattr(types, name)(
+                offset=offset,
+                length=length,
+                document_id=document_id,
+            )
+        return getattr(types, name)(offset=offset, length=length)
+
+    async def send_group_call_message(
+        self,
+        chat_id: int,
+        text: str,
+        stars: int,
+        send_as: TypeInputPeer | None,
+    ) -> GroupCallMessage | None:
+        input_call = await self.get_input_call(chat_id)
+        call = self._cache.get_call(chat_id)
+        if not isinstance(input_call, InputGroupCall) or call is None:
+            return None
+        message, entities = self.parse_html(text)
+        random_id = self.rnd_id()
+        if call.conference:
+            if self.e2e_encrypt is None:
+                return None
+            entities = [
+                entity
+                for entity in entities
+                if entity[0] in self.CONFERENCE_ENTITIES
+            ]
+            encrypted = await self.e2e_encrypt(
+                chat_id,
+                self.serialize_conference_message(
+                    random_id,
+                    message,
+                    entities,
+                ),
+            )
+            message_id = call.conference_message_sent(random_id)
+            await self._invoke(
+                SendGroupCallEncryptedMessageRequest(
+                    call=input_call,
+                    encrypted_message=encrypted,
+                ),
+            )
+            return GroupCallMessage(
+                message_id,
+                await self.get_id(),
+                message,
+                self.unparse_html(
+                    message,
+                    [self.message_entity(*entity) for entity in entities],
+                ),
+                int(time()),
+                0,
+                False,
+            )
+        call.message_sending(random_id)
+        try:
+            result = await self._invoke(
+                SendGroupCallMessageRequest(
+                    call=input_call,
+                    random_id=random_id,
+                    message=TextWithEntities(
+                        text=message,
+                        entities=[
+                            self.message_entity(*entity) for entity in entities
+                        ],
+                    ),
+                    allow_paid_stars=stars or None,
+                    send_as=send_as,
+                ),
+            )
+        except Exception:
+            call.message_failed(random_id)
+            raise
+        sent = None
+        for update in getattr(result, 'updates', []):
+            if isinstance(update, UpdateGroupCallMessage):
+                sent = self.parse_group_call_message(update.message)
+                call.message_sent(random_id, sent.message_id)
+        return sent
+
+    async def delete_group_call_messages(
+        self,
+        chat_id: int,
+        message_ids: list[int],
+        report_spam: bool,
+    ):
+        input_call = await self.get_input_call(chat_id)
+        if isinstance(input_call, InputGroupCall):
+            await self._invoke(
+                DeleteGroupCallMessagesRequest(
+                    call=input_call,
+                    messages=message_ids,
+                    report_spam=report_spam,
+                ),
+            )
+
+    async def delete_group_call_participant_messages(
+        self,
+        chat_id: int,
+        participant: TypeInputPeer,
+        report_spam: bool,
+    ):
+        input_call = await self.get_input_call(chat_id)
+        if isinstance(input_call, InputGroupCall):
+            await self._invoke(
+                DeleteGroupCallParticipantMessagesRequest(
+                    call=input_call,
+                    participant=participant,
+                    report_spam=report_spam,
                 ),
             )
 

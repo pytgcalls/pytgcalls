@@ -9,7 +9,9 @@ from .calls import PendingConnection
 from .calls import RawCallUpdate
 from .calls import UpdatedEmojis
 from .chats import ChatUpdate
+from .chats import GroupCallMessage
 from .chats import GroupCallParticipant
+from .chats import UpdatedGroupCallMessage
 from .chats import UpdatedGroupCallParticipant
 from .stream import AudioQuality
 from .stream import Device
@@ -39,6 +41,7 @@ __all__ = (
     'RawCallUpdate',
     'PendingConnection',
     'GroupCallConfig',
+    'GroupCallMessage',
     'GroupCallParticipant',
     'RecordStream',
     'MediaStream',
@@ -46,6 +49,7 @@ __all__ = (
     'StreamFrames',
     'Update',
     'UpdatedEmojis',
+    'UpdatedGroupCallMessage',
     'UpdatedGroupCallParticipant',
     'VideoQuality',
 )

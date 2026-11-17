@@ -86,6 +86,15 @@ class ClientCache:
                 return chat_id
         return None
 
+    def message_sent(
+        self,
+        random_id: int,
+        message_id: int,
+    ) -> None:
+        for call in self._calls.values():
+            if call.message_sent(random_id, message_id):
+                return
+
     def set_call(
         self,
         chat_id: int,

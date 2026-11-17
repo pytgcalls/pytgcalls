@@ -3,9 +3,12 @@ import logging
 from bisect import insort
 from enum import IntEnum
 from operator import itemgetter
+from time import time
 from typing import Any
 
+from ..types import GroupCallMessage
 from ..types import GroupCallParticipant
+from ..types import UpdatedGroupCallMessage
 from ..types import UpdatedGroupCallParticipant
 from .bridged_client import BridgedClient
 
@@ -41,6 +44,9 @@ class GroupCall:
         self.discarded = False
         self.in_call = False
         self.join_ssrc: int | None = None
+        self.conference = False
+        self.messages_enabled = False
+        self.messages_min_price = 0
         self._version = 0
         self._participants: dict[int, GroupCallParticipant] = {}
         self._participant_peer_by_audio_ssrc: dict[int, int] = {}
@@ -60,6 +66,11 @@ class GroupCall:
         self._unknown_participant_peers_request: asyncio.Future | None = None
         self._participant_updates: list[UpdatedGroupCallParticipant] = []
         self._participant_updates_task: asyncio.Task | None = None
+        self._sending_message_ids: set[int] = set()
+        self._message_ids: set[int] = set()
+        self._skipped_message_ids: set[int] = set()
+        self._conference_id_auto_increment = 0
+        self._conference_id_by_random_id: dict[int, int] = {}
 
     @staticmethod
     def call_id(input_call) -> int | str:
@@ -84,6 +95,10 @@ class GroupCall:
             self._reload_by_queued_updates_timer = None
         self._queued_updates.clear()
         self._unknown_spoken_ssrcs.clear()
+        self._sending_message_ids.clear()
+        self._message_ids.clear()
+        self._skipped_message_ids.clear()
+        self._conference_id_by_random_id.clear()
 
     def fire_participant_update(self, update: UpdatedGroupCallParticipant):
         self._participant_updates.append(update)
@@ -404,6 +419,11 @@ class GroupCall:
         self._version = call.version or 1
         self._server_participants_count = call.participants_count
         self.schedule_date = call.schedule_date
+        self.conference = bool(getattr(call, 'conference', False))
+        self.messages_enabled = bool(getattr(call, 'messages_enabled', False))
+        self.messages_min_price = (
+            getattr(call, 'send_paid_messages_stars', None) or 0
+        )
         self._all_participants_loaded = self._server_participants_count == len(
             self._participants
         )
@@ -524,3 +544,104 @@ class GroupCall:
             finally:
                 self._unknown_participant_peers_request = None
                 request.set_result(None)
+
+    def message_sending(self, random_id: int):
+        self._sending_message_ids.add(random_id)
+
+    def message_failed(self, random_id: int):
+        self._sending_message_ids.discard(random_id)
+
+    def message_sent(self, random_id: int, message_id: int) -> bool:
+        if random_id not in self._sending_message_ids:
+            return False
+        self._sending_message_ids.discard(random_id)
+        self._message_ids.add(message_id)
+        return True
+
+    async def message_received(self, data):
+        if not self.loaded or self.conference:
+            return
+        if (
+            data.id in self._message_ids
+            or data.id in self._skipped_message_ids
+        ):
+            return
+        message = BridgedClient.parse_group_call_message(data)
+        if not message.text and message.stars < self.messages_min_price:
+            self._skipped_message_ids.add(data.id)
+            return
+        self._message_ids.add(data.id)
+        await self._app._propagate(
+            UpdatedGroupCallMessage(
+                self.chat_id,
+                GroupCallMessage.Action.RECEIVED,
+                data.id,
+                message,
+            ),
+        )
+
+    async def messages_deleted(self, message_ids: list[int]):
+        if self.conference:
+            return
+        for message_id in message_ids:
+            if message_id not in self._message_ids:
+                continue
+            self._message_ids.discard(message_id)
+            await self._app._propagate(
+                UpdatedGroupCallMessage(
+                    self.chat_id,
+                    GroupCallMessage.Action.DELETED,
+                    message_id,
+                ),
+            )
+
+    def conference_message_sent(self, random_id: int) -> int:
+        self._conference_id_auto_increment += 1
+        message_id = self._conference_id_auto_increment
+        self._conference_id_by_random_id[random_id] = message_id
+        return message_id
+
+    async def encrypted_message_received(self, from_id, data: bytes):
+        if (
+            not self.loaded
+            or not self.conference
+            or self._app.e2e_decrypt is None
+        ):
+            return
+        user_id = BridgedClient.chat_id(from_id)
+        try:
+            decrypted = await self._app.e2e_decrypt(
+                self.chat_id,
+                user_id,
+                data,
+            )
+        except Exception as e:
+            py_logger.debug('Group Call Messages: Decrypt failed: %s', e)
+            return
+        deserialized = BridgedClient.deserialize_conference_message(decrypted)
+        if deserialized is None:
+            py_logger.debug('Group Call Messages: Bad decrypted message')
+            return
+        random_id, text, entities = deserialized
+        if random_id in self._conference_id_by_random_id:
+            return
+        message_id = self.conference_message_sent(random_id)
+        await self._app._propagate(
+            UpdatedGroupCallMessage(
+                self.chat_id,
+                GroupCallMessage.Action.RECEIVED,
+                message_id,
+                GroupCallMessage(
+                    message_id,
+                    user_id,
+                    text,
+                    BridgedClient.unparse_html(
+                        text,
+                        [self._app.message_entity(*e) for e in entities],
+                    ),
+                    int(time()),
+                    0,
+                    False,
+                ),
+            ),
+        )
