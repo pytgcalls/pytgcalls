@@ -7,6 +7,7 @@ from ntgcalls import SubchainRequest
 
 from ..exceptions import InvalidMTProtoClient
 from ..types.calls import ChainBlocks
+from ..types.chats import GroupCallMessage
 from ..types.chats import GroupCallParticipant
 from .bridged_client import BridgedClient
 
@@ -278,6 +279,63 @@ class MtProtoClient:
                 chat_id,
                 volume,
                 participant,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    def set_e2e(
+        self,
+        encrypt: Callable,
+        decrypt: Callable,
+    ):
+        if self._bind_client is not None:
+            self._bind_client.set_e2e(encrypt, decrypt)
+        else:
+            raise InvalidMTProtoClient()
+
+    async def send_group_call_message(
+        self,
+        chat_id: int,
+        text: str,
+        stars: int,
+        send_as: Any,
+    ) -> GroupCallMessage | None:
+        if self._bind_client is not None:
+            return await self._bind_client.send_group_call_message(
+                chat_id,
+                text,
+                stars,
+                send_as,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def delete_group_call_messages(
+        self,
+        chat_id: int,
+        message_ids: list[int],
+        report_spam: bool,
+    ):
+        if self._bind_client is not None:
+            await self._bind_client.delete_group_call_messages(
+                chat_id,
+                message_ids,
+                report_spam,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def delete_group_call_participant_messages(
+        self,
+        chat_id: int,
+        participant: Any,
+        report_spam: bool,
+    ):
+        if self._bind_client is not None:
+            await self._bind_client.delete_group_call_participant_messages(
+                chat_id,
+                participant,
+                report_spam,
             )
         else:
             raise InvalidMTProtoClient()

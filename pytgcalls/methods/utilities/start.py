@@ -14,6 +14,17 @@ class Start(Scaffold):
             self._is_running = True
             self._env_checker.check_environment()
             self._app.add_handler(self._handle_mtproto_updates)
+            self._app.set_e2e(
+                lambda chat_id, data: self._binding.encrypt_message(
+                    chat_id,
+                    data,
+                ),
+                lambda chat_id, user_id, data: self._binding.decrypt_message(
+                    chat_id,
+                    user_id,
+                    data,
+                ),
+            )
             if not self._app.is_connected:
                 await self._app.start()
 

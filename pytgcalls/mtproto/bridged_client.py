@@ -1,5 +1,8 @@
+import json
 import random
 import re
+from html import escape
+from html import unescape
 from typing import Any
 
 from ntgcalls import MediaSegmentQuality
@@ -9,10 +12,43 @@ from ntgcalls import SsrcGroup
 from ntgcalls import SubchainRequest
 
 from ..handlers import HandlersHolder
+from ..types import GroupCallMessage
 from ..types import GroupCallParticipant
 
 
 class BridgedClient(HandlersHolder):
+    HTML_TAGS = {
+        'MessageEntityBold': 'b',
+        'MessageEntityItalic': 'i',
+        'MessageEntityUnderline': 'u',
+        'MessageEntityStrike': 's',
+        'MessageEntitySpoiler': 'tg-spoiler',
+        'MessageEntityCode': 'code',
+        'MessageEntityCustomEmoji': 'tg-emoji',
+    }
+    CONFERENCE_ENTITIES = (
+        'MessageEntityBold',
+        'MessageEntityItalic',
+        'MessageEntityUnderline',
+        'MessageEntityStrike',
+        'MessageEntitySpoiler',
+        'MessageEntityCustomEmoji',
+    )
+    HTML_ALIASES = {
+        'strong': 'b',
+        'em': 'i',
+        'ins': 'u',
+        'strike': 's',
+        'del': 's',
+    }
+
+    e2e_encrypt: Any = None
+    e2e_decrypt: Any = None
+
+    def set_e2e(self, encrypt: Any, decrypt: Any):
+        self.e2e_encrypt = encrypt
+        self.e2e_decrypt = decrypt
+
     async def get_call(
         self,
         chat_id: int,
@@ -149,6 +185,40 @@ class BridgedClient(HandlersHolder):
     ):
         pass
 
+    def message_entity(
+        self,
+        name: str,
+        offset: int,
+        length: int,
+        document_id: int | None,
+    ):
+        pass
+
+    async def send_group_call_message(
+        self,
+        chat_id: int,
+        text: str,
+        stars: int,
+        send_as: Any,
+    ) -> GroupCallMessage | None:
+        pass
+
+    async def delete_group_call_messages(
+        self,
+        chat_id: int,
+        message_ids: list[int],
+        report_spam: bool,
+    ):
+        pass
+
+    async def delete_group_call_participant_messages(
+        self,
+        chat_id: int,
+        participant: Any,
+        report_spam: bool,
+    ):
+        pass
+
     async def download_stream(
         self,
         chat_id: int,
@@ -259,6 +329,174 @@ class BridgedClient(HandlersHolder):
             BridgedClient.parse_source(participant.video),
             BridgedClient.parse_source(participant.presentation),
         )
+
+    @staticmethod
+    def parse_group_call_message(message) -> GroupCallMessage:
+        return GroupCallMessage(
+            message.id,
+            BridgedClient.chat_id(message.from_id),
+            message.message.text,
+            BridgedClient.unparse_html(
+                message.message.text,
+                message.message.entities,
+            ),
+            message.date,
+            message.paid_message_stars or 0,
+            bool(message.from_admin),
+        )
+
+    @staticmethod
+    def unparse_html(text: str, entities: list[Any]) -> str:
+        encoded = text.encode('utf-16-le')
+        events = []
+        for index, entity in enumerate(
+            sorted(entities, key=lambda e: (e.offset, -e.length)),
+        ):
+            tag = BridgedClient.HTML_TAGS.get(entity.__class__.__name__)
+            if tag is None:
+                continue
+            if tag == 'tg-emoji':
+                opening = f'<tg-emoji emoji-id="{entity.document_id}">'
+            else:
+                opening = f'<{tag}>'
+            events.append((entity.offset, 1, index, opening))
+            events.append(
+                (entity.offset + entity.length, 0, -index, f'</{tag}>')
+            )
+        result = ''
+        position = 0
+        for offset, _, _, tag in sorted(events):
+            result += escape(
+                encoded[position * 2 : offset * 2].decode('utf-16-le'),
+                quote=False,
+            )
+            result += tag
+            position = offset
+        return result + escape(
+            encoded[position * 2 :].decode('utf-16-le'),
+            quote=False,
+        )
+
+    @staticmethod
+    def parse_html(
+        text: str,
+    ) -> tuple[str, list[tuple[str, int, int, int | None]]]:
+        names = {tag: name for name, tag in BridgedClient.HTML_TAGS.items()}
+        result = ''
+        length = 0
+        stack: list[tuple[str, int, int | None]] = []
+        entities: list[tuple[str, int, int, int | None]] = []
+        position = 0
+        for match in re.finditer(r'<(/?)([a-zA-Z-]+)([^>]*)>', text):
+            segment = unescape(text[position : match.start()])
+            result += segment
+            length += len(segment.encode('utf-16-le')) // 2
+            position = match.end()
+            closing, tag, attributes = match.groups()
+            tag = BridgedClient.HTML_ALIASES.get(tag.lower(), tag.lower())
+            if tag == 'span' and not closing and 'tg-spoiler' in attributes:
+                tag = 'tg-spoiler'
+            if tag not in names and tag != 'span':
+                literal = match.group(0)
+                result += literal
+                length += len(literal.encode('utf-16-le')) // 2
+                continue
+            if not closing:
+                emoji = re.search(r'emoji-id="?(\d+)', attributes)
+                stack.append(
+                    (tag, length, int(emoji.group(1)) if emoji else None),
+                )
+                continue
+            for i in range(len(stack) - 1, -1, -1):
+                if stack[i][0] == tag or (
+                    tag == 'span' and stack[i][0] in ('span', 'tg-spoiler')
+                ):
+                    opened, start, document_id = stack.pop(i)
+                    if opened in names and length > start:
+                        entities.append(
+                            (
+                                names[opened],
+                                start,
+                                length - start,
+                                document_id,
+                            ),
+                        )
+                    break
+        segment = unescape(text[position:])
+        return result + segment, sorted(entities, key=lambda e: e[1])
+
+    @staticmethod
+    def serialize_conference_message(
+        random_id: int,
+        text: str,
+        entities: list[tuple[str, int, int, int | None]],
+    ) -> bytes:
+        return json.dumps(
+            {
+                '_': 'groupCallMessage',
+                'random_id': str(random_id),
+                'message': {
+                    '_': 'textWithEntities',
+                    'text': text,
+                    'entities': [
+                        {
+                            '_': 'messageEntity' + name[13:],
+                            'offset': offset,
+                            'length': length,
+                            **(
+                                {'document_id': str(document_id)}
+                                if document_id is not None
+                                else {}
+                            ),
+                        }
+                        for name, offset, length, document_id in entities
+                    ],
+                },
+            },
+            ensure_ascii=False,
+            separators=(',', ':'),
+        ).encode()
+
+    @staticmethod
+    def deserialize_conference_message(
+        data: bytes,
+    ) -> tuple[int, str, list[tuple[str, int, int, int | None]]] | None:
+        try:
+            message = json.loads(data)
+            if message.get('_') != 'groupCallMessage':
+                return None
+            random_id = int(message.get('random_id') or 0)
+            content = message['message']
+            text = content['text']
+            if content.get('_') != 'textWithEntities' or not isinstance(
+                text,
+                str,
+            ):
+                return None
+            size = len(text.encode('utf-16-le')) // 2
+            entities = []
+            for entity in content['entities']:
+                name = 'MessageEntity' + str(entity.get('_', ''))[13:]
+                offset = int(entity.get('offset', -1))
+                length = int(entity.get('length', 0))
+                if (
+                    name not in BridgedClient.CONFERENCE_ENTITIES
+                    or offset < 0
+                    or length <= 0
+                    or offset + length > size
+                ):
+                    continue
+                document_id = None
+                if name == 'MessageEntityCustomEmoji':
+                    document_id = int(entity.get('document_id') or 0)
+                    if not document_id:
+                        continue
+                entities.append((name, offset, length, document_id))
+        except (ValueError, TypeError, KeyError, AttributeError):
+            return None
+        if not random_id:
+            return None
+        return random_id, text, entities
 
     @staticmethod
     def chat_id(input_peer, readable: bool = True) -> int:

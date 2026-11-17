@@ -1,4 +1,5 @@
 import json
+from time import time
 from typing import cast
 
 from ntgcalls import MediaSegmentQuality
@@ -12,6 +13,7 @@ from pyrogram.errors import FileMigrate
 from pyrogram.errors import FloodWait
 from pyrogram.errors import GroupcallForbidden
 from pyrogram.errors import GroupcallInvalid
+from pyrogram.raw import types
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.base import InputUser
 from pyrogram.raw.functions.auth import ExportAuthorization
@@ -23,6 +25,8 @@ from pyrogram.raw.functions.phone import AcceptCall
 from pyrogram.raw.functions.phone import ConfirmCall
 from pyrogram.raw.functions.phone import CreateConferenceCall
 from pyrogram.raw.functions.phone import CreateGroupCall
+from pyrogram.raw.functions.phone import DeleteGroupCallMessages
+from pyrogram.raw.functions.phone import DeleteGroupCallParticipantMessages
 from pyrogram.raw.functions.phone import DiscardCall
 from pyrogram.raw.functions.phone import DiscardGroupCall
 from pyrogram.raw.functions.phone import EditGroupCallParticipant
@@ -37,6 +41,8 @@ from pyrogram.raw.functions.phone import LeaveGroupCall
 from pyrogram.raw.functions.phone import LeaveGroupCallPresentation
 from pyrogram.raw.functions.phone import RequestCall
 from pyrogram.raw.functions.phone import SendConferenceCallBroadcast
+from pyrogram.raw.functions.phone import SendGroupCallEncryptedMessage
+from pyrogram.raw.functions.phone import SendGroupCallMessage
 from pyrogram.raw.functions.phone import SendSignalingData
 from pyrogram.raw.functions.updates import GetChannelDifference
 from pyrogram.raw.functions.upload import GetFile
@@ -72,12 +78,17 @@ from pyrogram.raw.types import PhoneCallDiscardReasonMissed
 from pyrogram.raw.types import PhoneCallProtocol
 from pyrogram.raw.types import PhoneCallRequested
 from pyrogram.raw.types import PhoneCallWaiting
+from pyrogram.raw.types import TextWithEntities
 from pyrogram.raw.types import UpdateChannel
 from pyrogram.raw.types import UpdateChat
+from pyrogram.raw.types import UpdateDeleteGroupCallMessages
 from pyrogram.raw.types import UpdateGroupCall
 from pyrogram.raw.types import UpdateGroupCallChainBlocks
 from pyrogram.raw.types import UpdateGroupCallConnection
+from pyrogram.raw.types import UpdateGroupCallEncryptedMessage
+from pyrogram.raw.types import UpdateGroupCallMessage
 from pyrogram.raw.types import UpdateGroupCallParticipants
+from pyrogram.raw.types import UpdateMessageID
 from pyrogram.raw.types import UpdateNewChannelMessage
 from pyrogram.raw.types import UpdateNewMessage
 from pyrogram.raw.types import UpdatePhoneCall
@@ -89,6 +100,7 @@ from pyrogram.session import Session
 
 from ..types import CallProtocol
 from ..types import ChatUpdate
+from ..types import GroupCallMessage
 from ..types import RawCallUpdate
 from ..types.calls import ChainBlocks
 from ..types.calls import ChainBlocksUpdate
@@ -225,6 +237,32 @@ class PyrogramClient(BridgedClient):
                 )
                 if call is not None:
                     await call.enqueue_update(update)
+
+            if isinstance(update, UpdateMessageID):
+                self._cache.message_sent(update.random_id, update.id)
+
+            if isinstance(
+                update,
+                (UpdateGroupCallMessage, UpdateDeleteGroupCallMessages),
+            ):
+                call = self._cache.get_call(
+                    self._cache.get_chat_id(update.call.id),
+                )
+                if call is not None:
+                    if isinstance(update, UpdateGroupCallMessage):
+                        await call.message_received(update.message)
+                    else:
+                        await call.messages_deleted(update.messages)
+
+            if isinstance(update, UpdateGroupCallEncryptedMessage):
+                call = self._cache.get_call(
+                    self._cache.get_chat_id(update.call.id),
+                )
+                if call is not None:
+                    await call.encrypted_message_received(
+                        update.from_id,
+                        update.encrypted_message,
+                    )
 
             if isinstance(
                 update,
@@ -652,6 +690,19 @@ class PyrogramClient(BridgedClient):
                         await call.enqueue_update(update)
                     if isinstance(update, UpdateGroupCallConnection):
                         data = update.params.data
+                    if call is not None and isinstance(
+                        update,
+                        UpdateGroupCallMessage,
+                    ):
+                        await call.message_received(update.message)
+                    if call is not None and isinstance(
+                        update,
+                        UpdateGroupCallEncryptedMessage,
+                    ):
+                        await call.encrypted_message_received(
+                            update.from_id,
+                            update.encrypted_message,
+                        )
                     if isinstance(update, UpdateGroupCallChainBlocks):
                         await self._propagate(
                             ChainBlocksUpdate(
@@ -938,6 +989,127 @@ class PyrogramClient(BridgedClient):
                     participant=participant,
                     muted=False,
                     volume=volume * 100,
+                ),
+            )
+
+    def message_entity(
+        self,
+        name: str,
+        offset: int,
+        length: int,
+        document_id: int | None,
+    ):
+        if document_id is not None:
+            return getattr(types, name)(
+                offset=offset,
+                length=length,
+                document_id=document_id,
+            )
+        return getattr(types, name)(offset=offset, length=length)
+
+    async def send_group_call_message(
+        self,
+        chat_id: int,
+        text: str,
+        stars: int,
+        send_as: InputPeer | None,
+    ) -> GroupCallMessage | None:
+        input_call = await self.get_input_call(chat_id)
+        call = self._cache.get_call(chat_id)
+        if not isinstance(input_call, InputGroupCall) or call is None:
+            return None
+        message, entities = self.parse_html(text)
+        random_id = self.rnd_id()
+        if call.conference:
+            if self.e2e_encrypt is None:
+                return None
+            entities = [
+                entity
+                for entity in entities
+                if entity[0] in self.CONFERENCE_ENTITIES
+            ]
+            encrypted = await self.e2e_encrypt(
+                chat_id,
+                self.serialize_conference_message(
+                    random_id,
+                    message,
+                    entities,
+                ),
+            )
+            message_id = call.conference_message_sent(random_id)
+            await self._invoke(
+                SendGroupCallEncryptedMessage(
+                    call=input_call,
+                    encrypted_message=encrypted,
+                ),
+            )
+            return GroupCallMessage(
+                message_id,
+                await self.get_id(),
+                message,
+                self.unparse_html(
+                    message,
+                    [self.message_entity(*entity) for entity in entities],
+                ),
+                int(time()),
+                0,
+                False,
+            )
+        call.message_sending(random_id)
+        try:
+            result = await self._invoke(
+                SendGroupCallMessage(
+                    call=input_call,
+                    random_id=random_id,
+                    message=TextWithEntities(
+                        text=message,
+                        entities=[
+                            self.message_entity(*entity) for entity in entities
+                        ],
+                    ),
+                    allow_paid_stars=stars or None,
+                    send_as=send_as,
+                ),
+            )
+        except Exception:
+            call.message_failed(random_id)
+            raise
+        sent = None
+        for update in getattr(result, 'updates', []):
+            if isinstance(update, UpdateGroupCallMessage):
+                sent = self.parse_group_call_message(update.message)
+                call.message_sent(random_id, sent.message_id)
+        return sent
+
+    async def delete_group_call_messages(
+        self,
+        chat_id: int,
+        message_ids: list[int],
+        report_spam: bool,
+    ):
+        input_call = await self.get_input_call(chat_id)
+        if isinstance(input_call, InputGroupCall):
+            await self._invoke(
+                DeleteGroupCallMessages(
+                    call=input_call,
+                    messages=message_ids,
+                    report_spam=report_spam,
+                ),
+            )
+
+    async def delete_group_call_participant_messages(
+        self,
+        chat_id: int,
+        participant: InputPeer,
+        report_spam: bool,
+    ):
+        input_call = await self.get_input_call(chat_id)
+        if isinstance(input_call, InputGroupCall):
+            await self._invoke(
+                DeleteGroupCallParticipantMessages(
+                    call=input_call,
+                    participant=participant,
+                    report_spam=report_spam,
                 ),
             )
 
