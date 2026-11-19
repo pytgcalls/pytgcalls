@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from ntgcalls import Format
 from ntgcalls import MediaSource
 
 from ...list_to_cmd import list_to_cmd
@@ -46,6 +47,16 @@ class RecordStream(Stream):
             )
         if isinstance(audio, Path):
             audio = str(audio)
+        if isinstance(audio, str) and Path(audio).suffix.lower() in (
+            '.opus',
+            '.ogg',
+        ):
+            return AudioStream(
+                media_source=MediaSource.FILE,
+                path=audio,
+                parameters=raw_audio_parameters,
+                format=Format.OGG,
+            )
         if isinstance(audio, str):
             is_lossless = raw_audio_parameters.sample_rate > 48000
             commands = [

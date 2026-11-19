@@ -10,7 +10,6 @@ from ntgcalls import FFmpegError
 
 from .exceptions import ImageSourceFound
 from .exceptions import InvalidVideoProportion
-from .exceptions import LiveStreamFound
 from .exceptions import NoAudioSourceFound
 from .exceptions import NoVideoSourceFound
 from .types.raw import AudioParameters
@@ -23,7 +22,7 @@ async def check_stream(
     stream_parameters: AudioParameters | VideoParameters,
     before_commands: list[str] | None = None,
     headers: dict[str, str] | None = None,
-):
+) -> tuple[str | None, bool]:
     try:
         ffprobe = await asyncio.create_subprocess_exec(
             *await cleanup_commands(
@@ -63,6 +62,7 @@ async def check_stream(
     have_valid_video = False
 
     original_width, original_height = 0, 0
+    audio_codec = None
 
     for stream in stream_list:
         codec_type = stream.get('codec_type', '')
@@ -77,6 +77,7 @@ async def check_stream(
                 have_valid_video = True
         elif codec_type == 'audio':
             have_audio = True
+            audio_codec = audio_codec or codec_name
 
     if isinstance(stream_parameters, VideoParameters):
         if not have_video:
@@ -108,8 +109,7 @@ async def check_stream(
     if isinstance(stream_parameters, AudioParameters) and not have_audio:
         raise NoAudioSourceFound(path)
 
-    if 'duration' not in format_content:
-        raise LiveStreamFound(path)
+    return audio_codec, 'duration' not in format_content
 
 
 async def cleanup_commands(
@@ -173,6 +173,7 @@ def build_command(
     before_commands: list[str] | None = None,
     headers: dict[str, str] | None = None,
     is_livestream: bool = False,
+    passthrough: bool = False,
 ) -> list[str]:
     if not path:
         return []
@@ -225,7 +226,7 @@ def build_command(
     ffmpeg_command += command['mid']
 
     if name == 'ffmpeg':
-        ffmpeg_command += _build_ffmpeg_options(stream_parameters)
+        ffmpeg_command += _build_ffmpeg_options(stream_parameters, passthrough)
 
     ffmpeg_command += command['end']
     if name == 'ffmpeg':
@@ -275,11 +276,40 @@ def _extract_stream_params(command: list[str]):
     return command_args
 
 
+def can_passthrough(
+    ffmpeg_parameters: str | None,
+    codec: str | None,
+    stream_parameters: AudioParameters | VideoParameters,
+):
+    command = _get_stream_params(ffmpeg_parameters)['audio']
+    return (
+        isinstance(stream_parameters, AudioParameters)
+        and codec == 'opus'
+        and not command['mid']
+        and not command['end']
+    )
+
+
 def _build_ffmpeg_options(
     stream_parameters: AudioParameters | VideoParameters,
+    passthrough: bool = False,
 ) -> list[str]:
     log_level = logging.getLogger('ffmpeg').level
     ffmpeg_level = 'info' if log_level == logging.DEBUG else 'quiet'
+
+    if passthrough:
+        return [
+            '-v',
+            ffmpeg_level,
+            '-map',
+            '0:a:0',
+            '-acodec',
+            'copy',
+            '-page_duration',
+            '20000',
+            '-f',
+            'ogg',
+        ]
 
     options = ['-v', ffmpeg_level, '-f']
 

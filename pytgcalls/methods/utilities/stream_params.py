@@ -44,6 +44,7 @@ class StreamParams:
                     channel_count=media.parameters.channels,
                     keep_open=False,
                     bitrate=media.parameters.bitrate,
+                    format=media.format,
                 )
             elif isinstance(media, VideoStream):
                 return VideoDescription(
