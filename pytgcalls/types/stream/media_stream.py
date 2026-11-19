@@ -207,8 +207,9 @@ class MediaStream(Stream):
                 try:
                     image_commands = []
                     live_stream = False
+                    video_codec = None
                     try:
-                        _, live_stream = await check_stream(
+                        video_codec, live_stream = await check_stream(
                             self._ffmpeg_parameters,
                             self._media_path,
                             self._video_parameters,
@@ -222,6 +223,14 @@ class MediaStream(Stream):
                             '-framerate',
                             '1',
                         ]
+                    passthrough = can_passthrough(
+                        self._ffmpeg_parameters,
+                        video_codec,
+                        self._video_parameters,
+                    )
+                    self.camera.format = (
+                        Format.MATROSKA if passthrough else Format.I420
+                    )
                     self.camera.path = list_to_cmd(
                         await cleanup_commands(
                             build_command(
@@ -232,6 +241,7 @@ class MediaStream(Stream):
                                 image_commands,
                                 self._headers,
                                 live_stream,
+                                passthrough,
                             ),
                         ),
                     )

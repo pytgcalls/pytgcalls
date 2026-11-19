@@ -63,6 +63,8 @@ async def check_stream(
 
     original_width, original_height = 0, 0
     audio_codec = None
+    video_codec = None
+    video_passthrough = False
 
     for stream in stream_list:
         codec_type = stream.get('codec_type', '')
@@ -75,6 +77,14 @@ async def check_stream(
             original_height = int(stream.get('height', 0))
             if original_height and original_width:
                 have_valid_video = True
+            video_codec = codec_name
+            video_passthrough = (
+                int(stream.get('has_b_frames', 0) or 0) == 0
+                and _frame_rate(stream.get('avg_frame_rate', '0/0'))
+                <= stream_parameters.frame_rate
+                if isinstance(stream_parameters, VideoParameters)
+                else False
+            )
         elif codec_type == 'audio':
             have_audio = True
             audio_codec = audio_codec or codec_name
@@ -105,6 +115,12 @@ async def check_stream(
         if is_image:
             stream_parameters.frame_rate = 10
             raise ImageSourceFound(path)
+        if (new_w, new_h) != (original_width, original_height):
+            video_passthrough = False
+        return (
+            video_codec if video_passthrough else None,
+            'duration' not in format_content,
+        )
 
     if isinstance(stream_parameters, AudioParameters) and not have_audio:
         raise NoAudioSourceFound(path)
@@ -205,7 +221,7 @@ def build_command(
             '-v',
             'error',
             '-show_entries',
-            'stream=width,height,codec_type,codec_name',
+            'stream=width,height,codec_type,codec_name,has_b_frames,avg_frame_rate',
             '-show_format',
             '-of',
             'json',
@@ -281,13 +297,21 @@ def can_passthrough(
     codec: str | None,
     stream_parameters: AudioParameters | VideoParameters,
 ):
-    command = _get_stream_params(ffmpeg_parameters)['audio']
-    return (
-        isinstance(stream_parameters, AudioParameters)
-        and codec == 'opus'
-        and not command['mid']
-        and not command['end']
-    )
+    if isinstance(stream_parameters, VideoParameters):
+        command = _get_stream_params(ffmpeg_parameters)['video']
+        supported = codec in ('h264', 'vp8', 'vp9', 'av1')
+    else:
+        command = _get_stream_params(ffmpeg_parameters)['audio']
+        supported = codec == 'opus'
+    return supported and not command['mid'] and not command['end']
+
+
+def _frame_rate(value: str) -> float:
+    numerator, _, denominator = value.partition('/')
+    try:
+        return float(numerator) / float(denominator or 1)
+    except (ValueError, ZeroDivisionError):
+        return 0
 
 
 def _build_ffmpeg_options(
@@ -296,6 +320,18 @@ def _build_ffmpeg_options(
 ) -> list[str]:
     log_level = logging.getLogger('ffmpeg').level
     ffmpeg_level = 'info' if log_level == logging.DEBUG else 'quiet'
+
+    if passthrough and isinstance(stream_parameters, VideoParameters):
+        return [
+            '-v',
+            ffmpeg_level,
+            '-map',
+            '0:v:0',
+            '-vcodec',
+            'copy',
+            '-f',
+            'matroska',
+        ]
 
     if passthrough:
         return [

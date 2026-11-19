@@ -1,3 +1,4 @@
+from ntgcalls import Format
 from ntgcalls import MediaSource
 
 from ...statictypes import statictypes
@@ -12,7 +13,9 @@ class VideoStream(PyObject):
         media_source: MediaSource,
         path: str,
         parameters: VideoParameters = VideoParameters(),
+        format: Format = Format.I420,
     ):
         self.media_source: MediaSource = media_source
         self.path: str = path
         self.parameters: VideoParameters = parameters
+        self.format: Format = format

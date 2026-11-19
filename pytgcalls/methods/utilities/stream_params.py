@@ -54,6 +54,7 @@ class StreamParams:
                     height=media.parameters.height,
                     fps=media.parameters.frame_rate,
                     keep_open=False,
+                    format=media.format,
                 )
         return None
 

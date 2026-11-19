@@ -36,6 +36,7 @@ class SendFrame(Scaffold):
                     else Codec.I420
                     if device in (Device.CAMERA, Device.SCREEN)
                     else Codec.PCM,
+                    frame_data.keyframe,
                 ),
             )
         except ConnectionNotFound:

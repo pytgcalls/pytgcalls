@@ -13,12 +13,14 @@ class Frame(PyObject):
             height: int = 0,
             rotation: VideoRotation = VideoRotation.VIDEO_ROTATION_0,
             codec: Codec | None = None,
+            keyframe: bool = True,
         ):
             self.capture_time = capture_time
             self.width = width
             self.height = height
             self.rotation = rotation
             self.codec = codec
+            self.keyframe = keyframe
 
     def __init__(
         self,
