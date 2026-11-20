@@ -1,0 +1,82 @@
+name: Publish Documentation Version
+permissions:
+  contents: read
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'docsdata branch to publish to (defaults to dev for pre-releases and master for stable releases)'
+        required: false
+        type: string
+  push:
+    branches: [ master, dev ]
+    paths:
+      - 'pytgcalls/__version__.py'
+      - '.github/workflows/docs.yml'
+
+jobs:
+  publish:
+    name: Stamp And Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+
+      - name: Select the docsdata branch
+        id: target
+        env:
+          REQUESTED_BRANCH: ${{ inputs.branch }}
+        run: |
+          version="$(sed -n "s/^__version__ = '\(.*\)'$/\1/p" pytgcalls/__version__.py)"
+          if [ -z "$version" ]; then
+            echo "Unable to read the version" >&2
+            exit 1
+          fi
+          if [ -n "$REQUESTED_BRANCH" ]; then
+            branch="$REQUESTED_BRANCH"
+          elif [ "$GITHUB_REF_NAME" != "master" ]; then
+            branch=dev
+          elif [[ "$version" =~ (a|b|rc|\.dev)[0-9]+$ ]]; then
+            branch=dev
+          else
+            branch=master
+          fi
+          echo "Publishing $version to docsdata/$branch"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Check out docsdata
+        uses: actions/checkout@v6
+        with:
+          repository: pytgcalls/docsdata
+          ref: ${{ steps.target.outputs.branch }}
+          ssh-key: ${{ secrets.DOCS_DEPLOY_KEY }}
+          path: docsdata
+
+      - name: Stamp the library version
+        env:
+          VERSION: ${{ steps.target.outputs.version }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          config = Path('docsdata/config.xml')
+          content = config.read_text(encoding='utf-8')
+          pattern = r'<option id="PYTGCALLS_VERSION">[^<]*</option>'
+          if not re.search(pattern, content):
+              raise SystemExit('PYTGCALLS_VERSION not found in config.xml')
+          version = os.environ['VERSION']
+          content = re.sub(pattern, f'<option id="PYTGCALLS_VERSION">{version}</option>', content)
+          config.write_text(content, encoding='utf-8')
+          print(f'docs: PYTGCALLS_VERSION -> {version}')
+          PY
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          repository: docsdata
+          commit_message: "Updated the PyTgCalls version"
+          commit_options: "--no-verify"
+          branch: ${{ steps.target.outputs.branch }}
