@@ -204,6 +204,13 @@ def build_command(
 
     ffmpeg_command += command['start']
 
+    if not os.path.exists(path):
+        ffmpeg_command += [
+            '-protocol_whitelist',
+            'http,https,httpproxy,tcp,tls,udp,rtp,rtmp,rtmps,rtmpt,rtmpts,'
+            'rtsp,rtsps,srt,crypto,data',
+        ]
+
     if not os.path.exists(path) and not is_livestream and name == 'ffmpeg':
         ffmpeg_command += [
             '-reconnect',
