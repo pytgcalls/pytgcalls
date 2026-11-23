@@ -18,6 +18,17 @@ test_stream = (
 )
 
 
+@app.on_message(filters.regex('!master'))
+async def master_handler(_: Client, message: Message):
+    await call_py.play(
+        message.chat.id,
+        MediaStream(
+            test_stream,
+            audio_parameters=AudioQuality.MASTER,
+        ),
+    )
+
+
 @app.on_message(filters.regex('!studio'))
 async def studio_handler(_: Client, message: Message):
     await call_py.play(
