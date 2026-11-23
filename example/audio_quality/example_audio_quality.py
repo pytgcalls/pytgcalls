@@ -13,9 +13,7 @@ app = Client(
     api_hash='abcdef12345',
 )
 call_py = PyTgCalls(app)
-test_stream = (
-    'http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4'
-)
+test_stream = 'input.flac'
 
 
 @app.on_message(filters.regex('!master'))
