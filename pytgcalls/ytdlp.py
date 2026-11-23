@@ -14,7 +14,7 @@ py_logger = logging.getLogger('pytgcalls')
 class YtDlp:
     YOUTUBE_REGX = re.compile(
         r'^((?:https?:)?//)?((?:www|m)\.)?'
-        r'(youtube(-nocookie)?\.com|youtu.be)'
+        r'(youtube(-nocookie)?\.com|youtu\.be)'
         r'(/(?:[\w\-]+\?v=|embed/|live/|v/)?)'
         r'([\w\-]+)(\S+)?$',
     )
