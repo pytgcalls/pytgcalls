@@ -1,3 +1,4 @@
+from ntgcalls import Format
 from ntgcalls import MediaSource
 
 from ...statictypes import statictypes
@@ -12,7 +13,9 @@ class AudioStream(PyObject):
         media_source: MediaSource,
         path: str,
         parameters: AudioParameters = AudioParameters(),
+        format: Format = Format.PCM,
     ):
         self.media_source: MediaSource = media_source
         self.path: str = path
         self.parameters: AudioParameters = parameters
+        self.format: Format = format

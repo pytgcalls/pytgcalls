@@ -31,6 +31,8 @@ class HandleStreamFrame(Scaffold):
                             x.frame_data.width,
                             x.frame_data.height,
                             x.frame_data.rotation,
+                            x.frame_data.codec,
+                            x.frame_data.keyframe,
                         ),
                     )
                     for x in frames

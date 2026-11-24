@@ -1,3 +1,4 @@
+from ntgcalls import Codec
 from ntgcalls import ConnectionNotFound
 from ntgcalls import FrameData
 
@@ -30,6 +31,12 @@ class SendFrame(Scaffold):
                     frame_data.rotation,
                     frame_data.width,
                     frame_data.height,
+                    frame_data.codec
+                    if frame_data.codec is not None
+                    else Codec.I420
+                    if device in (Device.CAMERA, Device.SCREEN)
+                    else Codec.PCM,
+                    frame_data.keyframe,
                 ),
             )
         except ConnectionNotFound:

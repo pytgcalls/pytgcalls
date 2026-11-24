@@ -2,13 +2,14 @@ import logging
 from enum import auto
 from pathlib import Path
 
+from ntgcalls import Format
 from ntgcalls import MediaSource
 
 from ...exceptions import ImageSourceFound
-from ...exceptions import LiveStreamFound
 from ...exceptions import NoAudioSourceFound
 from ...exceptions import NoVideoSourceFound
 from ...ffmpeg import build_command
+from ...ffmpeg import can_passthrough
 from ...ffmpeg import check_stream
 from ...ffmpeg import cleanup_commands
 from ...list_to_cmd import list_to_cmd
@@ -206,8 +207,9 @@ class MediaStream(Stream):
                 try:
                     image_commands = []
                     live_stream = False
+                    video_codec = None
                     try:
-                        await check_stream(
+                        video_codec, live_stream = await check_stream(
                             self._ffmpeg_parameters,
                             self._media_path,
                             self._video_parameters,
@@ -221,8 +223,14 @@ class MediaStream(Stream):
                             '-framerate',
                             '1',
                         ]
-                    except LiveStreamFound:
-                        live_stream = True
+                    passthrough = can_passthrough(
+                        self._ffmpeg_parameters,
+                        video_codec,
+                        self._video_parameters,
+                    )
+                    self.camera.format = (
+                        Format.MATROSKA if passthrough else Format.I420
+                    )
                     self.camera.path = list_to_cmd(
                         await cleanup_commands(
                             build_command(
@@ -233,6 +241,7 @@ class MediaStream(Stream):
                                 image_commands,
                                 self._headers,
                                 live_stream,
+                                passthrough,
                             ),
                         ),
                     )
@@ -266,17 +275,21 @@ class MediaStream(Stream):
                     )[1]
 
                 try:
-                    live_stream = False
-                    try:
-                        await check_stream(
-                            self._ffmpeg_parameters,
-                            self._audio_path,
-                            self._audio_parameters,
-                            [],
-                            self._headers,
-                        )
-                    except LiveStreamFound:
-                        live_stream = True
+                    audio_codec, live_stream = await check_stream(
+                        self._ffmpeg_parameters,
+                        self._audio_path,
+                        self._audio_parameters,
+                        [],
+                        self._headers,
+                    )
+                    passthrough = can_passthrough(
+                        self._ffmpeg_parameters,
+                        audio_codec,
+                        self._audio_parameters,
+                    )
+                    self.microphone.format = (
+                        Format.OGG if passthrough else Format.PCM
+                    )
                     self.microphone.path = list_to_cmd(
                         await cleanup_commands(
                             build_command(
@@ -287,6 +300,7 @@ class MediaStream(Stream):
                                 [],
                                 self._headers,
                                 live_stream,
+                                passthrough,
                             ),
                         ),
                     )

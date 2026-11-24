@@ -299,7 +299,9 @@ class BridgedClient(HandlersHolder):
 
     @staticmethod
     def parse_source(source) -> GroupCallParticipant.SourceInfo | None:
-        if not source:
+        if not source or not any(
+            source_group.sources for source_group in source.source_groups
+        ):
             return None
         return GroupCallParticipant.SourceInfo(
             source.endpoint,
