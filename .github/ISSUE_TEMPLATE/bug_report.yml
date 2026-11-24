@@ -10,6 +10,8 @@ body:
 
       Thank you for reporting a bug in Py-TgCalls! Please use the sections below to provide detailed information about the issue.
 
+      If the process crashed (segmentation fault, abort, or it closed without a Python error), use the **Crash report** template instead.
+
       - We appreciate your feedback and are committed to fixing issues promptly.
       - Py-TgCalls is maintained by volunteers, so please be courteous and patient.
       - Provide sufficient details to help us understand and resolve the issue.

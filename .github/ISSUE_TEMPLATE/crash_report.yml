@@ -1,0 +1,81 @@
+name: 💥 Crash report
+description: The process crashed or closed on its own (segmentation fault, abort, no Python error).
+labels: ['Needs: Triage :mag:', 'type:bug-suspected']
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      Thank you for reporting a crash in Py-TgCalls! A crash happens in native code, so we need a backtrace from gdb to find where it happened.
+
+      **1.** Start your program with this command, replacing `YOUR_SCRIPT.py` with your script:
+
+      ```bash
+      gdb -q -batch -iex "set confirm off" \
+            -iex "set pagination off" \
+            -iex "handle SIGPIPE pass nostop noprint" \
+            -iex "handle SIGINT pass nostop noprint" \
+            -iex "set logging enabled on" \
+            -iex "set debuginfod enabled on" \
+            -ex run -ex bt -ex "info sharedlibrary" \
+            --args python3 YOUR_SCRIPT.py
+      ```
+
+      **2.** Use your program as usual until it crashes. You don't need to type anything: gdb prints what we need and exits.
+
+      **3.** gdb saved everything to `gdb.txt`, in the folder where you ran the command. Upload that file to [BatBin](https://batbin.me/) or [Pastebin](https://pastebin.com/) and paste the link below.
+
+      You don't need to download any debug symbols. On macOS or Windows, follow [DEBUGGING.md](https://github.com/pytgcalls/ntgcalls/blob/master/DEBUGGING.md) instead.
+- type: input
+  id: gdb-log
+  validations:
+    required: true
+  attributes:
+    label: Link to gdb.txt
+    description: The BatBin or Pastebin link with the whole content of gdb.txt.
+    placeholder: e.g., https://batbin.me/abcdef
+- type: textarea
+  id: what-happened
+  validations:
+    required: true
+  attributes:
+    label: What were you doing when it crashed?
+    description: For example joining a call, playing a file, or leaving a call.
+- type: textarea
+  id: steps
+  attributes:
+    label: Steps to reproduce
+    description: If you can make it crash again, list the steps or share the smallest script that does it.
+    value: |
+      1.
+      2.
+      3.
+- type: input
+  id: py-tgcalls-version
+  validations:
+    required: true
+  attributes:
+    label: Py-TgCalls Version
+    placeholder: e.g., 4.X.X
+- type: input
+  id: ntgcalls-version
+  validations:
+    required: true
+  attributes:
+    label: NTgCalls Version
+    placeholder: e.g., 4.X.X
+- type: input
+  id: python-version
+  validations:
+    required: true
+  attributes:
+    label: Python Version
+    placeholder: e.g., 3.12.7
+- type: input
+  id: platform
+  validations:
+    required: true
+  attributes:
+    label: Platform
+    description: Provide the operating system and the architecture.
+    placeholder: e.g., Ubuntu 24.04 (x86_64), Debian 12 (ARM64)
