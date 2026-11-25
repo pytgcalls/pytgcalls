@@ -13,6 +13,7 @@ from pyrogram.errors import FileMigrate
 from pyrogram.errors import FloodWait
 from pyrogram.errors import GroupcallForbidden
 from pyrogram.errors import GroupcallInvalid
+from pyrogram.errors import RPCError
 from pyrogram.raw import types
 from pyrogram.raw.base import InputPeer
 from pyrogram.raw.base import InputUser
@@ -22,9 +23,11 @@ from pyrogram.raw.functions.channels import GetFullChannel
 from pyrogram.raw.functions.messages import GetDhConfig
 from pyrogram.raw.functions.messages import GetFullChat
 from pyrogram.raw.functions.phone import AcceptCall
+from pyrogram.raw.functions.phone import CheckGroupCall
 from pyrogram.raw.functions.phone import ConfirmCall
 from pyrogram.raw.functions.phone import CreateConferenceCall
 from pyrogram.raw.functions.phone import CreateGroupCall
+from pyrogram.raw.functions.phone import DeleteConferenceCallParticipants
 from pyrogram.raw.functions.phone import DeleteGroupCallMessages
 from pyrogram.raw.functions.phone import DeleteGroupCallParticipantMessages
 from pyrogram.raw.functions.phone import DiscardCall
@@ -98,6 +101,7 @@ from pyrogram.raw.types.messages import DhConfig
 from pyrogram.session import Auth
 from pyrogram.session import Session
 
+from ..exceptions import NotInCallError
 from ..types import CallProtocol
 from ..types import ChatUpdate
 from ..types import GroupCallMessage
@@ -109,6 +113,11 @@ from .client_cache import ClientCache
 
 
 class PyrogramClient(BridgedClient):
+    NOT_IN_CALL_ERRORS = (
+        'GROUPCALL_JOIN_MISSING',
+        'GROUPCALL_FORBIDDEN',
+    )
+
     def __init__(
         self,
         client: Client,
@@ -935,6 +944,45 @@ class PyrogramClient(BridgedClient):
                 ),
             )
 
+    async def check_group_call(
+        self,
+        chat_id: int,
+    ) -> bool:
+        input_call = await self.get_input_call(chat_id)
+        call = self._cache.get_call(chat_id)
+        if (
+            not isinstance(input_call, (InputGroupCall, InputGroupCallSlug))
+            or call is None
+            or call.join_ssrc is None
+        ):
+            return True
+        result = await self._invoke(
+            CheckGroupCall(
+                call=input_call,
+                sources=[call.join_ssrc],
+            ),
+        )
+        return call.join_ssrc in result
+
+    async def delete_conference_call_participants(
+        self,
+        chat_id: int,
+        user_ids: list[int],
+        block: bytes,
+        only_left: bool,
+    ):
+        input_call = await self.get_input_call(chat_id)
+        if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+            await self._invoke(
+                DeleteConferenceCallParticipants(
+                    call=input_call,
+                    ids=user_ids,
+                    block=block,
+                    only_left=only_left or None,
+                    kick=not only_left or None,
+                ),
+            )
+
     async def close_voice_chat(
         self,
         chat_id: int,
@@ -1145,6 +1193,10 @@ class PyrogramClient(BridgedClient):
                 ).bytes
             except FloodWait:
                 pass
+            except RPCError as e:
+                if e.ID in self.NOT_IN_CALL_ERRORS:
+                    raise NotInCallError() from e
+                raise
         return None
 
     async def get_stream_timestamp(
@@ -1153,14 +1205,19 @@ class PyrogramClient(BridgedClient):
     ):
         input_call = await self.get_input_call(chat_id)
         if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
-            channels = (
-                await self._invoke(
-                    GetGroupCallStreamChannels(
-                        call=input_call,
-                    ),
-                    chat_id=chat_id,
-                )
-            ).channels
+            try:
+                channels = (
+                    await self._invoke(
+                        GetGroupCallStreamChannels(
+                            call=input_call,
+                        ),
+                        chat_id=chat_id,
+                    )
+                ).channels
+            except RPCError as e:
+                if e.ID in self.NOT_IN_CALL_ERRORS:
+                    raise NotInCallError() from e
+                raise
             if len(channels) > 0:
                 return channels[0].last_timestamp_ms
 

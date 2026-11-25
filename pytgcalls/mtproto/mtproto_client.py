@@ -257,6 +257,34 @@ class MtProtoClient:
         else:
             raise InvalidMTProtoClient()
 
+    async def check_group_call(
+        self,
+        chat_id: int,
+    ) -> bool:
+        if self._bind_client is not None:
+            return await self._bind_client.check_group_call(
+                chat_id,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
+    async def delete_conference_call_participants(
+        self,
+        chat_id: int,
+        user_ids: list[int],
+        block: bytes,
+        only_left: bool,
+    ):
+        if self._bind_client is not None:
+            await self._bind_client.delete_conference_call_participants(
+                chat_id,
+                user_ids,
+                block,
+                only_left,
+            )
+        else:
+            raise InvalidMTProtoClient()
+
     async def close_voice_chat(
         self,
         chat_id: int,

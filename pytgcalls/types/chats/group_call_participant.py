@@ -35,6 +35,7 @@ class GroupCallParticipant(PyObject):
         source: int,
         video_info: SourceInfo | None,
         presentation_info: SourceInfo | None,
+        has_e2e_key: bool | None = None,
     ):
         self.user_id: int = user_id
         self.muted: bool = muted
@@ -49,3 +50,4 @@ class GroupCallParticipant(PyObject):
         self.presentation_info: GroupCallParticipant.SourceInfo | None = (
             presentation_info
         )
+        self.has_e2e_key: bool | None = has_e2e_key

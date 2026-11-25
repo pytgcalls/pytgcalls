@@ -13,15 +13,18 @@ from telethon.errors import FileMigrateError
 from telethon.errors import FloodWaitError
 from telethon.errors import GroupcallForbiddenError
 from telethon.errors import GroupcallInvalidError
+from telethon.errors import GroupcallJoinMissingError
 from telethon.events import Raw
 from telethon.tl import types
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetDhConfigRequest
 from telethon.tl.functions.messages import GetFullChatRequest
 from telethon.tl.functions.phone import AcceptCallRequest
+from telethon.tl.functions.phone import CheckGroupCallRequest
 from telethon.tl.functions.phone import ConfirmCallRequest
 from telethon.tl.functions.phone import CreateConferenceCallRequest
 from telethon.tl.functions.phone import CreateGroupCallRequest
+from telethon.tl.functions.phone import DeleteConferenceCallParticipantsRequest
 from telethon.tl.functions.phone import DeleteGroupCallMessagesRequest
 from telethon.tl.functions.phone import (
     DeleteGroupCallParticipantMessagesRequest,
@@ -95,6 +98,7 @@ from telethon.tl.types import UpdatePhoneCallSignalingData
 from telethon.tl.types import Updates
 from telethon.tl.types.messages import DhConfig
 
+from ..exceptions import NotInCallError
 from ..types import CallProtocol
 from ..types import ChatUpdate
 from ..types import GroupCallMessage
@@ -886,6 +890,45 @@ class TelethonClient(BridgedClient):
                 ),
             )
 
+    async def check_group_call(
+        self,
+        chat_id: int,
+    ) -> bool:
+        input_call = await self.get_input_call(chat_id)
+        call = self._cache.get_call(chat_id)
+        if (
+            not isinstance(input_call, (InputGroupCall, InputGroupCallSlug))
+            or call is None
+            or call.join_ssrc is None
+        ):
+            return True
+        result = await self._invoke(
+            CheckGroupCallRequest(
+                call=input_call,
+                sources=[call.join_ssrc],
+            ),
+        )
+        return call.join_ssrc in result
+
+    async def delete_conference_call_participants(
+        self,
+        chat_id: int,
+        user_ids: list[int],
+        block: bytes,
+        only_left: bool,
+    ):
+        input_call = await self.get_input_call(chat_id)
+        if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
+            await self._invoke(
+                DeleteConferenceCallParticipantsRequest(
+                    call=input_call,
+                    ids=user_ids,
+                    block=block,
+                    only_left=only_left or None,
+                    kick=not only_left or None,
+                ),
+            )
+
     async def close_voice_chat(
         self,
         chat_id: int,
@@ -1096,6 +1139,8 @@ class TelethonClient(BridgedClient):
                 ).bytes
             except FloodWaitError:
                 pass
+            except (GroupcallForbiddenError, GroupcallJoinMissingError) as e:
+                raise NotInCallError() from e
         return None
 
     async def get_stream_timestamp(
@@ -1104,14 +1149,17 @@ class TelethonClient(BridgedClient):
     ):
         input_call = await self.get_input_call(chat_id)
         if isinstance(input_call, (InputGroupCall, InputGroupCallSlug)):
-            channels = (
-                await self._invoke(
-                    GetGroupCallStreamChannelsRequest(
-                        call=input_call,
-                    ),
-                    chat_id=chat_id,
-                )
-            ).channels
+            try:
+                channels = (
+                    await self._invoke(
+                        GetGroupCallStreamChannelsRequest(
+                            call=input_call,
+                        ),
+                        chat_id=chat_id,
+                    )
+                ).channels
+            except (GroupcallForbiddenError, GroupcallJoinMissingError) as e:
+                raise NotInCallError() from e
             if len(channels) > 0:
                 return channels[0].last_timestamp_ms
 

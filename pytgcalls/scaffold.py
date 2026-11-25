@@ -36,6 +36,9 @@ class Scaffold(HandlersHolder):
         self._wait_connect = dict()
         self._presentations = set()
         self._pending_connections = dict()
+        self._reconnecting = set()
+        self._e2e_participants = dict()
+        self._invite_hashes = dict()
         self._chat_lock = None
 
     def _handle_mtproto(self):
@@ -60,6 +63,16 @@ class Scaffold(HandlersHolder):
         pass
 
     async def _clear_call(self, chat_id: int):
+        pass
+
+    async def _rejoin_call(self, chat_id: int):
+        pass
+
+    async def _handle_e2e_participants(
+        self,
+        chat_id: int,
+        participants: list[int] | None = None,
+    ):
         pass
 
     async def _update_status(self, chat_id: int, state: MediaState):

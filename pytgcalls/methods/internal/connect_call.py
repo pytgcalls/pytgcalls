@@ -46,6 +46,7 @@ class ConnectCall(Scaffold):
                         self._cache_user_peer.get(chat_id),
                         config.invite_hash,
                     )
+                    self._invite_hashes[chat_id] = config.invite_hash
                     await self._binding.connect(
                         chat_id,
                         result_params,

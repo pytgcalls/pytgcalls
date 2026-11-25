@@ -2,6 +2,7 @@ from .clear_cache import ClearCache
 from .clear_call import ClearCall
 from .connect_call import ConnectCall
 from .handle_connection_changed import HandleConnectionChanged
+from .handle_e2e_participants import HandleE2EParticipants
 from .handle_emojis_update import HandleEmojisUpdate
 from .handle_mtproto_updates import HandleMTProtoUpdates
 from .handle_request_participants import HandleRequestParticipants
@@ -10,6 +11,7 @@ from .handle_stream_frame import HandleStreamFrame
 from .handle_subchain_request import HandleSubchainRequest
 from .join_presentation import JoinPresentation
 from .log_retries import LogRetries
+from .rejoin_call import RejoinCall
 from .request_broadcast_part import RequestBroadcastPart
 from .request_broadcast_timestamp import RequestBroadcastTimestamp
 from .switch_connection import SwitchConnection
@@ -22,6 +24,7 @@ class Internal(
     ClearCall,
     ConnectCall,
     HandleConnectionChanged,
+    HandleE2EParticipants,
     HandleEmojisUpdate,
     HandleMTProtoUpdates,
     HandleRequestParticipants,
@@ -30,6 +33,7 @@ class Internal(
     HandleSubchainRequest,
     JoinPresentation,
     LogRetries,
+    RejoinCall,
     RequestBroadcastPart,
     RequestBroadcastTimestamp,
     SwitchConnection,

@@ -164,6 +164,21 @@ class BridgedClient(HandlersHolder):
     ):
         pass
 
+    async def check_group_call(
+        self,
+        chat_id: int,
+    ) -> bool:
+        pass
+
+    async def delete_conference_call_participants(
+        self,
+        chat_id: int,
+        user_ids: list[int],
+        block: bytes,
+        only_left: bool,
+    ):
+        pass
+
     async def close_voice_chat(
         self,
         chat_id: int,

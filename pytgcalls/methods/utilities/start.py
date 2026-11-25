@@ -133,6 +133,21 @@ class Start(Scaffold):
                     )
                 ),
             )
+            self._binding.on_e2e_failure(
+                lambda chat_id: asyncio.run_coroutine_threadsafe(
+                    self._rejoin_call(chat_id),
+                    self.loop,
+                ),
+            )
+            self._binding.on_e2e_participants(
+                lambda chat_id, participants: asyncio.run_coroutine_threadsafe(
+                    self._handle_e2e_participants(
+                        chat_id,
+                        participants,
+                    ),
+                    self.loop,
+                ),
+            )
             await PyTgCallsSession().start()
         else:
             raise PyTgCallsAlreadyRunning()

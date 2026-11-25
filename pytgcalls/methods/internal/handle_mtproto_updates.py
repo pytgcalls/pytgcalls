@@ -1,3 +1,4 @@
+import copy
 import logging
 
 from ntgcalls import ConnectionError
@@ -177,11 +178,10 @@ class HandleMTProtoUpdates(Scaffold):
                     else False
                 )
                 if is_self:
-                    if (
-                        action == GroupCallParticipant.Action.KICKED
-                        or action == GroupCallParticipant.Action.LEFT
-                    ):
+                    if action == GroupCallParticipant.Action.KICKED:
                         await self._clear_call(chat_id)
+                    elif action == GroupCallParticipant.Action.LEFT:
+                        await self._rejoin_call(chat_id)
                     if (
                         chat_id in self._need_unmute
                         and action == GroupCallParticipant.Action.UPDATED
@@ -204,6 +204,8 @@ class HandleMTProtoUpdates(Scaffold):
                         self._need_unmute.add(chat_id)
                     else:
                         self._need_unmute.discard(chat_id)
+                elif action == GroupCallParticipant.Action.LEFT:
+                    await self._handle_e2e_participants(chat_id)
         if isinstance(update, ChainBlocksUpdate):
             chain_blocks = update.chain_blocks
             try:
@@ -216,6 +218,23 @@ class HandleMTProtoUpdates(Scaffold):
                 )
             except (ConnectionNotFound, ConnectionError):
                 pass
+        if isinstance(update, UpdatedGroupCallParticipant):
+            try:
+                chain_participants = await self._binding.get_e2e_participants(
+                    chat_id,
+                )
+            except (ConnectionNotFound, ConnectionError):
+                chain_participants = None
+            if chain_participants is not None:
+                participant = copy.copy(update.participant)
+                participant.has_e2e_key = (
+                    participant.user_id in chain_participants
+                )
+                update = UpdatedGroupCallParticipant(
+                    chat_id,
+                    update.action,
+                    participant,
+                )
         if not isinstance(update, RawCallUpdate):
             await self._propagate(
                 update,
