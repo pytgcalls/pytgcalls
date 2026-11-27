@@ -1,9 +1,15 @@
 import logging
+import os
 from enum import auto
 from pathlib import Path
 
+from ntgcalls import FFmpegError
+from ntgcalls import FileError
 from ntgcalls import Format
+from ntgcalls import MediaInfo
 from ntgcalls import MediaSource
+from ntgcalls import NTgCalls
+from ntgcalls import StreamMode
 
 from ...exceptions import ImageSourceFound
 from ...exceptions import NoAudioSourceFound
@@ -12,6 +18,7 @@ from ...ffmpeg import build_command
 from ...ffmpeg import can_passthrough
 from ...ffmpeg import check_stream
 from ...ffmpeg import cleanup_commands
+from ...ffmpeg import fit_resolution
 from ...list_to_cmd import list_to_cmd
 from ...media_devices.input_device import InputDevice
 from ...media_devices.screen_device import ScreenDevice
@@ -205,46 +212,62 @@ class MediaStream(Stream):
                     if not self._audio_path:
                         self._audio_path = links[1]
                 try:
-                    image_commands = []
-                    live_stream = False
-                    video_codec = None
-                    try:
-                        video_codec, live_stream = await check_stream(
-                            self._ffmpeg_parameters,
-                            self._media_path,
+                    info = self._probe(self._media_path)
+                    if info and not info.video:
+                        raise NoVideoSourceFound(self._media_path)
+                    if info and info.video.supported:
+                        (
+                            self._video_parameters.width,
+                            self._video_parameters.height,
+                        ) = fit_resolution(
+                            info.video.width,
+                            info.video.height,
                             self._video_parameters,
-                            [],
-                            self._headers,
                         )
-                    except ImageSourceFound:
-                        image_commands = [
-                            '-loop',
-                            '1',
-                            '-framerate',
-                            '1',
-                        ]
-                    passthrough = can_passthrough(
-                        self._ffmpeg_parameters,
-                        video_codec,
-                        self._video_parameters,
-                    )
-                    self.camera.format = (
-                        Format.MATROSKA if passthrough else Format.I420
-                    )
-                    self.camera.path = list_to_cmd(
-                        await cleanup_commands(
-                            build_command(
-                                'ffmpeg',
+                        self.camera.media_source = MediaSource.FILE
+                        self.camera.path = self._media_path
+                        self.camera.format = Format.AUTO
+                    else:
+                        image_commands = []
+                        live_stream = False
+                        video_codec = None
+                        try:
+                            video_codec, live_stream = await check_stream(
                                 self._ffmpeg_parameters,
                                 self._media_path,
                                 self._video_parameters,
-                                image_commands,
+                                [],
                                 self._headers,
-                                live_stream,
-                                passthrough,
+                            )
+                        except ImageSourceFound:
+                            image_commands = [
+                                '-loop',
+                                '1',
+                                '-framerate',
+                                '1',
+                            ]
+                        passthrough = can_passthrough(
+                            self._ffmpeg_parameters,
+                            video_codec,
+                            self._video_parameters,
+                        )
+                        self.camera.format = (
+                            Format.MATROSKA if passthrough else Format.I420
+                        )
+                        self.camera.path = list_to_cmd(
+                            await cleanup_commands(
+                                build_command(
+                                    'ffmpeg',
+                                    self._ffmpeg_parameters,
+                                    self._media_path,
+                                    self._video_parameters,
+                                    image_commands,
+                                    self._headers,
+                                    live_stream,
+                                    passthrough,
+                                ),
                             ),
-                        ),
-                    )
+                        )
                 except NoVideoSourceFound as e:
                     if self._video_flags & MediaStream.Flags.REQUIRED:
                         raise e
@@ -275,41 +298,61 @@ class MediaStream(Stream):
                     )[1]
 
                 try:
-                    audio_codec, live_stream = await check_stream(
-                        self._ffmpeg_parameters,
-                        self._audio_path,
-                        self._audio_parameters,
-                        [],
-                        self._headers,
-                    )
-                    passthrough = can_passthrough(
-                        self._ffmpeg_parameters,
-                        audio_codec,
-                        self._audio_parameters,
-                    )
-                    self.microphone.format = (
-                        Format.OGG if passthrough else Format.PCM
-                    )
-                    self.microphone.path = list_to_cmd(
-                        await cleanup_commands(
-                            build_command(
-                                'ffmpeg',
-                                self._ffmpeg_parameters,
-                                self._audio_path,
-                                self._audio_parameters,
-                                [],
-                                self._headers,
-                                live_stream,
-                                passthrough,
+                    info = self._probe(self._audio_path)
+                    if info and not info.audio:
+                        raise NoAudioSourceFound(self._audio_path)
+                    if info and info.audio.supported:
+                        self.microphone.media_source = MediaSource.FILE
+                        self.microphone.path = self._audio_path
+                        self.microphone.format = Format.AUTO
+                    else:
+                        audio_codec, live_stream = await check_stream(
+                            self._ffmpeg_parameters,
+                            self._audio_path,
+                            self._audio_parameters,
+                            [],
+                            self._headers,
+                        )
+                        passthrough = can_passthrough(
+                            self._ffmpeg_parameters,
+                            audio_codec,
+                            self._audio_parameters,
+                        )
+                        self.microphone.format = (
+                            Format.OGG if passthrough else Format.PCM
+                        )
+                        self.microphone.path = list_to_cmd(
+                            await cleanup_commands(
+                                build_command(
+                                    'ffmpeg',
+                                    self._ffmpeg_parameters,
+                                    self._audio_path,
+                                    self._audio_parameters,
+                                    [],
+                                    self._headers,
+                                    live_stream,
+                                    passthrough,
+                                ),
                             ),
-                        ),
-                    )
+                        )
                 except NoAudioSourceFound as e:
                     if self._audio_flags & MediaStream.Flags.REQUIRED:
                         raise e
                     self.microphone = None
             else:
                 self.microphone = None
+
+    def _probe(self, path: str) -> MediaInfo | None:
+        if (
+            self._ffmpeg_parameters
+            or self._headers
+            or not os.path.isfile(path)
+        ):
+            return None
+        try:
+            return NTgCalls.get_media_info(path, StreamMode.CAPTURE)
+        except (FFmpegError, FileError):
+            return None
 
     @staticmethod
     def _filter_flags(flags: Flags | None) -> Flags:

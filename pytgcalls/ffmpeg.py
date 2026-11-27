@@ -64,7 +64,6 @@ async def check_stream(
     original_width, original_height = 0, 0
     audio_codec = None
     video_codec = None
-    video_passthrough = False
 
     for stream in stream_list:
         codec_type = stream.get('codec_type', '')
@@ -78,13 +77,6 @@ async def check_stream(
             if original_height and original_width:
                 have_valid_video = True
             video_codec = codec_name
-            video_passthrough = (
-                int(stream.get('has_b_frames', 0) or 0) == 0
-                and _frame_rate(stream.get('avg_frame_rate', '0/0'))
-                <= stream_parameters.frame_rate
-                if isinstance(stream_parameters, VideoParameters)
-                else False
-            )
         elif codec_type == 'audio':
             have_audio = True
             audio_codec = audio_codec or codec_name
@@ -97,30 +89,17 @@ async def check_stream(
                 'Video proportion not found',
             )
 
-        ratio = float(original_width) / original_height
-        new_w = min(original_width, stream_parameters.width)
-        new_h = int(new_w / ratio)
-
-        if (
-            new_h > stream_parameters.height
-            and stream_parameters.adjust_by_height
-        ):
-            new_h = stream_parameters.height
-            new_w = int(new_h * ratio)
-
-        new_w = new_w - 1 if new_w % 2 else new_w
-        new_h = new_h - 1 if new_h % 2 else new_h
-        stream_parameters.height = new_h
+        new_w, new_h = fit_resolution(
+            original_width,
+            original_height,
+            stream_parameters,
+        )
         stream_parameters.width = new_w
+        stream_parameters.height = new_h
         if is_image:
             stream_parameters.frame_rate = 10
             raise ImageSourceFound(path)
-        if (new_w, new_h) != (original_width, original_height):
-            video_passthrough = False
-        return (
-            video_codec if video_passthrough else None,
-            'duration' not in format_content,
-        )
+        return video_codec, 'duration' not in format_content
 
     if isinstance(stream_parameters, AudioParameters) and not have_audio:
         raise NoAudioSourceFound(path)
@@ -226,7 +205,7 @@ def build_command(
             '-v',
             'error',
             '-show_entries',
-            'stream=width,height,codec_type,codec_name,has_b_frames,avg_frame_rate',
+            'stream=width,height,codec_type,codec_name',
             '-show_format',
             '-of',
             'json',
@@ -297,6 +276,24 @@ def _extract_stream_params(command: list[str]):
     return command_args
 
 
+def fit_resolution(
+    width: int,
+    height: int,
+    stream_parameters: VideoParameters,
+) -> tuple[int, int]:
+    ratio = float(width) / height
+    new_w = min(width, stream_parameters.width)
+    new_h = int(new_w / ratio)
+
+    if new_h > stream_parameters.height and stream_parameters.adjust_by_height:
+        new_h = stream_parameters.height
+        new_w = int(new_h * ratio)
+
+    new_w = new_w - 1 if new_w % 2 else new_w
+    new_h = new_h - 1 if new_h % 2 else new_h
+    return new_w, new_h
+
+
 def can_passthrough(
     ffmpeg_parameters: str | None,
     codec: str | None,
@@ -309,14 +306,6 @@ def can_passthrough(
         command = _get_stream_params(ffmpeg_parameters)['audio']
         supported = codec == 'opus'
     return supported and not command['mid'] and not command['end']
-
-
-def _frame_rate(value: str) -> float:
-    numerator, _, denominator = value.partition('/')
-    try:
-        return float(numerator) / float(denominator or 1)
-    except (ValueError, ZeroDivisionError):
-        return 0
 
 
 def _build_ffmpeg_options(

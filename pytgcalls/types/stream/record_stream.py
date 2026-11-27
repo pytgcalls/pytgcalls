@@ -2,6 +2,8 @@ from pathlib import Path
 
 from ntgcalls import Format
 from ntgcalls import MediaSource
+from ntgcalls import NTgCalls
+from ntgcalls import StreamMode
 
 from ...list_to_cmd import list_to_cmd
 from ...media_devices.speaker_device import SpeakerDevice
@@ -57,15 +59,18 @@ class RecordStream(Stream):
             )
         if isinstance(audio, Path):
             audio = str(audio)
-        if isinstance(audio, str) and Path(audio).suffix.lower() in (
-            '.opus',
-            '.ogg',
+        if (
+            isinstance(audio, str)
+            and NTgCalls.get_media_info(
+                audio,
+                StreamMode.PLAYBACK,
+            ).audio
         ):
             return AudioStream(
                 media_source=MediaSource.FILE,
                 path=audio,
                 parameters=raw_audio_parameters,
-                format=Format.OGG,
+                format=Format.AUTO,
             )
         if isinstance(audio, str):
             is_lossless = raw_audio_parameters.sample_rate > 48000
@@ -120,12 +125,12 @@ class RecordStream(Stream):
                 else None
             )
         video = str(video)
-        if Path(video).suffix.lower() == '.mkv':
+        if NTgCalls.get_media_info(video, StreamMode.PLAYBACK).video:
             return VideoStream(
                 media_source=MediaSource.FILE,
                 path=video,
                 parameters=raw_video_parameters,
-                format=Format.MATROSKA,
+                format=Format.AUTO,
             )
         commands = [
             'ffmpeg',
